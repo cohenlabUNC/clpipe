@@ -1,0 +1,4 @@
+
+      [console_scripts]
+      fmriprep_process=clpipe.fmriprep_process:fmriprep_process
+      

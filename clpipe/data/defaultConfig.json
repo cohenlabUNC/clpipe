@@ -1,0 +1,11 @@
+{
+	"Name": "The mother of all experiments",
+	"BIDSVersion": "1.0.1",
+	"License": "CC0",
+	"Authors": ["Ramon y Cajal", "2nd author"],
+	"Acknowledgements": "say here what are your acknowledgments",
+	"HowToAcknowledge": "say here how you would like to be acknowledged",
+	"Funding": "list your funding sources",
+	"ReferencesAndLinks": ["a data paper", "a resource to be cited when using the data "],
+	"DatasetDOI": "10.0.2.3/dfjj.10"
+}

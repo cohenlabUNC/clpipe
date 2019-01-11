@@ -1,4 +1,5 @@
-from setuptools import setup
+from setuptools import setup, find_packages
+
 
 setup(name='clpipe',
       version='0.1',
@@ -7,5 +8,11 @@ setup(name='clpipe',
       author = 'Cohen Lab',
       author_email='cohenlab@email.unc.edu',
       license='MIT',
-      packages=['clpipe'],
-      zip_safe=False)
+      include_package_data=True,
+      packages=find_packages(),
+      entry_points='''
+      [console_scripts]
+      fmriprep_process=clpipe.fmriprep_process:fmriprep_process
+      ''',
+      zip_safe=False
+      )
