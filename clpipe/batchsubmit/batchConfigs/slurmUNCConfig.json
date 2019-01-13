@@ -1,0 +1,12 @@
+{
+  "submissionHead": "sbatch",
+  "submissionOptions": [{
+    "command": "-N",
+    "args": "8"
+  },
+  {
+    "command": "-mem",
+    "args": "16000"
+  }],
+  "commandWrapper": "--wrap"
+}

@@ -1,0 +1,216 @@
+{
+  "definitions": {},
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "http://example.com/root.json",
+  "type": "object",
+  "title": "The Root Schema",
+  "required": [
+    "ConfigTitle",
+    "DateRun",
+    "WhoRan",
+    "FMRIPrepVersion",
+    "NuisanceRegression",
+    "FilteringHighPass",
+    "FilteringLowPass",
+    "FilteringOrder",
+    "Scrubbing",
+    "ScrubAhead",
+    "ScrubBehind",
+    "ScrubContig",
+    "SpatialSmoothing",
+    "RunLog"
+  ],
+  "properties": {
+    "ConfigTitle": {
+      "$id": "#/properties/ConfigTitle",
+      "type": "string",
+      "title": "The Configtitle Schema",
+      "default": "",
+      "examples": [
+        "Default Configuration File"
+      ],
+      "pattern": "^(.*)$"
+    },
+    "DateRun": {
+      "$id": "#/properties/DateRun",
+      "type": "string",
+      "title": "The Daterun Schema",
+      "default": "",
+      "examples": [
+        "NA"
+      ],
+      "pattern": "^(.*)$"
+    },
+    "WhoRan": {
+      "$id": "#/properties/WhoRan",
+      "type": "string",
+      "title": "The Whoran Schema",
+      "default": "",
+      "examples": [
+        "Default"
+      ],
+      "pattern": "^(.*)$"
+    },
+    "FMRIPrepVersion": {
+      "$id": "#/properties/FMRIPrepVersion",
+      "type": "string",
+      "title": "The Fmriprepversion Schema",
+      "default": "",
+      "examples": [
+        "1.0.1"
+      ],
+      "pattern": "^(.*)$"
+    },
+    "NuisanceRegression": {
+      "$id": "#/properties/NuisanceRegression",
+      "type": "string",
+      "title": "The Nuisanceregression Schema",
+      "default": "",
+      "examples": [
+        "QuadLagged"
+      ],
+      "pattern": "^(.*)$"
+    },
+    "FilteringHighPass": {
+      "$id": "#/properties/FilteringHighPass",
+      "type": "number",
+      "title": "The Filteringhighpass Schema",
+      "default": 0.0,
+      "examples": [
+        0.08
+      ]
+    },
+    "FilteringLowPass": {
+      "$id": "#/properties/FilteringLowPass",
+      "type": "number",
+      "title": "The Filteringlowpass Schema",
+      "default": 0.0,
+      "examples": [
+        0.1
+      ]
+    },
+    "FilteringOrder": {
+      "$id": "#/properties/FilteringOrder",
+      "type": "integer",
+      "title": "The Filteringorder Schema",
+      "default": 0,
+      "examples": [
+        12
+      ]
+    },
+    "Scrubbing": {
+      "$id": "#/properties/Scrubbing",
+      "type": "string",
+      "title": "The Scrubbing Schema",
+      "default": "",
+      "examples": [
+        "Scrub"
+      ],
+      "pattern": "^(.*)$"
+    },
+    "ScrubAhead": {
+      "$id": "#/properties/ScrubAhead",
+      "type": "integer",
+      "title": "The Scrubahead Schema",
+      "default": 0,
+      "examples": [
+        2
+      ]
+    },
+    "ScrubBehind": {
+      "$id": "#/properties/ScrubBehind",
+      "type": "integer",
+      "title": "The Scrubbehind Schema",
+      "default": 0,
+      "examples": [
+        2
+      ]
+    },
+    "ScrubContig": {
+      "$id": "#/properties/ScrubContig",
+      "type": "integer",
+      "title": "The Scrubcontig Schema",
+      "default": 0,
+      "examples": [
+        4
+      ]
+    },
+    "SpatialSmoothing": {
+      "$id": "#/properties/SpatialSmoothing",
+      "type": "string",
+      "title": "The Spatialsmoothing Schema",
+      "default": "",
+      "examples": [
+        "SUSAN"
+      ],
+      "pattern": "^(.*)$"
+    },
+    "RunLog": {
+      "$id": "#/properties/RunLog",
+      "type": "array",
+      "title": "The Runlog Schema",
+      "items": {
+        "$id": "#/properties/RunLog/items",
+        "type": "object",
+        "title": "The Items Schema",
+        "required": [
+          "DateRan",
+          "SubjectsRan",
+          "SessionsRan",
+          "FMRIPrep"
+        ],
+        "properties": {
+          "DateRan": {
+            "$id": "#/properties/RunLog/items/properties/DateRan",
+            "type": "string",
+            "title": "The Dateran Schema",
+            "default": "",
+            "examples": [
+              "NA"
+            ],
+            "pattern": "^(.*)$"
+          },
+          "SubjectsRan": {
+            "$id": "#/properties/RunLog/items/properties/SubjectsRan",
+            "type": "array",
+            "title": "The Subjectsran Schema",
+            "items": {
+              "$id": "#/properties/RunLog/items/properties/SubjectsRan/items",
+              "type": "string",
+              "title": "The Items Schema",
+              "default": "",
+              "examples": [
+                "ALL"
+              ],
+              "pattern": "^(.*)$"
+            }
+          },
+          "SessionsRan": {
+            "$id": "#/properties/RunLog/items/properties/SessionsRan",
+            "type": "array",
+            "title": "The Sessionsran Schema",
+            "items": {
+              "$id": "#/properties/RunLog/items/properties/SessionsRan/items",
+              "type": "string",
+              "title": "The Items Schema",
+              "default": "",
+              "examples": [
+                "ALL"
+              ],
+              "pattern": "^(.*)$"
+            }
+          },
+          "FMRIPrep": {
+            "$id": "#/properties/RunLog/items/properties/FMRIPrep",
+            "type": "boolean",
+            "title": "The Fmriprep Schema",
+            "default": false,
+            "examples": [
+              false
+            ]
+          }
+        }
+      }
+    }
+  }
+}
