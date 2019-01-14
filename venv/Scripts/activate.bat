@@ -1,5 +1,5 @@
 @echo off
-set "VIRTUAL_ENV=C:\Users\Teague\Documents\GitHub\clpipe\venv"
+set "VIRTUAL_ENV=C:\Users\teagu\Documents\GitHub\clpipe\venv"
 
 if not defined PROMPT (
     set "PROMPT=$P$G"

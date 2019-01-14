@@ -1,4 +1,4 @@
-#!C:\Users\Teague\Documents\GitHub\clpipe\venv\Scripts\python.exe
+#!C:\Users\teagu\Documents\GitHub\clpipe\venv\Scripts\python.exe
 # EASY-INSTALL-ENTRY-SCRIPT: 'clpipe==0.1','console_scripts','fmriprep_process'
 __requires__ = 'clpipe==0.1'
 import re

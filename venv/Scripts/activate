@@ -37,7 +37,7 @@ deactivate () {
 # unset irrelevant variables
 deactivate nondestructive
 
-VIRTUAL_ENV="C:\Users\Teague\Documents\GitHub\clpipe\venv"
+VIRTUAL_ENV="C:\Users\teagu\Documents\GitHub\clpipe\venv"
 export VIRTUAL_ENV
 
 _OLD_VIRTUAL_PATH="$PATH"

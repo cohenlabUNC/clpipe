@@ -12,7 +12,7 @@ setup(name='clpipe',
       packages=find_packages(),
       entry_points='''
       [console_scripts]
-      fmriprep_process=clpipe.fmriprep_process:fmriprep_process
+      fmriprep_process=clpipe.fmri_preprocess:fmriprep_process
       ''',
       zip_safe=False
       )

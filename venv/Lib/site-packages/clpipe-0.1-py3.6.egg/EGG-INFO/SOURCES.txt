@@ -2,6 +2,7 @@ MANIFEST.in
 README.md
 setup.py
 clpipe/__init__.py
+clpipe/batch_manage.py
 clpipe/config_json_parser.py
 clpipe/dti_tract_process.py
 clpipe/dtiprep_process.py
@@ -15,5 +16,6 @@ clpipe.egg-info/dependency_links.txt
 clpipe.egg-info/entry_points.txt
 clpipe.egg-info/not-zip-safe
 clpipe.egg-info/top_level.txt
+clpipe/batchConfigs/slurmUNCConfig.json
 clpipe/data/configSchema.json
 clpipe/data/defaultConfig.json

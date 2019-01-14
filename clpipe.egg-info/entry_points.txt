@@ -1,4 +1,4 @@
 
       [console_scripts]
-      fmriprep_process=clpipe.fmriprep_process:fmriprep_process
+      fmriprep_process=clpipe.fmri_preprocess:fmriprep_process
       
