@@ -8,7 +8,7 @@
     "command": "--mem",
     "args": "20000"
   }],
-  "JobIDCommand": "--jobid",
+  "JobIDCommand": "--job-name",
   "OutputCommand": "--output",
   "CommandWrapper": "--wrap"
 }

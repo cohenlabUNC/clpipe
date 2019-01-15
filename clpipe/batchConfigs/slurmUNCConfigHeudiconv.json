@@ -6,9 +6,9 @@
   }],
   "SubOptionsEqual": [  {
     "command": "--mem",
-    "args": "20000"
+    "args": "5000"
   }],
-  "JobIDCommand": "--jobid",
+  "JobIDCommand": "--job-name",
   "OutputCommand": "--output",
   "CommandWrapper": "--wrap"
 }
