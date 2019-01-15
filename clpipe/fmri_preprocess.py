@@ -11,7 +11,6 @@ from .batch_manage import BatchManager, Job
 @click.option('-submit/-save', default = False)
 
 def fmriprep_process(configfile=None, subjects=None, bidsdir=None, workingdir=None, outputdir=None, submit = False):
-    click.echo("Command Start")
     config = ConfigParser()
     config.config_updater(configfile)
 
@@ -46,15 +45,11 @@ def fmriprep_process(configfile=None, subjects=None, bidsdir=None, workingdir=No
     config.validate_config()
     singularityString = '''singularity run --cleanenv -B /proj {fmriprepInstance} {bidsDir} {outputDir} participant --participant-label {participantLabels} -w {workingdir}'''
 
-    click.echo(subjects)
-    if subjects is ():
-        click.echo("No Subjects")
+    if not subjects:
         subjectString = "ALL"
         subList = [o.replace('sub-', '') for o in os.listdir(bidsdir)
          if os.path.isdir(os.path.join(bidsdir, o)) and 'sub-' in o]
-
     else:
-        click.echo("Subjects Detected")
         subjectString = " , ".join(subjects)
         subList = subjects
 
@@ -63,11 +58,11 @@ def fmriprep_process(configfile=None, subjects=None, bidsdir=None, workingdir=No
 
 
     for sub in subList:
-        batch_manager.addjob(Job(sub, singularityString.format(
+        batch_manager.addjob(Job("sub-"+sub+"fmriprep", singularityString.format(
             fmriprepInstance = config.config['FMRIPrepPath'],
             bidsDir = bidsdir,
             outputDir = outputdir,
-            workingDir = workingdir,
+            workingdir = workingdir,
             participantLabels = sub
             )))
 
@@ -83,9 +78,5 @@ def fmriprep_process(configfile=None, subjects=None, bidsdir=None, workingdir=No
 
 
 
-#Parameters for this function below should be all the options for fmriprep processing
-def fmriprep_process_int():
-
-    return 0
 
 

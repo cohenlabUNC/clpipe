@@ -4,6 +4,7 @@ setup.py
 clpipe/__init__.py
 clpipe/batch_manage.py
 clpipe/config_json_parser.py
+clpipe/dicom_to_bids_converter.py
 clpipe/dti_tract_process.py
 clpipe/dtiprep_process.py
 clpipe/fmri_postprocess.py
@@ -17,5 +18,6 @@ clpipe.egg-info/entry_points.txt
 clpipe.egg-info/not-zip-safe
 clpipe.egg-info/top_level.txt
 clpipe/batchConfigs/slurmUNCConfig.json
+clpipe/batchConfigs/slurmUNCConfigHeudiconv.json
 clpipe/data/configSchema.json
 clpipe/data/defaultConfig.json

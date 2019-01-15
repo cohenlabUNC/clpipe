@@ -10,6 +10,7 @@ class BatchManager:
         self.config = json.load(resource_stream(__name__, "batchConfigs/" + batchsystemConfig))
         self.submissionlist = []
 
+
     def addjob(self, job):
         self.jobs.append(job)
 

@@ -47,12 +47,11 @@ def fmriprep_process(configfile=None, subjects=None, bidsdir=None, workingdir=No
     singularityString = '''singularity run --cleanenv -B /proj {fmriprepInstance} {bidsDir} {outputDir} participant --participant-label {participantLabels} -w {workingdir}'''
 
     click.echo(subjects)
-    if subjects is '':
+    if not subjects:
         click.echo("No Subjects")
         subjectString = "ALL"
         subList = [o.replace('sub-', '') for o in os.listdir(bidsdir)
          if os.path.isdir(os.path.join(bidsdir, o)) and 'sub-' in o]
-
     else:
         click.echo("Subjects Detected")
         subjectString = " , ".join(subjects)
@@ -67,7 +66,7 @@ def fmriprep_process(configfile=None, subjects=None, bidsdir=None, workingdir=No
             fmriprepInstance = config.config['FMRIPrepPath'],
             bidsDir = bidsdir,
             outputDir = outputdir,
-            workingDir = workingdir,
+            workingdir = workingdir,
             participantLabels = sub
             )))
 
