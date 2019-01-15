@@ -1,5 +1,5 @@
 import click
-from .batch_manage import BatchManager,Job
+from .batch_manager import BatchManager,Job
 
 @click.command()
 @click.argument('dicomdirectory')
@@ -22,6 +22,7 @@ def dicom_to_nifti_to_bids_converter_setup(dicomdirectory, outputfile, batchconf
     #batch_manager.addjob(job1)
 
     #To submit all jobs:
+    #batch_manager.compilejobstrings()
     #batch_manager.submit_jobs()
     #To print the current set of job strings:
     #batch_manager.print_jobs()

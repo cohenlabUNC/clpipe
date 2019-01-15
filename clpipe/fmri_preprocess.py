@@ -1,7 +1,7 @@
 import os
 import click
 from .config_json_parser import ConfigParser
-from .batch_manage import BatchManager, Job
+from .batch_manager import BatchManager, Job
 
 
 @click.command()
@@ -10,8 +10,9 @@ from .batch_manage import BatchManager, Job
 @click.option('-bidsDir', type=click.Path(exists=True, dir_okay=True, file_okay=False))
 @click.option('-workingDir', type=click.Path(dir_okay=True, file_okay=False))
 @click.option('-outputDir', type=click.Path(dir_okay=True, file_okay=False))
+@click.option('-logOutputDir', type=click.Path(dir_okay=True, file_okay=False))
 @click.option('-submit/-save', default = False)
-def fmriprep_process(configfile=None, subjects=None, bidsdir=None, workingdir=None, outputdir=None, submit = False):
+def fmriprep_process(configfile=None, subjects=None, bidsdir=None, workingdir=None, outputdir=None, logoutputdir = None, submit = False):
     config = ConfigParser()
     config.config_updater(configfile)
 
@@ -21,7 +22,10 @@ def fmriprep_process(configfile=None, subjects=None, bidsdir=None, workingdir=No
         else:
             raise ValueError('BIDS Directory does not exist')
     else:
-        bidsdir = config.config['BIDSDirectory']
+        try:
+            bidsdir = os.path.abspath(config.config['BidsDirectory'])
+        except KeyError:
+            click.echo("No BIDS directory was specified in the configuration file.")
 
     if workingdir is not None:
         if os.path.isdir(workingdir):
@@ -30,16 +34,31 @@ def fmriprep_process(configfile=None, subjects=None, bidsdir=None, workingdir=No
             workingdir = os.path.abspath(workingdir)
             os.makedirs(workingdir)
     else:
-        workingdir = config.config['WorkingDirectory']
+        try:
+            workingdir = os.path.abspath(config.config['OutputDirectory'])
+        except KeyError:
+            click.echo("No output directory was specified in the configuration file.")
 
-    if bidsdir is not None:
+    if outputdir is not None:
         if os.path.isdir(outputdir):
             outputdir = os.path.abspath(outputdir)
         else:
             outputdir = os.path.abspath(outputdir)
             os.makedirs(outputdir)
     else:
-        outputdir = config.config['OutputDirectory']
+        try:
+            outputdir = config.config['OutputDirectory']
+        except KeyError:
+            click.echo("No output directory was specified in the configuration file.")
+
+    if logoutputdir is not None:
+        if os.path.isdir(logoutputdir):
+            logoutputdir = os.path.abspath(logoutputdir)
+        else:
+            logoutputdir = os.path.abspath(logoutputdir)
+            os.makedirs(logoutputdir)
+    else:
+        logoutputdir = outputdir
 
     config.setup_directories(bidsdir, workingdir, outputdir)
 
@@ -70,11 +89,12 @@ def fmriprep_process(configfile=None, subjects=None, bidsdir=None, workingdir=No
     batch_manager.compilejobstrings()
     if submit:
         batch_manager.submit_jobs()
+        config.update_runlog(subjectString, "FMRIprep")
+        config.config_json_dump(outputdir, configfile)
     else:
         batch_manager.print_jobs()
 
-    config.update_runlog(subjectString,"FMRIprep")
-    config.config_json_dump(outputdir, configfile)
+
 
 
 

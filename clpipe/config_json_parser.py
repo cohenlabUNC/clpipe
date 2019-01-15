@@ -40,9 +40,12 @@ class ConfigParser:
         validate(self.config, self.configSchema)
 
     def setup_directories(self, bidsDir, workingDir, outputDir):
-        self.config['BIDSDirectory'] = bidsDir
-        self.config['WorkingDirectory'] = workingDir
-        self.config['OutputDirectory'] = outputDir
+        if bidsDir is not None:
+            self.config['BIDSDirectory'] = bidsDir
+        if workingDir is not None:
+            self.config['WorkingDirectory'] = workingDir
+        if outputDir is not None:
+            self.config['OutputDirectory'] = outputDir
 
     def update_runlog(self, subjects, whatran):
         newLog = {'DateRan': datetime.datetime.now().strftime("%I:%M%p on %B %d, %Y"),
