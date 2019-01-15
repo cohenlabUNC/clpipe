@@ -13,7 +13,7 @@ This pipeline is under development, and should not be used quite yet. If you are
 
 All necessary dependencies should install to your local Python library, and the console commands should be immediately useable.
 
-##Example Console Command
+## Example Console Command
 
 Eventually all documentation will be on readthedocs, but for now, here is an example of a console command that will print out the batch commands for running FMRIprep on a BIDS dataset.
 
@@ -31,7 +31,7 @@ To change the configuration file use the `-configFile` option:
 
 ```fmriprep_process -configFile <another.config.file> -bidsDir <your/data/set> -workingDir <your/working/directory> -outputdir <your/output/directory> -submit some_sub_ID another_sub_ID```
 
-##Configuration Files
+## Configuration Files
 
 The core of the clpipe framework is the configuration file. These are JSON files that specify every aspect of preprocessing. They also contain log information from previous runs of a configuration file on a specific dataset. This can be used to track additional subjects being processed. Logs will not capture changes in a processing pipeline. Instead, changes in the processing pipeline need to be reflected in different output folders. Checks for this have not been implemented yet, but are on the todo. Here is an example of a configuration file.
 
