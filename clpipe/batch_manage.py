@@ -28,7 +28,7 @@ class BatchManager:
         for e in self.config['SubOptionsEqual']:
             temp = e['command'] + '=' + e['args']
             head.append(temp)
-        head.append(self.config['JobIDCommand']+'='+'{jobid}')
+        head.append(self.config['JobIDCommand']+'='+'"{jobid}"')
         head.append(self.config['OutputCommand']+'='+'Output-{jobid}.out')
         head.append(self.config['CommandWrapper']+'=')
         return " ".join(head)
