@@ -3,10 +3,10 @@
   "SubmissionOptions": [{
     "command": "-N",
     "args": "8"
-  },
-  {
-    "command": "-mem",
-    "args": "5000"
+  }],
+  "SubOptionsEqual": [  {
+    "command": "--mem",
+    "args": "20000"
   }],
   "JobIDCommand": "--jobid",
   "OutputCommand": "--output",
