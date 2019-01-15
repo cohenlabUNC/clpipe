@@ -1,6 +1,6 @@
 {
-  "submissionHead": "sbatch",
-  "submissionOptions": [{
+  "SubmissionHead": "sbatch",
+  "SubmissionOptions": [{
     "command": "-N",
     "args": "8"
   },
@@ -9,5 +9,6 @@
     "args": "16000"
   }],
   "JobIDCommand": "--jobid",
-  "commandWrapper": "--wrap"
+  "OutputCommand": "--output",
+  "CommandWrapper": "--wrap"
 }

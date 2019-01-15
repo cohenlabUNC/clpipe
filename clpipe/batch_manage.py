@@ -21,12 +21,13 @@ class BatchManager:
 
     def createsubmissionhead(self):
         head = []
-        head.append(self.config['submissionHead'])
-        for e in self.config['submissionOptions']:
+        head.append(self.config['SubmissionHead'])
+        for e in self.config['SubmissionOptions']:
             temp = e['command']+'='+e['args']
             head.append(temp)
         head.append(self.config['JobIDCommand']+'='+'{jobid}')
-        head.append(self.config['commandWrapper']+'=')
+        head.append(self.config['OutputCommand']+'='+'Output-{jobid}.out')
+        head.append(self.config['CommandWrapper']+'=')
         return " ".join(head)
 
     def submit_jobs(self):
@@ -35,7 +36,7 @@ class BatchManager:
 
     def print_jobs(self):
         for job in self.submissionlist:
-            click.echo(job+"\n")
+            click.echo(job)
 
 class Job:
 
