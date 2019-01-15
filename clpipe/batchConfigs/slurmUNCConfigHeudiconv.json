@@ -1,0 +1,13 @@
+{
+  "submissionHead": "sbatch",
+  "submissionOptions": [{
+    "command": "-N",
+    "args": "8"
+  },
+  {
+    "command": "-mem",
+    "args": "5000"
+  }],
+  "JobIDCommand": "--jobid",
+  "commandWrapper": "--wrap"
+}

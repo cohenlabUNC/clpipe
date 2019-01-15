@@ -3,64 +3,82 @@ import click
 from .config_json_parser import ConfigParser
 from .batch_manage import BatchManager, Job
 @click.command()
-@click.argument('configFile')
+@click.argument('configFile', default = None, required = False)
 @click.argument('subjects', nargs = -1, required = False, default = None)
 @click.option('-bidsDir', type=click.Path(exists=True, dir_okay=True, file_okay=False))
 @click.option('-workingDir', type=click.Path(dir_okay=True, file_okay=False))
+@click.option('-outputDir', type=click.Path(dir_okay=True, file_okay=False))
 @click.option('-submit/-save', default = False)
 
-def fmriprep_process(configFile=None, subjects=None, bidsDir=None, workingDir=None, outputDir=None, submit = False):
+def fmriprep_process(configfile=None, subjects=None, bidsdir=None, workingdir=None, outputdir=None, submit = False):
+    click.echo("Command Start")
     config = ConfigParser()
-    config.config_updater(configFile)
+    config.config_updater(configfile)
 
-    if os.path.isdir(bidsDir):
-        bidsDir = os.path.abspath(bidsDir)
+    if bidsdir is not None:
+        if os.path.isdir(bidsdir):
+            bidsdir = os.path.abspath(bidsdir)
+        else:
+            raise ValueError('BIDS Directory does not exist')
     else:
-        raise ValueError('BIDS Directory does not exist')
+        bidsdir = config.config['BIDSDirectory']
 
-    if os.path.isdir(workingDir):
-        workingDir = os.path.abspath(workingDir)
+    if workingdir is not None:
+        if os.path.isdir(workingdir):
+            workingdir = os.path.abspath(workingdir)
+        else:
+            workingdir = os.path.abspath(workingdir)
+            os.makedirs(workingdir)
     else:
-        workingDir = os.path.abspath(workingDir)
-        os.makedirs(workingDir)
+        workingdir = config.config['WorkingDirectory']
 
-    if os.path.isdir(outputDir):
-        outputDir = os.path.abspath(outputDir)
+    if bidsdir is not None:
+        if os.path.isdir(outputdir):
+            outputdir = os.path.abspath(outputdir)
+        else:
+            outputdir = os.path.abspath(outputdir)
+            os.makedirs(outputdir)
     else:
-        outputDir = os.path.abspath(outputDir)
-        os.makedirs(outputDir)
+        outputdir = config.config['OutputDirectory']
 
-    config.setup_directories(bidsDir, workingDir, outputDir)
+    config.setup_directories(bidsdir, workingdir, outputdir)
+
+    config.validate_config()
     singularityString = '''singularity run --cleanenv -B /proj {fmriprepInstance} {bidsDir} {outputDir} participant --participant-label {participantLabels} -w {workingdir}'''
-    if subjects is None:
+
+    click.echo(subjects)
+    if subjects is ():
+        click.echo("No Subjects")
         subjectString = "ALL"
-        subList = [o.replace('sub-', '') for o in os.listdir(bidsDir)
-         if os.path.isdir(os.path.join(bidsDir, o)) and 'sub-' in o]
+        subList = [o.replace('sub-', '') for o in os.listdir(bidsdir)
+         if os.path.isdir(os.path.join(bidsdir, o)) and 'sub-' in o]
 
     else:
+        click.echo("Subjects Detected")
         subjectString = " , ".join(subjects)
         subList = subjects
 
 
-    batch_manager = BatchManager
+    batch_manager = BatchManager(config.config['BatchConfig'])
 
 
     for sub in subList:
         batch_manager.addjob(Job(sub, singularityString.format(
             fmriprepInstance = config.config['FMRIPrepPath'],
-            bidsDir = bidsDir,
-            outputDir = outputDir,
-            workingDir = workingDir,
+            bidsDir = bidsdir,
+            outputDir = outputdir,
+            workingDir = workingdir,
             participantLabels = sub
             )))
 
+    batch_manager.compilejobstrings()
     if submit:
         batch_manager.submit_jobs()
     else:
         batch_manager.print_jobs()
 
     config.update_runlog(subjectString,"FMRIprep")
-    config.config_json_dump(os.path.join(outputDir, os.path.basename(configFile)))
+    config.config_json_dump(outputdir, configfile)
 
 
 
