@@ -2,14 +2,15 @@ import os
 import click
 from .config_json_parser import ConfigParser
 from .batch_manage import BatchManager, Job
+
+
 @click.command()
-@click.argument('configFile', default = None, required = False)
 @click.argument('subjects', nargs = -1, required = False, default = None)
+@click.option('-configFile', type=click.Path(exists=True, dir_okay=False, file_okay=True), default = None)
 @click.option('-bidsDir', type=click.Path(exists=True, dir_okay=True, file_okay=False))
 @click.option('-workingDir', type=click.Path(dir_okay=True, file_okay=False))
 @click.option('-outputDir', type=click.Path(dir_okay=True, file_okay=False))
 @click.option('-submit/-save', default = False)
-
 def fmriprep_process(configfile=None, subjects=None, bidsdir=None, workingdir=None, outputdir=None, submit = False):
     config = ConfigParser()
     config.config_updater(configfile)
