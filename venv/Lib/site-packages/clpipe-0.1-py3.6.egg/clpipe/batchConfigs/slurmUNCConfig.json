@@ -5,7 +5,7 @@
     "args": "1"
   }],
   "SubOptionsEqual": [{
-      "command": "--cpu-per-task",
+      "command": "--cpus-per-task",
       "args": "16"
     },
     {
