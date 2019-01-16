@@ -1,9 +1,13 @@
 {
   "SubmissionHead": "sbatch",
   "SubmissionOptions": [{
-    "command": "-N",
-    "args": "8"
-  }],
+    "command": "-ntasks",
+    "args": "1"
+  },
+    {
+      "command": "-cpu-per-task",
+      "args": "16"
+    }],
   "SubOptionsEqual": [  {
     "command": "--mem",
     "args": "20000"

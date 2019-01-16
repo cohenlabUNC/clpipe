@@ -63,8 +63,8 @@ def fmriprep_process(configfile=None, subjects=None, bidsdir=None, workingdir=No
     config.setup_directories(bidsdir, workingdir, outputdir)
 
     config.validate_config()
-    singularityString = '''singularity run --cleanenv -B /proj {fmriprepInstance} {bidsDir} {outputDir} participant --participant-label {participantLabels} -w {workingdir} --fs-license-file {fslicense}'''
-
+    singularityString = '''singularity run --cleanenv -B /proj {fmriprepInstance} {bidsDir} {outputDir} participant --participant-label {participantLabels} -w {workingdir} --fs-license-file {fslicense} --nthreads 16'''
+    #TODO: Fix the hard coding of the number of threads, make it detectable from configuration.
     if not subjects:
         subjectString = "ALL"
         subList = [o.replace('sub-', '') for o in os.listdir(bidsdir)
@@ -85,7 +85,6 @@ def fmriprep_process(configfile=None, subjects=None, bidsdir=None, workingdir=No
             workingdir = workingdir,
             participantLabels = sub,
             fslicense = config.config['FreesurferLicensePath']
-
             )))
 
     batch_manager.compilejobstrings()
