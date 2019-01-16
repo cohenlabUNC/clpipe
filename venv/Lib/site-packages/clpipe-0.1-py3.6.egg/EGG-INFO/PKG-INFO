@@ -1,10 +1,11 @@
-Metadata-Version: 1.0
+Metadata-Version: 1.2
 Name: clpipe
 Version: 0.1
 Summary: Cohen Lab MRI processing pipeline
-Home-page: blank
-Author: Cohen Lab
-Author-email: cohenlab@email.unc.edu
+Home-page: https://github.com/cohenlabUNC/clpipe
+Author: Cohen Lab (Maintainer: Teague Henry)
+Author-email: trhenry@email.unc.edu
 License: MIT
 Description: UNKNOWN
 Platform: UNKNOWN
+Requires-Python: >=3.6
