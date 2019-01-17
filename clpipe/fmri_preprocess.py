@@ -24,10 +24,10 @@ def fmriprep_process(configfile=None, subjects=None, bidsdir=None, workingdir=No
             logoutputdir = os.path.abspath(logoutputdir)
         else:
             logoutputdir = os.path.abspath(logoutputdir)
-            os.makedirs(logoutputdir)
+            os.makedirs(logoutputdir, exist_ok=True)
     else:
         logoutputdir = outputdir + "/batchOutput"
-        os.makedirs(logoutputdir)
+        os.makedirs(logoutputdir, exist_ok=True)
 
     config.setup_directories(bidsdir, workingdir, outputdir)
 
