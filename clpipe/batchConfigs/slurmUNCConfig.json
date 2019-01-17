@@ -4,14 +4,13 @@
     "command": "-n",
     "args": "1"
   }],
-  "SubOptionsEqual": [{
-      "command": "--cpu-per-task",
-      "args": "16"
-    },
+  "SubOptionsEqual": [
     {
     "command": "--mem",
     "args": "20000"
   }],
+  "NThreadsCommand": "--cpus-per-task",
+  "NThreads": "16",
   "JobIDCommand": "--job-name",
   "OutputCommand": "--output",
   "CommandWrapper": "--wrap"
