@@ -15,5 +15,5 @@
 	"SpatialSmoothing": "SUSAN",
 	"RunLog": [],
 	"BatchConfig": "slurmUNCConfig.json",
-	"FMRIPrepMemoryUsage": 20000
+	"FMRIPrepMemoryUsage": "20000"
 }
