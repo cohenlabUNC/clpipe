@@ -4,13 +4,11 @@
     "command": "-n",
     "args": "1"
   }],
-  "SubOptionsEqual": [
-    {
-    "command": "--mem",
-    "args": "20000"
-  }],
+  "SubOptionsEqual": [],
   "NThreadsCommand": "--cpus-per-task",
   "NThreads": "16",
+  "MemoryCommand": "--mem=",
+  "MemoryDefault": "20000",
   "JobIDCommand": "--job-name",
   "OutputCommand": "--output",
   "CommandWrapper": "--wrap"

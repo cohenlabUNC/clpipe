@@ -9,10 +9,12 @@ from pkg_resources import resource_stream
 
 class ConfigParser:
 
-    def __init__(self):
+    def __init__(self, new_config=None):
         self.setup_default_config()
         self.configSchema = json.load(resource_stream(__name__,'data/configSchema.json'))
 
+        if new_config is not None:
+            self.config_updater(new_config)
 
     def config_json_parser(self,json_path):
         with open(json_path, "r") as config_file:

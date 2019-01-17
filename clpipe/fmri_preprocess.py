@@ -46,7 +46,7 @@ def fmriprep_process(configfile=None, subjects=None, bidsdir=None, workingdir=No
         sublist = subjects
 
     batch_manager = BatchManager(config.config['BatchConfig'], logoutputdir)
-
+    batch_manager.update_mem_usage(config.config['FMRIPrepMemoryUsage'])
     for sub in sublist:
         batch_manager.addjob(Job("sub-" + sub + "fmriprep", singularity_string.format(
             fmriprepInstance=config.config['FMRIPrepPath'],

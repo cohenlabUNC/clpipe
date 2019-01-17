@@ -12,6 +12,8 @@ class BatchManager:
         if not os.path.isdir(outputDirectory):
             os.makedirs(outputDirectory)
 
+    def update_mem_usage(self, mem_use):
+        self.config['MemoryDefault'] = mem_use
 
     def addjob(self, job):
         self.jobs.append(job)
@@ -30,6 +32,8 @@ class BatchManager:
         for e in self.config['SubOptionsEqual']:
             temp = e['command'] + '=' + e['args']
             head.append(temp)
+
+        head.append(self.config['MemoryCommand'] + self.config['MemoryDefault'])
         head.append(self.config['NThreadsCommand'] + '=' + self.config['NThreads'])
         head.append(self.config['JobIDCommand']+'='+'"{jobid}"')
         head.append(self.config['OutputCommand']+'='+'Output-{jobid}.out')
