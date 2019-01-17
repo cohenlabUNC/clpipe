@@ -15,41 +15,9 @@ from .batch_manager import BatchManager, Job
 def fmriprep_process(configfile=None, subjects=None, bidsdir=None, workingdir=None, outputdir=None, logoutputdir = None, submit = False):
     config = ConfigParser()
     config.config_updater(configfile)
+    config.setup_directories(bidsdir,workingdir,outputdir)
+    config.validate_config()
 
-    if bidsdir is not None:
-        if os.path.isdir(bidsdir):
-            bidsdir = os.path.abspath(bidsdir)
-        else:
-            raise ValueError('BIDS Directory does not exist')
-    else:
-        try:
-            bidsdir = os.path.abspath(config.config['BidsDirectory'])
-        except KeyError:
-            click.echo("No BIDS directory was specified in the configuration file.")
-
-    if workingdir is not None:
-        if os.path.isdir(workingdir):
-            workingdir = os.path.abspath(workingdir)
-        else:
-            workingdir = os.path.abspath(workingdir)
-            os.makedirs(workingdir)
-    else:
-        try:
-            workingdir = os.path.abspath(config.config['OutputDirectory'])
-        except KeyError:
-            click.echo("No output directory was specified in the configuration file.")
-
-    if outputdir is not None:
-        if os.path.isdir(outputdir):
-            outputdir = os.path.abspath(outputdir)
-        else:
-            outputdir = os.path.abspath(outputdir)
-            os.makedirs(outputdir)
-    else:
-        try:
-            outputdir = config.config['OutputDirectory']
-        except KeyError:
-            click.echo("No output directory was specified in the configuration file.")
 
     if logoutputdir is not None:
         if os.path.isdir(logoutputdir):
@@ -58,13 +26,14 @@ def fmriprep_process(configfile=None, subjects=None, bidsdir=None, workingdir=No
             logoutputdir = os.path.abspath(logoutputdir)
             os.makedirs(logoutputdir)
     else:
-        logoutputdir = outputdir
+        logoutputdir = outputdir + "/batchOutput"
+        os.makedirs(logoutputdir)
 
     config.setup_directories(bidsdir, workingdir, outputdir)
 
     config.validate_config()
-    singularityString = '''singularity run --cleanenv -B /proj {fmriprepInstance} {bidsDir} {outputDir} participant --participant-label {participantLabels} -w {workingdir} --fs-license-file {fslicense} --nthreads 16'''
-    #TODO: Fix the hard coding of the number of threads, make it detectable from configuration.
+    singularityString = '''singularity run --cleanenv -B /proj {fmriprepInstance} {bidsDir} {outputDir} participant --participant-label {participantLabels} -w {workingdir} --fs-license-file {fslicense} --nthreads {threads}'''
+
     if not subjects:
         subjectString = "ALL"
         subList = [o.replace('sub-', '') for o in os.listdir(bidsdir)
@@ -84,7 +53,8 @@ def fmriprep_process(configfile=None, subjects=None, bidsdir=None, workingdir=No
             outputDir = outputdir,
             workingdir = workingdir,
             participantLabels = sub,
-            fslicense = config.config['FreesurferLicensePath']
+            fslicense = config.config['FreesurferLicensePath'],
+            threads = batch_manager.get_threads_command()[1]
             )))
 
     batch_manager.compilejobstrings()

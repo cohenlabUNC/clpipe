@@ -3,6 +3,7 @@ import datetime
 from pkg_resources import resource_stream
 from jsonschema import validate
 import os
+import getpass
 
 class ConfigParser:
 
@@ -41,14 +42,19 @@ class ConfigParser:
 
     def setup_directories(self, bidsDir, workingDir, outputDir):
         if bidsDir is not None:
-            self.config['BIDSDirectory'] = bidsDir
+            self.config['BIDSDirectory'] = os.path.abspath(bidsDir)
+            if not os.path.isdir(self.config['BIDSDirectory']):
+                raise ValueError('BIDS Directory does not exist')
         if workingDir is not None:
-            self.config['WorkingDirectory'] = workingDir
+            self.config['WorkingDirectory'] = os.path.abspath(workingDir)
+            os.makedirs(self.config['WorkingDirectory'],exist_ok=True)
         if outputDir is not None:
-            self.config['OutputDirectory'] = outputDir
+            self.config['OutputDirectory'] = os.path.abspath(outputDir)
+            os.makedirs(self.config['OutputDirectory'], exist_ok=True)
 
     def update_runlog(self, subjects, whatran):
         newLog = {'DateRan': datetime.datetime.now().strftime("%I:%M%p on %B %d, %Y"),
                   'Subjects': subjects,
-                  'WhatRan': whatran}
+                  'WhatRan': whatran,
+                  "WhoRan": getpass.getuser()}
         self.config['RunLog'].append(newLog)
