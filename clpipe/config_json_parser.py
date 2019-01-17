@@ -1,9 +1,11 @@
-import json
 import datetime
-from pkg_resources import resource_stream
-from jsonschema import validate
-import os
 import getpass
+import json
+import os
+
+from jsonschema import validate
+from pkg_resources import resource_stream
+
 
 class ConfigParser:
 
