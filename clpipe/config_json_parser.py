@@ -32,7 +32,7 @@ class ConfigParser:
             filepath = "defaultConfig.json"
         outpath = os.path.join(os.path.abspath(outputdir), filepath)
         with open(outpath, 'w') as fp:
-            json.dump(self.config, fp)
+            json.dump(self.config, fp, indent="\t")
 
     def setup_default_config(self):
         self.config = json.load(resource_stream(__name__,'data/defaultConfig.json'))
