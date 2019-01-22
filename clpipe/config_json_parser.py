@@ -44,17 +44,30 @@ class ConfigParser:
     def validate_config(self):
         validate(self.config, self.configSchema)
 
-    def setup_directories(self, bidsDir, workingDir, outputDir):
+    def setup_fmriprep_directories(self, bidsDir, workingDir, outputDir):
         if bidsDir is not None:
-            self.config['BIDSDirectory'] = os.path.abspath(bidsDir)
-            if not os.path.isdir(self.config['BIDSDirectory']):
+            self.config['FMRIPrepOptions']['BIDSDirectory'] = os.path.abspath(bidsDir)
+            if not os.path.isdir(self.config['FMRIPrepOptions']['BIDSDirectory']):
                 raise ValueError('BIDS Directory does not exist')
         if workingDir is not None:
-            self.config['WorkingDirectory'] = os.path.abspath(workingDir)
-            os.makedirs(self.config['WorkingDirectory'],exist_ok=True)
+            self.config['FMRIPrepOptions']['WorkingDirectory'] = os.path.abspath(workingDir)
+            os.makedirs(self.config['FMRIPrepOptions']['WorkingDirectory'],exist_ok=True)
         if outputDir is not None:
-            self.config['OutputDirectory'] = os.path.abspath(outputDir)
-            os.makedirs(self.config['OutputDirectory'], exist_ok=True)
+            self.config['FMRIPrepOptions']['OutputDirectory'] = os.path.abspath(outputDir)
+            os.makedirs(self.config['FMRIPrepOptions']['OutputDirectory'], exist_ok=True)
+
+    def setup_postproc(self, target_dir,target_suffix,output_dir,output_suffix):
+        if target_dir is not None:
+            self.config['PostProcessingOptions']['TargetDirectory'] = os.path.abspath(target_dir)
+            if not os.path.isdir(self.config['PostProcessingOptions']['TargetDirectory']):
+                raise ValueError('Target Directory does not exist')
+        if output_dir is not None:
+            self.config['PostProcessingOptions']['OutputDirectory'] = os.path.abspath(output_dir)
+            os.makedirs(self.config['PostProcessingOptions']['OutputDirectory'], exist_ok=True)
+        if target_suffix is not None:
+            self.config['PostProcessingOptions']['TargetSuffix'] = os.path.abspath(target_suffix)
+        if output_suffix is not None:
+            self.config['PostProcessingOptions']['OutputSuffix'] = os.path.abspath(output_suffix)
 
     def update_runlog(self, subjects, whatran):
         newLog = {'DateRan': datetime.datetime.now().strftime("%I:%M%p on %B %d, %Y"),
