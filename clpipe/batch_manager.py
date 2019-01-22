@@ -9,6 +9,9 @@ class BatchManager:
         self.jobs = []
         self.config = json.load(resource_stream(__name__, "batchConfigs/" + batchsystemConfig))
         self.submissionlist = []
+        if outputDirectory is None:
+            outputDirectory = '.'
+        self.outputDir = outputDirectory
         if not os.path.isdir(outputDirectory):
             os.makedirs(outputDirectory)
 
@@ -36,7 +39,7 @@ class BatchManager:
         head.append(self.config['MemoryCommand'] + self.config['MemoryDefault'])
         head.append(self.config['NThreadsCommand'] + '=' + self.config['NThreads'])
         head.append(self.config['JobIDCommand']+'='+'"{jobid}"')
-        head.append(self.config['OutputCommand']+'='+'Output-{jobid}.out')
+        head.append(self.config['OutputCommand']+'='+os.path.abspath(os.path.join(self.outputDir,'Output-{jobid}.out')))
         head.append(self.config['CommandWrapper']+'=')
         return " ".join(head)
 
