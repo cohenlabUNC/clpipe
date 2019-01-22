@@ -26,4 +26,4 @@ def bids_validate(bidsdir = None, configfile = None):
 
     batch_manager.compilejobstrings()
     batch_manager.submit_jobs()
-    
+

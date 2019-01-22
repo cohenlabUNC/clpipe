@@ -2,7 +2,7 @@
 	"ConfigTitle": "Default Configuration File",
 	"DateRun":"NA",
 	"WhoRan": "Default",
-	"FMRIPrepPath": "/proj/cohenlab/projects/poldracklab_fmriprep_latest-2018-02-14-1c6af86ba750.img",
+	"FMRIPrepPath": "/proj/hng/singularity_imgs/poldracklab_fmriprep_latest-2018-02-14-1c6af86ba750.img",
 	"FreesurferLicensePath": "/proj/cohenlab/projects/license.txt",
 	"NuisanceRegression": "QuadLagged",
 	"FilteringHighPass": 0.08,
@@ -15,5 +15,6 @@
 	"SpatialSmoothing": "SUSAN",
 	"RunLog": [],
 	"BatchConfig": "slurmUNCConfig.json",
-	"FMRIPrepMemoryUsage": "20000"
+	"FMRIPrepMemoryUsage": "20000",
+	"BIDSValidatorImage": "/proj/hng/singularity_imgs/validator.simg"
 }
