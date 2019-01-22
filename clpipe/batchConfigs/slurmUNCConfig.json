@@ -11,5 +11,6 @@
   "MemoryDefault": "20000",
   "JobIDCommand": "--job-name",
   "OutputCommand": "--output",
-  "CommandWrapper": "--wrap"
+  "CommandWrapper": "--wrap",
+  "SingularityBindPaths": "/proj,/pine"
 }
