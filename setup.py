@@ -17,6 +17,7 @@ setup(name='clpipe',
       [console_scripts]
       fmriprep_process=clpipe.fmri_preprocess:fmriprep_process
       dicom_to_nifti_to_bids_converter_setup=clpipe.dicom_to_bids_converter:dicom_to_nifti_to_bids_converter_setup
+      bids_validate=clpipe.bids_validator:bids_validate
       ''',
       zip_safe=False
       )
