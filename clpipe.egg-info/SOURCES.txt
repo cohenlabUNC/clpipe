@@ -4,6 +4,7 @@ setup.py
 clpipe/__init__.py
 clpipe/batch_manager.py
 clpipe/bids_manager.py
+clpipe/bids_validator.py
 clpipe/config_json_parser.py
 clpipe/dicom_to_bids_converter.py
 clpipe/dti_tract_process.py

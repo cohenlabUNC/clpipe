@@ -7,7 +7,7 @@ from .config_json_parser import ConfigParser
 
 @click.command()
 @click.option('-configFile', type=click.Path(exists=True, dir_okay=False, file_okay=True), default=None)
-@click.option('-bidsDir', type=click.Path(exists=True, dir_okay=True, file_okay=False))
+@click.argument('bidsDir', type=click.Path(exists=True, dir_okay=True, file_okay=False))
 
 def bids_validate(bidsdir = None, configfile = None):
     config = ConfigParser()

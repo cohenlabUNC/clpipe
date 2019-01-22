@@ -5,7 +5,7 @@ import os
 import sys
 class BatchManager:
 
-    def __init__(self, batchsystemConfig, outputDirectory):
+    def __init__(self, batchsystemConfig, outputDirectory=None):
         self.jobs = []
         self.config = json.load(resource_stream(__name__, "batchConfigs/" + batchsystemConfig))
         self.submissionlist = []
