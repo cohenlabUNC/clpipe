@@ -35,8 +35,8 @@ def fmri_postprocess(configfile=None, subjects=None, targetdir=None, targetsuffi
 
     if not subjects:
         subjectstring = "ALL"
-        sublist = [o.replace('sub-', '') for o in os.listdir(bidsdir)
-                   if os.path.isdir(os.path.join(bidsdir, o)) and 'sub-' in o]
+        sublist = [o.replace('sub-', '') for o in os.listdir(targetdir)
+                   if os.path.isdir(os.path.join(targetdir, o)) and 'sub-' in o]
     else:
         subjectstring = " , ".join(subjects)
         sublist = subjects
