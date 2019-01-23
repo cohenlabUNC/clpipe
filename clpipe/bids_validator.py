@@ -13,7 +13,7 @@ from .config_json_parser import ConfigParser
 def bids_validate(bidsdir = None, configfile = None, interactive = False, submit = True):
     config = ConfigParser()
     config.config_updater(configfile)
-    config.setup_directories(bidsdir, None, None)
+    config.setup_fmriprep_directories(bidsdir, None, None)
 
     batch_manager = BatchManager(batchsystemConfig=config.config['BatchConfig'])
     batch_manager.update_mem_usage('3000')
