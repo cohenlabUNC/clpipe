@@ -22,13 +22,13 @@ def bids_validate(bidsdir = None, configfile = None, interactive = False, submit
 
     if(interactive):
         os.system(singularity_string.format(
-            validatorInstance = config.config['PostprocessingOptions']['BIDSValidatorImage'],
+            validatorInstance = config.config['PostProcessingOptions']['BIDSValidatorImage'],
             bidsDir = config.config['BIDSDirectory'],
             bindPaths = batch_manager.config['SingularityBindPaths']
         ))
     else:
         batch_manager.addjob(Job("BIDSValidator",singularity_string.format(
-            validatorInstance = config.config['PostprocessingOptions']['BIDSValidatorImage'],
+            validatorInstance = config.config['PostProcessingOptions']['BIDSValidatorImage'],
             bidsDir = config.config['BIDSDirectory'],
             bindPaths = batch_manager.config['SingularityBindPaths']
         )))
