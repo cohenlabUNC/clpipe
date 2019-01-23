@@ -9,7 +9,8 @@ from .config_json_parser import ConfigParser
 @click.option('-configFile', type=click.Path(exists=True, dir_okay=False, file_okay=True), default=None)
 @click.argument('bidsDir', type=click.Path(exists=True, dir_okay=True, file_okay=False))
 @click.option('-interactive/-batch', default = False )
-def bids_validate(bidsdir = None, configfile = None, interactive = False):
+@click.option('-submit/-save', default = False)
+def bids_validate(bidsdir = None, configfile = None, interactive = False, submit = True):
     config = ConfigParser()
     config.config_updater(configfile)
     config.setup_directories(bidsdir, None, None)
@@ -33,5 +34,7 @@ def bids_validate(bidsdir = None, configfile = None, interactive = False):
         )))
 
         batch_manager.compilejobstrings()
-        batch_manager.submit_jobs()
-
+        if submit:
+            batch_manager.submit_jobs()
+        else:
+            batch_manager.print_jobs()
