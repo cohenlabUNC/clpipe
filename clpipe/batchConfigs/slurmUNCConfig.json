@@ -13,5 +13,4 @@
   "OutputCommand": "--output",
   "CommandWrapper": "--wrap",
   "SingularityBindPaths": "/proj,/pine,/nas02",
-  "SingularityHomeDir": "proj/hng/singularity_imgs"
 }
