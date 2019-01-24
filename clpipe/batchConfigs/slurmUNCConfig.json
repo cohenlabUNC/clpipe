@@ -12,5 +12,5 @@
   "JobIDCommand": "--job-name",
   "OutputCommand": "--output",
   "CommandWrapper": "--wrap",
-  "SingularityBindPaths": "/proj,/pine"
+  "SingularityBindPaths": "/proj,/pine,/nas02"
 }
