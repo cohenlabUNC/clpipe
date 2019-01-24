@@ -46,12 +46,12 @@ def fmriprep_process(configfile=None, subjects=None, bidsdir=None, workingdir=No
     batch_manager.update_mem_usage(config.config['FMRIPrepMemoryUsage'])
     for sub in sublist:
         batch_manager.addjob(Job("sub-" + sub + "fmriprep", singularity_string.format(
-            fmriprepInstance=config.config['FMRIPrepPath'],
+            fmriprepInstance=config.config['FMRIPrepOptions']['FMRIPrepPath'],
             bidsDir=bidsdir,
             outputDir=outputdir,
             workingdir=workingdir,
             participantLabels=sub,
-            fslicense=config.config['FreesurferLicensePath'],
+            fslicense=config.config['FMRIPrepOptions']['FreesurferLicensePath'],
             threads=batch_manager.get_threads_command()[1],
             bindPaths=batch_manager.config['SingularityBindPaths']
         )))
