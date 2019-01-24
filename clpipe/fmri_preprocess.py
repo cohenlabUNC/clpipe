@@ -31,7 +31,7 @@ def fmriprep_process(configfile=None, subjects=None, bidsdir=None, workingdir=No
     config.setup_fmriprep_directories(bidsdir, workingdir, outputdir)
     config.validate_config()
 
-    singularity_string = '''singularity run -B {bindPaths} -e {fmriprepInstance} {bidsDir} {outputDir} participant '''\
+    singularity_string = '''singularity run -B {bindPaths} -e -H {homeDir} {fmriprepInstance} {bidsDir} {outputDir} participant '''\
         '''--participant-label {participantLabels} -w {workingdir} --fs-license-file {fslicense} --nthreads {threads}'''
 
     if not subjects:
@@ -53,7 +53,8 @@ def fmriprep_process(configfile=None, subjects=None, bidsdir=None, workingdir=No
             participantLabels=sub,
             fslicense=config.config['FMRIPrepOptions']['FreesurferLicensePath'],
             threads=batch_manager.get_threads_command()[1],
-            bindPaths=batch_manager.config['SingularityBindPaths']
+            bindPaths=batch_manager.config['SingularityBindPaths'],
+            homeDir = batch_manager.config['SingularityHomeDir']
         )))
 
     batch_manager.compilejobstrings()
