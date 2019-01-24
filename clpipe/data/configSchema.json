@@ -6,21 +6,11 @@
   "title": "The Root Schema",
   "required": [
     "ConfigTitle",
-    "DateRun",
-    "BIDSDirectory",
-    "WorkingDirectory",
-    "OutputDirectory",
-    "FMRIPrepPath",
-    "NuisanceRegression",
-    "FilteringHighPass",
-    "FilteringLowPass",
-    "FilteringOrder",
-    "Scrubbing",
-    "ScrubAhead",
-    "ScrubBehind",
-    "ScrubContig",
-    "SpatialSmoothing",
-    "RunLog"
+    "FMRIPrepOptions",
+    "PostProcessingOptions",
+    "RunLog",
+    "BatchConfig",
+    "PostProcessingMemoryUsage"
   ],
   "properties": {
     "ConfigTitle": {
@@ -33,216 +23,251 @@
       ],
       "pattern": "^(.*)$"
     },
-    "DateRun": {
-      "$id": "#/properties/DateRun",
-      "type": "string",
-      "title": "The Daterun Schema",
-      "default": "",
-      "examples": [
-        "NA"
+    "FMRIPrepOptions": {
+      "$id": "#/properties/FMRIPrepOptions",
+      "type": "object",
+      "title": "The Fmriprepoptions Schema",
+      "required": [
+        "BIDSDirectory",
+        "OutputDirectory",
+        "FMRIPrepPath",
+        "FreesurferLicensePath",
+        "FMRIPrepMemoryUsage"
       ],
-      "pattern": "^(.*)$"
+      "properties": {
+        "BIDSDirectory": {
+          "$id": "#/properties/FMRIPrepOptions/properties/BIDSDirectory",
+          "type": "string",
+          "title": "The Bidsdirectory Schema",
+          "default": "",
+          "examples": [
+            ""
+          ],
+          "pattern": "^(.*)$"
+        },
+        "OutputDirectory": {
+          "$id": "#/properties/FMRIPrepOptions/properties/OutputDirectory",
+          "type": "string",
+          "title": "The Outputdirectory Schema",
+          "default": "",
+          "examples": [
+            ""
+          ],
+          "pattern": "^(.*)$"
+        },
+        "FMRIPrepPath": {
+          "$id": "#/properties/FMRIPrepOptions/properties/FMRIPrepPath",
+          "type": "string",
+          "title": "The Fmripreppath Schema",
+          "default": "",
+          "examples": [
+            "/proj/hng/singularity_imgs/poldracklab_fmriprep_latest-2018-02-14-1c6af86ba750.img"
+          ],
+          "pattern": "^(.*)$"
+        },
+        "FreesurferLicensePath": {
+          "$id": "#/properties/FMRIPrepOptions/properties/FreesurferLicensePath",
+          "type": "string",
+          "title": "The Freesurferlicensepath Schema",
+          "default": "",
+          "examples": [
+            "/proj/cohenlab/projects/license.txt"
+          ],
+          "pattern": "^(.*)$"
+        },
+        "FMRIPrepMemoryUsage": {
+          "$id": "#/properties/FMRIPrepOptions/properties/FMRIPrepMemoryUsage",
+          "type": "string",
+          "title": "The Fmriprepmemoryusage Schema",
+          "default": "",
+          "examples": [
+            "20000"
+          ],
+          "pattern": "^(.*)$"
+        }
+      }
     },
-    "BIDSDirectory": {
-      "$id": "#/properties/ConfigTitle",
-      "type": "string",
-      "title": "The BIDSDirectory Schema",
-      "default": "",
-      "examples": [
-       "NA"
+    "PostProcessingOptions": {
+      "$id": "#/properties/PostProcessingOptions",
+      "type": "object",
+      "title": "The Postprocessingoptions Schema",
+      "required": [
+        "TargetDirectory",
+        "TargetSuffix",
+        "OutputDirectory",
+        "OutputSuffix",
+        "NuisanceRegression",
+        "FilteringHighPass",
+        "FilteringLowPass",
+        "FilteringOrder",
+        "Scrubbing",
+        "ScrubAhead",
+        "ScrubBehind",
+        "ScrubContig",
+        "SpatialSmoothing",
+        "BIDSValidatorImage"
       ],
-      "pattern": "^(.*)$"
-    },
-    "WorkDirectory": {
-      "$id": "#/properties/DateRun",
-      "type": "string",
-      "title": "The Daterun Schema",
-      "default": "",
-      "examples": [
-        "NA"
-      ],
-      "pattern": "^(.*)$"
-    },
-    "OutputDirectory": {
-      "$id": "#/properties/DateRun",
-      "type": "string",
-      "title": "The Daterun Schema",
-      "default": "",
-      "examples": [
-        "NA"
-      ],
-      "pattern": "^(.*)$"
-    },
-    "WhoRan": {
-      "$id": "#/properties/WhoRan",
-      "type": "string",
-      "title": "The Whoran Schema",
-      "default": "",
-      "examples": [
-        "Default"
-      ],
-      "pattern": "^(.*)$"
-    },
-    "FMRIPrepVersion": {
-      "$id": "#/properties/FMRIPrepVersion",
-      "type": "string",
-      "title": "The Fmriprepversion Schema",
-      "default": "",
-      "examples": [
-        "1.0.1"
-      ],
-      "pattern": "^(.*)$"
-    },
-    "NuisanceRegression": {
-      "$id": "#/properties/NuisanceRegression",
-      "type": "string",
-      "title": "The Nuisanceregression Schema",
-      "default": "",
-      "examples": [
-        "QuadLagged"
-      ],
-      "pattern": "^(.*)$"
-    },
-    "FilteringHighPass": {
-      "$id": "#/properties/FilteringHighPass",
-      "type": "number",
-      "title": "The Filteringhighpass Schema",
-      "default": 0.0,
-      "examples": [
-        0.08
-      ]
-    },
-    "FilteringLowPass": {
-      "$id": "#/properties/FilteringLowPass",
-      "type": "number",
-      "title": "The Filteringlowpass Schema",
-      "default": 0.0,
-      "examples": [
-        0.1
-      ]
-    },
-    "FilteringOrder": {
-      "$id": "#/properties/FilteringOrder",
-      "type": "integer",
-      "title": "The Filteringorder Schema",
-      "default": 0,
-      "examples": [
-        12
-      ]
-    },
-    "Scrubbing": {
-      "$id": "#/properties/Scrubbing",
-      "type": "string",
-      "title": "The Scrubbing Schema",
-      "default": "",
-      "examples": [
-        "Scrub"
-      ],
-      "pattern": "^(.*)$"
-    },
-    "ScrubAhead": {
-      "$id": "#/properties/ScrubAhead",
-      "type": "integer",
-      "title": "The Scrubahead Schema",
-      "default": 0,
-      "examples": [
-        2
-      ]
-    },
-    "ScrubBehind": {
-      "$id": "#/properties/ScrubBehind",
-      "type": "integer",
-      "title": "The Scrubbehind Schema",
-      "default": 0,
-      "examples": [
-        2
-      ]
-    },
-    "ScrubContig": {
-      "$id": "#/properties/ScrubContig",
-      "type": "integer",
-      "title": "The Scrubcontig Schema",
-      "default": 0,
-      "examples": [
-        4
-      ]
-    },
-    "SpatialSmoothing": {
-      "$id": "#/properties/SpatialSmoothing",
-      "type": "string",
-      "title": "The Spatialsmoothing Schema",
-      "default": "",
-      "examples": [
-        "SUSAN"
-      ],
-      "pattern": "^(.*)$"
+      "properties": {
+        "TargetDirectory": {
+          "$id": "#/properties/PostProcessingOptions/properties/TargetDirectory",
+          "type": "string",
+          "title": "The Targetdirectory Schema",
+          "default": "",
+          "examples": [
+            ""
+          ],
+          "pattern": "^(.*)$"
+        },
+        "TargetSuffix": {
+          "$id": "#/properties/PostProcessingOptions/properties/TargetSuffix",
+          "type": "string",
+          "title": "The Targetsuffix Schema",
+          "default": "",
+          "examples": [
+            "Process.nii.gz"
+          ],
+          "pattern": "^(.*)$"
+        },
+        "OutputDirectory": {
+          "$id": "#/properties/PostProcessingOptions/properties/OutputDirectory",
+          "type": "string",
+          "title": "The Outputdirectory Schema",
+          "default": "",
+          "examples": [
+            ""
+          ],
+          "pattern": "^(.*)$"
+        },
+        "OutputSuffix": {
+          "$id": "#/properties/PostProcessingOptions/properties/OutputSuffix",
+          "type": "string",
+          "title": "The Outputsuffix Schema",
+          "default": "",
+          "examples": [
+            ""
+          ],
+          "pattern": "^(.*)$"
+        },
+        "NuisanceRegression": {
+          "$id": "#/properties/PostProcessingOptions/properties/NuisanceRegression",
+          "type": "string",
+          "title": "The Nuisanceregression Schema",
+          "default": "",
+          "examples": [
+            "QuadLagged"
+          ],
+          "pattern": "^(.*)$"
+        },
+        "FilteringHighPass": {
+          "$id": "#/properties/PostProcessingOptions/properties/FilteringHighPass",
+          "type": "number",
+          "title": "The Filteringhighpass Schema",
+          "default": 0.0,
+          "examples": [
+            0.08
+          ]
+        },
+        "FilteringLowPass": {
+          "$id": "#/properties/PostProcessingOptions/properties/FilteringLowPass",
+          "type": "number",
+          "title": "The Filteringlowpass Schema",
+          "default": 0.0,
+          "examples": [
+            0.1
+          ]
+        },
+        "FilteringOrder": {
+          "$id": "#/properties/PostProcessingOptions/properties/FilteringOrder",
+          "type": "integer",
+          "title": "The Filteringorder Schema",
+          "default": 0,
+          "examples": [
+            12
+          ]
+        },
+        "Scrubbing": {
+          "$id": "#/properties/PostProcessingOptions/properties/Scrubbing",
+          "type": "string",
+          "title": "The Scrubbing Schema",
+          "default": "",
+          "examples": [
+            "Scrub"
+          ],
+          "pattern": "^(.*)$"
+        },
+        "ScrubAhead": {
+          "$id": "#/properties/PostProcessingOptions/properties/ScrubAhead",
+          "type": "integer",
+          "title": "The Scrubahead Schema",
+          "default": 0,
+          "examples": [
+            2
+          ]
+        },
+        "ScrubBehind": {
+          "$id": "#/properties/PostProcessingOptions/properties/ScrubBehind",
+          "type": "integer",
+          "title": "The Scrubbehind Schema",
+          "default": 0,
+          "examples": [
+            2
+          ]
+        },
+        "ScrubContig": {
+          "$id": "#/properties/PostProcessingOptions/properties/ScrubContig",
+          "type": "integer",
+          "title": "The Scrubcontig Schema",
+          "default": 0,
+          "examples": [
+            4
+          ]
+        },
+        "SpatialSmoothing": {
+          "$id": "#/properties/PostProcessingOptions/properties/SpatialSmoothing",
+          "type": "string",
+          "title": "The Spatialsmoothing Schema",
+          "default": "",
+          "examples": [
+            "SUSAN"
+          ],
+          "pattern": "^(.*)$"
+        },
+        "BIDSValidatorImage": {
+          "$id": "#/properties/PostProcessingOptions/properties/BIDSValidatorImage",
+          "type": "string",
+          "title": "The Bidsvalidatorimage Schema",
+          "default": "",
+          "examples": [
+            "/proj/hng/singularity_imgs/validator.simg"
+          ],
+          "pattern": "^(.*)$"
+        }
+      }
     },
     "RunLog": {
       "$id": "#/properties/RunLog",
       "type": "array",
-      "title": "The Runlog Schema",
-      "items": {
-        "$id": "#/properties/RunLog/items",
-        "type": "object",
-        "title": "The Items Schema",
-        "required": [
-          "DateRan",
-          "SubjectsRan",
-          "SessionsRan",
-          "FMRIPrep"
-        ],
-        "properties": {
-          "DateRan": {
-            "$id": "#/properties/RunLog/items/properties/DateRan",
-            "type": "string",
-            "title": "The Dateran Schema",
-            "default": "",
-            "examples": [
-              "NA"
-            ],
-            "pattern": "^(.*)$"
-          },
-          "SubjectsRan": {
-            "$id": "#/properties/RunLog/items/properties/SubjectsRan",
-            "type": "array",
-            "title": "The Subjectsran Schema",
-            "items": {
-              "$id": "#/properties/RunLog/items/properties/SubjectsRan/items",
-              "type": "string",
-              "title": "The Items Schema",
-              "default": "",
-              "examples": [
-                "ALL"
-              ],
-              "pattern": "^(.*)$"
-            }
-          },
-          "SessionsRan": {
-            "$id": "#/properties/RunLog/items/properties/SessionsRan",
-            "type": "array",
-            "title": "The Sessionsran Schema",
-            "items": {
-              "$id": "#/properties/RunLog/items/properties/SessionsRan/items",
-              "type": "string",
-              "title": "The Items Schema",
-              "default": "",
-              "examples": [
-                "ALL"
-              ],
-              "pattern": "^(.*)$"
-            }
-          },
-          "FMRIPrep": {
-            "$id": "#/properties/RunLog/items/properties/FMRIPrep",
-            "type": "boolean",
-            "title": "The Fmriprep Schema",
-            "default": false,
-            "examples": [
-              false
-            ]
-          }
-        }
-      }
+      "title": "The Runlog Schema"
+    },
+    "BatchConfig": {
+      "$id": "#/properties/BatchConfig",
+      "type": "string",
+      "title": "The Batchconfig Schema",
+      "default": "",
+      "examples": [
+        "slurmUNCConfig.json"
+      ],
+      "pattern": "^(.*)$"
+    },
+    "PostProcessingMemoryUsage": {
+      "$id": "#/properties/PostProcessingMemoryUsage",
+      "type": "string",
+      "title": "The Postprocessingmemoryusage Schema",
+      "default": "",
+      "examples": [
+        "10000"
+      ],
+      "pattern": "^(.*)$"
     }
   }
 }

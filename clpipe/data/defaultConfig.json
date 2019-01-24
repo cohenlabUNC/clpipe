@@ -1,7 +1,5 @@
 {
 	"ConfigTitle": "Default Configuration File",
-	"DateRun":"NA",
-	"WhoRan": "Default",
 	"FMRIPrepOptions": {
 		"BIDSDirectory": "",
 		"OutputDirectory": "",
