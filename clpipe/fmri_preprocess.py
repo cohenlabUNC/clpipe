@@ -34,7 +34,7 @@ def fmriprep_process(configfile=None, subjects=None, bidsdir=None, workingdir=No
     config.setup_directories(bidsdir, workingdir, outputdir)
 
     config.validate_config()
-    singularity_string = '''singularity run --cleanenv -B {bindPaths} {fmriprepInstance} {bidsDir} {outputDir} participant'''\
+    singularity_string = '''singularity run --cleanenv -B {bindPaths} {fmriprepInstance} {bidsDir} {outputDir} participant '''\
         '''--participant-label {participantLabels} -w {workingdir} --fs-license-file {fslicense} --nthreads {threads}'''
 
     if not subjects:
