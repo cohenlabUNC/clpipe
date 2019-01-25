@@ -27,7 +27,7 @@ class ConfigParser:
         if newConfig is None:
             None
         else:
-            self.config = {**self.config, **newConfig}
+            self.config.update(newConfig)
             self.config['DateRan'] = datetime.datetime.now().strftime("%I:%M%p on %B %d, %Y")
             self.validate_config()
 
