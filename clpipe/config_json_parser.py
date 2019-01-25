@@ -17,7 +17,7 @@ class ConfigParser:
             self.config_updater(new_config)
 
     def config_json_parser(self,json_path):
-        with open(json_path, "r") as config_file:
+        with open(os.path.abspath(json_path), "r") as config_file:
             config = json.load(config_file)
 
         return config
@@ -27,8 +27,8 @@ class ConfigParser:
         if newConfig is None:
             None
         else:
-            self.config.update(newConfig)
-            self.config['DateRan'] = datetime.datetime.now().strftime("%I:%M%p on %B %d, %Y")
+            newConfigDict = self.config_json_parser(newConfig)
+            self.config.update(newConfigDict)
             self.validate_config()
 
     def config_json_dump(self, outputdir, filepath):
