@@ -38,8 +38,8 @@ def fmriprep_process(configfile=None, subjects=None, bidsdir=None, workingdir=No
 
     if not subjects:
         subjectstring = "ALL"
-        sublist = [o.replace('sub-', '') for o in os.listdir(bidsdir)
-                   if os.path.isdir(os.path.join(bidsdir, o)) and 'sub-' in o]
+        sublist = [o.replace('sub-', '') for o in os.listdir(config.config['FMRIPrepOptions']['BIDSDirectory'])
+                   if os.path.isdir(os.path.join(config.config['FMRIPrepOptions']['BIDSDirectory'], o)) and 'sub-' in o]
     else:
         subjectstring = " , ".join(subjects)
         sublist = subjects
@@ -49,9 +49,9 @@ def fmriprep_process(configfile=None, subjects=None, bidsdir=None, workingdir=No
     for sub in sublist:
         batch_manager.addjob(Job("sub-" + sub + "fmriprep", singularity_string.format(
             fmriprepInstance=config.config['FMRIPrepOptions']['FMRIPrepPath'],
-            bidsDir=bidsdir,
-            outputDir=outputdir,
-            workingdir=workingdir,
+            bidsDir=config.config['FMRIPrepOptions']['BIDSDirectory'],
+            outputDir=config.config['FMRIPrepOptions']['WorkingDirectory'],
+            workingdir=config.config['FMRIPrepOptions']['OutputDirectory'],
             participantLabels=sub,
             fslicense=config.config['FMRIPrepOptions']['FreesurferLicensePath'],
             threads=batch_manager.get_threads_command()[1],
