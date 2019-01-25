@@ -6,10 +6,11 @@
   }],
   "SubOptionsEqual": [],
   "NThreadsCommand": "--cpus-per-task",
-  "NThreads": "16",
+  "NThreads": "8",
   "MemoryCommand": "--mem=",
   "MemoryDefault": "20000",
   "JobIDCommand": "--job-name",
   "OutputCommand": "--output",
-  "CommandWrapper": "--wrap"
+  "CommandWrapper": "--wrap",
+  "SingularityBindPaths": "/proj,/pine,/nas02"
 }
