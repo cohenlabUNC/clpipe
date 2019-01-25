@@ -18,6 +18,8 @@ def fmriprep_process(configfile=None, subjects=None, bidsdir=None, workingdir=No
                      submit=False):
     config = ConfigParser()
     config.config_updater(configfile)
+    config.setup_fmriprep_directories(bidsdir, workingdir, outputdir)
+    config.validate_config()
     if logoutputdir is not None:
         if os.path.isdir(logoutputdir):
             logoutputdir = os.path.abspath(logoutputdir)
@@ -25,11 +27,11 @@ def fmriprep_process(configfile=None, subjects=None, bidsdir=None, workingdir=No
             logoutputdir = os.path.abspath(logoutputdir)
             os.makedirs(logoutputdir, exist_ok=True)
     else:
-        logoutputdir = outputdir + "/batchOutput"
+        logoutputdir = os.path.join(config.config['FMRIPrepOptions']['OutputDirectory'], "batchOutput")
         os.makedirs(logoutputdir, exist_ok=True)
 
-    config.setup_fmriprep_directories(bidsdir, workingdir, outputdir)
-    config.validate_config()
+
+
 
     singularity_string = '''unset PYTHONPATH; singularity run -B {bindPaths} -e {fmriprepInstance} {bidsDir} {outputDir} participant '''\
         '''--participant-label {participantLabels} -w {workingdir} --fs-license-file {fslicense} --nthreads {threads}'''
