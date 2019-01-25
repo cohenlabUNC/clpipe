@@ -33,7 +33,7 @@ def fmriprep_process(configfile=None, subjects=None, bidsdir=None, workingdir=No
 
 
 
-    singularity_string = '''unset PYTHONPATH; singularity run -B {bindPaths} -e {fmriprepInstance} {bidsDir} {outputDir} participant '''\
+    singularity_string = '''unset PYTHONPATH; singularity run -B {bindPaths} -e --no-home {fmriprepInstance} {bidsDir} {outputDir} participant '''\
         '''--participant-label {participantLabels} -w {workingdir} --fs-license-file {fslicense} --nthreads {threads}'''
 
     if not subjects:
