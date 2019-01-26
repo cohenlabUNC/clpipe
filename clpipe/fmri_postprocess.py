@@ -42,7 +42,7 @@ def fmri_postprocess(configfile=None, subjects=None, targetdir=None, targetsuffi
         sublist = subjects
 
     submission_string = '''fmri_postprocess -configfile={config} -targetDir={targetDir} -targetSuffix={targetSuffix} '''\
-                        '''-outputDir={outputDir} -outputSuffix={outputSuffix} -logOutputDir={logOutputDir} -submit -single {sub}'''
+                        '''-outputDir={outputDir} -outputSuffix={outputSuffix} -logOutputDir={logOutputDir} -single {sub}'''
 
 
 
@@ -69,8 +69,13 @@ def fmri_postprocess(configfile=None, subjects=None, targetdir=None, targetsuffi
             click.echo(batch_manager.print_jobs())
     else:
         for sub in subjects:
-            _fmri_postprocess()
+            _fmri_postprocess(config, sub)
 
 
-def _fmri_postprocess():
+def _fmri_postprocess(config, subject):
+
+    #TODO: Bring in all logic for the post-processing. Add in necessary function to config parser
+
+
+
     return 0
