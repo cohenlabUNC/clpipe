@@ -12,21 +12,21 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-import os
-import sys
-sys.path.insert(0, os.path.abspath('../clpipe'))
+# import os
+# import sys
+# sys.path.insert(0, os.path.abspath('.'))
 
 
 # -- Project information -----------------------------------------------------
 
-project = 'clpipe'
-copyright = '2019, Cohen Lab'
-author = 'Cohen Lab'
+project = 'clpipe: A MRI Processing Pipeline for HPCs'
+copyright = '2019, Cohen Lab at UNC-CH'
+author = 'Cohen Lab at UNC-CH'
 
 # The short X.Y version
 version = ''
 # The full version, including alpha/beta/rc tags
-release = '0.1'
+release = '.1'
 
 
 # -- General configuration ---------------------------------------------------
@@ -39,7 +39,9 @@ release = '0.1'
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-'sphinx.ext.autodoc'
+    'sphinx.ext.autodoc',
+    'sphinx.ext.coverage',
+    'sphinx.ext.mathjax',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -102,7 +104,7 @@ html_static_path = ['_static']
 # -- Options for HTMLHelp output ---------------------------------------------
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'clpipedoc'
+htmlhelp_basename = 'clpipeAMRIProcessingPipelineforHPCsdoc'
 
 
 # -- Options for LaTeX output ------------------------------------------------
@@ -129,8 +131,8 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'clpipe.tex', 'clpipe Documentation',
-     'Cohen Lab', 'manual'),
+    (master_doc, 'clpipeAMRIProcessingPipelineforHPCs.tex', 'clpipe: A MRI Processing Pipeline for HPCs Documentation',
+     'Cohen Lab at UNC-CH', 'manual'),
 ]
 
 
@@ -139,7 +141,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'clpipe', 'clpipe Documentation',
+    (master_doc, 'clpipeamriprocessingpipelineforhpcs', 'clpipe: A MRI Processing Pipeline for HPCs Documentation',
      [author], 1)
 ]
 
@@ -150,8 +152,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'clpipe', 'clpipe Documentation',
-     author, 'clpipe', 'One line description of project.',
+    (master_doc, 'clpipeAMRIProcessingPipelineforHPCs', 'clpipe: A MRI Processing Pipeline for HPCs Documentation',
+     author, 'clpipeAMRIProcessingPipelineforHPCs', 'One line description of project.',
      'Miscellaneous'),
 ]
 
@@ -172,3 +174,6 @@ epub_title = project
 
 # A list of files that should not be packed into the epub file.
 epub_exclude_files = ['search.html']
+
+
+# -- Extension configuration -------------------------------------------------
