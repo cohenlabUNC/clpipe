@@ -18,9 +18,8 @@ def fmriprep_process(configfile=None, subjects=None, bidsdir=None, workingdir=No
                      submit=False):
     config = ConfigParser()
     config.config_updater(configfile)
-    config.setup_directories(bidsdir, workingdir, outputdir)
+    config.setup_fmriprep_directories(bidsdir, workingdir, outputdir)
     config.validate_config()
-
     if logoutputdir is not None:
         if os.path.isdir(logoutputdir):
             logoutputdir = os.path.abspath(logoutputdir)
@@ -28,41 +27,42 @@ def fmriprep_process(configfile=None, subjects=None, bidsdir=None, workingdir=No
             logoutputdir = os.path.abspath(logoutputdir)
             os.makedirs(logoutputdir, exist_ok=True)
     else:
-        logoutputdir = outputdir + "/batchOutput"
+        logoutputdir = os.path.join(config.config['FMRIPrepOptions']['OutputDirectory'], "batchOutput")
         os.makedirs(logoutputdir, exist_ok=True)
 
-    config.setup_directories(bidsdir, workingdir, outputdir)
 
-    config.validate_config()
-    singularity_string = '''singularity run --cleanenv -B {bindPaths} {fmriprepInstance} {bidsDir} {outputDir} participant '''\
+
+
+    singularity_string = '''unset PYTHONPATH; singularity run -B {bindPaths} -e --no-home {fmriprepInstance} {bidsDir} {outputDir} participant '''\
+
         '''--participant-label {participantLabels} -w {workingdir} --fs-license-file {fslicense} --nthreads {threads}'''
 
     if not subjects:
         subjectstring = "ALL"
-        sublist = [o.replace('sub-', '') for o in os.listdir(bidsdir)
-                   if os.path.isdir(os.path.join(bidsdir, o)) and 'sub-' in o]
+        sublist = [o.replace('sub-', '') for o in os.listdir(config.config['FMRIPrepOptions']['BIDSDirectory'])
+                   if os.path.isdir(os.path.join(config.config['FMRIPrepOptions']['BIDSDirectory'], o)) and 'sub-' in o]
     else:
         subjectstring = " , ".join(subjects)
         sublist = subjects
 
     batch_manager = BatchManager(config.config['BatchConfig'], logoutputdir)
-    batch_manager.update_mem_usage(config.config['FMRIPrepMemoryUsage'])
+    batch_manager.update_mem_usage(config.config['FMRIPrepOptions']['FMRIPrepMemoryUsage'])
     for sub in sublist:
         batch_manager.addjob(Job("sub-" + sub + "fmriprep", singularity_string.format(
-            fmriprepInstance=config.config['FMRIPrepPath'],
-            bidsDir=bidsdir,
-            outputDir=outputdir,
-            workingdir=workingdir,
+            fmriprepInstance=config.config['FMRIPrepOptions']['FMRIPrepPath'],
+            bidsDir=config.config['FMRIPrepOptions']['BIDSDirectory'],
+            outputDir=config.config['FMRIPrepOptions']['WorkingDirectory'],
+            workingdir=config.config['FMRIPrepOptions']['OutputDirectory'],
             participantLabels=sub,
-            fslicense=config.config['FreesurferLicensePath'],
+            fslicense=config.config['FMRIPrepOptions']['FreesurferLicensePath'],
             threads=batch_manager.get_threads_command()[1],
-            bindPaths=batch_manager.config['SingularityBindPaths']
+            bindPaths=batch_manager.config['SingularityBindPaths'],
         )))
 
     batch_manager.compilejobstrings()
     if submit:
         batch_manager.submit_jobs()
         config.update_runlog(subjectstring, "FMRIprep")
-        config.config_json_dump(outputdir, configfile)
+        config.config_json_dump(config.config['FMRIPrepOptions']['OutputDirectory'], configfile)
     else:
         batch_manager.print_jobs()
