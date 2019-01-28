@@ -10,7 +10,8 @@ from .batch_manager import BatchManager,Job
 @click.option('-batchConfig', type=click.Path(exists=True, dir_okay=False, file_okay=True), default = "slurmUNCConfigHeudiconv.json")
 @click.option('-heuristicfile', type=click.Path(exists=True, dir_okay=False, file_okay=True), default = "convertall.py")
 @click.option('-submit/-save', default=False)
-def dicom_to_nifti_to_bids_converter_setup(dicomdirectory, outputfile, batchconfig):
+def dicom_to_nifti_to_bids_converter_setup(subject = None, session = None, dicomdirectory=None, outputfile=None,
+                                           outputDirectory = None, batchconfig = None, heuristicfile = None, submit=False):
 
     #TODO: This function should run heudiconv with a default heuristic file
     # on one subject, pull the scan info file out of the directory and put it
