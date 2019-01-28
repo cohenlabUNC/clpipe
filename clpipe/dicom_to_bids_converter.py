@@ -2,9 +2,14 @@ import click
 from .batch_manager import BatchManager,Job
 
 @click.command()
-@click.argument('dicomdirectory')
-@click.argument('outputfile')
-@click.option('-batchConfig', default = "slurmUNCConfigHeudiconv.json")
+@click.argument('subject', nargs=1, required=True, default=None)
+@click.argument('-session', nargs = 1, required=True, default=None)
+@click.argument('-dicomdirectory', type=click.Path(exists=True, dir_okay=True, file_okay=False))
+@click.argument('-outputDirectory', type=click.Path(exists=True, dir_okay=False, file_okay=True), default = None)
+@click.argument('-outputfile', type=click.Path(exists=True, dir_okay=False, file_okay=True), default = None)
+@click.option('-batchConfig', type=click.Path(exists=True, dir_okay=False, file_okay=True), default = "slurmUNCConfigHeudiconv.json")
+@click.option('-heuristicfile', type=click.Path(exists=True, dir_okay=False, file_okay=True), default = "convertall.py")
+@click.option('-submit/-save', default=False)
 def dicom_to_nifti_to_bids_converter_setup(dicomdirectory, outputfile, batchconfig):
 
     #TODO: This function should run heudiconv with a default heuristic file
@@ -14,8 +19,50 @@ def dicom_to_nifti_to_bids_converter_setup(dicomdirectory, outputfile, batchconf
     # this potentially could be done with a dependency statement in a batch command.
     # To submit batch commmands, use the BatchManager class
 
-    batch_manager = BatchManager(batchconfig)
+    #Do I need to update config file with date ran for just this? Or validate after? It doesn't seem any of this is going in
+    #config = ConfigParser()
+    #config.config_updater(configfile)
 
+    heudiconv_string = '''module add heudiconv \n heudiconv -d {dicomdirectory}/sub-{subject}/ses-{sess}/* -s {subject} '''\
+    ''' -ss {sess} -f {heuristicfile} -o {dicomdirectory}/test/ -c dcm2niix -b --minmeta'''
+    #Do we want to keep the -b and --minmeta options? The -b generates jsons with BIDS keys, and --minmeta restricts it to
+    #only BIDS keys (i.e. no extra DICOM metadata)
+
+    copyfile_string = '''cp {dicomdirectory}/test/ .heudiconv/*/dicominfo_ses-{sess}.tsv {outputfile} \n'''\
+    '''rm -rf {dicomdirectory}/test/'''
+    #Note dicominfo file will have a different name if multiple sessions are used
+
+    batch_manager = BatchManager(batchconfig,outputDirectory)
+    job1 = Job("heudiconv_setup", heudiconv_string.format(
+        dicomdirectory=dicomdirectory,
+        subject=subject,
+        sess=session,
+        heuristicfile = heuristicfile,
+    ))
+    job2 = Job("copyfile_heudiconv_setup", copyfile_string.format(
+        dicomdirectory=dicomdirectory,
+        sess=session,
+        outputfile=outputfile,
+    ))
+
+    batch_manager.addjob(job1)
+    batch_manager.compilejobstrings()
+    if submit:
+        batch_manager.submit_jobs()
+    else:
+        batch_manager.print_jobs()
+
+    batch_manager.addjob(job2)
+    header = batch_manager.createsubmissionhead()
+    header.append("--dependency=afterok{job1}")
+    #May have to format this string, also not sure it will work
+    #Now need to append it to the submission list, but not sure how to with the self command, and then submit
+
+    batch_manager.submissionlist.append(job2)
+    if submit:
+        batch_manager.submit_jobs()
+    else:
+        batch_manager.print_jobs()
     #You can write add jobs to the Batch manager by first making a job:
     # job1 = Job(jobID, submission string)
     #And then adding it to the batch manager
