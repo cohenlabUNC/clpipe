@@ -1,0 +1,37 @@
+{
+	"ConfigTitle": "Default Configuration File",
+	"FMRIPrepOptions": {
+		"BIDSDirectory": "/proj/cohenlab/projects/ucla_schizkids/UCLA_SchizKids_BIDS_fin",
+		"OutputDirectory": "/proj/cohenlab/projects/ucla_schizkids/Bids_Output",
+		"FMRIPrepPath": "/proj/hng/singularity_imgs/poldracklab_fmriprep_latest-2018-02-14-1c6af86ba750.img",
+		"FreesurferLicensePath": "/proj/cohenlab/projects/license.txt",
+		"FMRIPrepMemoryUsage": "20000",
+		"WorkingDirectory": "/pine/scr/t/r/trhenry/working"
+	},
+	"PostProcessingOptions": {
+		"TargetDirectory": "",
+		"TargetSuffix": "Process.nii.gz",
+		"OutputDirectory": "",
+		"OutputSuffix": "",
+		"NuisanceRegression": "QuadLagged",
+		"FilteringHighPass": 0.08,
+		"FilteringLowPass": 0.1,
+		"FilteringOrder": 12,
+		"Scrubbing": "Scrub",
+		"ScrubAhead": 2,
+		"ScrubBehind": 2,
+		"ScrubContig": 4,
+		"SpatialSmoothing": "SUSAN",
+		"BIDSValidatorImage": "/proj/hng/singularity_imgs/validator.simg"
+	},
+	"RunLog": [
+		{
+			"DateRan": "01:11PM on January 24, 2019",
+			"Subjects": "30110",
+			"WhatRan": "FMRIprep",
+			"WhoRan": "trhenry"
+		}
+	],
+	"BatchConfig": "slurmUNCConfig.json",
+	"PostProcessingMemoryUsage": "10000"
+}
