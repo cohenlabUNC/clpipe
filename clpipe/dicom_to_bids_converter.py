@@ -6,7 +6,7 @@ from .batch_manager import BatchManager,Job
 @click.argument('session', nargs = 1, required=True, default=None)
 @click.argument('dicomdirectory', type=click.Path(exists=True, dir_okay=True, file_okay=False))
 @click.argument('outputfile', type=click.Path(exists=True, dir_okay=False, file_okay=True), default = None)
-@click.option('-outputDirectory', type=click.Path(exists=True, dir_okay=False, file_okay=True), default = None)
+@click.option('-outputDirectory', type=click.Path(exists=True, dir_okay=True, file_okay=False), default = None)
 @click.option('-batchConfig', type=click.Path(exists=True, dir_okay=False, file_okay=True), default = "slurmUNCConfigHeudiconv.json")
 @click.option('-heuristicfile', type=click.Path(exists=True, dir_okay=False, file_okay=True), default = "convertall.py")
 @click.option('-submit/-save', default=False)
