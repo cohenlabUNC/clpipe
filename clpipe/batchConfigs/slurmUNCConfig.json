@@ -4,7 +4,8 @@
     "command": "-n",
     "args": "1"
   }],
-  "SubOptionsEqual": [],
+  "SubOptionsEqual": [{"command": "--time",
+    "args": "8:0:0"}],
   "NThreadsCommand": "--cpus-per-task",
   "NThreads": "8",
   "MemoryCommand": "--mem=",
