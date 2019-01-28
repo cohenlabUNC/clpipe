@@ -4,7 +4,7 @@
 		"BIDSDirectory": "",
 		"OutputDirectory": "",
 		"FMRIPrepPath": "/proj/hng/singularity_imgs/poldracklab_fmriprep_latest-2018-02-14-1c6af86ba750.img",
-		"FreesurferLicensePath": "/proj/cohenlab/projects/license.txt",
+		"FreesurferLicensePath": "/proj/hng/singularity_imgs/license.txt",
 		"FMRIPrepMemoryUsage": "20000"
 	},
 	"PostProcessingOptions": {
