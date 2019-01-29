@@ -197,7 +197,7 @@ def _regression_prep(config, confound_filepath):
                          item["Name"] == config.config['PostProcessingOptions']['NuisanceRegression']), False)
     if not target_label:
         raise ValueError
-    fd = confounds[[reg_labels['FDLabel']]]
+    fd = confounds[[reg_labels['FDLabel']]].tolist()
     click.echo(fd)
     confound_labels = []
     confound_labels.extend(reg_labels["MotionParams"])
