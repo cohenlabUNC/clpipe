@@ -12,7 +12,7 @@ from pkg_resources import resource_stream
 import clpipe.postprocutils
 import numpy
 import logging
-
+import gc
 logging.basicConfig(level=logging.DEBUG)
 
 
@@ -119,7 +119,7 @@ def _fmri_postprocess_image(config, file, tr=None):
             with open(os.path.abspath(image_json_path), "r") as json_path:
                 image_json = json.load(json_path)
             tr = float(image_json['RepetitionTime'])
-        logging.debug('TR found: ' + str(tr))
+        logging.info('TR found: ' + str(tr))
         image = load_image(file)
         data = image.get_data()
         orgImageShape = data.shape
@@ -157,7 +157,7 @@ def _fmri_postprocess_image(config, file, tr=None):
         hfreq = float(config.config['PostProcessingOptions']['PercentFreqSample'])
         # Need to pull tr from header or json.
         data = clpipe.postprocutils.spec_interpolate.spec_inter(data, tr, ofreq, scrubTargets, hfreq)
-
+        gc.collect()
     if filter_toggle:
         logging.info('Filtering Data Now')
         data = clpipe.postprocutils.utils.apply_filter(filt,data)
