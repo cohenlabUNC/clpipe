@@ -46,7 +46,7 @@ def fmri_postprocess(configfile=None, subjects=None, targetdir=None, targetsuffi
             logoutputdir = os.path.abspath(logoutputdir)
             os.makedirs(logoutputdir, exist_ok=True)
     else:
-        logoutputdir = os.path.join(config.config['PostProcessingOptions']['OutputDirectory'],"batchOutput")
+        logoutputdir = os.path.join(config.config['PostProcessingOptions']['OutputDirectory'],"BatchOutput")
         os.makedirs(logoutputdir, exist_ok=True)
 
 
@@ -63,7 +63,8 @@ def fmri_postprocess(configfile=None, subjects=None, targetdir=None, targetsuffi
                         '''-outputDir={outputDir} -outputSuffix={outputSuffix} -logOutputDir={logOutputDir} -single {sub}'''
 
     if batch:
-        batch_manager = BatchManager(config.config['batchConfig'])
+        batch_manager = BatchManager(config.config['BatchConfig'], logoutputdir)
+        batch_manager.update_mem_usage(config.config['PostProcessingOptions']['PostProcessingMemoryUsage'])
         for sub in sublist:
             sub_string_temp = submission_string.format(
                 config=configfile,
@@ -97,9 +98,8 @@ def _fmri_postprocess_subject(config, subject, task, tr=None):
                      "*" + config.config['PostProcessingOptions']['TargetSuffix']))
     subject_files = glob.glob(search_string, recursive=True)
 
-
     for image in subject_files:
-        if 'task-' + task in image or task is None:
+        if task is None or 'task-' + task in image:
             logging.info('Processing ' + image)
             _fmri_postprocess_image(config, image, tr)
 
@@ -155,7 +155,6 @@ def _fmri_postprocess_image(config, file, tr=None):
         logging.info('Using Spectral Interpolation')
         ofreq = int(config.config['PostProcessingOptions']['OversamplingFreq'])
         hfreq = float(config.config['PostProcessingOptions']['PercentFreqSample'])
-        # Need to pull tr from header or json.
         data = clpipe.postprocutils.spec_interpolate.spec_inter(data, tr, ofreq, scrubTargets, hfreq)
         gc.collect()
     if filter_toggle:
