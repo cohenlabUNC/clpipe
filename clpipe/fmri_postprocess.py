@@ -102,6 +102,7 @@ def _fmri_postprocess_subject(config, subject, task, tr=None):
     search_string = os.path.abspath(
         os.path.join(config.config['PostProcessingOptions']['TargetDirectory'], "sub-" + subject, "**",
                      "*" + config.config['PostProcessingOptions']['TargetSuffix']))
+    logging.debug(search_string)
     subject_files = glob.glob(search_string, recursive=True)
     logging.debug(subject_files)
     logging.info('Finding Image Files')
