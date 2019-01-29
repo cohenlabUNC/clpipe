@@ -241,6 +241,13 @@ def _find_json(config, filepath):
     logging.debug(target_json)
     return target_json
 
+def _find_confounds(config, filepath):
+    file_name = os.path.basename(filepath)
+    sans_ext = os.path.splitext(os.path.splitext(file_name)[0])[0]
+    root_file = sans_ext[:sans_ext.index('space')]
+    return root_file+"_"+config.config['PostProcessingOptions']['ConfoundSuffix']
+
+
 
 def _build_output_directory_structure(config, filepath):
     target_directory = filepath[filepath.find('sub-'):]
