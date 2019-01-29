@@ -36,6 +36,8 @@ def fmri_postprocess(configfile=None, subjects=None, targetdir=None, targetsuffi
 
     config = ConfigParser()
     config.config_updater(configfile)
+    config.setup_postproc(targetdir, targetsuffix, outputdir, outputsuffix)
+    config.validate_config()
 
     if logoutputdir is not None:
         if os.path.isdir(logoutputdir):
@@ -44,11 +46,10 @@ def fmri_postprocess(configfile=None, subjects=None, targetdir=None, targetsuffi
             logoutputdir = os.path.abspath(logoutputdir)
             os.makedirs(logoutputdir, exist_ok=True)
     else:
-        logoutputdir = outputdir + "/batchOutput"
+        logoutputdir = os.path.join(config.config['PostProcessingOptions']['OutputDirectory'],"batchOutput")
         os.makedirs(logoutputdir, exist_ok=True)
 
-    config.setup_postproc(targetdir, targetsuffix, outputdir, outputsuffix)
-    config.validate_config()
+
 
     if not subjects:
         subjectstring = "ALL"
