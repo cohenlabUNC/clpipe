@@ -199,15 +199,15 @@ def _regression_prep(config, confound_filepath):
     confound_labels = []
     confound_labels.extend(reg_labels["MotionParams"])
 
-    if config['PostProcessingOptions']['WhiteMatter']:
+    if config.config['PostProcessingOptions']['WhiteMatter']:
         confound_labels.extend(reg_labels["WhiteMatter"])
-    if config['PostProcessingOptions']['CSF']:
+    if config.config['PostProcessingOptions']['CSF']:
         confound_labels.extend(reg_labels["CSF"])
-    if config['PostProcessingOptions']['GlobalSignalRegression']:
+    if config.config['PostProcessingOptions']['GlobalSignalRegression']:
         confound_labels.extend(reg_labels["GlobalSignal"])
 
     logging.debug(confound_labels)
-    confounds = confounds.loc[confound_labels]
+    confounds = confounds[[confound_labels]]
 
     if target_label['Lagged']:
         confound_temp = confounds.diff()
@@ -218,7 +218,7 @@ def _regression_prep(config, confound_filepath):
         confound_temp = confounds.pow(2)
         confound_temp = confound_temp.fillna(0)
         confounds = pandas.concat([confounds, confound_temp])
-
+    click.echo(confounds.columns.values)
     return confounds, fd
 
 
