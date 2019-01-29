@@ -13,6 +13,7 @@
 		"OutputDirectory": "",
 		"OutputSuffix": "",
 		"ConfoundSuffix": "confound_regressors.tsv",
+		"Regress": true,
 		"NuisanceRegression": "QuadLagged",
 		"WhiteMatter": true,
 		"CSF": true,
