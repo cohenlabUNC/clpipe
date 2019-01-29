@@ -109,7 +109,8 @@ def _fmri_postprocess_image(config, file, tr=None):
     logging.debug('Looking for: '+ confound_regressors)
 
     if not os.path.exists(confound_regressors):
-        raise FileNotFoundError('Could not find a confound file?')
+        logging.warning('Could not find a confound file for ' +file+". Moving onto next scan")
+        return
     else:
         confounds, fdts = _regression_prep(config, confound_regressors)
         if tr is None:
