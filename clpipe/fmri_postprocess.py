@@ -31,6 +31,7 @@ logging.basicConfig(level=logging.DEBUG)
 def fmri_postprocess(configfile=None, subjects=None, targetdir=None, targetsuffix=None, outputdir=None,
                      outputsuffix=None, logoutputdir=None,
                      submit=False, batch=True, task=None, tr=None):
+    logging.basicConfig(level=logging.DEBUG)
     if configfile is None and tr is None:
         raise ValueError('No config file and no specified TR. Please include one.')
 
@@ -111,6 +112,7 @@ def _fmri_postprocess_subject(config, subject, task, tr=None):
 
 def _fmri_postprocess_image(config, file, tr=None):
     confound_regressors = _find_confounds(config, file)
+
     logging.info('Looking for: '+ confound_regressors)
 
     if not os.path.exists(confound_regressors):
