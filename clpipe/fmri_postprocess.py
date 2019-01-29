@@ -195,16 +195,16 @@ def _regression_prep(config, confound_filepath):
                          item["Name"] == config.config['PostProcessingOptions']['NuisanceRegression']), False)
     if not target_label:
         raise ValueError
-    fd = confounds.loc[target_label['FDLabel']]
+    fd = confounds.loc[reg_labels['FDLabel']]
     confound_labels = []
-    confound_labels.extend(target_label["MotionParams"])
+    confound_labels.extend(reg_labels["MotionParams"])
 
     if config['PostProcessingOptions']['WhiteMatter']:
-        confound_labels.extend(target_label["WhiteMatter"])
+        confound_labels.extend(reg_labels["WhiteMatter"])
     if config['PostProcessingOptions']['CSF']:
-        confound_labels.extend(target_label["CSF"])
+        confound_labels.extend(reg_labels["CSF"])
     if config['PostProcessingOptions']['GlobalSignalRegression']:
-        confound_labels.extend(target_label["GlobalSignal"])
+        confound_labels.extend(reg_labels["GlobalSignal"])
 
     logging.debug(confound_labels)
     confounds = confounds.loc[confound_labels]
