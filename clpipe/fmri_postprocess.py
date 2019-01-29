@@ -207,7 +207,7 @@ def _regression_prep(config, confound_filepath):
         confound_labels.extend([reg_labels["GlobalSignal"]])
 
     logging.debug(confound_labels)
-    confounds = confounds[[confound_labels]]
+    confounds = confounds[confound_labels]
 
     if target_label['Lagged']:
         confound_temp = confounds.diff()
