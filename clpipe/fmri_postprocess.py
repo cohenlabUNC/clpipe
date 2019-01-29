@@ -103,7 +103,7 @@ def _fmri_postprocess_subject(config, subject, task, tr=None):
         os.path.join(config.config['PostProcessingOptions']['TargetDirectory'], "sub-" + subject, "**",
                      "*" + config.config['PostProcessingOptions']['TargetSuffix']))
     subject_files = glob.glob(search_string, recursive=True)
-
+    logging.info('Finding Image Files')
     for image in subject_files:
         if task is None or 'task-' + task in image:
             logging.info('Processing ' + image)
