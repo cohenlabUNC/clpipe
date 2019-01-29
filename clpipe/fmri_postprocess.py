@@ -243,7 +243,7 @@ def _find_confounds(config, filepath):
     file_name = os.path.basename(filepath)
     sans_ext = os.path.splitext(os.path.splitext(file_name)[0])[0]
     root_file = sans_ext[:sans_ext.index('space')]
-    return os.path.join(os.path.dirname(filepath),root_file+config.config['PostProcessingOptions']['ConfoundSuffix']
+    return os.path.join(os.path.dirname(filepath),root_file+config.config['PostProcessingOptions']['ConfoundSuffix'])
 
 
 
