@@ -12,7 +12,10 @@ setup(name='clpipe',
       include_package_data=True,
       packages=find_packages(),
       install_requires=['jsonschema',
-                        'click'],
+                        'click',
+                        'nipy',
+                        'numpy',
+                        'pandas'],
       entry_points='''
       [console_scripts]
       fmriprep_process=clpipe.fmri_preprocess:fmriprep_process

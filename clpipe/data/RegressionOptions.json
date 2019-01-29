@@ -1,0 +1,52 @@
+{
+  "RegressionOptions": [
+
+    {
+      "Name": "QuadLagged",
+      "MotionParams": ["trans_x"," trans_y" ,"trans_z","rot_x","rot_y","rot_z"],
+      "WhiteMatter": "white_matter",
+      "CSF": "csf",
+      "GlobalSignal": "global_signal",
+      "Quadratic": true,
+      "Lagged": true,
+      "FDLabel": "framewise_displacement"
+    },
+    {
+      "Name": "Quad",
+      "MotionParams": ["trans_x"," trans_y" ,"trans_z","rot_x","rot_y","rot_z"],
+      "WhiteMatter": "white_matter",
+      "CSF": "csf",
+      "GlobalSignal": "global_signal",
+      "Quadratic": true,
+      "Lagged": false,
+      "FDLabel": "framewise_displacement"
+    },
+    {
+      "Name": "Lagged",
+      "MotionParams": ["trans_x"," trans_y" ,"trans_z","rot_x","rot_y","rot_z"],
+      "WhiteMatter": "white_matter",
+      "CSF": "csf",
+      "GlobalSignal": "global_signal",
+      "Quadratic": false,
+      "Lagged": true,
+      "FDLabel": "framewise_displacement"
+    },
+    {
+      "Name": "Regress",
+      "MotionParams": ["trans_x"," trans_y" ,"trans_z","rot_x","rot_y","rot_z"],
+      "WhiteMatter": "white_matter",
+      "CSF": "csf",
+      "GlobalSignal": "global_signal",
+      "Quadratic": false,
+      "Lagged": false,
+      "FDLabel": "framewise_displacement"
+    }
+
+
+
+
+  ]
+
+
+
+}
