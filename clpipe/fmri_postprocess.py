@@ -74,7 +74,7 @@ def fmri_postprocess(configfile=None, subjects=None, targetdir=None, targetsuffi
                 logOutputDir=logoutputdir,
                 sub=sub
             )
-            batch_manager.addjob(Job(sub, sub_string_temp))
+            batch_manager.addjob(Job("PostProcessing"+sub, sub_string_temp))
         if submit:
             batch_manager.createsubmissionhead()
             batch_manager.compilejobstrings()
@@ -85,12 +85,12 @@ def fmri_postprocess(configfile=None, subjects=None, targetdir=None, targetsuffi
             click.echo(batch_manager.print_jobs())
     else:
         for sub in subjects:
-            logging.debug('Running Subject ' + sub)
+            logging.info('Running Subject ' + sub)
             _fmri_postprocess_subject(config, sub, task)
 
 
 def _fmri_postprocess_subject(config, subject, task, tr=None):
-    # TODO: Bring in all logic for the post-processing. Add in necessary function to config parser
+    # TODO: Change the logging so that it spits out the log into a subject specific file.
 
     search_string = os.path.abspath(
         os.path.join(config.config['PostProcessingOptions']['TargetDirectory'], "sub-" + subject, "**",
@@ -100,18 +100,19 @@ def _fmri_postprocess_subject(config, subject, task, tr=None):
 
     for image in subject_files:
         if 'task-' + task in image or task is None:
-            logging.debug('Processing ' + image)
+            logging.info('Processing ' + image)
             _fmri_postprocess_image(config, image, tr)
 
 
 def _fmri_postprocess_image(config, file, tr=None):
     confound_regressors = _find_confounds(config, file)
-    logging.debug('Looking for: '+ confound_regressors)
+    logging.info('Looking for: '+ confound_regressors)
 
     if not os.path.exists(confound_regressors):
         logging.warning('Could not find a confound file for ' +file+". Moving onto next scan")
         return
     else:
+        logging.info('Found confound regressors')
         confounds, fdts = _regression_prep(config, confound_regressors)
         if tr is None:
             image_json_path = _find_json(config, file)
@@ -139,54 +140,53 @@ def _fmri_postprocess_image(config, file, tr=None):
         scrub_contig = int(config.config['PostProcessingOptions']['ScrubContig'])
         fd_thres = float(config.config['PostProcessingOptions']['ScrubFDThreshold'])
         scrubTargets = clpipe.postprocutils.utils.scrub_setup(fdts, fd_thres, scrub_behind, scrub_ahead, scrub_contig)
-        click.echo(scrubTargets)
 
     hp = float(config.config['PostProcessingOptions']['FilteringHighPass'])
     lp = float(config.config['PostProcessingOptions']['FilteringLowPass'])
     filter_toggle = False
     if hp > 0 or lp > 0:
-        logging.debug('Filtering Toggle Activated')
+        logging.info('Filtering Toggle Activated')
         filter_toggle = True
         order = int(config.config['PostProcessingOptions']['FilteringOrder'])
         filt = clpipe.postprocutils.utils.calc_filter(hp, lp, tr, order)
         confounds = clpipe.postprocutils.utils.apply_filter(filt, confounds)
 
     if scrub_toggle and filter_toggle:
-        logging.debug('Using Spectral Interpolation')
+        logging.info('Using Spectral Interpolation')
         ofreq = int(config.config['PostProcessingOptions']['OversamplingFreq'])
         hfreq = float(config.config['PostProcessingOptions']['PercentFreqSample'])
         # Need to pull tr from header or json.
-        #data = clpipe.postprocutils.spec_interpolate.spec_inter(data, tr, ofreq, scrubTargets, hfreq)
+        data = clpipe.postprocutils.spec_interpolate.spec_inter(data, tr, ofreq, scrubTargets, hfreq)
 
     if filter_toggle:
-        logging.debug('Filtering Data Now')
-        # data = clpipe.postprocutils.utils.apply_filter(filt,data)
+        logging.info('Filtering Data Now')
+        data = clpipe.postprocutils.utils.apply_filter(filt,data)
 
     if regress_toggle:
-        logging.debug('Regressing Data Now')
-        # data = clpipe.postprocutils.utils.regress(confounds, data)
+        logging.info('Regressing Data Now')
+        data = clpipe.postprocutils.utils.regress(confounds, data)
 
     if scrub_toggle:
-        logging.debug('Scrubbing data now')
-        # data = clpipe.postprocutils.utils.scrub_image(data, scrubTargets)
+        logging.info('Scrubbing data now')
+        data = clpipe.postprocutils.utils.scrub_image(data, scrubTargets)
 
-    # data = (data + row_means)
+    data = (data + row_means)
 
-    # data = numpy.transpose(data)
-    # data = data.reshape(orgImageShape)
-    # out_image = Image(data, coordMap)
+    data = numpy.transpose(data)
+    data = data.reshape(orgImageShape)
+    out_image = Image(data, coordMap)
 
     output_file_path = _build_output_directory_structure(config, file)
-    # logging.debug('Saving data to ' + output_file_path)
-    # save_image(out_image, output_file_path)
+    logging.info('Saving post processed data to ' + output_file_path)
+    save_image(out_image, output_file_path)
 
     if scrub_toggle:
         file_name = os.path.basename(file)
         sans_ext = os.path.splitext(os.path.splitext(file_name)[0])[0]
-        #   toOut = numpy.vstack([numpy.arange(1, len(scrubTargets) + 1, 1), numpy.asarray(scrubTargets)]).T
-        logging.debug('Saving Scrub Targets to ' + os.path.join(os.path.dirname(output_file_path),
+        toOut = numpy.vstack([numpy.arange(1, len(scrubTargets) + 1, 1), numpy.asarray(scrubTargets)]).T
+        logging.info('Saving Scrub Targets to ' + os.path.join(os.path.dirname(output_file_path),
                                                                 sans_ext + "_scrubTargets.csv"))
-    #  numpy.savetxt(os.path.join(os.path.dirname(output_file_path), sans_ext+"_scrubTargets.csv"), toOut, delimiter=",")
+        numpy.savetxt(os.path.join(os.path.dirname(output_file_path), sans_ext+"_scrubTargets.csv"), toOut, delimiter=",")
 
 
 def _regression_prep(config, confound_filepath):
@@ -198,7 +198,6 @@ def _regression_prep(config, confound_filepath):
     if not target_label:
         raise ValueError
     fd = confounds[reg_labels['FDLabel']]
-    click.echo(fd)
     confound_labels = []
     confound_labels.extend(reg_labels["MotionParams"])
 
@@ -209,7 +208,6 @@ def _regression_prep(config, confound_filepath):
     if config.config['PostProcessingOptions']['GlobalSignalRegression']:
         confound_labels.extend([reg_labels["GlobalSignal"]])
 
-    logging.debug(confound_labels)
     confounds = confounds[confound_labels]
 
     if target_label['Lagged']:
