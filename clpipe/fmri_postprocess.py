@@ -86,6 +86,8 @@ def fmri_postprocess(configfile=None, subjects=None, targetdir=None, targetsuffi
             config.config_json_dump(outputdir, configfile)
         else:
             logging.debug('Entering Print Mode')
+            batch_manager.createsubmissionhead()
+            batch_manager.compilejobstrings()
             click.echo(batch_manager.print_jobs())
     else:
         for sub in subjects:
