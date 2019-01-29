@@ -29,7 +29,7 @@
 		"ScrubBehind": 2,
 		"ScrubContig": 4,
 		"SpatialSmoothing": "SUSAN",
-		"PostProcessingMemoryUsage": 5000,
+		"PostProcessingMemoryUsage": "5000",
 		"BIDSValidatorImage": "/proj/hng/singularity_imgs/validator.simg"
 	},
 	"RunLog": [],
