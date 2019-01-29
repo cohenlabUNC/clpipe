@@ -1,5 +1,5 @@
 {
-  "MotionParams": ["X"," Y" ,"Z","RotX","RotY","RotZ"],
+  "MotionParams": ["X","Y" ,"Z","RotX","RotY","RotZ"],
   "WhiteMatter": "WhiteMatter",
   "CSF": "CSF",
   "FDLabel": "FramewiseDisplacement",
