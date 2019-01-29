@@ -15,7 +15,8 @@ setup(name='clpipe',
                         'click',
                         'nipy',
                         'numpy',
-                        'pandas'],
+                        'pandas',
+                        'scipy'],
       entry_points='''
       [console_scripts]
       fmriprep_process=clpipe.fmri_preprocess:fmriprep_process

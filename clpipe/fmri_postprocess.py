@@ -119,14 +119,14 @@ def _fmri_postprocess_image(config, file, tr=None):
                 image_json = json.load(json_path)
             tr = float(image_json['RepetitionTime'])
         logging.debug('TR found: ' + str(tr))
-        # image = load_image(file)
-        # data = image.get_data()
-        # orgImageShape = data.shape
-        # coordMap = image.coordmap
-        # data = data.reshape((numpy.prod(numpy.shape(data)[:-1]), data.shape[-1]))
-        # data = numpy.transpose(data)
-        # row_means = data.mean(axis=0)
-        # data = (data - data.mean(axis=0))
+        image = load_image(file)
+        data = image.get_data()
+        orgImageShape = data.shape
+        coordMap = image.coordmap
+        data = data.reshape((numpy.prod(numpy.shape(data)[:-1]), data.shape[-1]))
+        data = numpy.transpose(data)
+        row_means = data.mean(axis=0)
+        data = (data - data.mean(axis=0))
 
     regress_toggle = config.config['PostProcessingOptions']['Regress']
 
@@ -138,7 +138,8 @@ def _fmri_postprocess_image(config, file, tr=None):
         scrub_behind = int(config.config['PostProcessingOptions']['ScrubBehind'])
         scrub_contig = int(config.config['PostProcessingOptions']['ScrubContig'])
         fd_thres = float(config.config['PostProcessingOptions']['ScrubFDThreshold'])
-        # scrubTargets = clpipe.postprocutils.utils.scrub_setup(fdts, fd_thres, scrub_behind, scrub_ahead, scrub_contig)
+        scrubTargets = clpipe.postprocutils.utils.scrub_setup(fdts, fd_thres, scrub_behind, scrub_ahead, scrub_contig)
+        click.echo(scrubTargets)
 
     hp = float(config.config['PostProcessingOptions']['FilteringHighPass'])
     lp = float(config.config['PostProcessingOptions']['FilteringLowPass'])
@@ -147,15 +148,15 @@ def _fmri_postprocess_image(config, file, tr=None):
         logging.debug('Filtering Toggle Activated')
         filter_toggle = True
         order = int(config.config['PostProcessingOptions']['FilteringOrder'])
-        # filt = clpipe.postprocutils.utils.calc_filter(hp, lp, tr, order)
-        # confounds = clpipe.postprocutils.utils.apply_filter(filt, confounds)
+        filt = clpipe.postprocutils.utils.calc_filter(hp, lp, tr, order)
+        confounds = clpipe.postprocutils.utils.apply_filter(filt, confounds)
 
     if scrub_toggle and filter_toggle:
         logging.debug('Using Spectral Interpolation')
         ofreq = int(config.config['PostProcessingOptions']['OversamplingFreq'])
         hfreq = float(config.config['PostProcessingOptions']['PercentFreqSample'])
         # Need to pull tr from header or json.
-        # data = clpipe.postprocutils.spec_interpolate.spec_inter(data, tr, ofreq, scrubTargets, hfreq)
+        #data = clpipe.postprocutils.spec_interpolate.spec_inter(data, tr, ofreq, scrubTargets, hfreq)
 
     if filter_toggle:
         logging.debug('Filtering Data Now')
