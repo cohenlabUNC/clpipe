@@ -200,11 +200,11 @@ def _regression_prep(config, confound_filepath):
     confound_labels.extend(reg_labels["MotionParams"])
 
     if config.config['PostProcessingOptions']['WhiteMatter']:
-        confound_labels.extend(reg_labels["WhiteMatter"])
+        confound_labels.extend([reg_labels["WhiteMatter"]])
     if config.config['PostProcessingOptions']['CSF']:
-        confound_labels.extend(reg_labels["CSF"])
+        confound_labels.extend([reg_labels["CSF"]])
     if config.config['PostProcessingOptions']['GlobalSignalRegression']:
-        confound_labels.extend(reg_labels["GlobalSignal"])
+        confound_labels.extend([reg_labels["GlobalSignal"]])
 
     logging.debug(confound_labels)
     confounds = confounds[[confound_labels]]
