@@ -212,12 +212,12 @@ def _regression_prep(config, confound_filepath):
     if target_label['Lagged']:
         confound_temp = confounds.diff()
         confound_temp = confound_temp.fillna(0)
-        confounds = pandas.concat([confounds, confound_temp])
+        confounds = pandas.concat([confounds, confound_temp], axis=1,ignore_index=True)
 
     if target_label['Quadratic']:
         confound_temp = confounds.pow(2)
         confound_temp = confound_temp.fillna(0)
-        confounds = pandas.concat([confounds, confound_temp])
+        confounds = pandas.concat([confounds, confound_temp], axis=1, ignore_index=True)
     click.echo(confounds.columns.values)
     return confounds, fd
 
