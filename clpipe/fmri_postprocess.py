@@ -198,6 +198,7 @@ def _regression_prep(config, confound_filepath):
     if not target_label:
         raise ValueError
     fd = confounds[[reg_labels['FDLabel']]]
+    click.echo(fd)
     confound_labels = []
     confound_labels.extend(reg_labels["MotionParams"])
 
