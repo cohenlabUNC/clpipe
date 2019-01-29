@@ -99,7 +99,7 @@ def _fmri_postprocess_subject(config, subject, task, tr=None):
     print(subject_files)
 
     for image in subject_files:
-        if 'task-' + task in image:
+        if 'task-' + task in image or task is None:
             logging.debug('Processing ' + image)
             _fmri_postprocess_image(config, image, tr)
 
