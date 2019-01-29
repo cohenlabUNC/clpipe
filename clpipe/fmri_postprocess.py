@@ -105,10 +105,8 @@ def _fmri_postprocess_subject(config, subject, task, tr=None):
 
 
 def _fmri_postprocess_image(config, file, tr=None):
-    file_name = os.path.basename(file)
-    sans_ext = os.path.splitext(os.path.splitext(file_name)[0])[0]
-    confound_regressors = sans_ext +"_"+config.config['PostProcessingOptions']['ConfoundSuffix']
-    logging.debug('Looking for: '+ sans_ext +"_"+config.config['PostProcessingOptions']['ConfoundSuffix'])
+    confound_regressors = _find_confounds(config, file)
+    logging.debug('Looking for: '+ confound_regressors)
 
     if not os.path.exists(confound_regressors):
         raise FileNotFoundError('Could not find a confound file?')
