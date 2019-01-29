@@ -114,8 +114,8 @@ def _fmri_postprocess_image(config, file, tr=None):
         confounds, fdts = _regression_prep(config, confound_regressors)
         if tr is None:
             image_json_path = _find_json(config, file)
-            with open(os.path.abspath(image_json_path), "r") as config_file:
-                image_json = json.load(image_json_path)
+            with open(os.path.abspath(image_json_path), "r") as json_path:
+                image_json = json.load(json_path)
             tr = float(image_json['RepetitionTime'])
         logging.debug('TR found: ' + str(tr))
         # image = load_image(file)
