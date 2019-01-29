@@ -232,7 +232,7 @@ def _find_json(config, filepath):
 
     count_overlap = []
     for json_target in jsons:
-        count_overlap.extend(sum([json_target.count(x) for x in components]))
+        count_overlap.append(sum([json_target.count(x) for x in components]))
 
     max_value = max(count_overlap)
     target_json = jsons[count_overlap.index(max_value)]
