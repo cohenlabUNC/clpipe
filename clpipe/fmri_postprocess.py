@@ -96,8 +96,7 @@ def _fmri_postprocess_subject(config, subject, task, tr=None):
         os.path.join(config.config['PostProcessingOptions']['TargetDirectory'], "sub-" + subject, "**",
                      "*" + config.config['PostProcessingOptions']['TargetSuffix']))
     subject_files = glob.glob(search_string, recursive=True)
-    print(search_string)
-    print(subject_files)
+
 
     for image in subject_files:
         if 'task-' + task in image or task is None:
@@ -107,7 +106,7 @@ def _fmri_postprocess_subject(config, subject, task, tr=None):
 
 def _fmri_postprocess_image(config, file, tr=None):
     confound_regressors = glob.glob(
-        file.replace(config.config['PostProcessingOptions']['TargetSuffix'], "confounds_regressors.tsv"))
+        file.replace(config.config['PostProcessingOptions']['TargetSuffix'], config.config['PostProcessingOptions']['ConfoundSuffix']))
     logging.debug(confound_regressors)
     if not confound_regressors:
         raise FileNotFoundError('Could not find a confound file?')

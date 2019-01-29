@@ -12,6 +12,7 @@
 		"TargetSuffix": "preproc_bold.nii.gz",
 		"OutputDirectory": "",
 		"OutputSuffix": "",
+		"ConfoundSuffix": "confound_regressors.tsv",
 		"NuisanceRegression": "QuadLagged",
 		"FilteringHighPass": 0.08,
 		"FilteringLowPass": 0.1,
