@@ -9,23 +9,23 @@
     {
       "Name": "QuadLagged",
       "Quadratic": true,
-      "Lagged": true,
+      "Lagged": true
     },
     {
       "Name": "Quad",
       "Quadratic": true,
-      "Lagged": false,
+      "Lagged": false
 
     },
     {
       "Name": "Lagged",
       "Quadratic": false,
-      "Lagged": true,
+      "Lagged": true
     },
     {
       "Name": "Regress",
       "Quadratic": false,
-      "Lagged": false,
+      "Lagged": false
     }
 
 
