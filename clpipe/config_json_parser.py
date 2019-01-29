@@ -65,9 +65,9 @@ class ConfigParser:
             self.config['PostProcessingOptions']['OutputDirectory'] = os.path.abspath(output_dir)
             os.makedirs(self.config['PostProcessingOptions']['OutputDirectory'], exist_ok=True)
         if target_suffix is not None:
-            self.config['PostProcessingOptions']['TargetSuffix'] = os.path.abspath(target_suffix)
+            self.config['PostProcessingOptions']['TargetSuffix'] = target_suffix
         if output_suffix is not None:
-            self.config['PostProcessingOptions']['OutputSuffix'] = os.path.abspath(output_suffix)
+            self.config['PostProcessingOptions']['OutputSuffix'] = output_suffix
 
     def update_runlog(self, subjects, whatran):
         newLog = {'DateRan': datetime.datetime.now().strftime("%I:%M%p on %B %d, %Y"),
