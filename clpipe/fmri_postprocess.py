@@ -228,7 +228,7 @@ def _find_json(config, filepath):
     sans_ext = os.path.splitext(os.path.splitext(file_name)[0])[0]
     components = sans_ext.split('_')
 
-    jsons = glob.glob(os.path.join(config.config['FMRIPrepOptions']['BIDSDirectory'], '**', '*.json'))
+    jsons = glob.glob(os.path.join(config.config['FMRIPrepOptions']['BIDSDirectory'], '**', '*.json'), recursive=True)
 
     count_overlap = []
     for json_target in jsons:
