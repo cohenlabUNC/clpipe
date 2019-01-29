@@ -63,6 +63,7 @@ def fmri_postprocess(configfile=None, subjects=None, targetdir=None, targetsuffi
                         '''-outputDir={outputDir} -outputSuffix={outputSuffix} -logOutputDir={logOutputDir} -single {sub}'''
 
     if batch:
+        logging.debug('Entering Batch Mode')
         batch_manager = BatchManager(config.config['BatchConfig'], logoutputdir)
         batch_manager.update_mem_usage(config.config['PostProcessingOptions']['PostProcessingMemoryUsage'])
         for sub in sublist:
@@ -77,12 +78,14 @@ def fmri_postprocess(configfile=None, subjects=None, targetdir=None, targetsuffi
             )
             batch_manager.addjob(Job("PostProcessing"+sub, sub_string_temp))
         if submit:
+            logging.debug('Entering Submit Mode')
             batch_manager.createsubmissionhead()
             batch_manager.compilejobstrings()
             batch_manager.submit_jobs()
             config.update_runlog(subjectstring, "PostProcessing")
             config.config_json_dump(outputdir, configfile)
         else:
+            logging.debug('Entering Print Mode')
             click.echo(batch_manager.print_jobs())
     else:
         for sub in subjects:
