@@ -21,6 +21,7 @@ setup(name='clpipe',
       fmriprep_process=clpipe.fmri_preprocess:fmriprep_process
       dicom_to_nifti_to_bids_converter_setup=clpipe.dicom_to_bids_converter:dicom_to_nifti_to_bids_converter_setup
       bids_validate=clpipe.bids_validator:bids_validate
+      fmri_postprocess=clpipe.fmri_postprocess:fmriprep_postprocess
       ''',
       zip_safe=False
       )
