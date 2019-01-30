@@ -13,6 +13,7 @@ import clpipe.postprocutils
 import numpy
 import logging
 import gc
+
 logging.basicConfig(level=logging.DEBUG)
 
 
@@ -47,10 +48,8 @@ def fmri_postprocess(configfile=None, subjects=None, targetdir=None, targetsuffi
             logoutputdir = os.path.abspath(logoutputdir)
             os.makedirs(logoutputdir, exist_ok=True)
     else:
-        logoutputdir = os.path.join(config.config['PostProcessingOptions']['OutputDirectory'],"BatchOutput")
+        logoutputdir = os.path.join(config.config['PostProcessingOptions']['OutputDirectory'], "BatchOutput")
         os.makedirs(logoutputdir, exist_ok=True)
-
-
 
     if not subjects:
         subjectstring = "ALL"
@@ -64,7 +63,6 @@ def fmri_postprocess(configfile=None, subjects=None, targetdir=None, targetsuffi
                         '''-outputDir={outputDir} -outputSuffix={outputSuffix} -logOutputDir={logOutputDir} -single {sub}'''
 
     if batch:
-        logging.debug('Entering Batch Mode')
         batch_manager = BatchManager(config.config['BatchConfig'], logoutputdir)
         batch_manager.update_mem_usage(config.config['PostProcessingOptions']['PostProcessingMemoryUsage'])
         for sub in sublist:
@@ -77,16 +75,14 @@ def fmri_postprocess(configfile=None, subjects=None, targetdir=None, targetsuffi
                 logOutputDir=logoutputdir,
                 sub=sub
             )
-            batch_manager.addjob(Job("PostProcessing"+sub, sub_string_temp))
+            batch_manager.addjob(Job("PostProcessing" + sub, sub_string_temp))
         if submit:
-            logging.debug('Entering Submit Mode')
             batch_manager.createsubmissionhead()
             batch_manager.compilejobstrings()
             batch_manager.submit_jobs()
             config.update_runlog(subjectstring, "PostProcessing")
             config.config_json_dump(config.config['PostProcessingOptions']['OutputDirectory'], configfile)
         else:
-            logging.debug('Entering Print Mode')
             batch_manager.createsubmissionhead()
             batch_manager.compilejobstrings()
             click.echo(batch_manager.print_jobs())
@@ -97,8 +93,6 @@ def fmri_postprocess(configfile=None, subjects=None, targetdir=None, targetsuffi
 
 
 def _fmri_postprocess_subject(config, subject, task, tr=None):
-    # TODO: Change the logging so that it spits out the log into a subject specific file.
-
     search_string = os.path.abspath(
         os.path.join(config.config['PostProcessingOptions']['TargetDirectory'], "sub-" + subject, "**",
                      "*" + config.config['PostProcessingOptions']['TargetSuffix']))
@@ -114,10 +108,10 @@ def _fmri_postprocess_subject(config, subject, task, tr=None):
 def _fmri_postprocess_image(config, file, tr=None):
     confound_regressors = _find_confounds(config, file)
 
-    logging.info('Looking for: '+ confound_regressors)
+    logging.info('Looking for: ' + confound_regressors)
 
     if not os.path.exists(confound_regressors):
-        logging.warning('Could not find a confound file for ' +file+". Moving onto next scan")
+        logging.warning('Could not find a confound file for ' + file + ". Moving onto next scan")
         return
     else:
         logging.info('Found confound regressors')
@@ -167,7 +161,7 @@ def _fmri_postprocess_image(config, file, tr=None):
         gc.collect()
     if filter_toggle:
         logging.info('Filtering Data Now')
-        data = clpipe.postprocutils.utils.apply_filter(filt,data)
+        data = clpipe.postprocutils.utils.apply_filter(filt, data)
 
     if regress_toggle:
         logging.info('Regressing Data Now')
@@ -192,8 +186,9 @@ def _fmri_postprocess_image(config, file, tr=None):
         sans_ext = os.path.splitext(os.path.splitext(file_name)[0])[0]
         toOut = numpy.vstack([numpy.arange(1, len(scrubTargets) + 1, 1), numpy.asarray(scrubTargets)]).T
         logging.info('Saving Scrub Targets to ' + os.path.join(os.path.dirname(output_file_path),
-                                                                sans_ext + "_scrubTargets.csv"))
-        numpy.savetxt(os.path.join(os.path.dirname(output_file_path), sans_ext+"_scrubTargets.csv"), toOut, delimiter=",")
+                                                               sans_ext + "_scrubTargets.csv"))
+        numpy.savetxt(os.path.join(os.path.dirname(output_file_path), sans_ext + "_scrubTargets.csv"), toOut,
+                      delimiter=",")
 
 
 def _regression_prep(config, confound_filepath):
@@ -220,7 +215,7 @@ def _regression_prep(config, confound_filepath):
     if target_label['Lagged']:
         confound_temp = confounds.diff()
         confound_temp = confound_temp.fillna(0)
-        confounds = pandas.concat([confounds, confound_temp], axis=1,ignore_index=True)
+        confounds = pandas.concat([confounds, confound_temp], axis=1, ignore_index=True)
 
     if target_label['Quadratic']:
         confound_temp = confounds.pow(2)
@@ -247,12 +242,12 @@ def _find_json(config, filepath):
     logging.debug(target_json)
     return target_json
 
+
 def _find_confounds(config, filepath):
     file_name = os.path.basename(filepath)
     sans_ext = os.path.splitext(os.path.splitext(file_name)[0])[0]
     root_file = sans_ext[:sans_ext.index('space')]
-    return os.path.join(os.path.dirname(filepath),root_file+config.config['PostProcessingOptions']['ConfoundSuffix'])
-
+    return os.path.join(os.path.dirname(filepath), root_file + config.config['PostProcessingOptions']['ConfoundSuffix'])
 
 
 def _build_output_directory_structure(config, filepath):
