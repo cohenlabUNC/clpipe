@@ -9,7 +9,9 @@ Welcome to clpipe: A MRI Processing Pipeline for HPCs's documentation!
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
-
+   bidsvalidation
+   fmriprep
+   postprocessing
 
 
 Indices and tables
