@@ -13,7 +13,7 @@ import clpipe.postprocutils
 import numpy
 import logging
 import gc
-
+import psutil
 logging.basicConfig(level=logging.DEBUG)
 
 
@@ -157,6 +157,7 @@ def _fmri_postprocess_image(config, file, tr=None):
         logging.info('Using Spectral Interpolation')
         ofreq = int(config.config['PostProcessingOptions']['OversamplingFreq'])
         hfreq = float(config.config['PostProcessingOptions']['PercentFreqSample'])
+        logging.debug()
         data = clpipe.postprocutils.spec_interpolate.spec_inter(data, tr, ofreq, scrubTargets, hfreq, binSize=config.config['PostProcessingOptions']["SpectralInterpolationBinSize"])
         gc.collect()
     if filter_toggle:
