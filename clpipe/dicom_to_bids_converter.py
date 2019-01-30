@@ -34,8 +34,7 @@ def dicom_to_nifti_to_bids_converter_setup(subject = None, session = None, dicom
     #'''rm -rf {dicomdirectory}/test/'''
     #Note dicominfo file will have a different name if multiple sessions are used
 
-    #batch_manager = BatchManager(batchconfig,logOutputDir)
-    batch_manager = BatchManager()
+    batch_manager = BatchManager(batchconfig,logOutputDir)
     job1 = Job("heudiconv_setup", heudiconv_string.format(
         dicomdirectory=dicomdirectory,
         subject=subject,
