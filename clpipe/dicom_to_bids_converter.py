@@ -25,12 +25,13 @@ def dicom_to_nifti_to_bids_converter_setup(subject = None, session = None, dicom
     #config.config_updater(configfile)
 
     heudiconv_string = '''module add heudiconv \n heudiconv -d {dicomdirectory}/sub-{subject}/ses-{sess}/* -s {subject} '''\
-    ''' -ss {sess} -f {heuristicfile} -o {dicomdirectory}/test/ -c dcm2niix -b --minmeta'''
+    ''' -ss {sess} -f {heuristicfile} -o {dicomdirectory}/test/ -c dcm2niix -b --minmeta \n cp {dicomdirectory}/test/ '''\
+    '''.heudiconv/*/dicominfo_ses-{sess}.tsv {outputfile} \n rm -rf {dicomdirectory}/test/'''
     #Do we want to keep the -b and --minmeta options? The -b generates jsons with BIDS keys, and --minmeta restricts it to
     #only BIDS keys (i.e. no extra DICOM metadata)
 
-    copyfile_string = '''cp {dicomdirectory}/test/ .heudiconv/*/dicominfo_ses-{sess}.tsv {outputfile} \n'''\
-    '''rm -rf {dicomdirectory}/test/'''
+    #copyfile_string = '''cp {dicomdirectory}/test/ .heudiconv/*/dicominfo_ses-{sess}.tsv {outputfile} \n'''\
+    #'''rm -rf {dicomdirectory}/test/'''
     #Note dicominfo file will have a different name if multiple sessions are used
 
     batch_manager = BatchManager(batchconfig,outputDirectory)
@@ -40,11 +41,11 @@ def dicom_to_nifti_to_bids_converter_setup(subject = None, session = None, dicom
         sess=session,
         heuristicfile = heuristicfile,
     ))
-    job2 = Job("copyfile_heudiconv_setup", copyfile_string.format(
-        dicomdirectory=dicomdirectory,
-        sess=session,
-        outputfile=outputfile,
-    ))
+    #job2 = Job("copyfile_heudiconv_setup", copyfile_string.format(
+    #    dicomdirectory=dicomdirectory,
+    #    sess=session,
+    #    outputfile=outputfile,
+    #))
 
     batch_manager.addjob(job1)
     batch_manager.compilejobstrings()
@@ -53,17 +54,17 @@ def dicom_to_nifti_to_bids_converter_setup(subject = None, session = None, dicom
     else:
         batch_manager.print_jobs()
 
-    batch_manager.addjob(job2)
-    header = batch_manager.createsubmissionhead()
-    header.append("--dependency=afterok{job1}")
+    #batch_manager.addjob(job2)
+    #header = batch_manager.createsubmissionhead()
+    #header.append("--dependency=afterok{job1}")
     #May have to format this string, also not sure it will work
     #Now need to append it to the submission list, but not sure how to with the self command, and then submit
 
-    batch_manager.submissionlist.append(job2)
-    if submit:
-        batch_manager.submit_jobs()
-    else:
-        batch_manager.print_jobs()
+    #batch_manager.submissionlist.append(job2)
+    #if submit:
+    #    batch_manager.submit_jobs()
+    #else:
+    #    batch_manager.print_jobs()
     #You can write add jobs to the Batch manager by first making a job:
     # job1 = Job(jobID, submission string)
     #And then adding it to the batch manager
