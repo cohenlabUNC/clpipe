@@ -2,7 +2,7 @@ import datetime
 import getpass
 import json
 import os
-
+import collections
 from jsonschema import validate
 from pkg_resources import resource_stream
 
@@ -28,7 +28,7 @@ class ConfigParser:
             None
         else:
             newConfigDict = self.config_json_parser(newConfig)
-            self.config.update(newConfigDict)
+            self.config = update(self.config, newConfigDict)
             self.validate_config()
 
     def config_json_dump(self, outputdir, filepath):
@@ -65,9 +65,9 @@ class ConfigParser:
             self.config['PostProcessingOptions']['OutputDirectory'] = os.path.abspath(output_dir)
             os.makedirs(self.config['PostProcessingOptions']['OutputDirectory'], exist_ok=True)
         if target_suffix is not None:
-            self.config['PostProcessingOptions']['TargetSuffix'] = os.path.abspath(target_suffix)
+            self.config['PostProcessingOptions']['TargetSuffix'] = target_suffix
         if output_suffix is not None:
-            self.config['PostProcessingOptions']['OutputSuffix'] = os.path.abspath(output_suffix)
+            self.config['PostProcessingOptions']['OutputSuffix'] = output_suffix
 
     def update_runlog(self, subjects, whatran):
         newLog = {'DateRan': datetime.datetime.now().strftime("%I:%M%p on %B %d, %Y"),
@@ -75,3 +75,12 @@ class ConfigParser:
                   'WhatRan': whatran,
                   "WhoRan": getpass.getuser()}
         self.config['RunLog'].append(newLog)
+
+
+def update(d, u):
+    for k, v in u.items():
+        if isinstance(v, collections.Mapping):
+            d[k] = update(d.get(k, {}), v)
+        else:
+            d[k] = v
+    return d

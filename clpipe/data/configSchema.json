@@ -187,13 +187,9 @@
         },
         "Scrubbing": {
           "$id": "#/properties/PostProcessingOptions/properties/Scrubbing",
-          "type": "string",
+          "type": "boolean",
           "title": "The Scrubbing Schema",
-          "default": "",
-          "examples": [
-            "Scrub"
-          ],
-          "pattern": "^(.*)$"
+          "default": true
         },
         "ScrubAhead": {
           "$id": "#/properties/PostProcessingOptions/properties/ScrubAhead",

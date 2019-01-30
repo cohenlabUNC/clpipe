@@ -1,0 +1,38 @@
+{
+  "MotionParams": ["X","Y" ,"Z","RotX","RotY","RotZ"],
+  "WhiteMatter": "WhiteMatter",
+  "CSF": "CSF",
+  "FDLabel": "FramewiseDisplacement",
+  "GlobalSignal": "GlobalSignal",
+  "RegressionOptions": [
+
+    {
+      "Name": "QuadLagged",
+      "Quadratic": true,
+      "Lagged": true
+    },
+    {
+      "Name": "Quad",
+      "Quadratic": true,
+      "Lagged": false
+
+    },
+    {
+      "Name": "Lagged",
+      "Quadratic": false,
+      "Lagged": true
+    },
+    {
+      "Name": "Regress",
+      "Quadratic": false,
+      "Lagged": false
+    }
+
+
+
+
+  ]
+
+
+
+}

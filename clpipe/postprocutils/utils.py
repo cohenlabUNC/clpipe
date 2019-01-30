@@ -1,5 +1,5 @@
 import numpy
-from scipy.signal import butter, sosfilt, sosfreqz
+from scipy.signal import butter, sosfilt
 
 
 def find_sub_list(sl,l):
