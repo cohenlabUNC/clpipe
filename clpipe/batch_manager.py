@@ -18,6 +18,12 @@ class BatchManager:
     def update_mem_usage(self, mem_use):
         self.config['MemoryDefault'] = mem_use
 
+    def update_time(self, time):
+        self.config['TimeDefault'] = time
+
+    def update_nthreads(self, threads):
+        self.config['NThreads'] = threads
+
     def addjob(self, job):
         self.jobs.append(job)
 
@@ -37,6 +43,7 @@ class BatchManager:
             head.append(temp)
 
         head.append(self.config['MemoryCommand'] + self.config['MemoryDefault'])
+        head.append(self.config['TimeCommand'] + self.config['TimeDefault'])
         head.append(self.config['NThreadsCommand'] + '=' + self.config['NThreads'])
         head.append(self.config['JobIDCommand']+'='+'"{jobid}"')
         head.append(self.config['OutputCommand']+'='+os.path.abspath(os.path.join(self.outputDir,'Output-{jobid}.out')))

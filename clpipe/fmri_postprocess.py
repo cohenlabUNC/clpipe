@@ -65,6 +65,8 @@ def fmri_postprocess(configfile=None, subjects=None, targetdir=None, targetsuffi
     if batch:
         batch_manager = BatchManager(config.config['BatchConfig'], logoutputdir)
         batch_manager.update_mem_usage(config.config['PostProcessingOptions']['PostProcessingMemoryUsage'])
+        batch_manager.update_time(config.config['PostProcessingOptions']['PostProcessingTimeUsage'])
+        batch_manager.update_nthreads(config.config['PostProcessingOptions']['NThreads'])
         for sub in sublist:
             sub_string_temp = submission_string.format(
                 config=os.path.abspath(configfile),
