@@ -157,7 +157,7 @@ def _fmri_postprocess_image(config, file, tr=None):
         logging.info('Using Spectral Interpolation')
         ofreq = int(config.config['PostProcessingOptions']['OversamplingFreq'])
         hfreq = float(config.config['PostProcessingOptions']['PercentFreqSample'])
-        data = clpipe.postprocutils.spec_interpolate.spec_inter(data, tr, ofreq, scrubTargets, hfreq)
+        data = clpipe.postprocutils.spec_interpolate.spec_inter(data, tr, ofreq, scrubTargets, hfreq, binSize=config.config['PostProcessingOptions']["SpectralInterpolationBinSize"])
         gc.collect()
     if filter_toggle:
         logging.info('Filtering Data Now')
