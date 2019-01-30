@@ -256,6 +256,7 @@ def _find_confounds(config, filepath):
 
 
 def _build_output_directory_structure(config, filepath):
+    
     target_directory = filepath[filepath.find('sub-'):]
     target_directory = os.path.dirname(target_directory)
     target_directory = os.path.join(config.config['PostProcessingOptions']['OutputDirectory'], target_directory)
