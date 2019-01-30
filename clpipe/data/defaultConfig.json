@@ -30,7 +30,7 @@
 		"ScrubContig": 4,
 		"SpatialSmoothing": "SUSAN",
 		"PostProcessingMemoryUsage": "10000",
-		"SpectralInterpolationBinSize": 3000,
+		"SpectralInterpolationBinSize": 5000,
 		"BIDSValidatorImage": "/proj/hng/singularity_imgs/validator.simg"
 	},
 	"RunLog": [],

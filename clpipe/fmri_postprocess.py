@@ -159,7 +159,7 @@ def _fmri_postprocess_image(config, file, tr=None):
         hfreq = float(config.config['PostProcessingOptions']['PercentFreqSample'])
         logging.debug('Memory Usage Before Spectral Interpolation:' +str(psutil.virtual_memory().total >> 30) +' GB')
         data = clpipe.postprocutils.spec_interpolate.spec_inter(data, tr, ofreq, scrubTargets, hfreq, binSize=config.config['PostProcessingOptions']["SpectralInterpolationBinSize"])
-        
+
         gc.collect()
         logging.debug('Memory Usage After Spectral Interpolation GC:' +str(psutil.virtual_memory().total >> 30) +' GB')
     if filter_toggle:
