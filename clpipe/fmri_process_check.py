@@ -31,7 +31,7 @@ def fmri_process_check(configfile, outputfile=None):
             logging.debug('Finding ' + file)
             row = pd.DataFrame(columns = ['Subject','BIDS_File', 'FMRIPrep_File', 'PostProcessed_File'])
 
-            header = os.path.basename(file).split('_space-')[0]
+            header = os.path.basename(file).split('_bold.nii.gz')[0]
             logging.debug(header)
             target_fmriprep_file = [tfile for tfile in fmriprep_files if header in tfile and config.config['PostProcessingOptions']['TargetSuffix'] in tfile]
             logging.debug('Finding FMRIPrep file' + '[%s]' % ', '.join(map(str, target_fmriprep_file)))
