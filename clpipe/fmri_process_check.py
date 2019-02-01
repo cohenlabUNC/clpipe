@@ -20,8 +20,8 @@ def fmri_process_check(configfile, outputfile=None):
     file_list = []
     for sub in sublist:
         logging.debug("Inspecting "+ sub)
-        bids_files = glob.glob(os.path.join(config.config['FMRIPrepOptions']['BIDSDirectory'],sub, '**','*.nii.gz'))
-        bold_files = [file for file in bids_files if 'bold' in file]
+        bold_files = glob.glob(os.path.join(config.config['FMRIPrepOptions']['BIDSDirectory'],sub, '**','func','*.nii.gz'))
+        #bold_files = [file for file in bids_files if 'bold' in file]
 
         fmriprep_files = glob.glob(os.path.join(config.config['PostProcessingOptions']['TargetDirectory'],sub, '**',config.config['PostProcessingOptions']['TargetSuffix']))
 
