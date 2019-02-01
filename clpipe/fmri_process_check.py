@@ -33,7 +33,7 @@ def fmri_process_check(configfile, outputfile=None):
 
             header = os.path.basename(file).split('_space-')
             target_fmriprep_file = [tfile for tfile in fmriprep_files if header in tfile and config.config['PostProcessingOptions']['TargetSuffix'] in tfile]
-            logging.debug('Finding FMRIPrep file' + target_fmriprep_file.join(' '))
+            logging.debug('Finding FMRIPrep file' + '[%s]' % ', '.join(map(str, target_fmriprep_file)))
             row.loc[0, 0:1] = [sub, file]
 
             if target_fmriprep_file:
