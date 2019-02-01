@@ -29,7 +29,7 @@
 		"ScrubBehind": 2,
 		"ScrubContig": 4,
 		"SpatialSmoothing": "SUSAN",
-		"PostProcessingMemoryUsage": "10000",
+		"PostProcessingMemoryUsage": "20000",
 		"PostProcessingTimeUsage": "8:0:0",
 		"NThreads": "1",
 		"SpectralInterpolationBinSize": 5000,

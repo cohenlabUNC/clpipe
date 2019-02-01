@@ -3,13 +3,12 @@ from .config_json_parser import ConfigParser
 import pandas as pd
 import os
 import glob
-
+import logging
 @click.command()
 @click.option('-configFile', type=click.Path(exists=True, dir_okay=False, file_okay=True), required = True)
 @click.option('-outputFile')
-
 def fmri_process_check(configfile, outputfile=None):
-
+    logging.basicConfig(level=logging.DEBUG)
     config = ConfigParser()
     config.config_updater(configfile)
     config.validate_config()
@@ -20,6 +19,7 @@ def fmri_process_check(configfile, outputfile=None):
             os.path.join(config.config['PostProcessingOptions']['TargetDirectory'], o)) and 'sub-' in o]
     file_list = []
     for sub in sublist:
+        logging.debug("Inspecting "+ sub)
         bids_files = glob.glob(os.path.join(config.config['FMRIPrepOptions']['BIDSDirectory'],sub, '**','*.nii.gz'))
         bold_files = [file for file in bids_files if 'bold' in file]
 
@@ -28,10 +28,12 @@ def fmri_process_check(configfile, outputfile=None):
         postprocess_files = glob.glob(os.path.join(config.config['PostProcessingOptions']['OutputDirectory'],sub, '**',config.config['PostProcessingOptions']['OutputSuffix']))
 
         for file in bold_files:
+            logging.debug('Finding ' + file)
             row = pd.DataFrame(columns = ['Subject','BIDS_File', 'FMRIPrep_File', 'PostProcessed_File'])
 
             header = os.path.basename(file).split('_space-')
             target_fmriprep_file = [tfile for tfile in fmriprep_files if header in tfile and config.config['PostProcessingOptions']['TargetSuffix'] in tfile]
+            logging.debug('Finding FMRIPrep file' + target_fmriprep_file)
             row.loc[0, 0:1] = [sub, file]
 
             if target_fmriprep_file:
