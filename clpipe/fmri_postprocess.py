@@ -13,7 +13,7 @@ import clpipe.postprocutils
 import numpy
 import logging
 import gc
-
+import psutil
 logging.basicConfig(level=logging.DEBUG)
 
 
@@ -65,9 +65,11 @@ def fmri_postprocess(configfile=None, subjects=None, targetdir=None, targetsuffi
     if batch:
         batch_manager = BatchManager(config.config['BatchConfig'], logoutputdir)
         batch_manager.update_mem_usage(config.config['PostProcessingOptions']['PostProcessingMemoryUsage'])
+        batch_manager.update_time(config.config['PostProcessingOptions']['PostProcessingTimeUsage'])
+        batch_manager.update_nthreads(config.config['PostProcessingOptions']['NThreads'])
         for sub in sublist:
             sub_string_temp = submission_string.format(
-                config=configfile,
+                config=os.path.abspath(configfile),
                 targetDir=config.config['PostProcessingOptions']['TargetDirectory'],
                 targetSuffix=config.config['PostProcessingOptions']['TargetSuffix'],
                 outputDir=config.config['PostProcessingOptions']['OutputDirectory'],
@@ -157,8 +159,11 @@ def _fmri_postprocess_image(config, file, tr=None):
         logging.info('Using Spectral Interpolation')
         ofreq = int(config.config['PostProcessingOptions']['OversamplingFreq'])
         hfreq = float(config.config['PostProcessingOptions']['PercentFreqSample'])
-        data = clpipe.postprocutils.spec_interpolate.spec_inter(data, tr, ofreq, scrubTargets, hfreq)
+        logging.debug('Memory Usage Before Spectral Interpolation:' +str(psutil.virtual_memory().total >> 30) +' GB')
+        data = clpipe.postprocutils.spec_interpolate.spec_inter(data, tr, ofreq, scrubTargets, hfreq, binSize=config.config['PostProcessingOptions']["SpectralInterpolationBinSize"])
+
         gc.collect()
+        logging.debug('Memory Usage After Spectral Interpolation GC:' +str(psutil.virtual_memory().total >> 30) +' GB')
     if filter_toggle:
         logging.info('Filtering Data Now')
         data = clpipe.postprocutils.utils.apply_filter(filt, data)
@@ -251,6 +256,7 @@ def _find_confounds(config, filepath):
 
 
 def _build_output_directory_structure(config, filepath):
+
     target_directory = filepath[filepath.find('sub-'):]
     target_directory = os.path.dirname(target_directory)
     target_directory = os.path.join(config.config['PostProcessingOptions']['OutputDirectory'], target_directory)
