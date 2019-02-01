@@ -23,9 +23,9 @@ def fmri_process_check(configfile, outputfile=None):
         bold_files = glob.glob(os.path.join(config.config['FMRIPrepOptions']['BIDSDirectory'],sub, '**','func','*.nii.gz'))
         #bold_files = [file for file in bids_files if 'bold' in file]
 
-        fmriprep_files = glob.glob(os.path.join(config.config['PostProcessingOptions']['TargetDirectory'],sub, '**',config.config['PostProcessingOptions']['TargetSuffix']))
+        fmriprep_files = glob.glob(os.path.join(config.config['PostProcessingOptions']['TargetDirectory'],sub, '**','+'+config.config['PostProcessingOptions']['TargetSuffix']))
 
-        postprocess_files = glob.glob(os.path.join(config.config['PostProcessingOptions']['OutputDirectory'],sub, '**',config.config['PostProcessingOptions']['OutputSuffix']))
+        postprocess_files = glob.glob(os.path.join(config.config['PostProcessingOptions']['OutputDirectory'],sub, '**','+'+config.config['PostProcessingOptions']['OutputSuffix']))
 
         for file in bold_files:
             logging.debug('Finding ' + file)
@@ -42,7 +42,7 @@ def fmri_process_check(configfile, outputfile=None):
                 post_proc_file = [pfile for pfile in postprocess_files if header in post_proc_file and config.config['PostProcessingOptions']['OutputSuffix'] in post_proc_file]
                 if post_proc_file:
                     row.loc[0, 'PostProcessed_File'] =  post_proc_file
-            file_list.extend(row)
+            file_list.append(row)
 
     to_file = pd.concat(file_list, ignore_index=True)
     if outputfile is None:
