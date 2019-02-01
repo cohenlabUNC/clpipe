@@ -41,7 +41,7 @@ def fmri_process_check(configfile, outputfile=None):
                 post_proc_file = [pfile for pfile in postprocess_files if header in post_proc_file and config.config['PostProcessingOptions']['OutputSuffix'] in post_proc_file]
                 if post_proc_file:
                     row.loc[0, 'PostProcessed_File'] =  post_proc_file
-        file_list.extend(row)
+            file_list.extend(row)
 
     to_file = pd.concat(file_list, ignore_index=True)
     if outputfile is None:
