@@ -3,7 +3,7 @@
 	"FMRIPrepOptions": {
 		"BIDSDirectory": "",
 		"OutputDirectory": "",
-		"FMRIPrepPath": "/proj/hng/singularity_imgs/poldracklab_fmriprep_latest-2018-02-14-1c6af86ba750.img",
+		"FMRIPrepPath": "/proj/hng/singularity_imgs/fmriprep1.2.6.simg",
 		"FreesurferLicensePath": "/proj/hng/singularity_imgs/license.txt",
 		"FMRIPrepMemoryUsage": "20000"
 	},
