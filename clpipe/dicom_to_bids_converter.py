@@ -11,7 +11,7 @@ from .batch_manager import BatchManager,Job
 @click.option('-heuristicfile', type=click.Path(exists=True, dir_okay=False, file_okay=True), default = "convertall.py")
 @click.option('-submit/-save', default=False)
 def dicom_to_nifti_to_bids_converter_setup(subject = None, session = None, dicomdirectory=None, outputfile=None,
-                                           logOutputDir = None, batchconfig = None, heuristicfile = None, submit=False):
+                                           logoutputdir = None, batchconfig = None, heuristicfile = None, submit=False):
 
     #TODO: This function should run heudiconv with a default heuristic file
     # on one subject, pull the scan info file out of the directory and put it
@@ -34,7 +34,7 @@ def dicom_to_nifti_to_bids_converter_setup(subject = None, session = None, dicom
     #'''rm -rf {dicomdirectory}/test/'''
     #Note dicominfo file will have a different name if multiple sessions are used
 
-    batch_manager = BatchManager(batchconfig,logOutputDir)
+    batch_manager = BatchManager(batchconfig,logoutputdir)
     job1 = Job("heudiconv_setup", heudiconv_string.format(
         dicomdirectory=dicomdirectory,
         subject=subject,
