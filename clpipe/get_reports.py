@@ -29,7 +29,7 @@ def get_reports(configfile, outputname):
     for report in images:
         logging.info(report)
         shutil.copy(report,
-                        os.path.join(config.config['FMRIPrepOptions']['WorkingDirectory'], 'reports_temp'))
+                        os.path.join(config.config['FMRIPrepOptions']['WorkingDirectory'], 'reports_temp', report))
 
 
     shutil.make_archive(base_name=outputname, root_dir = os.path.join(config.config['FMRIPrepOptions']['WorkingDirectory'],'reports_temp'), base_dir=os.path.join(config.config['FMRIPrepOptions']['WorkingDirectory'],'reports_temp'), format = 'zip')
