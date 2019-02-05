@@ -8,7 +8,7 @@ This pipeline is under development, and should not be used quite yet. If you are
 
 ## Installation Guide for UNC-CH
 
-1. Open a longleaf terminal session
+1. Open a Longleaf terminal session
 2. Switch to python 3.6.6 using `module add python/3.6.6`
 3. Install clpipe from GitHub with 
 ```pip3 install --user --upgrade  git+git://github.com/CohenLabUNC/clpipe.git```
