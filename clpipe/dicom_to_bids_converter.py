@@ -30,14 +30,6 @@ def dicom_to_nifti_to_bids_converter_setup(subject = None, session = None, dicom
     #Turns out -c is the type of converter to use. It doesn't say anywhere what the default is, but I assume it's dcm2niix.
     #I have seen other examples of people using other converters, but for now I think we can get rid of it
 
-    #copyfile_string = '''cp {dicomdirectory}/test/ .heudiconv/*/dicominfo_ses-{sess}.tsv {outputfile} \n'''\
-    #'''rm -rf {dicomdirectory}/test/'''
-    #Note dicominfo file will have a different name if multiple sessions are used
-    #if batchconfig == "slurmUNCConfigHeudiconv.json":
-        #batchconfig = json.load(resource_stream(__name__,"batchConfigs/slurmUNCConfigHeudiconv.json"))
-    #else:
-        #batchconfig = os.path.abspath(batchconfig)
-
     batch_manager = BatchManager(batchconfig,logoutputdir)
     job1 = Job("heudiconv_setup", heudiconv_string.format(
         dicomdirectory=dicomdirectory,
@@ -45,11 +37,6 @@ def dicom_to_nifti_to_bids_converter_setup(subject = None, session = None, dicom
         sess=session,
         outputfile = outputfile,
     ))
-    #job2 = Job("copyfile_heudiconv_setup", copyfile_string.format(
-    #    dicomdirectory=dicomdirectory,
-    #    sess=session,
-    #    outputfile=outputfile,
-    #))
 
     batch_manager.addjob(job1)
     batch_manager.compilejobstrings()
@@ -58,27 +45,6 @@ def dicom_to_nifti_to_bids_converter_setup(subject = None, session = None, dicom
     else:
         batch_manager.print_jobs()
 
-    #batch_manager.addjob(job2)
-    #header = batch_manager.createsubmissionhead()
-    #header.append("--dependency=afterok{job1}")
-    #May have to format this string, also not sure it will work
-    #Now need to append it to the submission list, but not sure how to with the self command, and then submit
-
-    #batch_manager.submissionlist.append(job2)
-    #if submit:
-    #    batch_manager.submit_jobs()
-    #else:
-    #    batch_manager.print_jobs()
-    #You can write add jobs to the Batch manager by first making a job:
-    # job1 = Job(jobID, submission string)
-    #And then adding it to the batch manager
-    #batch_manager.addjob(job1)
-
-    #To submit all jobs:
-    #batch_manager.compilejobstrings()
-    #batch_manager.submit_jobs()
-    #To print the current set of job strings:
-    #batch_manager.print_jobs()
 
 
     return 0
