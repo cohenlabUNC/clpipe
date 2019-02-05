@@ -3,7 +3,7 @@ from .config_json_parser import ConfigParser
 import os
 import glob
 import shutil
-from distutils.dir_util import copy_tree
+from distutils.dir_util import copy_tree, remove_tree
 
 import logging
 
@@ -33,3 +33,5 @@ def get_reports(configfile, outputname):
 
 
     shutil.make_archive(base_name=outputname, root_dir = os.path.join(config.config['FMRIPrepOptions']['WorkingDirectory'],'reports_temp'), base_dir=os.path.join(config.config['FMRIPrepOptions']['WorkingDirectory'],'reports_temp'), format = 'zip')
+
+    remove_tree( os.path.join(config.config['FMRIPrepOptions']['WorkingDirectory'],'reports_temp'))
