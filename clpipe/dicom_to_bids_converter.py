@@ -7,7 +7,7 @@ from .batch_manager import BatchManager,Job
 @click.argument('dicomdirectory', type=click.Path(exists=True, dir_okay=True, file_okay=False))
 @click.argument('outputfile', type=click.Path(exists=True, dir_okay=False, file_okay=True), default = None)
 @click.option('-logOutputDir', type=click.Path(exists=True, dir_okay=True, file_okay=False), default = None)
-@click.option('-batchConfig', type=click.Path(exists=True, dir_okay=False, file_okay=True), default = "slurmUNCConfigHeudiconv.json")
+@click.option('-batchConfig', type=click.Path(dir_okay=False, file_okay=True), default = "slurmUNCConfigHeudiconv.json")
 @click.option('-submit/-save', default=False)
 def dicom_to_nifti_to_bids_converter_setup(subject = None, session = None, dicomdirectory=None, outputfile=None,
                                            logoutputdir = None, batchconfig = None, submit=False):
@@ -33,7 +33,7 @@ def dicom_to_nifti_to_bids_converter_setup(subject = None, session = None, dicom
     #'''rm -rf {dicomdirectory}/test/'''
     #Note dicominfo file will have a different name if multiple sessions are used
     if batchconfig == "slurmUNCConfigHeudiconv.json":
-        batchconfig = json.load(resource_stream(__name__,'batchConfigs/slurmUNCConfigHeudiconv.json'))
+        batchconfig = json.load(resource_stream(__name__,"batchConfigs/slurmUNCConfigHeudiconv.json"))
     else:
         batchconfig = os.path.abspath(batchconfig)
 
