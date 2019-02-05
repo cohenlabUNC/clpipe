@@ -32,4 +32,4 @@ def get_reports(configfile, outputname):
                         os.path.join(config.config['FMRIPrepOptions']['WorkingDirectory'], 'reports_temp', os.path.basename(report)))
 
 
-    shutil.make_archive(base_name=outputname, root_dir = os.path.join(config.config['FMRIPrepOptions']['WorkingDirectory'],'reports_temp'), base_dir='reports_temp', format = 'zip')
+    shutil.make_archive(base_name=outputname, root_dir = 'reports_temp', base_dir=os.path.join(config.config['FMRIPrepOptions']['WorkingDirectory'],'reports_temp'), format = 'zip')
