@@ -2,6 +2,7 @@
 	"ConfigTitle": "Default Configuration File",
 	"FMRIPrepOptions": {
 		"BIDSDirectory": "",
+		"WorkingDirectory": "",
 		"OutputDirectory": "",
 		"FMRIPrepPath": "/proj/hng/singularity_imgs/fmriprep1.2.6.simg",
 		"FreesurferLicensePath": "/proj/hng/singularity_imgs/license.txt",
