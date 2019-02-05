@@ -3,6 +3,8 @@ from .config_json_parser import ConfigParser
 import os
 import glob
 import shutil
+from distutils.dir_util import copy_tree
+
 import logging
 
 @click.command()
@@ -20,7 +22,7 @@ def get_reports(configfile, outputname):
 
     for sub in [x for x in image_dirs if 'sub-' in x]:
         logging.info(sub)
-        shutil.copytree(os.path.join(sub, 'figures'), os.path.join(config.config['FMRIPrepOptions']['WorkingDirectory'],'reports_temp', sub))
+        copy_tree(os.path.join(sub, 'figures'), os.path.join(config.config['FMRIPrepOptions']['WorkingDirectory'],'reports_temp', sub))
 
     images = glob.glob(os.path.join(fmriprepdir, 'fmriprep', '*.html'))
 
