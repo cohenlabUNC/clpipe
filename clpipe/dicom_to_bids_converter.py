@@ -1,6 +1,5 @@
 import click
 import json
-from pkg_resources import resource_stream
 from .batch_manager import BatchManager,Job
 
 @click.command()
@@ -34,10 +33,10 @@ def dicom_to_nifti_to_bids_converter_setup(subject = None, session = None, dicom
     #copyfile_string = '''cp {dicomdirectory}/test/ .heudiconv/*/dicominfo_ses-{sess}.tsv {outputfile} \n'''\
     #'''rm -rf {dicomdirectory}/test/'''
     #Note dicominfo file will have a different name if multiple sessions are used
-    if batchconfig == "slurmUNCConfigHeudiconv.json":
-        batchconfig = json.load(resource_stream(__name__,"batchConfigs/slurmUNCConfigHeudiconv.json"))
-    else:
-        batchconfig = os.path.abspath(batchconfig)
+    #if batchconfig == "slurmUNCConfigHeudiconv.json":
+        #batchconfig = json.load(resource_stream(__name__,"batchConfigs/slurmUNCConfigHeudiconv.json"))
+    #else:
+        #batchconfig = os.path.abspath(batchconfig)
 
     batch_manager = BatchManager(batchconfig,logoutputdir)
     job1 = Job("heudiconv_setup", heudiconv_string.format(
