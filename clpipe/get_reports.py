@@ -18,7 +18,7 @@ def get_reports(configfile, outputname):
 
     image_dirs = os.listdir(os.path.join(fmriprepdir, 'fmriprep'))
 
-    for sub in [x for x in image_dirs if 'subject-' in x]:
+    for sub in [x for x in image_dirs if 'sub-' in x]:
         logging.info(sub)
         shutil.copytree(os.path.join(sub, 'figures'), os.path.join(config.config['FMRIPrepOptions']['WorkingDirectory'],'reports_temp', sub))
 
