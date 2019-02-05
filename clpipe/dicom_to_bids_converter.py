@@ -8,10 +8,9 @@ from .batch_manager import BatchManager,Job
 @click.argument('outputfile', type=click.Path(exists=True, dir_okay=False, file_okay=True), default = None)
 @click.option('-logOutputDir', type=click.Path(exists=True, dir_okay=True, file_okay=False), default = None)
 @click.option('-batchConfig', type=click.Path(exists=True, dir_okay=False, file_okay=True), default = "slurmUNCConfigHeudiconv.json")
-@click.option('-heuristicfile', type=click.Path(exists=True, dir_okay=False, file_okay=True), default = "convertall.py")
 @click.option('-submit/-save', default=False)
 def dicom_to_nifti_to_bids_converter_setup(subject = None, session = None, dicomdirectory=None, outputfile=None,
-                                           logoutputdir = None, batchconfig = None, heuristicfile = None, submit=False):
+                                           logoutputdir = None, batchconfig = None, submit=False):
 
     #TODO: This function should run heudiconv with a default heuristic file
     # on one subject, pull the scan info file out of the directory and put it
@@ -25,14 +24,18 @@ def dicom_to_nifti_to_bids_converter_setup(subject = None, session = None, dicom
     #config.config_updater(configfile)
 
     heudiconv_string = '''module add heudiconv \n heudiconv -d {dicomdirectory}/sub-{subject}/ses-{sess}/* -s {subject} '''\
-    ''' -ss {sess} -f {heuristicfile} -o {dicomdirectory}/test/ -c dcm2niix -b --minmeta \n cp {dicomdirectory}/test/ '''\
+    ''' -ss {sess} -f convertall -o {dicomdirectory}/test/ -b --minmeta \n cp {dicomdirectory}/test/ '''\
     '''.heudiconv/*/dicominfo_ses-{sess}.tsv {outputfile} \n rm -rf {dicomdirectory}/test/'''
-    #Do we want to keep the -b and --minmeta options? The -b generates jsons with BIDS keys, and --minmeta restricts it to
-    #only BIDS keys (i.e. no extra DICOM metadata)
+    #Turns out -c is the type of converter to use. It doesn't say anywhere what the default is, but I assume it's dcm2niix.
+    #I have seen other examples of people using other converters, but for now I think we can get rid of it
 
     #copyfile_string = '''cp {dicomdirectory}/test/ .heudiconv/*/dicominfo_ses-{sess}.tsv {outputfile} \n'''\
     #'''rm -rf {dicomdirectory}/test/'''
     #Note dicominfo file will have a different name if multiple sessions are used
+    if batchconfig == "slurmUNCConfigHeudiconv.json":
+        batchconfig = json.load(resource_stream(__name__,'batchConfigs/slurmUNCConfigHeudiconv.json'))
+    else:
+        batchconfig = os.path.abspath(batchconfig)
 
     batch_manager = BatchManager(batchconfig,logoutputdir)
     job1 = Job("heudiconv_setup", heudiconv_string.format(
