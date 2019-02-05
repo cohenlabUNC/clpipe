@@ -1,0 +1,117 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Preprocessing with fMRIprep &#8212; clpipe: A MRI Processing Pipeline for HPCs .1 documentation</title>
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Postprocessing fMRI" href="postprocessing.html" />
+    <link rel="prev" title="BIDS Validation" href="bidsvalidation.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="postprocessing.html" title="Postprocessing fMRI"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="bidsvalidation.html" title="BIDS Validation"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">clpipe: A MRI Processing Pipeline for HPCs .1 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="preprocessing-with-fmriprep">
+<h1>Preprocessing with fMRIprep<a class="headerlink" href="#preprocessing-with-fmriprep" title="Permalink to this headline">¶</a></h1>
+<p>clpipe uses <a class="reference external" href="https://fmriprep.readthedocs.io/en/stable/">fMRIprep</a> to perform minimal preprocessing on functional MRI data. To submit your dataset for preprocessing, use the following command:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">usage</span><span class="p">:</span> <span class="n">fmriprep_process</span> <span class="p">[</span><span class="n">options</span><span class="p">]</span> <span class="p">[</span><span class="n">subjects</span><span class="o">...</span><span class="p">]</span>
+    <span class="n">options</span><span class="p">:</span>
+        <span class="o">-</span><span class="n">configFile</span><span class="p">,</span> <span class="n">Use</span> <span class="n">a</span> <span class="n">given</span> <span class="n">configuration</span> <span class="n">file</span><span class="o">.</span> <span class="n">If</span> <span class="n">left</span> <span class="n">blank</span><span class="p">,</span> <span class="n">uses</span> <span class="n">the</span> <span class="n">default</span> <span class="n">config</span> <span class="n">file</span><span class="p">,</span> <span class="n">requiring</span> <span class="n">definition</span> <span class="n">of</span> <span class="n">BIDS</span><span class="p">,</span> <span class="n">working</span> <span class="ow">and</span> <span class="n">output</span> <span class="n">directories</span><span class="o">.</span>
+        <span class="o">-</span><span class="n">bidsDir</span><span class="p">,</span> <span class="n">Which</span> <span class="n">BIDS</span> <span class="n">directory</span> <span class="n">to</span> <span class="n">process</span><span class="o">.</span> <span class="n">If</span> <span class="n">a</span> <span class="n">configuration</span> <span class="n">file</span> <span class="ow">is</span> <span class="n">provided</span> <span class="k">with</span> <span class="n">a</span> <span class="n">BIDS</span> <span class="n">directory</span><span class="p">,</span> <span class="n">this</span> <span class="n">argument</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">necessary</span><span class="o">.</span>
+        <span class="o">-</span><span class="n">workingDir</span><span class="p">,</span> <span class="n">Where</span> <span class="n">to</span> <span class="n">generate</span> <span class="n">the</span> <span class="n">working</span> <span class="n">directory</span><span class="o">.</span> <span class="n">If</span> <span class="n">a</span> <span class="n">configuration</span> <span class="n">file</span> <span class="ow">is</span> <span class="n">provided</span> <span class="k">with</span> <span class="n">a</span> <span class="n">working</span> <span class="n">directory</span><span class="p">,</span> <span class="n">this</span> <span class="n">argument</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">necessary</span><span class="o">.</span>
+        <span class="o">-</span><span class="n">outputDir</span><span class="p">,</span> <span class="n">Where</span> <span class="n">to</span> <span class="n">put</span> <span class="n">the</span> <span class="n">preprocessed</span> <span class="n">data</span><span class="o">.</span> <span class="n">If</span> <span class="n">a</span> <span class="n">configuration</span> <span class="n">file</span> <span class="ow">is</span> <span class="n">provided</span> <span class="k">with</span> <span class="n">a</span> <span class="n">output</span> <span class="n">directory</span><span class="p">,</span> <span class="n">this</span> <span class="n">argument</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">necessary</span><span class="o">.</span>
+        <span class="o">-</span><span class="n">logOutputDir</span><span class="p">,</span> <span class="n">Where</span> <span class="n">to</span> <span class="n">put</span> <span class="n">HPC</span> <span class="n">output</span> <span class="n">files</span><span class="o">.</span> <span class="n">If</span> <span class="ow">not</span> <span class="n">specified</span><span class="p">,</span> <span class="n">defaults</span> <span class="n">to</span> <span class="o">&lt;</span><span class="n">outputDir</span><span class="o">&gt;/</span><span class="n">batchOutput</span><span class="o">.</span>
+        <span class="o">-</span><span class="n">submit</span><span class="p">,</span> <span class="n">Flag</span> <span class="n">to</span> <span class="n">submit</span> <span class="n">commands</span> <span class="n">to</span> <span class="n">the</span> <span class="n">HPC</span><span class="o">.</span>
+    <span class="n">subjects</span><span class="o">...</span><span class="p">,</span> <span class="n">A</span> <span class="nb">list</span> <span class="n">of</span> <span class="n">subject</span> <span class="n">IDs</span> <span class="n">to</span> <span class="n">process</span><span class="o">.</span> <span class="n">If</span> <span class="n">left</span> <span class="n">blank</span><span class="p">,</span> <span class="n">then</span> <span class="nb">all</span> <span class="n">subjects</span> <span class="n">are</span> <span class="n">processed</span><span class="o">.</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">fmriprep_process</span></code> creates one batch job per subject. If you find that you are running out of memory, increase the <cite>[FMRIPrepOptions][FMRIPrepMemoryUsage]</cite> option in the configuration file.</p>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="bidsvalidation.html"
+                        title="previous chapter">BIDS Validation</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="postprocessing.html"
+                        title="next chapter">Postprocessing fMRI</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/fmriprep.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="postprocessing.html" title="Postprocessing fMRI"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="bidsvalidation.html" title="BIDS Validation"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">clpipe: A MRI Processing Pipeline for HPCs .1 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2019, Cohen Lab at UNC-CH.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.3.
+    </div>
+  </body>
+</html>
