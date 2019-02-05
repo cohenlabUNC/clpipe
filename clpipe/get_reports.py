@@ -22,7 +22,7 @@ def get_reports(configfile, outputname):
 
     for sub in [x for x in image_dirs if 'sub-' in x]:
         logging.info(sub)
-        click.echo(copy_tree(os.path.join(sub, 'figures'), os.path.join(config.config['FMRIPrepOptions']['WorkingDirectory'],'reports_temp', os.path.basename(sub), 'figures')))
+        copy_tree(os.path.join(sub, 'figures'), os.path.join(config.config['FMRIPrepOptions']['WorkingDirectory'],'reports_temp', os.path.basename(sub), 'figures'))
 
     images = glob.glob(os.path.join(fmriprepdir, 'fmriprep', '*.html'))
 

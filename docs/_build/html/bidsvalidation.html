@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -9,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Index &mdash; clpipe: A MRI Processing Pipeline for HPCs .1 documentation</title>
+  <title>BIDS Validation &mdash; clpipe: A MRI Processing Pipeline for HPCs .1 documentation</title>
   
 
   
@@ -27,8 +26,10 @@
 
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <link rel="index" title="Index" href="#" />
-    <link rel="search" title="Search" href="search.html" /> 
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Preprocessing with fMRIprep" href="fmriprep.html" />
+    <link rel="prev" title="Configuration Files" href="configfiles.html" /> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
@@ -78,9 +79,9 @@
             
             
               <p class="caption"><span class="caption-text">Contents:</span></p>
-<ul>
+<ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="configfiles.html">Configuration Files</a></li>
-<li class="toctree-l1"><a class="reference internal" href="bidsvalidation.html">BIDS Validation</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">BIDS Validation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="fmriprep.html">Preprocessing with fMRIprep</a></li>
 <li class="toctree-l1"><a class="reference internal" href="postprocessing.html">Postprocessing fMRI</a></li>
 </ul>
@@ -128,12 +129,14 @@
     
       <li><a href="index.html">Docs</a> &raquo;</li>
         
-      <li>Index</li>
+      <li>BIDS Validation</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
             
+            <a href="_sources/bidsvalidation.rst.txt" rel="nofollow"> View page source</a>
+          
         
       </li>
     
@@ -145,11 +148,17 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-
-<h1 id="index">Index</h1>
-
-<div class="genindex-jumpbox">
- 
+  <div class="section" id="bids-validation">
+<h1>BIDS Validation<a class="headerlink" href="#bids-validation" title="Permalink to this headline">¶</a></h1>
+<p>clpipe contains a convenience function to validate your datasets directly on the HPC. This function uses a Singularity image of the <a class="reference external" href="https://github.com/bids-standard/bids-validator">BIDs Validator</a>. The command to run the BIDs validator is:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">usage</span><span class="p">:</span> <span class="n">bids_validate</span> <span class="p">[</span><span class="n">options</span><span class="p">]</span> <span class="n">bidsDir</span>
+    <span class="n">options</span><span class="p">:</span>
+        <span class="o">-</span><span class="n">configFile</span><span class="p">,</span> <span class="n">Uses</span> <span class="n">a</span> <span class="n">given</span> <span class="n">configuration</span> <span class="n">file</span>
+        <span class="o">-</span><span class="n">submit</span><span class="o">/</span><span class="n">save</span><span class="p">,</span> <span class="n">Submits</span> <span class="n">the</span> <span class="n">batch</span> <span class="n">command</span> <span class="n">to</span> <span class="n">the</span> <span class="n">HPC</span><span class="p">,</span> <span class="ow">or</span> <span class="n">prints</span> <span class="n">it</span> <span class="n">to</span> <span class="n">screen</span>
+        <span class="o">-</span><span class="n">interactive</span><span class="o">/</span><span class="n">batch</span><span class="p">,</span> <span class="n">Directly</span> <span class="n">calls</span> <span class="n">the</span> <span class="n">command</span> <span class="n">using</span> <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">,</span> <span class="ow">or</span> <span class="n">submits</span> <span class="n">it</span> <span class="k">as</span> <span class="n">a</span> <span class="n">batch</span> <span class="n">command</span><span class="o">.</span> <span class="n">Interactive</span> <span class="n">only</span> <span class="n">works</span> <span class="n">during</span> <span class="n">an</span> <span class="n">interactive</span> <span class="n">session</span><span class="o">.</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">bids_validate</span></code> produces an output file titled <cite>Output-BIDSValidator.out</cite> at your current working directory that contains the output of the BIDS validator.</p>
 </div>
 
 
@@ -157,6 +166,15 @@
            
           </div>
           <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="fmriprep.html" class="btn btn-neutral float-right" title="Preprocessing with fMRIprep" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="configfiles.html" class="btn btn-neutral" title="Configuration Files" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
   
 
   <hr/>

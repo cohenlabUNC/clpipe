@@ -1,0 +1,313 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Configuration Files &mdash; clpipe: A MRI Processing Pipeline for HPCs .1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="BIDS Validation" href="bidsvalidation.html" />
+    <link rel="prev" title="Welcome to clpipe: A MRI Processing Pipeline for HPCs’s documentation!" href="index.html" /> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> clpipe: A MRI Processing Pipeline for HPCs
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Configuration Files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bidsvalidation.html">BIDS Validation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fmriprep.html">Preprocessing with fMRIprep</a></li>
+<li class="toctree-l1"><a class="reference internal" href="postprocessing.html">Postprocessing fMRI</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">clpipe: A MRI Processing Pipeline for HPCs</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Configuration Files</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/configfiles.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="configuration-files">
+<h1>Configuration Files<a class="headerlink" href="#configuration-files" title="Permalink to this headline">¶</a></h1>
+<p>Most command line functions in clpipe can take a configuration file in the ‘-configFile’ option. These configuration files are JSONs that contain all aspects of the preprocessing and postprocessing streams that you want applied to your dataset. To create a configuration file for your dataset use the following command:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">grab_config_file</span> <span class="o">-</span><span class="n">outputFile</span> <span class="o">&lt;</span><span class="n">adirectory</span><span class="o">/</span><span class="n">yourfilename</span><span class="o">&gt;.</span><span class="n">json</span>
+</pre></div>
+</div>
+<p>This command will create a default configuration file with whatever name you specified. The default configuration file looks like this</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;ConfigTitle&quot;</span><span class="p">:</span> <span class="s2">&quot;Default Configuration File&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;FMRIPrepOptions&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;BIDSDirectory&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;OutputDirectory&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;FMRIPrepPath&quot;</span><span class="p">:</span> <span class="s2">&quot;/proj/hng/singularity_imgs/fmriprep1.2.6.simg&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;FreesurferLicensePath&quot;</span><span class="p">:</span> <span class="s2">&quot;/proj/hng/singularity_imgs/license.txt&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;FMRIPrepMemoryUsage&quot;</span><span class="p">:</span> <span class="s2">&quot;20000&quot;</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;PostProcessingOptions&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;TargetDirectory&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;TargetSuffix&quot;</span><span class="p">:</span> <span class="s2">&quot;preproc_bold.nii.gz&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;OutputDirectory&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;OutputSuffix&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;ConfoundSuffix&quot;</span><span class="p">:</span> <span class="s2">&quot;confound_regressors.tsv&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;Regress&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
+            <span class="s2">&quot;NuisanceRegression&quot;</span><span class="p">:</span> <span class="s2">&quot;QuadLagged&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;WhiteMatter&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
+            <span class="s2">&quot;CSF&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
+            <span class="s2">&quot;GlobalSignalRegression&quot;</span><span class="p">:</span> <span class="n">false</span><span class="p">,</span>
+            <span class="s2">&quot;FilteringHighPass&quot;</span><span class="p">:</span> <span class="mf">0.08</span><span class="p">,</span>
+            <span class="s2">&quot;FilteringLowPass&quot;</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">,</span>
+            <span class="s2">&quot;FilteringOrder&quot;</span><span class="p">:</span> <span class="mi">12</span><span class="p">,</span>
+            <span class="s2">&quot;OversamplingFreq&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>
+            <span class="s2">&quot;PercentFreqSample&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="s2">&quot;Scrubbing&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
+            <span class="s2">&quot;ScrubFDThreshold&quot;</span><span class="p">:</span> <span class="mf">0.3</span><span class="p">,</span>
+            <span class="s2">&quot;ScrubAhead&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+            <span class="s2">&quot;ScrubBehind&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+            <span class="s2">&quot;ScrubContig&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>
+            <span class="s2">&quot;SpatialSmoothing&quot;</span><span class="p">:</span> <span class="s2">&quot;SUSAN&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;PostProcessingMemoryUsage&quot;</span><span class="p">:</span> <span class="s2">&quot;20000&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;PostProcessingTimeUsage&quot;</span><span class="p">:</span> <span class="s2">&quot;8:0:0&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;NThreads&quot;</span><span class="p">:</span> <span class="s2">&quot;1&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;SpectralInterpolationBinSize&quot;</span><span class="p">:</span> <span class="mi">5000</span><span class="p">,</span>
+            <span class="s2">&quot;BIDSValidatorImage&quot;</span><span class="p">:</span> <span class="s2">&quot;/proj/hng/singularity_imgs/validator.simg&quot;</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;RunLog&quot;</span><span class="p">:</span> <span class="p">[],</span>
+    <span class="s2">&quot;BatchConfig&quot;</span><span class="p">:</span> <span class="s2">&quot;slurmUNCConfig.json&quot;</span><span class="p">,</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>All of these fields are required and have what the designers of clpipe consider to be reasonable defaults for processing. Additionally, users at UNC-CH on the Longleaf cluster with access to the HNG group should be able to use the default options with no change. Other users will have to modify several fields. We describe the various fields now.</p>
+<ul>
+<li><p class="first"><code class="docutils literal notranslate"><span class="pre">ConfigTitle:</span></code> The title of your configuration file, not used in processing.</p>
+</li>
+<li><p class="first"><code class="docutils literal notranslate"><span class="pre">FMRIPrepOptions:</span></code> Options regarding fMRIprep.</p>
+<blockquote>
+<div><ul class="simple">
+<li><code class="docutils literal notranslate"><span class="pre">BIDSDirectory:</span></code> Your BIDs formatted raw data directory. Use absolute paths if possible.</li>
+<li><code class="docutils literal notranslate"><span class="pre">OutputDirectory:</span></code> Where you want your preprocessed files to go. Use absolute paths</li>
+<li><code class="docutils literal notranslate"><span class="pre">FMRIPrepPath:</span></code> Where the fMRIprep Singularity image is.</li>
+<li><code class="docutils literal notranslate"><span class="pre">FreesurferLicensePath:</span></code> Where your Freesurfer license .txt file is.</li>
+<li><code class="docutils literal notranslate"><span class="pre">FMRIPrepMemoryUsage:</span></code> How much memory in RAM each subject’s preprocessing will use, in Mbs. Default is 20000Mb or 20Gb.</li>
+</ul>
+</div></blockquote>
+</li>
+<li><p class="first"><code class="docutils literal notranslate"><span class="pre">PostProcessingOptions:</span></code> Options for various postprocessing steps.</p>
+<blockquote>
+<div><ul class="simple">
+<li><code class="docutils literal notranslate"><span class="pre">TargetDirectory:</span></code> What directory holds your fMRIPrep preprocessed data.</li>
+<li><code class="docutils literal notranslate"><span class="pre">TargetSuffix:</span></code> What suffix do your preprocessed fMRI NiFTi files have? Default is preproc_bold.nii.gz.</li>
+<li><code class="docutils literal notranslate"><span class="pre">OutputDirectory:</span></code> Where you want your postprocessed files to go.</li>
+<li><code class="docutils literal notranslate"><span class="pre">OutputSuffix:</span></code> What suffix do you want appended to your postprocessed files?</li>
+<li><code class="docutils literal notranslate"><span class="pre">ConfoundSuffix:</span></code> What suffix does the confound regressors file have. Default is confound_regressor.txt.</li>
+<li><code class="docutils literal notranslate"><span class="pre">Regress:</span></code> True/False. Do you want to perform nuisance regression on the data. Default True. For more info see Postprocessing/Nuisance Regression.</li>
+<li><code class="docutils literal notranslate"><span class="pre">NuisanceRegression:</span></code> What type of nuisance regression do you want to perform. Default to QuadLagged (33 Parameter Regression). For more information see Postprocessing/Nuisance Regression.</li>
+<li><code class="docutils literal notranslate"><span class="pre">WhiteMatter:</span></code> True/False. Include mean whitematter signal into nuisance regression. Defaults to True.</li>
+<li><code class="docutils literal notranslate"><span class="pre">CSF:</span></code> True/False. Include mean cerebral spinal fluid signal into nuisance regression. Defaults to True.</li>
+<li><code class="docutils literal notranslate"><span class="pre">GlobalSignalRegression:</span></code> True/False. Include global signal into nuisance regression. Defaults to False.</li>
+<li><code class="docutils literal notranslate"><span class="pre">FilteringHighPass:</span></code> High pass frequency for filtering. Defaults to .08 Hz. For more information on filtering see Postprocessing/Frequency Filtering. Set to -1 to remove high pass filtering.</li>
+<li><code class="docutils literal notranslate"><span class="pre">FilteringLowPass:</span></code> Low pass frequency for filtering. Defaults to .1 Hz. For more information on filtering see Postprocessing/Frequency Filtering.</li>
+<li><code class="docutils literal notranslate"><span class="pre">FilteringOrder:</span></code> Order of filter. Defaults to 12. For more information on filtering see Postprocessing/Frequency Filtering.</li>
+<li><code class="docutils literal notranslate"><span class="pre">OversamplingFreq</span></code>: The oversampling frequency for the spectral interpolation. Defaults to 4. For more information on spectral interpolation see Postprocessing/Spectral Interpolation.</li>
+<li><code class="docutils literal notranslate"><span class="pre">PercentFrequencySample:</span></code> Proportion (0 to 1, 1 being 100%) of spectrum to use in spectral interpolation. Defaults to 1. For more information on spectral interpolation see Postprocessing/Spectral Interpolation.</li>
+<li><code class="docutils literal notranslate"><span class="pre">Scrubbing:</span></code> True/False. Use scrubbing. Defaults to true. For more information on scrubbing see Postprocessing/Scrubbing.</li>
+<li><code class="docutils literal notranslate"><span class="pre">ScrubFDThreshold:</span></code> At what framewise displacement to scrub. Defaults to .3.</li>
+<li><code class="docutils literal notranslate"><span class="pre">ScrubAhead:</span></code> If a timepoint is scrubbed, how many points after to remove. Defaults to 2.</li>
+<li><code class="docutils literal notranslate"><span class="pre">ScrubBehind:</span></code> If a timepoint is scrubbed, how many points before to remove. Defaults to 2.</li>
+<li><code class="docutils literal notranslate"><span class="pre">ScrubContig:</span></code> How many good contiguous timepoints need to exist. Defaults to 4.</li>
+<li><code class="docutils literal notranslate"><span class="pre">SpatialSmoothing:</span></code> NOT IMPLEMENTED YET.</li>
+<li><code class="docutils literal notranslate"><span class="pre">PostProcessingMemoryUsage:</span></code> How much memory (RAM) per subject to request, in Mbs. Defaults to 20000Mb or 20Gb.</li>
+<li><code class="docutils literal notranslate"><span class="pre">PostProcessingMemoryUsage:</span></code> How much time per subject to request. Format is Hours:Mins:Seconds. Defaults to 8 hours.</li>
+<li><code class="docutils literal notranslate"><span class="pre">NThreads:</span></code> How many CPUs to request. Defaults to 1. Do not modify lightly.</li>
+<li><code class="docutils literal notranslate"><span class="pre">SpectralInterpolationBinSize:</span></code> How many voxels per bin to work on in spectral interpolation. Increasing this reduces time but increases memory usage. Defaults to 5000.</li>
+<li><code class="docutils literal notranslate"><span class="pre">BIDSValidatorImage:</span></code> Where the BIDS validator Singularity image is.</li>
+</ul>
+</div></blockquote>
+</li>
+<li><p class="first"><code class="docutils literal notranslate"><span class="pre">RunLog:</span></code> This list contains a record of how a given configuration file is used.</p>
+</li>
+<li><p class="first"><code class="docutils literal notranslate"><span class="pre">BatchConfig:</span></code> What batch configuration file to use. For more information see For Advanced Users/Batch Configuration.</p>
+</li>
+</ul>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="bidsvalidation.html" class="btn btn-neutral float-right" title="BIDS Validation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="index.html" class="btn btn-neutral" title="Welcome to clpipe: A MRI Processing Pipeline for HPCs’s documentation!" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Cohen Lab at UNC-CH
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+
+  
+
+  <script type="text/javascript" src="_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
