@@ -9,7 +9,7 @@ import logging
 
 @click.command()
 @click.option('-configFile', type=click.Path(exists=True, dir_okay=False, file_okay=True), required = True)
-@click.option('-outputName', default = 'Report_Archive.zip')
+@click.option('-outputName', default = 'Report_Archive')
 def get_reports(configfile, outputname):
     logging.basicConfig(level=logging.DEBUG)
     config = ConfigParser()
@@ -32,4 +32,4 @@ def get_reports(configfile, outputname):
                         os.path.join(config.config['FMRIPrepOptions']['WorkingDirectory'], 'reports_temp', os.path.basename(report)))
 
 
-    shutil.make_archive(base_name=outputname, root_dir = os.path.join(config.config['FMRIPrepOptions']['WorkingDirectory'],'reports_temp'), base_dir=os.path.join(config.config['FMRIPrepOptions']['WorkingDirectory'],'reports_temp'), format = 'zip')
+    shutil.make_archive(base_name=outputname, root_dir = os.path.join(config.config['FMRIPrepOptions']['WorkingDirectory'],'reports_temp'), base_dir='reports_temp', format = 'zip')
