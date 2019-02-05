@@ -10,6 +10,7 @@ Welcome to clpipe: A MRI Processing Pipeline for HPCs's documentation!
    :maxdepth: 2
    :caption: Contents:
 
+   install
    configfiles
    bidsvalidation
    fmriprep
