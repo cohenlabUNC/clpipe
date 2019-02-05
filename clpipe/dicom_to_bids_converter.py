@@ -43,7 +43,6 @@ def dicom_to_nifti_to_bids_converter_setup(subject = None, session = None, dicom
         dicomdirectory=dicomdirectory,
         subject=subject,
         sess=session,
-        heuristicfile = heuristicfile,
         outputfile = outputfile,
     ))
     #job2 = Job("copyfile_heudiconv_setup", copyfile_string.format(
