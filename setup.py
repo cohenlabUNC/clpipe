@@ -23,6 +23,8 @@ setup(name='clpipe',
       dicom_to_nifti_to_bids_converter_setup=clpipe.dicom_to_bids_converter:dicom_to_nifti_to_bids_converter_setup
       bids_validate=clpipe.bids_validator:bids_validate
       fmri_postprocess=clpipe.fmri_postprocess:fmri_postprocess
+      fmri_process_check=clpipe.fmri_process_check:fmri_process_check
+      get_reports=clpipe.get_reports:get_reports
       ''',
       zip_safe=False
       )

@@ -18,7 +18,7 @@ def spec_inter(arr, tr, ofreq, scrub_mask, hifreq, binSize=5000):
     totbins = math.ceil(float(arr.shape[1]) / float(binSize))
     binnedRecon = []
     for bin in range(0, totbins):
-        logging.debug("Bin "+ str(bin) +" out of " + str(totbins) )
+        logging.debug("Bin "+ str(bin) +" out of " + str(totbins))
         binVox = numpy.arange(bin * binSize, (bin + 1) * binSize, 1)
         binVox = numpy.delete(binVox, [i for i, e in enumerate(binVox) if e >= arr.shape[1]])
         gooddata = arr[goodtpindex.T, binVox]
