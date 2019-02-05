@@ -1,4 +1,5 @@
 import click
+import json
 from .batch_manager import BatchManager,Job
 
 @click.command()
