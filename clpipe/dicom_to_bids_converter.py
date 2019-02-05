@@ -1,5 +1,6 @@
 import click
 import json
+from pkg_resources import resource_stream
 from .batch_manager import BatchManager,Job
 
 @click.command()
