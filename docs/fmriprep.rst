@@ -34,4 +34,4 @@ clpipe has a convenience function to organize and prepare a zip archive containi
 
 This command uses the working directory previously specified to copy the reports and images to, then creates a zip archive containing them. This command is not a batch command, and can take a little time creating the archive, so be aware.
 
-Once the archive is created, it can be downloaded and unzipped to a personal computer. The reports should correctly load images once opened. 
+Once the archive is created, it can be downloaded and unzipped to a personal computer. The reports should correctly load images once opened.
