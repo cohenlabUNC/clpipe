@@ -18,7 +18,23 @@ When performing functional connectivity analysis, there are several additional p
             -batch/single, submit to batch, or run in current session. Mainly used internally.
         subjects..., A list of subject IDs to process. If left blank, then all subjects are processed.
 
+
+Processing Checker
+------------------
+
+clpipe has a convenient function for determining which scans successfully made it through both preprocessing using fMRIprep and postprocessing. ::
+
+    usage: fmri_process_check [options]
+        options:
+            -configFile, REQUIRED. The configuration file for the current processing run.
+            -outputFile, The path and name for the output. Defaults to Checker-Output.csv, in the same directory as the configuration file.
+
+This command will create a csv file listing all scans found in the BIDS dataset, and corresponding scans in the fMRIprep dataset and the postprocessed dataset.
+
 For a description of the various postprocessing steps, along with references, please see the following documentation:
+
+
+
 
 1. Nuisance Regression
 2. Frequency Filtering
