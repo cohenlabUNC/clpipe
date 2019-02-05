@@ -1,5 +1,7 @@
 # clpipe
-Python pipeline for neuroimaging data. Draft documentation at: https://clpipe.readthedocs.io/en/latest/index.html
+
+Python pipeline for neuroimaging data. Draft documentation at https://clpipe.readthedocs.io/en/latest/index.html
+
 
 This pipeline is under development, and should not be used quite yet. If you are interested in contributing, please get in contact with Teague Henry (trhenry@email.unc.edu)
 
@@ -12,5 +14,3 @@ This pipeline is under development, and should not be used quite yet. If you are
 ```pip3 install --user --upgrade  git+git://github.com/CohenLabUNC/clpipe.git```
 
 All necessary dependencies should install to your local Python library, and the console commands should be immediately useable.
-
-
