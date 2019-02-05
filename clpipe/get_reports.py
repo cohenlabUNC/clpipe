@@ -1,6 +1,5 @@
 import click
 from .config_json_parser import ConfigParser
-import pandas as pd
 import os
 import glob
 import shutil
@@ -10,6 +9,7 @@ import logging
 @click.option('-configFile', type=click.Path(exists=True, dir_okay=False, file_okay=True), required = True)
 @click.option('-outputName', default = 'Report_Archive.zip')
 def get_reports(configfile, outputname):
+    logging.basicConfig(level=logging.DEBUG)
     config = ConfigParser()
     config.config_updater(configfile)
 
