@@ -16,7 +16,7 @@ def get_reports(configfile, outputname):
 
     fmriprepdir = config.config['FMRIPrepOptions']['OutputDirectory']
 
-    image_dirs = os.listdir(os.path.join(fmriprepdir, 'fmriprep'))
+    image_dirs = [f.path for f in os.scandir(os.path.join(fmriprepdir, 'fmriprep')) if f.is_dir() ]
 
     for sub in [x for x in image_dirs if 'sub-' in x]:
         logging.info(sub)
