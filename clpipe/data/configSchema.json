@@ -9,8 +9,7 @@
     "FMRIPrepOptions",
     "PostProcessingOptions",
     "RunLog",
-    "BatchConfig",
-    "PostProcessingMemoryUsage"
+    "BatchConfig"
   ],
   "properties": {
     "ConfigTitle": {
@@ -252,16 +251,6 @@
       "default": "",
       "examples": [
         "slurmUNCConfig.json"
-      ],
-      "pattern": "^(.*)$"
-    },
-    "PostProcessingMemoryUsage": {
-      "$id": "#/properties/PostProcessingMemoryUsage",
-      "type": "string",
-      "title": "The Postprocessingmemoryusage Schema",
-      "default": "",
-      "examples": [
-        "10000"
       ],
       "pattern": "^(.*)$"
     }
