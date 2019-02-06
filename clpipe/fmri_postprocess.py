@@ -200,7 +200,8 @@ def _regression_prep(config, confound_filepath):
     confounds = pandas.read_table(confound_filepath, dtype="float", na_values="n/a")
     confounds = confounds.fillna(0)
     reg_labels = config.config['PostProcessingOptions']['RegressionParameters']
-    target_label = next((item for item in reg_labels['RegressionOptions'] if
+    regression_type = json.load(resource_stream(__name__, 'data/RegressionOptions.json'))
+    target_label = next((item for item in regression_type['RegressionOptions'] if
                          item["Name"] == config.config['PostProcessingOptions']['NuisanceRegression']), False)
     if not target_label:
         raise ValueError
