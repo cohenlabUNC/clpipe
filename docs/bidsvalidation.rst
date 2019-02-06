@@ -2,7 +2,9 @@
 BIDS Validation
 ===============
 
-clpipe contains a convenience function to validate your datasets directly on the HPC. This function uses a Singularity image of the `BIDs Validator <https://github.com/bids-standard/bids-validator>`_. The command to run the BIDs validator is::
+clpipe contains a convenience function to validate your datasets directly on the HPC. This function uses a Singularity image of the `BIDs Validator <https://github.com/bids-standard/bids-validator>`_. The command to run the BIDs validator is
+
+.. code-block:: console
 
     usage: bids_validate [options] bidsDir
         options:
