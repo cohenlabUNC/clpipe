@@ -2,7 +2,9 @@
 Postprocessing fMRI
 ===================
 
-When performing functional connectivity analysis, there are several additional processing steps that need to be taken after the minimal preprocessing of fMRIPrep. clpipe implements these steps in Python, and a fMRIprep preprocessed dataset can be postprocessed using the following command: ::
+When performing functional connectivity analysis, there are several additional processing steps that need to be taken after the minimal preprocessing of fMRIPrep. clpipe implements these steps in Python, and a fMRIprep preprocessed dataset can be postprocessed using the following command:
+
+.. code-block:: console
 
     usage: fmri_postprocess [options] [subjects...]
         options:
@@ -22,7 +24,9 @@ When performing functional connectivity analysis, there are several additional p
 Processing Checker
 ------------------
 
-clpipe has a convenient function for determining which scans successfully made it through both preprocessing using fMRIprep and postprocessing. ::
+clpipe has a convenient function for determining which scans successfully made it through both preprocessing using fMRIprep and postprocessing.
+
+.. code-block:: console
 
     usage: fmri_process_check [options]
         options:
