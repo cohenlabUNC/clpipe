@@ -13,7 +13,7 @@
 		"TargetSuffix": "preproc_bold.nii.gz",
 		"OutputDirectory": "",
 		"OutputSuffix": "",
-		"ConfoundSuffix": "confound_regressors.tsv",
+		"ConfoundSuffix": "desc-confounds_regressors.tsv",
 		"Regress": true,
 		"NuisanceRegression": "QuadLagged",
 		"WhiteMatter": true,
