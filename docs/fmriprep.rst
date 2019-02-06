@@ -2,7 +2,9 @@
 Preprocessing with fMRIprep
 ===========================
 
-clpipe uses `fMRIprep <https://fmriprep.readthedocs.io/en/stable/>`_ to perform minimal preprocessing on functional MRI data. To submit your dataset for preprocessing, use the following command: ::
+clpipe uses `fMRIprep <https://fmriprep.readthedocs.io/en/stable/>`_ to perform minimal preprocessing on functional MRI data. To submit your dataset for preprocessing, use the following command:
+
+.. code-block:: console
 
     usage: fmriprep_process [options] [subjects...]
         options:
@@ -25,7 +27,9 @@ fMRIprep produces detailed html reports for each subject, allowing users to visu
 1. Open the html reports directly on the HPC, using some sort of interactive web browser.
 2. Download the reports and the images in the correct directory structure.
 
-clpipe has a convenience function to organize and prepare a zip archive containing the reports and images, for quick download onto a personal computer. ::
+clpipe has a convenience function to organize and prepare a zip archive containing the reports and images, for quick download onto a personal computer.
+
+.. code-block:: console
 
     usage: get_reports [-options]
         -options:

@@ -29,7 +29,7 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="BIDS Validation" href="bidsvalidation.html" />
-    <link rel="prev" title="Welcome to clpipe: A MRI Processing Pipeline for HPCs’s documentation!" href="index.html" /> 
+    <link rel="prev" title="Installation" href="install.html" /> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
@@ -80,6 +80,7 @@
             
               <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Configuration Files</a></li>
 <li class="toctree-l1"><a class="reference internal" href="bidsvalidation.html">BIDS Validation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="fmriprep.html">Preprocessing with fMRIprep</a></li>
@@ -156,45 +157,52 @@
 </div>
 <p>This command will create a default configuration file with whatever name you specified. The default configuration file looks like this</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;ConfigTitle&quot;</span><span class="p">:</span> <span class="s2">&quot;Default Configuration File&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;FMRIPrepOptions&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;BIDSDirectory&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;OutputDirectory&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;FMRIPrepPath&quot;</span><span class="p">:</span> <span class="s2">&quot;/proj/hng/singularity_imgs/fmriprep1.2.6.simg&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;FreesurferLicensePath&quot;</span><span class="p">:</span> <span class="s2">&quot;/proj/hng/singularity_imgs/license.txt&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;FMRIPrepMemoryUsage&quot;</span><span class="p">:</span> <span class="s2">&quot;20000&quot;</span>
-    <span class="p">},</span>
-    <span class="s2">&quot;PostProcessingOptions&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;TargetDirectory&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;TargetSuffix&quot;</span><span class="p">:</span> <span class="s2">&quot;preproc_bold.nii.gz&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;OutputDirectory&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;OutputSuffix&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;ConfoundSuffix&quot;</span><span class="p">:</span> <span class="s2">&quot;confound_regressors.tsv&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;Regress&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
-            <span class="s2">&quot;NuisanceRegression&quot;</span><span class="p">:</span> <span class="s2">&quot;QuadLagged&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;WhiteMatter&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
-            <span class="s2">&quot;CSF&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
-            <span class="s2">&quot;GlobalSignalRegression&quot;</span><span class="p">:</span> <span class="n">false</span><span class="p">,</span>
-            <span class="s2">&quot;FilteringHighPass&quot;</span><span class="p">:</span> <span class="mf">0.08</span><span class="p">,</span>
-            <span class="s2">&quot;FilteringLowPass&quot;</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">,</span>
-            <span class="s2">&quot;FilteringOrder&quot;</span><span class="p">:</span> <span class="mi">12</span><span class="p">,</span>
-            <span class="s2">&quot;OversamplingFreq&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>
-            <span class="s2">&quot;PercentFreqSample&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
-            <span class="s2">&quot;Scrubbing&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
-            <span class="s2">&quot;ScrubFDThreshold&quot;</span><span class="p">:</span> <span class="mf">0.3</span><span class="p">,</span>
-            <span class="s2">&quot;ScrubAhead&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
-            <span class="s2">&quot;ScrubBehind&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
-            <span class="s2">&quot;ScrubContig&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>
-            <span class="s2">&quot;SpatialSmoothing&quot;</span><span class="p">:</span> <span class="s2">&quot;SUSAN&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;PostProcessingMemoryUsage&quot;</span><span class="p">:</span> <span class="s2">&quot;20000&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;PostProcessingTimeUsage&quot;</span><span class="p">:</span> <span class="s2">&quot;8:0:0&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;NThreads&quot;</span><span class="p">:</span> <span class="s2">&quot;1&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;SpectralInterpolationBinSize&quot;</span><span class="p">:</span> <span class="mi">5000</span><span class="p">,</span>
-            <span class="s2">&quot;BIDSValidatorImage&quot;</span><span class="p">:</span> <span class="s2">&quot;/proj/hng/singularity_imgs/validator.simg&quot;</span>
-    <span class="p">},</span>
-    <span class="s2">&quot;RunLog&quot;</span><span class="p">:</span> <span class="p">[],</span>
-    <span class="s2">&quot;BatchConfig&quot;</span><span class="p">:</span> <span class="s2">&quot;slurmUNCConfig.json&quot;</span><span class="p">,</span>
-<span class="p">}</span>
+     <span class="s2">&quot;ConfigTitle&quot;</span><span class="p">:</span> <span class="s2">&quot;Default Configuration File&quot;</span><span class="p">,</span>
+     <span class="s2">&quot;FMRIPrepOptions&quot;</span><span class="p">:</span> <span class="p">{</span>
+             <span class="s2">&quot;BIDSDirectory&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+             <span class="s2">&quot;WorkingDirectory&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+             <span class="s2">&quot;OutputDirectory&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+             <span class="s2">&quot;FMRIPrepPath&quot;</span><span class="p">:</span> <span class="s2">&quot;/proj/hng/singularity_imgs/fmriprep1.2.6.simg&quot;</span><span class="p">,</span>
+             <span class="s2">&quot;FreesurferLicensePath&quot;</span><span class="p">:</span> <span class="s2">&quot;/proj/hng/singularity_imgs/license.txt&quot;</span><span class="p">,</span>
+             <span class="s2">&quot;FMRIPrepMemoryUsage&quot;</span><span class="p">:</span> <span class="s2">&quot;20000&quot;</span>
+     <span class="p">},</span>
+     <span class="s2">&quot;PostProcessingOptions&quot;</span><span class="p">:</span> <span class="p">{</span>
+             <span class="s2">&quot;TargetDirectory&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+             <span class="s2">&quot;TargetSuffix&quot;</span><span class="p">:</span> <span class="s2">&quot;preproc_bold.nii.gz&quot;</span><span class="p">,</span>
+             <span class="s2">&quot;OutputDirectory&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+             <span class="s2">&quot;OutputSuffix&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+             <span class="s2">&quot;ConfoundSuffix&quot;</span><span class="p">:</span> <span class="s2">&quot;desc-confounds_regressors.tsv&quot;</span><span class="p">,</span>
+             <span class="s2">&quot;Regress&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
+             <span class="s2">&quot;RegressionParameters&quot;</span><span class="p">:</span> <span class="p">{</span>
+                       <span class="s2">&quot;MotionParams&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;trans_x&quot;</span><span class="p">,</span><span class="s2">&quot;trans_y&quot;</span> <span class="p">,</span><span class="s2">&quot;trans_z&quot;</span><span class="p">,</span><span class="s2">&quot;rot_x&quot;</span><span class="p">,</span><span class="s2">&quot;rot_z&quot;</span><span class="p">,</span><span class="s2">&quot;rot_y&quot;</span><span class="p">],</span>
+                       <span class="s2">&quot;WhiteMatter&quot;</span><span class="p">:</span> <span class="s2">&quot;white_matter&quot;</span><span class="p">,</span>
+                       <span class="s2">&quot;CSF&quot;</span><span class="p">:</span> <span class="s2">&quot;csf&quot;</span><span class="p">,</span>
+                       <span class="s2">&quot;FDLabel&quot;</span><span class="p">:</span> <span class="s2">&quot;framewise_displacement&quot;</span><span class="p">,</span>
+                       <span class="s2">&quot;GlobalSignal&quot;</span><span class="p">:</span> <span class="s2">&quot;global_signal&quot;</span>
+             <span class="p">},</span>
+             <span class="s2">&quot;NuisanceRegression&quot;</span><span class="p">:</span> <span class="s2">&quot;QuadLagged&quot;</span><span class="p">,</span>
+             <span class="s2">&quot;WhiteMatter&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
+             <span class="s2">&quot;CSF&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
+             <span class="s2">&quot;GlobalSignalRegression&quot;</span><span class="p">:</span> <span class="n">false</span><span class="p">,</span>
+             <span class="s2">&quot;FilteringHighPass&quot;</span><span class="p">:</span> <span class="mf">0.008</span><span class="p">,</span>
+             <span class="s2">&quot;FilteringLowPass&quot;</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">,</span>
+             <span class="s2">&quot;FilteringOrder&quot;</span><span class="p">:</span> <span class="mi">12</span><span class="p">,</span>
+             <span class="s2">&quot;OversamplingFreq&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>
+             <span class="s2">&quot;PercentFreqSample&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+             <span class="s2">&quot;Scrubbing&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
+             <span class="s2">&quot;ScrubFDThreshold&quot;</span><span class="p">:</span> <span class="mf">0.3</span><span class="p">,</span>
+             <span class="s2">&quot;ScrubAhead&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+             <span class="s2">&quot;ScrubBehind&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+             <span class="s2">&quot;ScrubContig&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>
+             <span class="s2">&quot;SpatialSmoothing&quot;</span><span class="p">:</span> <span class="s2">&quot;SUSAN&quot;</span><span class="p">,</span>
+             <span class="s2">&quot;PostProcessingMemoryUsage&quot;</span><span class="p">:</span> <span class="s2">&quot;20000&quot;</span><span class="p">,</span>
+             <span class="s2">&quot;PostProcessingTimeUsage&quot;</span><span class="p">:</span> <span class="s2">&quot;8:0:0&quot;</span><span class="p">,</span>
+             <span class="s2">&quot;NThreads&quot;</span><span class="p">:</span> <span class="s2">&quot;1&quot;</span><span class="p">,</span>
+             <span class="s2">&quot;SpectralInterpolationBinSize&quot;</span><span class="p">:</span> <span class="mi">5000</span><span class="p">,</span>
+             <span class="s2">&quot;BIDSValidatorImage&quot;</span><span class="p">:</span> <span class="s2">&quot;/proj/hng/singularity_imgs/validator.simg&quot;</span>
+     <span class="p">},</span>
+     <span class="s2">&quot;RunLog&quot;</span><span class="p">:</span> <span class="p">[],</span>
+     <span class="s2">&quot;BatchConfig&quot;</span><span class="p">:</span> <span class="s2">&quot;slurmUNCConfig.json&quot;</span>
 </pre></div>
 </div>
 <p>All of these fields are required and have what the designers of clpipe consider to be reasonable defaults for processing. Additionally, users at UNC-CH on the Longleaf cluster with access to the HNG group should be able to use the default options with no change. Other users will have to modify several fields. We describe the various fields now.</p>
@@ -218,15 +226,16 @@
 <li><code class="docutils literal notranslate"><span class="pre">TargetDirectory:</span></code> What directory holds your fMRIPrep preprocessed data.</li>
 <li><code class="docutils literal notranslate"><span class="pre">TargetSuffix:</span></code> What suffix do your preprocessed fMRI NiFTi files have? Default is preproc_bold.nii.gz.</li>
 <li><code class="docutils literal notranslate"><span class="pre">OutputDirectory:</span></code> Where you want your postprocessed files to go.</li>
-<li><code class="docutils literal notranslate"><span class="pre">OutputSuffix:</span></code> What suffix do you want appended to your postprocessed files?</li>
+<li><code class="docutils literal notranslate"><span class="pre">OutputSuffix:</span></code> What suffix do you want appended to your postprocessed files? Make sure to end it with .nii.gz.</li>
 <li><code class="docutils literal notranslate"><span class="pre">ConfoundSuffix:</span></code> What suffix does the confound regressors file have. Default is confound_regressor.txt.</li>
 <li><code class="docutils literal notranslate"><span class="pre">Regress:</span></code> True/False. Do you want to perform nuisance regression on the data. Default True. For more info see Postprocessing/Nuisance Regression.</li>
+<li><code class="docutils literal notranslate"><span class="pre">RegressionParameters:</span></code> These are the headers for the various regression parameters in the fmriprep confound file. The defaults are for the latest fmriprep version. Change only if you are using a much earlier version of fmriprep.</li>
 <li><code class="docutils literal notranslate"><span class="pre">NuisanceRegression:</span></code> What type of nuisance regression do you want to perform. Default to QuadLagged (33 Parameter Regression). For more information see Postprocessing/Nuisance Regression.</li>
 <li><code class="docutils literal notranslate"><span class="pre">WhiteMatter:</span></code> True/False. Include mean whitematter signal into nuisance regression. Defaults to True.</li>
 <li><code class="docutils literal notranslate"><span class="pre">CSF:</span></code> True/False. Include mean cerebral spinal fluid signal into nuisance regression. Defaults to True.</li>
 <li><code class="docutils literal notranslate"><span class="pre">GlobalSignalRegression:</span></code> True/False. Include global signal into nuisance regression. Defaults to False.</li>
 <li><code class="docutils literal notranslate"><span class="pre">FilteringHighPass:</span></code> High pass frequency for filtering. Defaults to .08 Hz. For more information on filtering see Postprocessing/Frequency Filtering. Set to -1 to remove high pass filtering.</li>
-<li><code class="docutils literal notranslate"><span class="pre">FilteringLowPass:</span></code> Low pass frequency for filtering. Defaults to .1 Hz. For more information on filtering see Postprocessing/Frequency Filtering.</li>
+<li><code class="docutils literal notranslate"><span class="pre">FilteringLowPass:</span></code> Low pass frequency for filtering. Defaults to .1 Hz. For more information on filtering see Postprocessing/Frequency Filtering. Set to -1 to remove low pass filtering.</li>
 <li><code class="docutils literal notranslate"><span class="pre">FilteringOrder:</span></code> Order of filter. Defaults to 12. For more information on filtering see Postprocessing/Frequency Filtering.</li>
 <li><code class="docutils literal notranslate"><span class="pre">OversamplingFreq</span></code>: The oversampling frequency for the spectral interpolation. Defaults to 4. For more information on spectral interpolation see Postprocessing/Spectral Interpolation.</li>
 <li><code class="docutils literal notranslate"><span class="pre">PercentFrequencySample:</span></code> Proportion (0 to 1, 1 being 100%) of spectrum to use in spectral interpolation. Defaults to 1. For more information on spectral interpolation see Postprocessing/Spectral Interpolation.</li>
@@ -262,7 +271,7 @@
         <a href="bidsvalidation.html" class="btn btn-neutral float-right" title="BIDS Validation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="index.html" class="btn btn-neutral" title="Welcome to clpipe: A MRI Processing Pipeline for HPCs’s documentation!" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="install.html" class="btn btn-neutral" title="Installation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
