@@ -19,7 +19,7 @@
 		"WhiteMatter": true,
 		"CSF": true,
 		"GlobalSignalRegression": false,
-		"FilteringHighPass": 0.08,
+		"FilteringHighPass": 0.008,
 		"FilteringLowPass": 0.1,
 		"FilteringOrder": 12,
 		"OversamplingFreq": 4,
@@ -37,6 +37,5 @@
 		"BIDSValidatorImage": "/proj/hng/singularity_imgs/validator.simg"
 	},
 	"RunLog": [],
-	"BatchConfig": "slurmUNCConfig.json",
-	"PostProcessingMemoryUsage": "10000"
+	"BatchConfig": "slurmUNCConfig.json"
 }
