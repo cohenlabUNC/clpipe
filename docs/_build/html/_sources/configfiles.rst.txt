@@ -2,11 +2,15 @@
 Configuration Files
 ===================
 
-Most command line functions in clpipe can take a configuration file in the '-configFile' option. These configuration files are JSONs that contain all aspects of the preprocessing and postprocessing streams that you want applied to your dataset. To create a configuration file for your dataset use the following command::
+Most command line functions in clpipe can take a configuration file in the '-configFile' option. These configuration files are JSONs that contain all aspects of the preprocessing and postprocessing streams that you want applied to your dataset. To create a configuration file for your dataset use the following command
+
+.. code-block:: console
 
     grab_config_file -outputFile <adirectory/yourfilename>.json
 
-This command will create a default configuration file with whatever name you specified. The default configuration file looks like this ::
+This command will create a default configuration file with whatever name you specified. The default configuration file looks like this
+
+.. code-block :: json
 
    {
 	"ConfigTitle": "Default Configuration File",

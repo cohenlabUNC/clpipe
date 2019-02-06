@@ -80,6 +80,7 @@
             
               <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="configfiles.html">Configuration Files</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">BIDS Validation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="fmriprep.html">Preprocessing with fMRIprep</a></li>
@@ -150,12 +151,12 @@
             
   <div class="section" id="bids-validation">
 <h1>BIDS Validation<a class="headerlink" href="#bids-validation" title="Permalink to this headline">¶</a></h1>
-<p>clpipe contains a convenience function to validate your datasets directly on the HPC. This function uses a Singularity image of the <a class="reference external" href="https://github.com/bids-standard/bids-validator">BIDs Validator</a>. The command to run the BIDs validator is:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">usage</span><span class="p">:</span> <span class="n">bids_validate</span> <span class="p">[</span><span class="n">options</span><span class="p">]</span> <span class="n">bidsDir</span>
-    <span class="n">options</span><span class="p">:</span>
-        <span class="o">-</span><span class="n">configFile</span><span class="p">,</span> <span class="n">Uses</span> <span class="n">a</span> <span class="n">given</span> <span class="n">configuration</span> <span class="n">file</span>
-        <span class="o">-</span><span class="n">submit</span><span class="o">/</span><span class="n">save</span><span class="p">,</span> <span class="n">Submits</span> <span class="n">the</span> <span class="n">batch</span> <span class="n">command</span> <span class="n">to</span> <span class="n">the</span> <span class="n">HPC</span><span class="p">,</span> <span class="ow">or</span> <span class="n">prints</span> <span class="n">it</span> <span class="n">to</span> <span class="n">screen</span>
-        <span class="o">-</span><span class="n">interactive</span><span class="o">/</span><span class="n">batch</span><span class="p">,</span> <span class="n">Directly</span> <span class="n">calls</span> <span class="n">the</span> <span class="n">command</span> <span class="n">using</span> <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">,</span> <span class="ow">or</span> <span class="n">submits</span> <span class="n">it</span> <span class="k">as</span> <span class="n">a</span> <span class="n">batch</span> <span class="n">command</span><span class="o">.</span> <span class="n">Interactive</span> <span class="n">only</span> <span class="n">works</span> <span class="n">during</span> <span class="n">an</span> <span class="n">interactive</span> <span class="n">session</span><span class="o">.</span>
+<p>clpipe contains a convenience function to validate your datasets directly on the HPC. This function uses a Singularity image of the <a class="reference external" href="https://github.com/bids-standard/bids-validator">BIDs Validator</a>. The command to run the BIDs validator is</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">usage: bids_validate [options] bidsDir</span>
+<span class="go">    options:</span>
+<span class="go">        -configFile, Uses a given configuration file</span>
+<span class="go">        -submit/save, Submits the batch command to the HPC, or prints it to screen</span>
+<span class="go">        -interactive/batch, Directly calls the command using os.system, or submits it as a batch command. Interactive only works during an interactive session.</span>
 </pre></div>
 </div>
 <p><code class="docutils literal notranslate"><span class="pre">bids_validate</span></code> produces an output file titled <cite>Output-BIDSValidator.out</cite> at your current working directory that contains the output of the BIDS validator.</p>

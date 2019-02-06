@@ -2,11 +2,16 @@
 Installation
 ============
 
-Installation of clpipe is fairly simple. If you have priviledges to add python packages to a system, you can install the most recent version of clpipe with ::
+Installation of clpipe is fairly simple. If you have priviledges to add python packages to a system, you can install the most recent version of clpipe with
+
+.. code-block:: console
 
     pip3 install --upgrade git+git://github.com/cohenlabUNC/clpipe
 
-If you don't have access to the global library (perhaps you are just a user of an HPC), you can install a local copy by adding the ``--user`` flag. ::
+If you don't have access to the global library (perhaps you are just a user of an HPC), you can install a local copy by adding the ``--user`` flag.
+
+.. code-block:: console
+
      pip3 install --user --upgrade git+git://github.com/cohenlabUNC/clpipe
 
 The installation will also install any additional packaged needed.
