@@ -38,5 +38,4 @@
 	},
 	"RunLog": [],
 	"BatchConfig": "slurmUNCConfig.json",
-	"PostProcessingMemoryUsage": "10000"
 }
