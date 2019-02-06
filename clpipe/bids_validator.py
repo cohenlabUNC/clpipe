@@ -7,13 +7,18 @@ from .config_json_parser import ConfigParser
 
 @click.command()
 @click.option('-configFile', type=click.Path(exists=True, dir_okay=False, file_okay=True), default=None)
-@click.argument('bidsDir', type=click.Path(exists=True, dir_okay=True, file_okay=False))
+@click.argument('bidsDir', type=click.Path(exists=True, dir_okay=True, file_okay=False), required= False)
 @click.option('-interactive/-batch', default = False )
 @click.option('-submit/-save', default = False)
 def bids_validate(bidsdir = None, configfile = None, interactive = False, submit = True):
     config = ConfigParser()
     config.config_updater(configfile)
     config.setup_fmriprep_directories(bidsdir, None, None)
+    if bidsdir is None and configfile is None:
+        raise ValueError('Specify a BIDS directory in either the configuration file, or in the command')
+
+    if not os.path.isdir(config.config['FMRIPrepOptions']['BIDSDirectory']):
+        raise ValueError('BIDS directory is not a directory, did you specify one?')
 
     batch_manager = BatchManager(batchsystemConfig=config.config['BatchConfig'])
     batch_manager.update_mem_usage('3000')
