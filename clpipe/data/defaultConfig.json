@@ -15,6 +15,13 @@
 		"OutputSuffix": "",
 		"ConfoundSuffix": "desc-confounds_regressors.tsv",
 		"Regress": true,
+		"RegressionParameters": {
+			  "MotionParams": ["trans_x","trans_y" ,"trans_z","rot_x","rot_z","rot_y"],
+			  "WhiteMatter": "white_matter",
+			  "CSF": "csf",
+  			  "FDLabel": "framewise_displacement",
+			  "GlobalSignal": "global_signal"
+		},
 		"NuisanceRegression": "QuadLagged",
 		"WhiteMatter": true,
 		"CSF": true,

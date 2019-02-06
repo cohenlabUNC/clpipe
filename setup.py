@@ -27,6 +27,7 @@ setup(name='clpipe',
       fmri_postprocess=clpipe.fmri_postprocess:fmri_postprocess
       fmri_process_check=clpipe.fmri_process_check:fmri_process_check
       get_reports=clpipe.get_reports:get_reports
+      grab_config_file=clpipe.grab_config_file:grab_config_file
       ''',
       zip_safe=False
       )
