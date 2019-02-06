@@ -199,7 +199,7 @@ def _fmri_postprocess_image(config, file, tr=None):
 def _regression_prep(config, confound_filepath):
     confounds = pandas.read_table(confound_filepath, dtype="float", na_values="n/a")
     confounds = confounds.fillna(0)
-    reg_labels = json.load(resource_stream(__name__, 'data/RegressionOptions.json'))
+    reg_labels = config.config['PostProcessingOptions']['RegressionParameters']
     target_label = next((item for item in reg_labels['RegressionOptions'] if
                          item["Name"] == config.config['PostProcessingOptions']['NuisanceRegression']), False)
     if not target_label:
