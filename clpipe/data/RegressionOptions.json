@@ -1,9 +1,9 @@
 {
-  "MotionParams": ["X","Y" ,"Z","RotX","RotY","RotZ"],
-  "WhiteMatter": "WhiteMatter",
-  "CSF": "CSF",
-  "FDLabel": "FramewiseDisplacement",
-  "GlobalSignal": "GlobalSignal",
+  "MotionParams": ["trans_x","trans_y" ,"trans_z","rot_x","rot_z","rot_y"],
+  "WhiteMatter": "white_matter",
+  "CSF": "csf",
+  "FDLabel": "framewise_displacement",
+  "GlobalSignal": "global_signal",
   "RegressionOptions": [
 
     {
