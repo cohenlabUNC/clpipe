@@ -29,7 +29,6 @@ class ConfigParser:
         else:
             newConfigDict = self.config_json_parser(newConfig)
             self.config = update(self.config, newConfigDict)
-            self.validate_config()
 
     def config_json_dump(self, outputdir, filepath):
         if filepath is None:
