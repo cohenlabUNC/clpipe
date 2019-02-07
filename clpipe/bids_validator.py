@@ -14,7 +14,7 @@ from .config_json_parser import ConfigParser
 @click.option('-submit/-save', default = False)
 @click.option('-debug/-norm', default = False)
 def bids_validate(bidsdir = None, configfile = None, interactive = False, submit = True, verbose=False, debug=False):
-    if debug:
+    if not debug:
         sys.excepthook = exception_handler()
     config = ConfigParser()
     config.config_updater(configfile)
