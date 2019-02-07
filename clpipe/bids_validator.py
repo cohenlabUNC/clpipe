@@ -2,6 +2,7 @@ import os
 import sys
 import click
 import logging
+from .error_handler import exception_handler
 from .batch_manager import BatchManager, Job
 from .config_json_parser import ConfigParser
 
@@ -11,13 +12,16 @@ from .config_json_parser import ConfigParser
 @click.argument('-verbose/-simple', default=False)
 @click.option('-interactive/-batch', default = False)
 @click.option('-submit/-save', default = False)
-def bids_validate(bidsdir = None, configfile = None, interactive = False, submit = True, verbose=False):
+@click.option('-debug/-norm', default = False)
+def bids_validate(bidsdir = None, configfile = None, interactive = False, submit = True, verbose=False, debug=False):
+    if debug:
+        sys.excepthook = exception_handler()
     config = ConfigParser()
     config.config_updater(configfile)
     config.setup_fmriprep_directories(bidsdir, None, None)
+
     if bidsdir is None and configfile is None:
-        logging.error('Specify a BIDS directory in either the configuration file, or in the command')
-        sys.exit(1)
+        raise ValueError('Specify a BIDS directory in either the configuration file, or in the command')
 
     batch_manager = BatchManager(batchsystemConfig=config.config['BatchConfig'])
     batch_manager.update_mem_usage('3000')
