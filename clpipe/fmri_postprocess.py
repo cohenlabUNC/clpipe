@@ -19,43 +19,44 @@ from .error_handler import exception_handler
 
 @click.command()
 @click.argument('subjects', nargs=-1, required=False, default=None)
-@click.option('-configFile', type=click.Path(exists=True, dir_okay=False, file_okay=True), default=None)
-@click.option('-task')
-@click.option('-TR')
-@click.option('-targetDir', type=click.Path(exists=True, dir_okay=True, file_okay=False))
-@click.option('-targetSuffix')
-@click.option('-outputDir', type=click.Path(dir_okay=True, file_okay=False))
-@click.option('-outputSuffix')
-@click.option('-logOutputDir', type=click.Path(dir_okay=True, file_okay=False))
-@click.option('-submit/-save', default=False)
-@click.option('-batch/-single', default=True)
-@click.option('-debug', is_flag = True, default=False)
-def fmri_postprocess(configfile=None, subjects=None, targetdir=None, targetsuffix=None, outputdir=None,
-                     outputsuffix=None, logoutputdir=None,
+@click.option('-config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True), default=None, help = 'Use a given configuration file. If left blank, uses the default config file, requiring definition of BIDS, working and output directories.')
+@click.option('-target_dir', type=click.Path(exists=True, dir_okay=True, file_okay=False), help='Which fmriprep directory to process. If a configuration file is provided with a BIDS directory, this argument is not necessary. Note, must point to the ``fmriprep`` directory, not its parent directory.')
+@click.option('-target_suffix', help= 'Which file suffix to use. If a configuration file is provided with a target suffix, this argument is not necessary. Defaults to "preproc_bold.nii.gz"')
+@click.option('-output_dir', type=click.Path(dir_okay=True, file_okay=False), help = 'Where to put the postprocessed data. If a configuration file is provided with a output directory, this argument is not necessary.')
+@click.option('-output_suffix', help = 'What suffix to append to the postprocessed files. If a configuration file is provided with a output suffix, this argument is not necessary.')
+@click.option('-task', help = 'Which task to postprocess. If left blank, defaults to all tasks.')
+@click.option('-TR', help = 'The TR of the scans. If a config file is not provided, this option is required. If a config file is provided, this information is found from the sidecar jsons.')
+@click.option('-log_output_dir', type=click.Path(dir_okay=True, file_okay=False), help = 'Where to put HPC output files. If not specified, defaults to <outputDir>/batchOutput.')
+@click.option('-submit', is_flag = True, default=False, help = 'Flag to submit commands to the HPC.')
+@click.option('-batch/-single', default=True, help = 'Submit to batch, or run in current session. Mainly used internally.')
+@click.option('-debug', is_flag = True, default=False, help = 'Print detailed processing information and traceback for errors.')
+def fmri_postprocess(config_file=None, subjects=None, target_dir=None, target_suffix=None, output_dir=None,
+                     output_suffix=None, log_output_dir=None,
                      submit=False, batch=True, task=None, tr=None, debug = False):
+    """This command runs an fMRIprep'ed dataset through additional processing, as defined in the configuration file. To run specific subjects, specify their IDs. If no IDs are specified, all subjects are ran."""
     if not debug:
         sys.excepthook = exception_handler
         logging.basicConfig(level=logging.DEBUG)
     else:
         logging.basicConfig(level=logging.INFO)
 
-    if configfile is None and tr is None:
+    if config_file is None and tr is None:
         raise ValueError('No config file and no specified TR. Please include one.')
 
     config = ConfigParser()
-    config.config_updater(configfile)
-    config.setup_postproc(targetdir, targetsuffix, outputdir, outputsuffix)
+    config.config_updater(config_file)
+    config.setup_postproc(target_dir, target_suffix, output_dir, output_suffix)
     config.validate_config()
 
-    if logoutputdir is not None:
-        if os.path.isdir(logoutputdir):
-            logoutputdir = os.path.abspath(logoutputdir)
+    if log_output_dir is not None:
+        if os.path.isdir(log_output_dir):
+            log_output_dir = os.path.abspath(log_output_dir)
         else:
-            logoutputdir = os.path.abspath(logoutputdir)
-            os.makedirs(logoutputdir, exist_ok=True)
+            log_output_dir = os.path.abspath(log_output_dir)
+            os.makedirs(log_output_dir, exist_ok=True)
     else:
-        logoutputdir = os.path.join(config.config['PostProcessingOptions']['OutputDirectory'], "BatchOutput")
-        os.makedirs(logoutputdir, exist_ok=True)
+        log_output_dir = os.path.join(config.config['PostProcessingOptions']['OutputDirectory'], "BatchOutput")
+        os.makedirs(log_output_dir, exist_ok=True)
 
     if not subjects:
         subjectstring = "ALL"
@@ -69,18 +70,18 @@ def fmri_postprocess(configfile=None, subjects=None, targetdir=None, targetsuffi
                         '''-outputDir={outputDir} -outputSuffix={outputSuffix} -logOutputDir={logOutputDir} -single {sub}'''
 
     if batch:
-        batch_manager = BatchManager(config.config['BatchConfig'], logoutputdir)
+        batch_manager = BatchManager(config.config['BatchConfig'], log_output_dir)
         batch_manager.update_mem_usage(config.config['PostProcessingOptions']['PostProcessingMemoryUsage'])
         batch_manager.update_time(config.config['PostProcessingOptions']['PostProcessingTimeUsage'])
         batch_manager.update_nthreads(config.config['PostProcessingOptions']['NThreads'])
         for sub in sublist:
             sub_string_temp = submission_string.format(
-                config=os.path.abspath(configfile),
+                config=os.path.abspath(config_file),
                 targetDir=config.config['PostProcessingOptions']['TargetDirectory'],
                 targetSuffix=config.config['PostProcessingOptions']['TargetSuffix'],
                 outputDir=config.config['PostProcessingOptions']['OutputDirectory'],
                 outputSuffix=config.config['PostProcessingOptions']['OutputSuffix'],
-                logOutputDir=logoutputdir,
+                logOutputDir=log_output_dir,
                 sub=sub
             )
             batch_manager.addjob(Job("PostProcessing" + sub, sub_string_temp))
@@ -89,7 +90,7 @@ def fmri_postprocess(configfile=None, subjects=None, targetdir=None, targetsuffi
             batch_manager.compilejobstrings()
             batch_manager.submit_jobs()
             config.update_runlog(subjectstring, "PostProcessing")
-            config.config_json_dump(config.config['PostProcessingOptions']['OutputDirectory'], configfile)
+            config.config_json_dump(config.config['PostProcessingOptions']['OutputDirectory'], config_file)
         else:
             batch_manager.createsubmissionhead()
             batch_manager.compilejobstrings()

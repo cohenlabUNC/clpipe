@@ -6,15 +6,31 @@ clpipe uses `fMRIprep <https://fmriprep.readthedocs.io/en/stable/>`_ to perform 
 
 .. code-block:: console
 
-    usage: fmriprep_process [options] [subjects...]
-        options:
-            -configFile, Use a given configuration file. If left blank, uses the default config file, requiring definition of BIDS, working and output directories.
-            -bidsDir, Which BIDS directory to process. If a configuration file is provided with a BIDS directory, this argument is not necessary.
-            -workingDir, Where to generate the working directory. If a configuration file is provided with a working directory, this argument is not necessary.
-            -outputDir, Where to put the preprocessed data. If a configuration file is provided with a output directory, this argument is not necessary.
-            -logOutputDir, Where to put HPC output files (such as SLURM output files). If not specified, defaults to <outputDir>/batchOutput.
-            -submit, Flag to submit commands to the HPC.
-        subjects..., A list of subject IDs to process. If left blank, then all subjects are processed.
+    Usage: fmriprep_process [OPTIONS] [SUBJECTS]...
+
+      This command runs a BIDS formatted dataset through fMRIprep. Specify
+      subject IDs to run specific subjects. If left blank, runs all subjects.
+
+    Options:
+      -config_file FILE          Use a given configuration file. If left blank, uses
+                                 the default config file, requiring definition of
+                                 BIDS, working and output directories.
+      -bids_dir DIRECTORY        Which BIDS directory to process. If a configuration
+                                 file is provided with a BIDS directory, this
+                                 argument is not necessary.
+      -working_dir DIRECTORY      Where to generate the working directory. If a
+                                 configuration file is provided with a working
+                                 directory, this argument is not necessary.
+      -output_dir DIRECTORY       Where to put the preprocessed data. If a
+                                 configuration file is provided with a output
+                                 directory, this argument is not necessary.
+      -log_output_dir DIRECTORY  Where to put HPC output files (such as SLURM output
+                                 files). If not specified, defaults to
+                                 <outputDir>/batchOutput.
+      -submit                    Flag to submit commands to the HPC
+      -debug                     Flag to enable detailed error messages and
+                                 traceback
+      --help                     Show this message and exit.
 
 ``fmriprep_process`` creates one batch job per subject. If you find that you are running out of memory, increase the `[FMRIPrepOptions][FMRIPrepMemoryUsage]` option in the configuration file.
 
@@ -31,10 +47,17 @@ clpipe has a convenience function to organize and prepare a zip archive containi
 
 .. code-block:: console
 
-    usage: get_reports [-options]
-        -options:
-            -configFile, REQUIRED. The configuration file for the current data processing setup.
-            -outputFile, Path and name of the output archive. Defaults to current working directory and 'Report_Archive.zip'
+    Usage: get_reports [OPTIONS]
+
+      This command creates a zip archive of fmriprep QC reports for download.
+
+    Options:
+      -config_file FILE    The configuration file for the current data processing
+                           setup.  [required]
+      -output_name TEXT    Path and name of the output archive. Defaults to current
+                           working directory and "Report_Archive.zip"
+      -debug               Print traceback on errors.
+      --help               Show this message and exit.
 
 This command uses the working directory previously specified to copy the reports and images to, then creates a zip archive containing them. This command is not a batch command, and can take a little time creating the archive, so be aware.
 

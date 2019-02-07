@@ -21,7 +21,6 @@ class ConfigParser:
         self.setup_default_config()
         self.configSchema = json.load(resource_stream(__name__, 'data/configSchema.json'))
 
-
     def config_updater(self, new_config):
         if new_config is None:
             None

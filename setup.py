@@ -1,11 +1,10 @@
 from setuptools import setup, find_packages
 
-
 setup(name='clpipe',
       version='0.1',
       description='Cohen Lab MRI processing pipeline',
-      url = 'https://github.com/cohenlabUNC/clpipe',
-      author = 'Cohen Lab (Maintainer: Teague Henry)',
+      url='https://github.com/cohenlabUNC/clpipe',
+      author='Cohen Lab (Maintainer: Teague Henry)',
       author_email='trhenry@email.unc.edu',
       license='MIT',
       python_requires='>=3.6',
