@@ -4,14 +4,25 @@ import os
 import glob
 import shutil
 from distutils.dir_util import copy_tree, remove_tree
-
+import sys
 import logging
+from .error_handler import exception_handler
+
 
 @click.command()
-@click.option('-configFile', type=click.Path(exists=True, dir_okay=False, file_okay=True), required = True)
+@click.option('-configFile', type=click.Path(exists=True, dir_okay=False, file_okay=True), required = True, default = None)
 @click.option('-outputName', default = 'Report_Archive')
-def get_reports(configfile, outputname):
-    logging.basicConfig(level=logging.DEBUG)
+@click.option('-debug', is_flag=True)
+def get_reports(configfile, outputname, debug):
+    if not debug:
+        sys.excepthook = exception_handler
+        logging.basicConfig(level=logging.DEBUG)
+    else:
+        logging.basicConfig(level=logging.INFO)
+
+    if configfile is None:
+        raise ValueError('Please specify a configuration file.')
+
     config = ConfigParser()
     config.config_updater(configfile)
 

@@ -4,15 +4,24 @@ import pandas as pd
 import os
 import glob
 import logging
+from .error_handler import exception_handler
+import sys
+
+
 @click.command()
 @click.option('-configFile', type=click.Path(exists=True, dir_okay=False, file_okay=True), required = True)
 @click.option('-outputFile')
-def fmri_process_check(configfile, outputfile=None):
-    logging.basicConfig(level=logging.DEBUG)
+@click.option('-debug', is_flag=True)
+def fmri_process_check(configfile, outputfile=None, debug = False):
+    if not debug:
+        sys.excepthook = exception_handler
+        logging.basicConfig(level=logging.DEBUG)
+    else:
+        logging.basicConfig(level=logging.INFO)
+
     config = ConfigParser()
     config.config_updater(configfile)
     config.validate_config()
-
 
     sublist = [o for o in os.listdir(config.config['PostProcessingOptions']['TargetDirectory'])
                if os.path.isdir(
@@ -21,8 +30,6 @@ def fmri_process_check(configfile, outputfile=None):
     for sub in sublist:
         logging.debug("Inspecting "+ sub)
         bold_files = glob.glob(os.path.join(config.config['FMRIPrepOptions']['BIDSDirectory'],sub, '**','func','*.nii.gz'), recursive=True)
-        #bold_files = [file for file in bids_files if 'bold' in file]
-
         fmriprep_files = glob.glob(os.path.join(config.config['PostProcessingOptions']['TargetDirectory'],sub, '**','func','*'+config.config['PostProcessingOptions']['TargetSuffix']), recursive=True)
         logging.debug('[%s]' % ', '.join(map(str, fmriprep_files)))
 

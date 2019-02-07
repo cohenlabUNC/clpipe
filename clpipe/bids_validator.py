@@ -6,14 +6,15 @@ from .error_handler import exception_handler
 from .batch_manager import BatchManager, Job
 from .config_json_parser import ConfigParser
 
+
 @click.command()
 @click.option('-configFile', type=click.Path(exists=True, dir_okay=False, file_okay=True), default=None)
-@click.argument('bidsDir', type=click.Path(exists=True, dir_okay=True, file_okay=False), required= False)
+@click.argument('bidsDir', type=click.Path(exists=True, dir_okay=True, file_okay=False), required=False)
 @click.option('-verbose/-simple', default=False)
-@click.option('-interactive/-batch', default = False)
-@click.option('-submit/-save', default = False)
-@click.option('-debug/-norm', default = False)
-def bids_validate(bidsdir = None, configfile = None, interactive = False, submit = True, verbose=False, debug=False):
+@click.option('-interactive/-batch', default=False)
+@click.option('-submit/-save', default=False)
+@click.option('-debug', is_flag=True)
+def bids_validate(bidsdir=None, configfile=None, interactive=False, submit=True, verbose=False, debug=False):
     if not debug:
         sys.excepthook = exception_handler
     config = ConfigParser()
@@ -31,17 +32,17 @@ def bids_validate(bidsdir = None, configfile = None, interactive = False, submit
     if verbose:
         singularity_string = singularity_string + ' --verbose'
 
-    if(interactive):
+    if interactive:
         os.system(singularity_string.format(
-            validatorInstance = config.config['PostProcessingOptions']['BIDSValidatorImage'],
-            bidsDir = config.config['FMRIPrepOptions']['BIDSDirectory'],
-            bindPaths = batch_manager.config['SingularityBindPaths']
+            validatorInstance=config.config['PostProcessingOptions']['BIDSValidatorImage'],
+            bidsDir=config.config['FMRIPrepOptions']['BIDSDirectory'],
+            bindPaths=batch_manager.config['SingularityBindPaths']
         ))
     else:
-        batch_manager.addjob(Job("BIDSValidator",singularity_string.format(
-            validatorInstance = config.config['PostProcessingOptions']['BIDSValidatorImage'],
-            bidsDir = config.config['FMRIPrepOptions']['BIDSDirectory'],
-            bindPaths = batch_manager.config['SingularityBindPaths']
+        batch_manager.addjob(Job("BIDSValidator", singularity_string.format(
+            validatorInstance=config.config['PostProcessingOptions']['BIDSValidatorImage'],
+            bidsDir=config.config['FMRIPrepOptions']['BIDSDirectory'],
+            bindPaths=batch_manager.config['SingularityBindPaths']
         )))
 
         batch_manager.compilejobstrings()

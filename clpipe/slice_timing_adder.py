@@ -23,4 +23,3 @@ def slice_time_adder(configfile = None,bidsdir = None, slicetype = None, nslices
         with open(os.path.abspath(json_file), "r") as config_file:
             json_dict = json.load(config_file)
 
-        slices =
