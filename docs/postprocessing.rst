@@ -6,19 +6,45 @@ When performing functional connectivity analysis, there are several additional p
 
 .. code-block:: console
 
-    usage: fmri_postprocess [options] [subjects...]
-        options:
-            -configFile, Use a given configuration file. If left blank, uses the default config file, requiring definition of BIDS, working and output directories.
-            -targetDir, Which fmriprep directory to process. If a configuration file is provided with a BIDS directory, this argument is not necessary. Note, must point to the ``fmriprep`` directory, not its parent directory.
-            -targetSuffix, Which file suffix to use. If a configuration file is provided with a target suffix, this argument is not necessary. Defaults to 'preproc_bold.nii.gz'
-            -outputDir, Where to put the postprocessed data. If a configuration file is provided with a output directory, this argument is not necessary.
-            -outputSuffix, What suffix to append to the postprocessed files. If a configuration file is provided with a output suffix, this argument is not necessary.
-            -task, Which task to postprocess. If left blank, defaults to all tasks
-            -TR, The TR of the scans. If a config file is not provided, this option is required. If a config file is provided, this information is found from the sidecar jsons.
-            -logOutputDir, Where to put HPC output files. If not specified, defaults to <outputDir>/batchOutput.
-            -submit, Flag to submit commands to the HPC.
-            -batch/single, submit to batch, or run in current session. Mainly used internally.
-        subjects..., A list of subject IDs to process. If left blank, then all subjects are processed.
+    Usage: fmri_postprocess [OPTIONS] [SUBJECTS]...
+
+      This command runs an fMRIprep'ed dataset through additional processing, as
+      defined in the configuration file. To run specific subjects, specify their
+      IDs. If no IDs are specified, all subjects are ran.
+
+    Options:
+      -config_file FILE         Use a given configuration file. If left blank, uses
+                               the default config file, requiring definition of
+                               BIDS, working and output directories.
+      -target_dir DIRECTORY     Which fmriprep directory to process. If a
+                               configuration file is provided with a BIDS
+                               directory, this argument is not necessary. Note,
+                               must point to the ``fmriprep`` directory, not its
+                               parent directory.
+      -target_suffix TEXT       Which file suffix to use. If a configuration file
+                               is provided with a target suffix, this argument is
+                               not necessary. Defaults to "preproc_bold.nii.gz"
+      -output_dir DIRECTORY     Where to put the postprocessed data. If a
+                               configuration file is provided with a output
+                               directory, this argument is not necessary.
+      -output_suffix TEXT       What suffix to append to the postprocessed files.
+                               If a configuration file is provided with a output
+                               suffix, this argument is not necessary.
+      -task TEXT               Which task to postprocess. If left blank, defaults
+                               to all tasks.
+      -TR TEXT                 The TR of the scans. If a config file is not
+                               provided, this option is required. If a config file
+                               is provided, this information is found from the
+                               sidecar jsons.
+      -log_output_dir DIRECTORY  Where to put HPC output files. If not specified,
+                               defaults to <outputDir>/batchOutput.
+      -submit                  Flag to submit commands to the HPC.
+      -batch                   Submit to batch, or run in current session. Mainly
+                               used internally.
+      -debug                   Print detailed processing information and traceback
+                               for errors.
+      --help                   Show this message and exit.
+
 
 
 Processing Checker
@@ -28,10 +54,20 @@ clpipe has a convenient function for determining which scans successfully made i
 
 .. code-block:: console
 
-    usage: fmri_process_check [options]
-        options:
-            -configFile, REQUIRED. The configuration file for the current processing run.
-            -outputFile, The path and name for the output. Defaults to Checker-Output.csv, in the same directory as the configuration file.
+    Usage: fmri_process_check [OPTIONS]
+
+      This command checks a BIDS dataset, an fMRIprep'ed dataset and a
+      postprocessed dataset, and creates a CSV file that lists all scans across
+      all three datasets. Use to find which subjects/scans failed processing.
+
+    Options:
+      -config_file FILE  The configuration file for the current data processing
+                        setup.  [required]
+      -output_file TEXT  Path and name of the output archive. Defaults to current
+                        working directory and "Report_Archive.zip"
+      -debug            Print traceback and detailed processing messages.
+      --help            Show this message and exit.
+
 
 This command will create a csv file listing all scans found in the BIDS dataset, and corresponding scans in the fMRIprep dataset and the postprocessed dataset.
 

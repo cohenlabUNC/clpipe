@@ -4,8 +4,9 @@ import logging
 import os
 
 @click.command()
-@click.option('-outputFile', default = 'AConfigFile.json')
+@click.option('-outputFile', default = 'AConfigFile.json', help = 'Filepath for the outputted configuration file.')
 def grab_config_file(outputfile=None):
+    """This commands generates a default configuration file for further modification."""
     logging.basicConfig(level=logging.INFO)
     config = ConfigParser()
     config.config_json_dump(os.path.dirname(outputfile), os.path.basename(outputfile))
