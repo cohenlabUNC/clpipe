@@ -3,6 +3,8 @@ import json
 from pkg_resources import resource_stream
 import os
 import sys
+
+
 class BatchManager:
 
     def __init__(self, batchsystemConfig, outputDirectory=None):
@@ -30,13 +32,12 @@ class BatchManager:
     def compilejobstrings(self):
         header = self.createsubmissionhead()
         for job in self.jobs:
-            self.submissionlist.append(header.format(jobid =job.jobID) + '"'+ job.jobString+'"')
+            self.submissionlist.append(header.format(jobid=job.jobID) + '"' + job.jobString + '"')
 
     def createsubmissionhead(self):
-        head = []
-        head.append(self.config['SubmissionHead'])
+        head = [self.config['SubmissionHead']]
         for e in self.config['SubmissionOptions']:
-            temp = e['command']+' '+e['args']
+            temp = e['command'] + ' ' + e['args']
             head.append(temp)
         for e in self.config['SubOptionsEqual']:
             temp = e['command'] + '=' + e['args']
@@ -45,9 +46,10 @@ class BatchManager:
         head.append(self.config['MemoryCommand'] + self.config['MemoryDefault'])
         head.append(self.config['TimeCommand'] + self.config['TimeDefault'])
         head.append(self.config['NThreadsCommand'] + '=' + self.config['NThreads'])
-        head.append(self.config['JobIDCommand']+'='+'"{jobid}"')
-        head.append(self.config['OutputCommand']+'='+os.path.abspath(os.path.join(self.outputDir,'Output-{jobid}.out')))
-        head.append(self.config['CommandWrapper']+'=')
+        head.append(self.config['JobIDCommand'] + '=' + '"{jobid}"')
+        head.append(
+            self.config['OutputCommand'] + '=' + os.path.abspath(os.path.join(self.outputDir, 'Output-{jobid}.out')))
+        head.append(self.config['CommandWrapper'] + '=')
         return " ".join(head)
 
     def submit_jobs(self):
@@ -60,6 +62,7 @@ class BatchManager:
 
     def get_threads_command(self):
         return [self.config['NThreadsCommand'], self.config['NThreads']]
+
 
 class Job:
 

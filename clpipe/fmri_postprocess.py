@@ -14,8 +14,8 @@ import numpy
 import logging
 import gc
 import psutil
-logging.basicConfig(level=logging.DEBUG)
-
+import sys
+from .error_handler import exception_handler
 
 @click.command()
 @click.argument('subjects', nargs=-1, required=False, default=None)
@@ -29,10 +29,16 @@ logging.basicConfig(level=logging.DEBUG)
 @click.option('-logOutputDir', type=click.Path(dir_okay=True, file_okay=False))
 @click.option('-submit/-save', default=False)
 @click.option('-batch/-single', default=True)
+@click.option('-debug', is_flag = True, default=False)
 def fmri_postprocess(configfile=None, subjects=None, targetdir=None, targetsuffix=None, outputdir=None,
                      outputsuffix=None, logoutputdir=None,
-                     submit=False, batch=True, task=None, tr=None):
-    logging.basicConfig(level=logging.DEBUG)
+                     submit=False, batch=True, task=None, tr=None, debug = False):
+    if not debug:
+        sys.excepthook = exception_handler
+        logging.basicConfig(level=logging.DEBUG)
+    else:
+        logging.basicConfig(level=logging.INFO)
+
     if configfile is None and tr is None:
         raise ValueError('No config file and no specified TR. Please include one.')
 

@@ -68,6 +68,7 @@ All of these fields are required and have what the designers of clpipe consider 
 
     * ``BIDSDirectory:`` Your BIDs formatted raw data directory. Use absolute paths if possible.
     * ``OutputDirectory:`` Where you want your preprocessed files to go. Use absolute paths
+    * ``WorkingDirectory`` Where you want your working files to go. Use absolute paths. For Longleaf users, use /pine/scr/<o>/<n>/<onyen>, where <onyen> is your onyen, and <o> <n> are the first and second letters of your onyen respectively.
     * ``FMRIPrepPath:`` Where the fMRIprep Singularity image is.
     * ``FreesurferLicensePath:`` Where your Freesurfer license .txt file is.
     * ``FMRIPrepMemoryUsage:`` How much memory in RAM each subject's preprocessing will use, in Mbs. Default is 20000Mb or 20Gb.

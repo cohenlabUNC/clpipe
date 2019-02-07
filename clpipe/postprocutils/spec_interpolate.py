@@ -5,8 +5,8 @@ def spec_inter(arr, tr, ofreq, scrub_mask, hifreq, binSize=5000):
     scrub_mask = numpy.asarray(scrub_mask)
     goodtpindex = numpy.asarray([[i for i, e in enumerate(scrub_mask) if e == 0]])
     badtpindex = numpy.asarray([[i for i, e in enumerate(scrub_mask) if e == 1]])
-    tobs_good = (goodtpindex) * tr
-    timespan = tobs_good.max() - (tobs_good).min()
+    tobs_good = goodtpindex * tr
+    timespan = tobs_good.max() - tobs_good.min()
     tpobs_all = numpy.arange(0.0, tr * float(scrub_mask.shape[0]), tr)
     freq = numpy.arange(1 / (timespan * ofreq), hifreq * tobs_good.shape[1] / (2 * timespan), 1 / (timespan * ofreq))[
         numpy.newaxis]

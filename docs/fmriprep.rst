@@ -12,7 +12,7 @@ clpipe uses `fMRIprep <https://fmriprep.readthedocs.io/en/stable/>`_ to perform 
             -bidsDir, Which BIDS directory to process. If a configuration file is provided with a BIDS directory, this argument is not necessary.
             -workingDir, Where to generate the working directory. If a configuration file is provided with a working directory, this argument is not necessary.
             -outputDir, Where to put the preprocessed data. If a configuration file is provided with a output directory, this argument is not necessary.
-            -logOutputDir, Where to put HPC output files. If not specified, defaults to <outputDir>/batchOutput.
+            -logOutputDir, Where to put HPC output files (such as SLURM output files). If not specified, defaults to <outputDir>/batchOutput.
             -submit, Flag to submit commands to the HPC.
         subjects..., A list of subject IDs to process. If left blank, then all subjects are processed.
 

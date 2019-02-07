@@ -7,29 +7,30 @@ from jsonschema import validate
 from pkg_resources import resource_stream
 
 
+def config_json_parser(json_path):
+    with open(os.path.abspath(json_path), "r") as config_file:
+        config = json.load(config_file)
+
+    return config
+
+
 class ConfigParser:
 
     def __init__(self, new_config=None):
+        self.config = update(self.config, newConfigDict)
+        self.config = json.load(resource_stream(__name__, 'data/defaultConfig.json'))
         self.setup_default_config()
-        self.configSchema = json.load(resource_stream(__name__,'data/configSchema.json'))
+        self.configSchema = json.load(resource_stream(__name__, 'data/configSchema.json'))
 
         if new_config is not None:
             self.config_updater(new_config)
-
-    def config_json_parser(self,json_path):
-        with open(os.path.abspath(json_path), "r") as config_file:
-            config = json.load(config_file)
-
-        return config
 
     def config_updater(self, newConfig):
 
         if newConfig is None:
             None
         else:
-            newConfigDict = self.config_json_parser(newConfig)
-            self.config = update(self.config, newConfigDict)
-            self.validate_config()
+            newConfigDict = config_json_parser(newConfig)
 
     def config_json_dump(self, outputdir, filepath):
         if filepath is None:
@@ -39,7 +40,7 @@ class ConfigParser:
             json.dump(self.config, fp, indent="\t")
 
     def setup_default_config(self):
-        self.config = json.load(resource_stream(__name__,'data/defaultConfig.json'))
+        pass
 
     def validate_config(self):
         validate(self.config, self.configSchema)
@@ -51,12 +52,12 @@ class ConfigParser:
                 raise ValueError('BIDS Directory does not exist')
         if workingDir is not None:
             self.config['FMRIPrepOptions']['WorkingDirectory'] = os.path.abspath(workingDir)
-            os.makedirs(self.config['FMRIPrepOptions']['WorkingDirectory'],exist_ok=True)
+            os.makedirs(self.config['FMRIPrepOptions']['WorkingDirectory'], exist_ok=True)
         if outputDir is not None:
             self.config['FMRIPrepOptions']['OutputDirectory'] = os.path.abspath(outputDir)
             os.makedirs(self.config['FMRIPrepOptions']['OutputDirectory'], exist_ok=True)
 
-    def setup_postproc(self, target_dir,target_suffix,output_dir,output_suffix):
+    def setup_postproc(self, target_dir, target_suffix, output_dir, output_suffix):
         if target_dir is not None:
             self.config['PostProcessingOptions']['TargetDirectory'] = os.path.abspath(target_dir)
             if not os.path.isdir(self.config['PostProcessingOptions']['TargetDirectory']):
