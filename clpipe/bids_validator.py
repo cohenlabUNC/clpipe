@@ -15,7 +15,7 @@ from .config_json_parser import ConfigParser
 @click.option('-debug/-norm', default = False)
 def bids_validate(bidsdir = None, configfile = None, interactive = False, submit = True, verbose=False, debug=False):
     if not debug:
-        sys.excepthook = exception_handler()
+        sys.excepthook = exception_handler
     config = ConfigParser()
     config.config_updater(configfile)
     config.setup_fmriprep_directories(bidsdir, None, None)
