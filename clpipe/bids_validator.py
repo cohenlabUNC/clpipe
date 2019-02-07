@@ -9,7 +9,7 @@ from .config_json_parser import ConfigParser
 @click.command()
 @click.option('-configFile', type=click.Path(exists=True, dir_okay=False, file_okay=True), default=None)
 @click.argument('bidsDir', type=click.Path(exists=True, dir_okay=True, file_okay=False), required= False)
-@click.argument('-verbose/-simple', default=False)
+@click.option('-verbose/-simple', default=False)
 @click.option('-interactive/-batch', default = False)
 @click.option('-submit/-save', default = False)
 @click.option('-debug/-norm', default = False)
