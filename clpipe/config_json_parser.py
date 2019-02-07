@@ -16,21 +16,17 @@ def config_json_parser(json_path):
 
 class ConfigParser:
 
-    def __init__(self, new_config=None):
-        self.config = update(self.config, newConfigDict)
+    def __init__(self):
         self.config = json.load(resource_stream(__name__, 'data/defaultConfig.json'))
         self.setup_default_config()
         self.configSchema = json.load(resource_stream(__name__, 'data/configSchema.json'))
 
-        if new_config is not None:
-            self.config_updater(new_config)
 
-    def config_updater(self, newConfig):
-
-        if newConfig is None:
+    def config_updater(self, new_config):
+        if new_config is None:
             None
         else:
-            newConfigDict = config_json_parser(newConfig)
+            self.config = update(self.config, new_config)
 
     def config_json_dump(self, outputdir, filepath):
         if filepath is None:

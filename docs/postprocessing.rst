@@ -9,7 +9,7 @@ When performing functional connectivity analysis, there are several additional p
     usage: fmri_postprocess [options] [subjects...]
         options:
             -configFile, Use a given configuration file. If left blank, uses the default config file, requiring definition of BIDS, working and output directories.
-            -targetDir, Which fmriprep directory to process. If a configuration file is provided with a BIDS directory, this argument is not necessary.
+            -targetDir, Which fmriprep directory to process. If a configuration file is provided with a BIDS directory, this argument is not necessary. Note, must point to the ``fmriprep`` directory, not its parent directory.
             -targetSuffix, Which file suffix to use. If a configuration file is provided with a target suffix, this argument is not necessary. Defaults to 'preproc_bold.nii.gz'
             -outputDir, Where to put the postprocessed data. If a configuration file is provided with a output directory, this argument is not necessary.
             -outputSuffix, What suffix to append to the postprocessed files. If a configuration file is provided with a output suffix, this argument is not necessary.
