@@ -1,4 +1,5 @@
-# clpipe
+# clpipe 
+[![DOI](https://zenodo.org/badge/165096390.svg)](https://zenodo.org/badge/latestdoi/165096390)
 
 Python pipeline for neuroimaging data. Draft documentation at https://clpipe.readthedocs.io/en/latest/index.html
 
