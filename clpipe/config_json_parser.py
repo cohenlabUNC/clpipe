@@ -25,6 +25,7 @@ class ConfigParser:
         if new_config is None:
             None
         else:
+            new_config = config_json_parser(new_config)
             self.config = update(self.config, new_config)
 
     def config_json_dump(self, outputdir, filepath):
