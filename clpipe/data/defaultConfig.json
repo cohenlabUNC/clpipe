@@ -6,7 +6,8 @@
 		"OutputDirectory": "",
 		"FMRIPrepPath": "/proj/hng/singularity_imgs/fmriprep1.2.6.simg",
 		"FreesurferLicensePath": "/proj/hng/singularity_imgs/license.txt",
-		"FMRIPrepMemoryUsage": "20000"
+		"FMRIPrepMemoryUsage": "20000",
+		"FMRIPrepTimeUsage": "8:0:0"
 	},
 	"PostProcessingOptions": {
 		"TargetDirectory": "",
