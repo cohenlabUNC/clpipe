@@ -66,8 +66,8 @@ def fmri_postprocess(config_file=None, subjects=None, target_dir=None, target_su
         subjectstring = " , ".join(subjects)
         sublist = subjects
 
-    submission_string = '''fmri_postprocess -configFile={config} -targetDir={targetDir} -targetSuffix={targetSuffix} ''' \
-                        '''-outputDir={outputDir} -outputSuffix={outputSuffix} -logOutputDir={logOutputDir} -single {sub}'''
+    submission_string = '''fmri_postprocess -config_file={config} -target_dir={targetDir} -target_suffix={targetSuffix} ''' \
+                        '''-output_dir={outputDir} -output_suffix={outputSuffix} -log_output_dir={logOutputDir} -single {sub}'''
 
     if batch:
         batch_manager = BatchManager(config.config['BatchConfig'], log_output_dir)
