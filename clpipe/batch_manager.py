@@ -5,6 +5,7 @@ import os
 import sys
 
 
+
 class BatchManager:
 
     def __init__(self, batchsystemConfig, outputDirectory=None):
