@@ -90,7 +90,7 @@ def dicom_to_nifti_to_bids_converter(subjects = None, dicom_directory=None, conf
                            os.path.abspath(heuristic_file),
                            os.path.abspath(output_directory))
 
-    if any([config.config['DicomToBidsOptions']['DICOMDirectory'],
+    if not any([config.config['DicomToBidsOptions']['DICOMDirectory'],
             config.config['DicomToBidsOptions']['OutputDirectory'],
             config.config['DicomToBidsOptions']['HeuristicFile']]):
         raise ValueError('DICOM directory, output directory and/or heuristic file are not specified.')
