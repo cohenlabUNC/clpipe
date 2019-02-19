@@ -82,7 +82,7 @@ def dicom_to_nifti_to_bids_converter(subjects = None, session = None, dicom_dire
     heuristic_file = resource_filename(__name__, 'data/setup_heuristic.py')
 
 
-    if '{{session}}' in dicom_directory:
+    if '{session}' in dicom_directory:
         all_dicoms = glob.glob(dicom_directory.format(
             subject = "*",
             session = "*"
