@@ -70,11 +70,10 @@ def dicom_to_nifti_to_bids_converter_setup(subject = None, session = None, dicom
 @click.option('-config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True), default=None)
 @click.argument('subjects', nargs=-1, required=False, default=None)
 @click.option('-heuristic_file')
-@click.option('-session', default=None)
 @click.option('-dicom_directory', required= True)
 @click.option('-output_directory', required = True)
 @click.option('-submit', is_flag=True, default=False)
-def dicom_to_nifti_to_bids_converter(subjects = None, session = None, dicom_directory=None, config_file = None,  submit=False, output_directory= None, heuristic_file = None):
+def dicom_to_nifti_to_bids_converter(subjects = None, dicom_directory=None, config_file = None,  submit=False, output_directory= None, heuristic_file = None):
 
 
     config = ConfigParser()
@@ -84,11 +83,13 @@ def dicom_to_nifti_to_bids_converter(subjects = None, session = None, dicom_dire
     parse_string = dicom_directory.replace('/*', '')
     parse_string = parse_string.replace('*', '')
     if '{session}' in dicom_directory:
+        session_toggle = True
         all_dicoms = glob.glob(parse_string.format(
             subject = "*",
             session = "*"
         ))
     else:
+        session_toggle = False
         all_dicoms = glob.glob(parse_string.format(
             subject="*"
         ))
@@ -97,44 +98,41 @@ def dicom_to_nifti_to_bids_converter(subjects = None, session = None, dicom_dire
     fileinfo = [parser.search(x).named for x in all_dicoms if parser.search(x) is not None]
 
 
-    click.echo(fileinfo)
-    click.echo(subjects)
     if subjects:
         fileinfo = [x for x in fileinfo if x['subject'] in subjects]
 
-    print(fileinfo)
-    # if session:
-    #     heudiconv_string = '''module add heudiconv \n heudiconv -d {dicomdirectory} -s {subject} '''\
-    #     ''' -ss {sess} -f {heuristic} -o ./test/ -b --minmeta \n cp ./test/'''\
-    #     '''.heudiconv/{subject}/ses-{sess}/info/dicominfo_ses-{sess}.tsv {outputfile} \n rm -rf ./test/'''
-    # else:
-    #     heudiconv_string = '''module add heudiconv \n heudiconv -d {dicomdirectory} -s {subject} ''' \
-    #                        ''' -f {heuristic} -o ./test/ -b --minmeta \n cp ./test/''' \
-    #                        '''.heudiconv/{subject}/info/dicominfo.tsv {outputfile} \n rm -rf ./test/'''
-    #
-    #
-    # batch_manager = BatchManager(config.config['BatchConfig'], None)
-    # batch_manager.update_time('1:0:0')
-    # batch_manager.update_mem_usage('3000')
-    # if session:
-    #     job1 = Job("heudiconv_setup", heudiconv_string.format(
-    #         dicomdirectory=os.path.abspath(dicom_directory),
-    #         subject=subject,
-    #         sess=session,
-    #         heuristic = heuristic_file,
-    #         outputfile = os.path.abspath(output_file),
-    #     ))
-    # else:
-    #     job1 = Job("heudiconv_setup", heudiconv_string.format(
-    #         dicomdirectory=os.path.abspath(dicom_directory),
-    #         subject=subject,
-    #         heuristic = heuristic_file,
-    #         outputfile = os.path.abspath(output_file),
-    #     ))
-    #
-    # batch_manager.addjob(job1)
-    # batch_manager.compilejobstrings()
-    # if submit:
-    #     batch_manager.submit_jobs()
-    # else:
-    #     batch_manager.print_jobs()
+
+    if session_toggle:
+        heudiconv_string = '''module add heudiconv \n heudiconv -d {dicomdirectory} -s {subject} '''\
+        ''' -ss {sess} -f {heuristic} -o {output_directory} -b --minmeta'''
+    else:
+        heudiconv_string = '''module add heudiconv \n heudiconv -d {dicomdirectory} -s {subject} ''' \
+                           ''' -f {heuristic} -o {output_directory} -b --minmeta'''
+
+    batch_manager = BatchManager(config.config['BatchConfig'], None)
+
+    for file in fileinfo:
+
+        if session_toggle:
+             job1 = Job("heudiconv_setup", heudiconv_string.format(
+                dicomdirectory=os.path.abspath(dicom_directory),
+                subject=file['subject'],
+                sess=file['session'],
+                heuristic = heuristic_file,
+                output_file = os.path.abspath(output_directory)
+            ))
+        else:
+            job1 = Job("heudiconv_setup", heudiconv_string.format(
+                dicomdirectory=os.path.abspath(dicom_directory),
+                subject=file['subject'],
+                heuristic=heuristic_file,
+                output_file=os.path.abspath(output_directory)
+            ))
+        batch_manager.addjob(job1)
+
+
+    batch_manager.compilejobstrings()
+    if submit:
+        batch_manager.submit_jobs()
+    else:
+        batch_manager.print_jobs()
