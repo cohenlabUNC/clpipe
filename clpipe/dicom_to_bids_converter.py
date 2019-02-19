@@ -7,7 +7,7 @@ from pkg_resources import resource_stream, resource_filename
 @click.command()
 @click.option('-config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True), default = None)
 @click.option('-subject', required=True, default=None)
-@click.option('-session', required=True, default=None)
+@click.option('-session', default=None)
 @click.option('-dicom_directory', required = True, type=click.Path(exists=True, dir_okay=True, file_okay=False))
 @click.option('-output_file', type=click.Path(exists=True, dir_okay=False, file_okay=True), default = "dicom_info.tsv")
 @click.option('-submit', is_flag = True, default=False)
@@ -26,9 +26,14 @@ def dicom_to_nifti_to_bids_converter_setup(subject = None, session = None, dicom
 
     heuristic_file = resource_filename(__name__, 'data/setup_heuristic.py')
 
-    heudiconv_string = '''module add heudiconv \n heudiconv -d {dicomdirectory}/sub-{subject}/ses-{sess}/* -s {subject} '''\
-    ''' -ss {sess} -f {heuristic} -o {dicomdirectory}/test/ -b --minmeta \n cp {dicomdirectory}/test/ '''\
-    '''.heudiconv/*/dicominfo_ses-{sess}.tsv {outputfile} \n rm -rf {dicomdirectory}/test/'''
+    if session:
+        heudiconv_string = '''module add heudiconv \n heudiconv -d {dicomdirectory} -s {subject} '''\
+        ''' -ss {sess} -f {heuristic} -o ./test/ -b --minmeta \n cp ./test/ '''\
+        '''.heudiconv/*/dicominfo_ses-{sess}.tsv {outputfile} \n rm -rf ./test/'''
+    else:
+        heudiconv_string = '''module add heudiconv \n heudiconv -d {dicomdirectory} -s {subject} ''' \
+                           ''' -f {heuristic} -o ./test/ -b --minmeta \n cp ./test/ ''' \
+                           '''.heudiconv/*/dicominfo_ses-{sess}.tsv {outputfile} \n rm -rf ./test/'''
     #Turns out -c is the type of converter to use. It doesn't say anywhere what the default is, but I assume it's dcm2niix.
     #I have seen other examples of people using other converters, but for now I think we can get rid of it
 
