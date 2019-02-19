@@ -1,5 +1,12 @@
 {
 	"ConfigTitle": "Default Configuration File",
+	"DicomToBidsOptions": {
+		"DICOMDirectory": "",
+		"OutputDirectory": "",
+		"HeuristicFile": "",
+		"TimeUsage": "4:0:0",
+		"MemoryUsage": "5000"
+	},
 	"FMRIPrepOptions": {
 		"BIDSDirectory": "",
 		"WorkingDirectory": "",

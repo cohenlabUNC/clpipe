@@ -66,6 +66,15 @@ class ConfigParser:
         if output_suffix is not None:
             self.config['PostProcessingOptions']['OutputSuffix'] = output_suffix
 
+    def setup_heudiconv(self, dicom_directory, heuristic_file, output_directory):
+        if dicom_directory is not None:
+            self.config['DicomToBidsOptions']['DICOMDirectory'] = os.path.abspath(dicom_directory)
+        if output_directory is not None:
+            self.config['DicomToBidsOptions']['OutputDirectory'] = os.path.abspath(output_directory)
+            os.makedirs(self.config['DicomToBidsOptions']['OutputDirectory'], exist_ok=True)
+        if heuristic_file is not None:
+            self.config['DicomToBidsOptions']['HeuristicFile'] = os.path.abspath(heuristic_file)
+
     def update_runlog(self, subjects, whatran):
         newLog = {'DateRan': datetime.datetime.now().strftime("%I:%M%p on %B %d, %Y"),
                   'Subjects': subjects,
