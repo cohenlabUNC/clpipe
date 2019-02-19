@@ -74,7 +74,7 @@ def dicom_to_nifti_to_bids_converter_setup(subject = None, session = None, dicom
 @click.option('-dicom_directory', required= True)
 @click.option('-output_directory', required = True)
 @click.option('-submit', is_flag=True, default=False)
-def dicom_to_nifti_to_bids_converter(subjects = None, session = None, dicom_directory=None, config_file = None,  submit=False):
+def dicom_to_nifti_to_bids_converter(subjects = None, session = None, dicom_directory=None, config_file = None,  submit=False, output_directory= None, heuristic_file = None):
 
 
     config = ConfigParser()
