@@ -72,9 +72,9 @@ def dicom_to_nifti_to_bids_converter_setup(subject = None, session = None, dicom
 @click.command()
 @click.option('-config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True), default=None)
 @click.argument('subjects', nargs=-1, required=False, default=None)
-@click.option('-heuristic_file')
-@click.option('-dicom_directory')
-@click.option('-output_directory')
+@click.option('-heuristic_file', default = '')
+@click.option('-dicom_directory', default = '')
+@click.option('-output_directory', default = '')
 @click.option('-submit', is_flag=True, default=False)
 @click.option('-debug', is_flag=True, default=False)
 def dicom_to_nifti_to_bids_converter(subjects = None, dicom_directory=None, config_file = None,  submit=False, output_directory= None, heuristic_file = None,debug = False):
@@ -90,9 +90,9 @@ def dicom_to_nifti_to_bids_converter(subjects = None, dicom_directory=None, conf
                            os.path.abspath(heuristic_file),
                            os.path.abspath(output_directory))
 
-    if any([config.config['DicomToBidsOptions']['DICOMDirectory'] is None,
-            config.config['DicomToBidsOptions']['OutputDirectory'] is None,
-            config.config['DicomToBidsOptions']['HeuristicFile'] is None]):
+    if any([config.config['DicomToBidsOptions']['DICOMDirectory'],
+            config.config['DicomToBidsOptions']['OutputDirectory'],
+            config.config['DicomToBidsOptions']['HeuristicFile']]):
         raise ValueError('DICOM directory, output directory and/or heuristic file are not specified.')
 
     heuristic_file = resource_filename(__name__, 'data/setup_heuristic.py')
