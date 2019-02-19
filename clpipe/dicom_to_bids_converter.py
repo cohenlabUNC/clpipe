@@ -76,6 +76,7 @@ def dicom_to_nifti_to_bids_converter_setup(subject = None, session = None, dicom
 @click.option('-dicom_directory')
 @click.option('-output_directory')
 @click.option('-submit', is_flag=True, default=False)
+@click.option('-debug', is_flag=True, default=False)
 def dicom_to_nifti_to_bids_converter(subjects = None, dicom_directory=None, config_file = None,  submit=False, output_directory= None, heuristic_file = None,debug = False):
     if not debug:
         sys.excepthook = exception_handler
