@@ -23,6 +23,7 @@ setup(name='clpipe',
       [console_scripts]
       fmriprep_process=clpipe.fmri_preprocess:fmriprep_process
       dicom_to_nifti_to_bids_converter_setup=clpipe.dicom_to_bids_converter:dicom_to_nifti_to_bids_converter_setup
+      dicom_to_nifti_to_bids_converter=clpipe.dicom_to_bids_converter:dicom_to_nifti_to_bids_converter
       bids_validate=clpipe.bids_validator:bids_validate
       fmri_postprocess=clpipe.fmri_postprocess:fmri_postprocess
       fmri_process_check=clpipe.fmri_process_check:fmri_process_check
