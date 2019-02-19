@@ -94,7 +94,7 @@ def dicom_to_nifti_to_bids_converter(subjects = None, session = None, dicom_dire
     parser = parse.compile(dicom_directory)
     fileinfo = [parser.parse(x) for x in all_dicoms]
 
-    print(fileinfo)
+    click.echo(fileinfo)
 
 
     # if session:
