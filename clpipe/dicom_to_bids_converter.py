@@ -75,9 +75,10 @@ def dicom_to_nifti_to_bids_converter_setup(subject = None, session = None, dicom
 @click.option('-heuristic_file', default = '')
 @click.option('-dicom_directory', default = '')
 @click.option('-output_directory', default = '')
+@click.option('-log_output_dir', default = '')
 @click.option('-submit', is_flag=True, default=False)
 @click.option('-debug', is_flag=True, default=False)
-def dicom_to_nifti_to_bids_converter(subjects = None, dicom_directory=None, config_file = None,  submit=False, output_directory= None, heuristic_file = None,debug = False):
+def dicom_to_nifti_to_bids_converter(subjects = None, dicom_directory=None, config_file = None,  submit=False, output_directory= None, heuristic_file = None,debug = False, log_output_dir = None):
     if not debug:
         sys.excepthook = exception_handler
         logging.basicConfig(level=logging.DEBUG)
@@ -94,6 +95,11 @@ def dicom_to_nifti_to_bids_converter(subjects = None, dicom_directory=None, conf
             config.config['DicomToBidsOptions']['OutputDirectory'],
             config.config['DicomToBidsOptions']['HeuristicFile']]):
         raise ValueError('DICOM directory, output directory and/or heuristic file are not specified.')
+
+    if not log_output_dir:
+        log_output_dir = os.path.abspath(os.path.join('.', 'Batch_Output'))
+    else:
+        log_output_dir = os.path.abspath(log_output_dir)
 
     heuristic_file = resource_filename(__name__, 'data/setup_heuristic.py')
 
@@ -126,12 +132,13 @@ def dicom_to_nifti_to_bids_converter(subjects = None, dicom_directory=None, conf
         heudiconv_string = '''module add heudiconv \n heudiconv -d {dicomdirectory} -s {subject} ''' \
                            ''' -f {heuristic} -o {output_directory} -b --minmeta'''
 
-    batch_manager = BatchManager(config.config['BatchConfig'], None)
+    batch_manager = BatchManager(config.config['BatchConfig'], log_output_dir)
     batch_manager.createsubmissionhead()
     for file in fileinfo:
 
         if session_toggle:
-             job1 = Job("heudiconv_setup", heudiconv_string.format(
+             job_id = 'convert_sub-' + file['subject'] + '_ses-' + file['session']
+             job1 = Job(job_id, heudiconv_string.format(
                 dicomdirectory=config.config['DicomToBidsOptions']['DICOMDirectory'],
                 subject=file['subject'],
                 sess=file['session'],
@@ -139,7 +146,8 @@ def dicom_to_nifti_to_bids_converter(subjects = None, dicom_directory=None, conf
                 output_directory = config.config['DicomToBidsOptions']['OutputDirectory']
             ))
         else:
-            job1 = Job("heudiconv_setup", heudiconv_string.format(
+            job_id = 'convert_sub-' + file['subject']
+            job1 = Job(job_id, heudiconv_string.format(
                 dicomdirectory=config.config['DicomToBidsOptions']['OutputDirectory'],
                 subject=file['subject'],
                 heuristic=config.config['DicomToBidsOptions']['HeuristicFile'],
