@@ -81,17 +81,18 @@ def dicom_to_nifti_to_bids_converter(subjects = None, session = None, dicom_dire
     config.config_updater(config_file)
     heuristic_file = resource_filename(__name__, 'data/setup_heuristic.py')
 
-
+    parse_string = dicom_directory.replace('/*', '')
+    parse_string = dicom_directory.replace('*', '')
     if '{session}' in dicom_directory:
-        all_dicoms = glob.glob(dicom_directory.format(
+        all_dicoms = glob.glob(parse_string.format(
             subject = "*",
             session = "*"
         ))
     else:
-        all_dicoms = glob.glob(dicom_directory.format(
+        all_dicoms = glob.glob(parse_string.format(
             subject="*"
         ))
-    parser = parse.compile(dicom_directory)
+    parser = parse.compile(parse_string)
     fileinfo = [parser.parse(x) for x in all_dicoms]
 
     click.echo(fileinfo)
