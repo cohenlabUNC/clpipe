@@ -28,11 +28,11 @@ def dicom_to_nifti_to_bids_converter_setup(subject = None, session = None, dicom
 
     if session:
         heudiconv_string = '''module add heudiconv \n heudiconv -d {dicomdirectory} -s {subject} '''\
-        ''' -ss {sess} -f {heuristic} -o ./test/ -b --minmeta \n cp ./test/ '''\
+        ''' -ss {sess} -f {heuristic} -o ./test/ -b --minmeta \n cp ./test/'''\
         '''.heudiconv/{subject}/ses-{sess}/info/dicominfo_ses-{sess}.tsv {outputfile} \n rm -rf ./test/'''
     else:
         heudiconv_string = '''module add heudiconv \n heudiconv -d {dicomdirectory} -s {subject} ''' \
-                           ''' -f {heuristic} -o ./test/ -b --minmeta \n cp ./test/ ''' \
+                           ''' -f {heuristic} -o ./test/ -b --minmeta \n cp ./test/''' \
                            '''.heudiconv/{subject}/info/dicominfo.tsv {outputfile} \n rm -rf ./test/'''
     #Turns out -c is the type of converter to use. It doesn't say anywhere what the default is, but I assume it's dcm2niix.
     #I have seen other examples of people using other converters, but for now I think we can get rid of it
@@ -54,7 +54,7 @@ def dicom_to_nifti_to_bids_converter_setup(subject = None, session = None, dicom
             heuristic = heuristic_file,
             outputfile = os.path.abspath(output_file),
         ))
-        
+
     batch_manager.addjob(job1)
     batch_manager.compilejobstrings()
     if submit:
