@@ -99,7 +99,7 @@ def dicom_to_nifti_to_bids_converter(subjects = None, session = None, dicom_dire
 
     click.echo(fileinfo)
     click.echo(subjects)
-    if subjects is not None:
+    if subjects:
         fileinfo = [x for x in fileinfo if x['subject'] in subjects]
 
     print(fileinfo)
