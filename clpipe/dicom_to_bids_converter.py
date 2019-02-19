@@ -39,6 +39,8 @@ def dicom_to_nifti_to_bids_converter_setup(subject = None, session = None, dicom
 
 
     batch_manager = BatchManager(config.config['BatchConfig'], None)
+    batch_manager.update_time('1:0:0')
+    batch_manager.update_mem_usage('3000')
     if session:
         job1 = Job("heudiconv_setup", heudiconv_string.format(
             dicomdirectory=os.path.abspath(dicom_directory),
