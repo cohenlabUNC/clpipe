@@ -29,7 +29,7 @@ def dicom_to_nifti_to_bids_converter_setup(subject = None, session = None, dicom
     if session:
         heudiconv_string = '''module add heudiconv \n heudiconv -d {dicomdirectory} -s {subject} '''\
         ''' -ss {sess} -f {heuristic} -o ./test/ -b --minmeta \n cp ./test/ '''\
-        '''.heudiconv/*/dicominfo_ses-{sess}.tsv {outputfile} \n rm -rf ./test/'''
+        '''.heudiconv/{subject}/ses-{session}/info/dicominfo_ses-{sess}.tsv {outputfile} \n rm -rf ./test/'''
     else:
         heudiconv_string = '''module add heudiconv \n heudiconv -d {dicomdirectory} -s {subject} ''' \
                            ''' -f {heuristic} -o ./test/ -b --minmeta \n cp ./test/ ''' \
