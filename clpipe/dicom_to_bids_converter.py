@@ -9,7 +9,7 @@ from pkg_resources import resource_stream, resource_filename
 @click.option('-subject', required=True, default=None)
 @click.option('-session', default=None)
 @click.option('-dicom_directory', required = True)
-@click.option('-output_file', type=click.Path(exists=True, dir_okay=False, file_okay=True), default = "dicom_info.tsv")
+@click.option('-output_file', default = "dicom_info.tsv")
 @click.option('-submit', is_flag = True, default=False)
 def dicom_to_nifti_to_bids_converter_setup(subject = None, session = None, dicom_directory=None, output_file=None, config_file = None,  submit=False):
 
