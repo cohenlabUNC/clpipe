@@ -58,8 +58,8 @@ def fmri_process_check(config_file, output_file=None, debug=False):
             if target_fmriprep_file:
                 row.loc[0, 'FMRIPrep_File'] = target_fmriprep_file
                 post_proc_file = [pfile for pfile in postprocess_files if
-                                  header in post_proc_file and config.config['PostProcessingOptions'][
-                                      'OutputSuffix'] in post_proc_file]
+                                  header in pfile and config.config['PostProcessingOptions'][
+                                      'OutputSuffix'] in pfile]
                 if post_proc_file:
                     row.loc[0, 'PostProcessed_File'] = post_proc_file
             file_list.append(row)
