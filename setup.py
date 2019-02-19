@@ -17,7 +17,8 @@ setup(name='clpipe',
                         'pandas',
                         'scipy',
                         'sphinx_rtd_theme',
-                        'psutil'],
+                        'psutil',
+                        'parse'],
       entry_points='''
       [console_scripts]
       fmriprep_process=clpipe.fmri_preprocess:fmriprep_process
