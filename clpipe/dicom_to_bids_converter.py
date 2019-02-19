@@ -119,14 +119,14 @@ def dicom_to_nifti_to_bids_converter(subjects = None, dicom_directory=None, conf
                 subject=file['subject'],
                 sess=file['session'],
                 heuristic = heuristic_file,
-                output_file = os.path.abspath(output_directory)
+                output_directory = os.path.abspath(output_directory)
             ))
         else:
             job1 = Job("heudiconv_setup", heudiconv_string.format(
                 dicomdirectory=os.path.abspath(dicom_directory),
                 subject=file['subject'],
                 heuristic=heuristic_file,
-                output_file=os.path.abspath(output_directory)
+                output_directory=os.path.abspath(output_directory)
             ))
         batch_manager.addjob(job1)
 
