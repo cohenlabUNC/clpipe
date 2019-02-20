@@ -68,7 +68,7 @@ def dicom_to_nifti_to_bids_converter_setup(subject = None, session = None, dicom
 @click.option('-submit', is_flag=True, default=False, help = 'Submit jobs to HPC')
 @click.option('-debug', is_flag=True, default=False, help = 'Debug flag for traceback')
 def dicom_to_nifti_to_bids_converter(subjects = None, dicom_directory=None, config_file = None,  submit=False, output_directory= None, heuristic_file = None,debug = False, log_output_dir = None):
-    """"""
+    """This command uses heudiconv to convert dicoms into BIDS formatted NiFTI files. Users can specify any number of subjects, or leave subjects blank to convert all subjects. """
     if not debug:
         sys.excepthook = exception_handler
         logging.basicConfig(level=logging.DEBUG)
