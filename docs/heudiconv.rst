@@ -66,6 +66,7 @@ The `*` are wildcard characters, and allow for heudiconv to iterate through fold
 Following the writing of the heuristic file, the whole dataset (or subject subsets) can be converted with:
 
 .. code-block:: console
+
     Usage: dicom_to_nifti_to_bids_converter [OPTIONS] [SUBJECTS]...
 
     This command uses heudiconv to convert dicoms into BIDS formatted NiFTI files. Users can specify any number of subjects, or leave subjects blank to convert all subjects.
