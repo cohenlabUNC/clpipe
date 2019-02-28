@@ -138,7 +138,7 @@ def dicom_to_nifti_to_bids_converter(subjects = None, dicom_directory=None, conf
         else:
             job_id = 'convert_sub-' + file['subject']
             job1 = Job(job_id, heudiconv_string.format(
-                dicomdirectory=config.config['DicomToBidsOptions']['OutputDirectory'],
+                dicomdirectory=config.config['DicomToBidsOptions']['DICOMDirectory'],
                 subject=file['subject'],
                 heuristic=config.config['DicomToBidsOptions']['HeuristicFile'],
                 output_directory=os.path.abspath(config.config['DicomToBidsOptions']['OutputDirectory'])
