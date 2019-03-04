@@ -48,9 +48,13 @@ def fmri_roi_extraction(subjects=None,config_file=None, target_dir=None, output_
 
     config = ConfigParser()
     config.config_updater(config_file)
-    config.validate_config()
-    if not any([config.config['FMRIPrepOptions']['BIDSDirectory'], config.config['FMRIPrepOptions']['OutputDirectory'],
-                config.config['FMRIPrepOptions']['WorkingDirectory']]):
+
+    roi_extract_config = config.config['ROIExtractionOptions']
+
+
+
+    if not all([config.config['ROIExtractionOptions']['TargetDirectory'], config.config['ROIExtractionOptions']['OutputDirectory'],
+                config.config['ROIExtractionOptions']['TargetSuffix']]):
         raise ValueError(
             'Please make sure the BIDS, working and output directories are specified in either the configfile or in the command. At least one is not specified.')
     if log_output_dir is not None:
@@ -80,6 +84,7 @@ def fmri_roi_extraction(subjects=None,config_file=None, target_dir=None, output_
             atlas_filename = custom_atlas
             atlas_labels = custom_label
             atlas_type = custom_type
+
 
 
 

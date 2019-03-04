@@ -51,6 +51,11 @@
 		"SpectralInterpolationBinSize": 5000,
 		"BIDSValidatorImage": "/proj/hng/singularity_imgs/validator.simg"
 	},
+	"ROIExtractionOptions": {
+		"TargetDirectory": "",
+		"OutputDirectory": "",
+		"Atlases": ["power"]
+	},
 	"RunLog": [],
 	"BatchConfig": "slurmUNCConfig.json"
 }

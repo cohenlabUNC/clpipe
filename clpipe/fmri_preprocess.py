@@ -36,7 +36,7 @@ def fmriprep_process(bids_dir=None, working_dir=None, output_dir=None, config_fi
     config.config_updater(config_file)
     config.setup_fmriprep_directories(bids_dir, working_dir, output_dir)
     config.validate_config()
-    if not any([config.config['FMRIPrepOptions']['BIDSDirectory'], config.config['FMRIPrepOptions']['OutputDirectory'],
+    if not all([config.config['FMRIPrepOptions']['BIDSDirectory'], config.config['FMRIPrepOptions']['OutputDirectory'],
                 config.config['FMRIPrepOptions']['WorkingDirectory']]):
         raise ValueError(
             'Please make sure the BIDS, working and output directories are specified in either the configfile or in the command. At least one is not specified.')
