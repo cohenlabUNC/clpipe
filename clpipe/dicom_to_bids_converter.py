@@ -108,7 +108,7 @@ def dicom_to_nifti_to_bids_converter(subjects = None, dicom_directory=None, conf
         ))
     parser = parse.compile(parse_string)
 
-    fileinfo = [parser.parse(x).named for x in all_dicoms if parser.parse(x) is not None]
+    fileinfo = [parser.search(x).named for x in all_dicoms if parser.search(x) is not None]
 
 
     if subjects:
