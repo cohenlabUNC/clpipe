@@ -108,7 +108,7 @@ def dicom_to_nifti_to_bids_converter(subjects = None, dicom_directory=None, conf
         ))
     parser = parse.compile(parse_string)
 
-    fileinfo = [parser.search(x).named for x in all_dicoms if parser.search(x) is not None]
+    fileinfo = [parser.parse(x).named for x in all_dicoms if parser.parse(x) is not None]
 
 
     if subjects:
@@ -125,13 +125,18 @@ def dicom_to_nifti_to_bids_converter(subjects = None, dicom_directory=None, conf
     batch_manager = BatchManager(config.config['BatchConfig'], log_output_dir)
     batch_manager.createsubmissionhead()
     for file in fileinfo:
-
+        subject_id = file['subject']
+        subject_id = subject_id.replace('/*', '')
+        subject_id = subject_id.replace('*', '')
         if session_toggle:
+             session_id = file['session']
+             session_id = session_id.replace('/*', '')
+             session_id = session_id.replace('*', '')
              job_id = 'convert_sub-' + file['subject'] + '_ses-' + file['session']
              job1 = Job(job_id, heudiconv_string.format(
                 dicomdirectory=config.config['DicomToBidsOptions']['DICOMDirectory'],
-                subject=file['subject'],
-                sess=file['session'],
+                subject=subject_id,
+                sess=session_id,
                 heuristic = config.config['DicomToBidsOptions']['HeuristicFile'],
                 output_directory = config.config['DicomToBidsOptions']['OutputDirectory']
             ))
@@ -139,7 +144,7 @@ def dicom_to_nifti_to_bids_converter(subjects = None, dicom_directory=None, conf
             job_id = 'convert_sub-' + file['subject']
             job1 = Job(job_id, heudiconv_string.format(
                 dicomdirectory=config.config['DicomToBidsOptions']['DICOMDirectory'],
-                subject=file['subject'],
+                subject=subject_id,
                 heuristic=config.config['DicomToBidsOptions']['HeuristicFile'],
                 output_directory=os.path.abspath(config.config['DicomToBidsOptions']['OutputDirectory'])
             ))
