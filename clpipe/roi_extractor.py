@@ -49,14 +49,14 @@ def fmri_roi_extraction(subjects=None,config_file=None, target_dir=None, output_
     config = ConfigParser()
     config.config_updater(config_file)
 
+    #TODO: Add in config file updater
     roi_extract_config = config.config['ROIExtractionOptions']
-
-
 
     if not all([config.config['ROIExtractionOptions']['TargetDirectory'], config.config['ROIExtractionOptions']['OutputDirectory'],
                 config.config['ROIExtractionOptions']['TargetSuffix']]):
         raise ValueError(
             'Please make sure the BIDS, working and output directories are specified in either the configfile or in the command. At least one is not specified.')
+
     if log_output_dir is not None:
         if os.path.isdir(log_output_dir):
             log_output_dir = os.path.abspath(log_output_dir)
@@ -64,57 +64,84 @@ def fmri_roi_extraction(subjects=None,config_file=None, target_dir=None, output_
             log_output_dir = os.path.abspath(log_output_dir)
             os.makedirs(log_output_dir, exist_ok=True)
     else:
-        log_output_dir = os.path.join(config.config['FMRIPrepOptions']['OutputDirectory'], "batchOutput")
+        log_output_dir = os.path.join(config.config['ROIExtractionOptions']['OutputDirectory'], "BatchOutput")
         os.makedirs(log_output_dir, exist_ok=True)
+
+
+    if not subjects:
+        sublist = [o.replace('sub-', '') for o in os.listdir(config.config['ROIExtractionOptions']['TargetDirectory'])
+                   if os.path.isdir(os.path.join(config.config['ROIExtractionOptions']['TargetDirectory'], o)) and 'sub-' in o]
+    else:
+        sublist = subjects
+
+    if atlas is not None:
+        atlas_list = [atlas]
+    elif custom_atlas is not None:
+        atlas_list = [custom_atlas]
+    else:
+        atlas_list = config.config['ROIExtractionOptions']['Atlases']
 
     atlas_library = json.load(resource_stream(__name__, 'data/atlasLibrary.json'))
     atlas_names = [atlas['atlas_name'] for atlas in atlas_library['Atlases']]
-    if atlas in atlas_names:
-        index = atlas_names.index(atlas)
-        atlas_filename = atlas_library['Atlases'][index]['atlas_file']
-        atlas_labels = atlas_library['Atlases'][index]['atlas_labels']
-        atlas_type = atlas_library['Atlases'][index]['atlas_type']
-    else:
-        if any([not os.path.exists(custom_atlas), not os.path.exists(custom_label), custom_type not in ['label', 'maps', 'spheres']]):
-            raise ValueError('You are attempting to use a custom atlas, but have not specified one or more of the following: \n'
-                             '\t A custom atlas mask file (.nii or .nii.gz)' 
-                             '\t A custom atlas label file (whitespace delimited .txt file)' 
-                             '\t A custom atlas type (label, maps or spheres)')
+
+    submission_string = '''fmri_roi_extraction -config_file={config}'''
+
+    if batch:
+
+
+    for subject in sublist:
+
+
+
+
+    for cur_atlas in atlas_list:
+        custom_flag = False
+        if type(cur_atlas) is dict:
+            custom_flag = True
+            atlas = cur_atlas['atlas_name']
+            custom_atlas = cur_atlas['atlas_filename']
+            custom_label = cur_atlas['atlas_labels']
+            custom_type = cur_atlas['atlas_type']
+        if atlas in atlas_names:
+            index = atlas_names.index(atlas)
+            atlas_filename = atlas_library['Atlases'][index]['atlas_file']
+            atlas_labels = atlas_library['Atlases'][index]['atlas_labels']
+            atlas_type = atlas_library['Atlases'][index]['atlas_type']
         else:
-            atlas_filename = custom_atlas
-            atlas_labels = custom_label
-            atlas_type = custom_type
+            if any([not os.path.exists(custom_atlas), not os.path.exists(custom_label), custom_type not in ['label', 'maps', 'spheres']]):
+                raise ValueError('You are attempting to use a custom atlas, but have not specified one or more of the following: \n'
+                                 '\t A custom atlas mask file (.nii or .nii.gz)' 
+                                 '\t A custom atlas label file (whitespace delimited .txt file)' 
+                                 '\t A custom atlas type (label, maps or spheres)')
+            else:
+                atlas_filename = custom_atlas
+                atlas_labels = custom_label
+                atlas_type = custom_type
 
 
+def _fmri_roi_extract_subject(subject, task, atlas_name, atlas_filename, atlas_label, atlas_type, custom_flag):
+    if custom_flag:
+        atlas_path = resource_filename(__name__, atlas_filename)
+    else:
+        atlas_path = atlas_filename
+
+    search_string = os.path.abspath(
+        os.path.join(config.config['PostProcessingOptions']['TargetDirectory'], "sub-" + subject, "**",
+                     "*" + config.config['PostProcessingOptions']['TargetSuffix']))
+
+    subject_files = glob.glob(search_string, recursive=True)
 
 
-
-
-def _fmri_roi_extraction(data, atlas_filename=None, atlas_type = None, option=None, brain_mask=None, resampling_target='data', background_label=0,
-                   custom_atlas=None, custom_label=None, custom_type=None,
-                   radius=5.0, allow_overlap=True, standardize=True,
-                   detrend=True, TR=None, smoothing_fwhm=None, high_pass=None, low_pass=None,
-                   mask_img=None, sessions=None, sample_mask=None, mask_strategy='epi', target_affine=None):
-
-
+def _fmri_roi_extract_image(data, atlas_type = None, custom_flag = False):
 
     if atlas_type is 'label':
-        label_masker = NiftiLabelsMasker(resource_filename(__name__,atlas_filename), background_label=background_label, mask_img=brain_mask,
-                                         smoothing_fwhm=smoothing_fwhm, standardize=standardize,
-                                         detrend=detrend, low_pass=low_pass, high_pass=high_pass, t_r=TR,
-                                         resampling_target=resampling_target, verbose=0)
+        label_masker = NiftiLabelsMasker(resource_filename(__name__,atlas_filename))
         timeseries = label_masker.fit_transform(data)
     if atlas_type is 'sphere':
-        spheres_masker = NiftiSpheresMasker(resource_filename(__name__,atlas_filename), radius=radius, mask_img=brain_mask,
-                                            allow_overlap=allow_overlap, smoothing_fwhm=smoothing_fwhm,
-                                            standardize=standardize,
-                                            detrend=detrend, low_pass=low_pass, high_pass=high_pass, t_r=TR, verbose=0)
+        spheres_masker = NiftiSpheresMasker(resource_filename(__name__,atlas_filename))
         timeseries = spheres_masker.fit_transform(data)
     if atlas_type is 'maps':
-        maps_masker = NiftiMapsMasker(resource_filename(__name__,atlas_filename), mask_img=brain_mask, allow_overlap=allow_overlap,
-                                      smoothing_fwhm=smoothing_fwhm, standardize=standardize,
-                                      detrend=detrend, low_pass=low_pass, high_pass=high_pass, t_r=TR,
-                                      resampling_target=resampling_target, verbose=0)
+        maps_masker = NiftiMapsMasker(resource_filename(__name__,atlas_filename))
         timeseries = maps_masker.fit_transform(data)
 
 

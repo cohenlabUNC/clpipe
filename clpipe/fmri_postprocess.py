@@ -8,7 +8,7 @@ from nipy import save_image
 from .batch_manager import BatchManager, Job
 from .config_json_parser import ConfigParser
 import json
-from pkg_resources import resource_stream
+from pkg_resources import resource_stream, resource_filename
 import clpipe.postprocutils
 import numpy
 import logging
@@ -48,6 +48,9 @@ def fmri_postprocess(config_file=None, subjects=None, target_dir=None, target_su
     config.setup_postproc(target_dir, target_suffix, output_dir, output_suffix)
     config.validate_config()
 
+    if config_file is None:
+        config_file = resource_filename(__name__, "data/defaultConfig.json")
+
     if log_output_dir is not None:
         if os.path.isdir(log_output_dir):
             log_output_dir = os.path.abspath(log_output_dir)
@@ -67,20 +70,29 @@ def fmri_postprocess(config_file=None, subjects=None, target_dir=None, target_su
         sublist = subjects
 
     submission_string = '''fmri_postprocess -config_file={config} -target_dir={targetDir} -target_suffix={targetSuffix} ''' \
-                        '''-output_dir={outputDir} -output_suffix={outputSuffix} -log_output_dir={logOutputDir} -single {sub}'''
+                        '''-output_dir={outputDir} -output_suffix={outputSuffix} -log_output_dir={logOutputDir} {taskString} {trString} -single {sub}'''
+    task_string = ""
+    tr_string = ""
+    if task is not None:
+        task_string = '-task='+task
+    if tr is not None:
+        tr_string = '-tr='+tr
 
     if batch:
+        config_string = config.config_json_dump(config.config['PostProcessingOptions']['OutputDirectory'], config_file)
         batch_manager = BatchManager(config.config['BatchConfig'], log_output_dir)
         batch_manager.update_mem_usage(config.config['PostProcessingOptions']['PostProcessingMemoryUsage'])
         batch_manager.update_time(config.config['PostProcessingOptions']['PostProcessingTimeUsage'])
         batch_manager.update_nthreads(config.config['PostProcessingOptions']['NThreads'])
         for sub in sublist:
             sub_string_temp = submission_string.format(
-                config=os.path.abspath(config_file),
+                config=config_string,
                 targetDir=config.config['PostProcessingOptions']['TargetDirectory'],
                 targetSuffix=config.config['PostProcessingOptions']['TargetSuffix'],
                 outputDir=config.config['PostProcessingOptions']['OutputDirectory'],
                 outputSuffix=config.config['PostProcessingOptions']['OutputSuffix'],
+                task = task_string,
+                tr = tr_string,
                 logOutputDir=log_output_dir,
                 sub=sub
             )

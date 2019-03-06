@@ -34,6 +34,7 @@ class ConfigParser:
         outpath = os.path.join(os.path.abspath(outputdir), filepath)
         with open(outpath, 'w') as fp:
             json.dump(self.config, fp, indent="\t")
+        return(outpath)
 
     def setup_default_config(self):
         pass
