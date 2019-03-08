@@ -79,7 +79,7 @@ def fmri_postprocess(config_file=None, subjects=None, target_dir=None, target_su
         tr_string = '-tr='+tr
 
     if batch:
-        config_string = config.config_json_dump(config.config['PostProcessingOptions']['OutputDirectory'], config_file)
+        config_string = config.config_json_dump(config.config['PostProcessingOptions']['OutputDirectory'], os.path.basename(config_file))
         batch_manager = BatchManager(config.config['BatchConfig'], log_output_dir)
         batch_manager.update_mem_usage(config.config['PostProcessingOptions']['PostProcessingMemoryUsage'])
         batch_manager.update_time(config.config['PostProcessingOptions']['PostProcessingTimeUsage'])
@@ -102,7 +102,7 @@ def fmri_postprocess(config_file=None, subjects=None, target_dir=None, target_su
             batch_manager.compilejobstrings()
             batch_manager.submit_jobs()
             config.update_runlog(subjectstring, "PostProcessing")
-            config.config_json_dump(config.config['PostProcessingOptions']['OutputDirectory'], config_file)
+            config.config_json_dump(config.config['PostProcessingOptions']['OutputDirectory'], os.path.basename(config_file))
         else:
             batch_manager.createsubmissionhead()
             batch_manager.compilejobstrings()

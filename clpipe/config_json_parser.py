@@ -76,6 +76,18 @@ class ConfigParser:
         if heuristic_file is not None:
             self.config['DicomToBidsOptions']['HeuristicFile'] = os.path.abspath(heuristic_file)
 
+    def setup_roiextract(self, target_dir, target_suffix, output_dir):
+        if target_dir is not None:
+            self.config['ROIExtractionOptions']['TargetDirectory'] = os.path.abspath(target_dir)
+            if not os.path.isdir(self.config['PostProcessingOptions']['TargetDirectory']):
+                raise ValueError('Target Directory does not exist')
+        if output_dir is not None:
+            self.config['ROIExtractionOptions']['OutputDirectory'] = os.path.abspath(output_dir)
+            os.makedirs(self.config['PostProcessingOptions']['OutputDirectory'], exist_ok=True)
+        if target_suffix is not None:
+            self.config['ROIExtractionOptions']['TargetSuffix'] = target_suffix
+
+
     def update_runlog(self, subjects, whatran):
         newLog = {'DateRan': datetime.datetime.now().strftime("%I:%M%p on %B %d, %Y"),
                   'Subjects': subjects,
