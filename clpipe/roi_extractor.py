@@ -167,8 +167,10 @@ def fmri_roi_extraction(subjects=None,config_file=None, target_dir=None, target_
 def _fmri_roi_extract_subject(subject, task, atlas_name, atlas_filename, atlas_label, atlas_type,radius, custom_flag, config):
     if not custom_flag:
         atlas_path = resource_filename(__name__, atlas_filename)
+        atlas_labelpath = resource_filename(__name__, atlas_label)
     else:
         atlas_path = os.path.abspath(atlas_filename)
+        atlas_labelpath = os.path.abspath(atlas_label)
 
     search_string = os.path.abspath(
         os.path.join(config.config['ROIExtractionOptions']['TargetDirectory'], "sub-" + subject, "**",
@@ -179,7 +181,9 @@ def _fmri_roi_extract_subject(subject, task, atlas_name, atlas_filename, atlas_l
         subject_files = [x for x in subject_files if 'task-'+task in x]
 
     os.makedirs(os.path.join(config.config['ROIExtractionOptions']['OutputDirectory'], atlas_name),exist_ok=True)
-    shutil.copy2(atlas_label,config.config['ROIExtractionOptions']['OutputDirectory'])
+    shutil.copy2(atlas_labelpath,config.config['ROIExtractionOptions']['OutputDirectory'])
+
+    logging.debug()
 
     for file in subject_files:
        ROI_ts = _fmri_roi_extract_image(file, atlas_path, atlas_type, radius)
