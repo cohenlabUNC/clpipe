@@ -50,7 +50,8 @@ def fmri_roi_extraction(subjects=None,config_file=None, target_dir=None, target_
 
     config = ConfigParser()
     config.config_updater(config_file)
-
+    if config_file is None:
+        config_file = 'defaultConfig.json'
 
     config.setup_roiextract(target_dir, target_suffix, output_dir)
 
