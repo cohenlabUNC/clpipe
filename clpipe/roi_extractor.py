@@ -106,14 +106,20 @@ def fmri_roi_extraction(subjects=None,config_file=None, target_dir=None, target_
             custom_flag = False
             sphere_flag = True
             if type(cur_atlas) is dict:
+                logging.debug("Custom Dict Atlas")
                 custom_flag = True
                 atlas_name = cur_atlas['atlas_name']
+                logging.debug(atlas_name)
                 custom_atlas = cur_atlas['atlas_filename']
+                logging.debug(custom_atlas)
                 custom_label = cur_atlas['atlas_labels']
+                logging.debug(custom_label)
                 custom_type = cur_atlas['atlas_type']
-                if custom_type is 'spheres':
+                logging.debug(custom_type)
+                if custom_type is 'sphere':
                     sphere_flag = True
                     custom_radius = cur_atlas['radius']
+                    logging.debug(custom_radius)
             else:
                 atlas_name = cur_atlas
             logging.debug(atlas_name)
@@ -127,7 +133,7 @@ def fmri_roi_extraction(subjects=None,config_file=None, target_dir=None, target_
                     sphere_flag = True
             else:
                 logging.debug("Did Not Find Atlas Name in Library")
-                if any([not os.path.exists(custom_atlas), not os.path.exists(custom_label), custom_type not in ['label', 'maps', 'spheres']]):
+                if any([not os.path.exists(custom_atlas), not os.path.exists(custom_label), custom_type not in ['label', 'maps', 'sphere']]):
                     raise ValueError('You are attempting to use a custom atlas, but have not specified one or more of the following: \n'
                                      '\t A custom atlas mask file (.nii or .nii.gz)' 
                                      '\t A custom atlas label file (a file with information about the atlas)' 
@@ -136,7 +142,7 @@ def fmri_roi_extraction(subjects=None,config_file=None, target_dir=None, target_
                     atlas_filename = custom_atlas
                     atlas_labels = custom_label
                     atlas_type = custom_type
-                    if custom_type is 'spheres':
+                    if custom_type is 'sphere':
                         sphere_flag = True
             if custom_flag:
                 sub_string_temp = submission_string_custom.format(
