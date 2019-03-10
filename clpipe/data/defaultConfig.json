@@ -54,7 +54,10 @@
 	"ROIExtractionOptions": {
 		"TargetDirectory": "",
 		"OutputDirectory": "",
-		"Atlases": ["power"]
+		"Atlases": ["power"],
+        "MemoryUsage":"3000",
+        "TimeUsage": "2:0:0",
+        "NThreads": "1"
 	},
 	"RunLog": [],
 	"BatchConfig": "slurmUNCConfig.json"
