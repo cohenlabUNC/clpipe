@@ -198,14 +198,17 @@ def _fmri_roi_extract_subject(subject, task, atlas_name, atlas_filename, atlas_l
 def _fmri_roi_extract_image(data, atlas_path, atlas_type, radius):
 
     if atlas_type is 'label':
+        logging.debug('Labels Extract')
         label_masker = NiftiLabelsMasker(atlas_path)
-        timeseries = label_masker.fit_transform(data)
+        timeseries = label_masker.transform_single_imgs(data)
     if atlas_type is 'sphere':
+        logging.debug('Sphere Extract')
         spheres_masker = NiftiSpheresMasker(atlas_path, float(radius))
-        timeseries = spheres_masker.fit_transform(data)
+        timeseries = spheres_masker.transform_single_imgs(data)
     if atlas_type is 'maps':
+        logging.debug('Maps Extract')
         maps_masker = NiftiMapsMasker(atlas_path)
-        timeseries = maps_masker.fit_transform(data)
+        timeseries = maps_masker.transform_single_imgs(data)
 
 
     return timeseries
