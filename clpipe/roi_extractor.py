@@ -119,7 +119,7 @@ def fmri_roi_extraction(subjects=None,config_file=None, target_dir=None, target_
                 atlas_filename = atlas_library['Atlases'][index]['atlas_file']
                 atlas_labels = atlas_library['Atlases'][index]['atlas_labels']
                 atlas_type = atlas_library['Atlases'][index]['atlas_type']
-                if custom_type is 'spheres':
+                if custom_type is 'sphere':
                     sphere_flag = True
             else:
                 if any([not os.path.exists(custom_atlas), not os.path.exists(custom_label), custom_type not in ['label', 'maps', 'spheres']]):
@@ -154,7 +154,7 @@ def fmri_roi_extraction(subjects=None,config_file=None, target_dir=None, target_
             sub_string_temp = sub_string_temp + ' ' + subject
             batch_manager.addjob(Job('ROI_extract_' + subject +'_'+atlas_name, sub_string_temp))
             if single:
-                logging.info('Running Subject '+ subject + ' Atlas: '+ atlas_name)
+                logging.info('Running Subject '+ subject + ' Atlas: '+ atlas_name + ' Atlas Type: ' + atlas_type)
                 _fmri_roi_extract_subject(subject, task, atlas_name, atlas_filename, atlas_labels, atlas_type, custom_radius, custom_flag, config)
     if not single:
         if submit:
