@@ -110,7 +110,7 @@ def fmri_roi_extraction(subjects=None,config_file=None, target_dir=None, target_
                 custom_flag = True
                 atlas_name = cur_atlas['atlas_name']
                 logging.debug(atlas_name)
-                custom_atlas = cur_atlas['atlas_filename']
+                custom_atlas = cur_atlas['atlas_file']
                 logging.debug(custom_atlas)
                 custom_label = cur_atlas['atlas_labels']
                 logging.debug(custom_label)
