@@ -177,6 +177,7 @@ def _fmri_roi_extract_subject(subject, task, atlas_name, atlas_filename, atlas_l
                      "*" + config.config['ROIExtractionOptions']['TargetSuffix']))
 
     subject_files = glob.glob(search_string, recursive=True)
+    logging.debug(subject_files)
     if task is not None:
         subject_files = [x for x in subject_files if 'task-'+task in x]
 
@@ -185,7 +186,9 @@ def _fmri_roi_extract_subject(subject, task, atlas_name, atlas_filename, atlas_l
 
 
     for file in subject_files:
+       logging.info("Extracting the " + atlas_name + " atlas for " + file)
        ROI_ts = _fmri_roi_extract_image(file, atlas_path, atlas_type, radius)
+       logging.debug(ROI_ts)
        file_outname = os.path.splitext(os.path.basename(file))[0]
        if '.nii' in file_outname:
            file_outname = os.path.splitext(file_outname)[0]
