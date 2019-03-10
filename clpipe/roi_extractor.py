@@ -89,8 +89,8 @@ def fmri_roi_extraction(subjects=None,config_file=None, target_dir=None, target_
         atlas_library = json.load(at_lib)
     atlas_names = [atlas['atlas_name'] for atlas in atlas_library['Atlases']]
     custom_radius = radius
-    submission_string = '''fmri_roi_extraction -config_file={config} -atlas={atlas} -single'''
-    submission_string_custom = '''fmri_roi_extraction -config_file={config} -atlas={atlas} -custom_atlas={custom_atlas_file} -custom_label={custom_labels} -custom_type={custom_type} -single'''
+    submission_string = '''fmri_roi_extraction -config_file={config} -atlas_name={atlas} -single'''
+    submission_string_custom = '''fmri_roi_extraction -config_file={config} -atlas_name={atlas} -custom_atlas={custom_atlas_file} -custom_label={custom_labels} -custom_type={custom_type} -single'''
 
     batch_manager = BatchManager(config.config['BatchConfig'], log_output_dir)
     batch_manager.update_mem_usage(config.config['ROIExtractionOptions']['MemoryUsage'])
