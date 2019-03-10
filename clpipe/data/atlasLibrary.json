@@ -90,7 +90,7 @@
     },
     { "atlas_name": "bigbrain",
       "atlas_file": "data/atlases/bigbrain/BigBrain300_MNI_coordinates.txt",
-      "atlas_labels": "data/atlases/bigbrain/BigBrain300_ROIInfo.xlsx",
+      "atlas_labels": "data/atlases/bigbrain/BigBrain300_ROIinfo.xlsx",
       "atlas_type": "sphere"
     }
   ]
