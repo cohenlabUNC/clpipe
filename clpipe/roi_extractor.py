@@ -73,7 +73,8 @@ def fmri_roi_extraction(subjects=None,config_file=None, target_dir=None, target_
     if not single:
         config_string = config.config_json_dump(config.config['ROIExtractionOptions']['OutputDirectory'],
                                 os.path.basename(config_file))
-
+    else:
+        config_string = ""
     if not subjects:
         sublist = [o.replace('sub-', '') for o in os.listdir(config.config['ROIExtractionOptions']['TargetDirectory'])
                    if os.path.isdir(os.path.join(config.config['ROIExtractionOptions']['TargetDirectory'], o)) and 'sub-' in o]
