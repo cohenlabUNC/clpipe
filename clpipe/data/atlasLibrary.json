@@ -33,7 +33,7 @@
     {
       "atlas_name": "power",
       "atlas_file": "data/atlases/power/power_atlas_coordinates.txt",
-      "atlas_labels": "data/atlases/power/power_atlas_labels.txt",
+      "atlas_labels": "data/atlases/power/Consensus264.xls",
       "atlas_type": "sphere"
     },
     {
