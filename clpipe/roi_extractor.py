@@ -200,6 +200,7 @@ def _fmri_roi_extract_image(data, atlas_path, atlas_type, radius):
         label_masker = NiftiLabelsMasker(atlas_path)
         timeseries = label_masker.fit_transform(data)
     if 'sphere' in atlas_type:
+        atlas_path = np.loadtxt(atlas_path)
         logging.debug('Sphere Extract')
         spheres_masker = NiftiSpheresMasker(atlas_path, float(radius))
         timeseries = spheres_masker.fit_transform(data)
