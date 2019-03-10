@@ -85,8 +85,8 @@ def fmri_roi_extraction(subjects=None,config_file=None, target_dir=None, target_
         atlas_list = [atlas_name]
     else:
         atlas_list = config.config['ROIExtractionOptions']['Atlases']
-
-    atlas_library = json.load(resource_stream(__name__, 'data/atlasLibrary.json'))
+    with resource_stream(__name__, 'data/atlasLibrary.json') as at_lib:
+        atlas_library = json.load(at_lib)
     atlas_names = [atlas['atlas_name'] for atlas in atlas_library['Atlases']]
     custom_radius = radius
     submission_string = '''fmri_roi_extraction -config_file={config} -atlas={atlas} -single'''

@@ -10,7 +10,8 @@ class BatchManager:
 
     def __init__(self, batchsystemConfig, outputDirectory=None):
         self.jobs = []
-        self.config = json.load(resource_stream(__name__, "batchConfigs/" + batchsystemConfig))
+        with resource_stream(__name__, "batchConfigs/" + batchsystemConfig) as bat_config:
+            self.config = json.load(bat_config)
         self.submissionlist = []
         if outputDirectory is None:
             outputDirectory = '.'
