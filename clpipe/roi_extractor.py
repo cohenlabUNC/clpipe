@@ -197,6 +197,8 @@ def _fmri_roi_extract_subject(subject, task, atlas_name, atlas_filename, atlas_l
 
 def _fmri_roi_extract_image(data, atlas_path, atlas_type, radius):
     logging.debug(atlas_type)
+    logging.debug(atlas_type is 'sphere')
+    logging.debug(type(atlas_type))
     if atlas_type is 'label':
         logging.debug('Labels Extract')
         label_masker = NiftiLabelsMasker(atlas_path)
