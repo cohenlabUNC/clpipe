@@ -104,7 +104,7 @@ def fmri_roi_extraction(subjects=None,config_file=None, target_dir=None, target_
     for subject in sublist:
         for cur_atlas in atlas_list:
             custom_flag = False
-            sphere_flag = True
+            sphere_flag = False
             if type(cur_atlas) is dict:
                 logging.debug("Custom Dict Atlas")
                 custom_flag = True
@@ -116,7 +116,7 @@ def fmri_roi_extraction(subjects=None,config_file=None, target_dir=None, target_
                 logging.debug(custom_label)
                 custom_type = cur_atlas['atlas_type']
                 logging.debug(custom_type)
-                if custom_type is 'sphere':
+                if 'sphere' in custom_type:
                     sphere_flag = True
                     custom_radius = cur_atlas['radius']
                     logging.debug(custom_radius)
@@ -133,6 +133,7 @@ def fmri_roi_extraction(subjects=None,config_file=None, target_dir=None, target_
                     sphere_flag = True
             else:
                 logging.debug("Did Not Find Atlas Name in Library")
+                custom_flag = True
                 if any([not os.path.exists(custom_atlas), not os.path.exists(custom_label), custom_type not in ['label', 'maps', 'sphere']]):
                     raise ValueError('You are attempting to use a custom atlas, but have not specified one or more of the following: \n'
                                      '\t A custom atlas mask file (.nii or .nii.gz)' 
@@ -142,7 +143,7 @@ def fmri_roi_extraction(subjects=None,config_file=None, target_dir=None, target_
                     atlas_filename = custom_atlas
                     atlas_labels = custom_label
                     atlas_type = custom_type
-                    if custom_type is 'sphere':
+                    if 'sphere' in custom_type:
                         sphere_flag = True
             if custom_flag:
                 sub_string_temp = submission_string_custom.format(
