@@ -79,11 +79,11 @@ class ConfigParser:
     def setup_roiextract(self, target_dir, target_suffix, output_dir):
         if target_dir is not None:
             self.config['ROIExtractionOptions']['TargetDirectory'] = os.path.abspath(target_dir)
-            if not os.path.isdir(self.config['PostProcessingOptions']['TargetDirectory']):
+            if not os.path.isdir(self.config['ROIExtractionOptions']['TargetDirectory']):
                 raise ValueError('Target Directory does not exist')
         if output_dir is not None:
             self.config['ROIExtractionOptions']['OutputDirectory'] = os.path.abspath(output_dir)
-            os.makedirs(self.config['PostProcessingOptions']['OutputDirectory'], exist_ok=True)
+            os.makedirs(self.config['ROIExtractionOptions']['OutputDirectory'], exist_ok=True)
         if target_suffix is not None:
             self.config['ROIExtractionOptions']['TargetSuffix'] = target_suffix
 

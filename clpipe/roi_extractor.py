@@ -20,7 +20,7 @@ import shutil
               help='Use a given configuration file. If left blank, uses the default config file, requiring definition of BIDS, working and output directories. This will extract all ROI sets specified in the configuration file.')
 @click.option('-target_dir', type=click.Path(exists=True, dir_okay=True, file_okay=False),
               help='Which postprocessed directory to process. If a configuration file is provided with a target directory, this argument is not necessary.')
-@click.option('-target_suffix', 
+@click.option('-target_suffix',
               help='Which target suffix to process. If a configuration file is provided with a target suffix, this argument is not necessary.')
 @click.option('-output_dir', type=click.Path(dir_okay=True, file_okay=False),
               help='Where to put the ROI extracted data. If a configuration file is provided with a output directory, this argument is not necessary.')
