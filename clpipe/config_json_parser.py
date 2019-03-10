@@ -17,9 +17,11 @@ def config_json_parser(json_path):
 class ConfigParser:
 
     def __init__(self):
-        self.config = json.load(resource_stream(__name__, 'data/defaultConfig.json'))
+        with resource_stream(__name__, 'data/defaultConfig.json') as def_config:
+            self.config = json.load(def_config)
         self.setup_default_config()
-        self.configSchema = json.load(resource_stream(__name__, 'data/configSchema.json'))
+        with json.load(resource_stream(__name__, 'data/configSchema.json')) as def_schema:
+            self.configSchema = json.load(def_schema)
 
     def config_updater(self, new_config):
         if new_config is None:
