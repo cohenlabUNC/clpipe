@@ -175,7 +175,7 @@ def _fmri_roi_extract_subject(subject, task, atlas_name, atlas_filename, atlas_l
     search_string = os.path.abspath(
         os.path.join(config.config['ROIExtractionOptions']['TargetDirectory'], "sub-" + subject, "**",
                      "*" + config.config['ROIExtractionOptions']['TargetSuffix']))
-
+    logging.debug(search_string)
     subject_files = glob.glob(search_string, recursive=True)
     logging.debug(subject_files)
     if task is not None:
