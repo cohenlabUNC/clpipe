@@ -20,7 +20,7 @@ class ConfigParser:
         with resource_stream(__name__, 'data/defaultConfig.json') as def_config:
             self.config = json.load(def_config)
         self.setup_default_config()
-        with json.load(resource_stream(__name__, 'data/configSchema.json')) as def_schema:
+        with resource_stream(__name__, 'data/configSchema.json') as def_schema:
             self.configSchema = json.load(def_schema)
 
     def config_updater(self, new_config):
