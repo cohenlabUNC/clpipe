@@ -30,6 +30,7 @@ import shutil
 @click.option('-custom_label', help = 'A custom atlas label file. Not needed if specified in config.')
 @click.option('-custom_type', help = 'What type of atlas? (label, maps, or spheres). Not needed if specified in config.')
 @click.option('-radius', help = "If a sphere atlas, what radius sphere, in mm. Not needed if specified in config.", default = '5')
+@click.option('-overlap_ok', is_flag=True, default=False, help = "Are overlapping ROIs allowed?")
 @click.option('-log_output_dir', type=click.Path(dir_okay=True, file_okay=False),
               help='Where to put HPC output files (such as SLURM output files). If not specified, defaults to <outputDir>/batchOutput.')
 @click.option('-submit', is_flag=True, default=False, help='Flag to submit commands to the HPC')
@@ -41,7 +42,7 @@ def fmri_roi_extraction(subjects=None,config_file=None, target_dir=None, target_
                         custom_label = None,
                         custom_type = None,
                         radius = '5',
-                        submit=False, single=False, debug=False):
+                        submit=False, single=False, overlap_ok= False, debug=False):
     if not debug:
         sys.excepthook = exception_handler
         logging.basicConfig(level=logging.INFO)
@@ -162,12 +163,14 @@ def fmri_roi_extraction(subjects=None,config_file=None, target_dir=None, target_
                 sub_string_temp = sub_string_temp + ' -radius=' +custom_radius
             if task is not None:
                 sub_string_temp = sub_string_temp + ' -task='+task
+            if overlap_ok:
+                sub_string_temp = sub_string_temp + ' -overlap_ok'
 
             sub_string_temp = sub_string_temp + ' ' + subject
             batch_manager.addjob(Job('ROI_extract_' + subject +'_'+atlas_name, sub_string_temp))
             if single:
                 logging.info('Running Subject '+ subject + ' Atlas: '+ atlas_name + ' Atlas Type: ' + atlas_type)
-                _fmri_roi_extract_subject(subject, task, atlas_name, atlas_filename, atlas_labels, atlas_type, custom_radius, custom_flag, config)
+                _fmri_roi_extract_subject(subject, task, atlas_name, atlas_filename, atlas_labels, atlas_type, custom_radius, custom_flag, config, overlap_ok)
     if not single:
         if submit:
             batch_manager.compilejobstrings()
@@ -176,7 +179,7 @@ def fmri_roi_extraction(subjects=None,config_file=None, target_dir=None, target_
             batch_manager.compilejobstrings()
             click.echo(batch_manager.print_jobs())
 
-def _fmri_roi_extract_subject(subject, task, atlas_name, atlas_filename, atlas_label, atlas_type,radius, custom_flag, config):
+def _fmri_roi_extract_subject(subject, task, atlas_name, atlas_filename, atlas_label, atlas_type,radius, custom_flag, config, overlap_ok):
     if not custom_flag:
         atlas_path = resource_filename(__name__, atlas_filename)
         atlas_labelpath = resource_filename(__name__, atlas_label)
@@ -199,14 +202,14 @@ def _fmri_roi_extract_subject(subject, task, atlas_name, atlas_filename, atlas_l
 
     for file in subject_files:
        logging.info("Extracting the " + atlas_name + " atlas for " + file)
-       ROI_ts = _fmri_roi_extract_image(file, atlas_path, atlas_type, radius)
+       ROI_ts = _fmri_roi_extract_image(file, atlas_path, atlas_type, radius, overlap_ok)
        file_outname = os.path.splitext(os.path.basename(file))[0]
        if '.nii' in file_outname:
            file_outname = os.path.splitext(file_outname)[0]
        np.savetxt(os.path.join(os.path.join(config.config['ROIExtractionOptions']['OutputDirectory'], atlas_name), file_outname +"_atlas-" + atlas_name+ '.csv'), ROI_ts, delimiter=',')
 
 
-def _fmri_roi_extract_image(data, atlas_path, atlas_type, radius):
+def _fmri_roi_extract_image(data, atlas_path, atlas_type, radius, overlap_ok):
     if 'label' in atlas_type:
         logging.debug('Labels Extract')
         label_masker = NiftiLabelsMasker(atlas_path)
@@ -214,11 +217,11 @@ def _fmri_roi_extract_image(data, atlas_path, atlas_type, radius):
     if 'sphere' in atlas_type:
         atlas_path = np.loadtxt(atlas_path)
         logging.debug('Sphere Extract')
-        spheres_masker = NiftiSpheresMasker(atlas_path, float(radius))
+        spheres_masker = NiftiSpheresMasker(atlas_path, float(radius), allow_overlap = overlap_ok)
         timeseries = spheres_masker.fit_transform(data)
     if 'maps' in atlas_type:
         logging.debug('Maps Extract')
-        maps_masker = NiftiMapsMasker(atlas_path)
+        maps_masker = NiftiMapsMasker(atlas_path, allow_overlap = overlap_ok)
         timeseries = maps_masker.fit_transform(data)
 
 
