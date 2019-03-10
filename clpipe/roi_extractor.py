@@ -183,7 +183,6 @@ def _fmri_roi_extract_subject(subject, task, atlas_name, atlas_filename, atlas_l
     os.makedirs(os.path.join(config.config['ROIExtractionOptions']['OutputDirectory'], atlas_name),exist_ok=True)
     shutil.copy2(atlas_labelpath,config.config['ROIExtractionOptions']['OutputDirectory'])
 
-    logging.debug()
 
     for file in subject_files:
        ROI_ts = _fmri_roi_extract_image(file, atlas_path, atlas_type, radius)
