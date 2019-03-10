@@ -44,9 +44,9 @@ def fmri_roi_extraction(subjects=None,config_file=None, target_dir=None, target_
                         submit=False, single=False, debug=False):
     if not debug:
         sys.excepthook = exception_handler
-        logging.basicConfig(level=logging.DEBUG)
-    else:
         logging.basicConfig(level=logging.INFO)
+    else:
+        logging.basicConfig(level=logging.DEBUG)
 
     config = ConfigParser()
     config.config_updater(config_file)

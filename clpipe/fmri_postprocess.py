@@ -36,9 +36,9 @@ def fmri_postprocess(config_file=None, subjects=None, target_dir=None, target_su
     """This command runs an fMRIprep'ed dataset through additional processing, as defined in the configuration file. To run specific subjects, specify their IDs. If no IDs are specified, all subjects are ran."""
     if not debug:
         sys.excepthook = exception_handler
-        logging.basicConfig(level=logging.DEBUG)
-    else:
         logging.basicConfig(level=logging.INFO)
+    else:
+        logging.basicConfig(level=logging.DEBUG)
 
     if config_file is None and tr is None:
         raise ValueError('No config file and no specified TR. Please include one.')

@@ -28,9 +28,9 @@ def fmriprep_process(bids_dir=None, working_dir=None, output_dir=None, config_fi
 
     if not debug:
         sys.excepthook = exception_handler
-        logging.basicConfig(level=logging.DEBUG)
-    else:
         logging.basicConfig(level=logging.INFO)
+    else:
+        logging.basicConfig(level=logging.DEBUG)
 
     config = ConfigParser()
     config.config_updater(config_file)
