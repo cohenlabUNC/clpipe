@@ -86,9 +86,12 @@ def fmri_roi_extraction(subjects=None,config_file=None, target_dir=None, target_
         atlas_list = [atlas_name]
     else:
         atlas_list = config.config['ROIExtractionOptions']['Atlases']
+
     with resource_stream(__name__, 'data/atlasLibrary.json') as at_lib:
         atlas_library = json.load(at_lib)
+
     atlas_names = [atlas['atlas_name'] for atlas in atlas_library['Atlases']]
+    logging.debug(atlas_names)
     custom_radius = radius
     submission_string = '''fmri_roi_extraction -config_file={config} -atlas_name={atlas} -single'''
     submission_string_custom = '''fmri_roi_extraction -config_file={config} -atlas_name={atlas} -custom_atlas={custom_atlas_file} -custom_label={custom_labels} -custom_type={custom_type} -single'''
@@ -113,8 +116,9 @@ def fmri_roi_extraction(subjects=None,config_file=None, target_dir=None, target_
                     custom_radius = cur_atlas['radius']
             else:
                 atlas_name = cur_atlas
-
+            logging.debug(atlas_name)
             if atlas_name in atlas_names:
+                logging.debug("Found atlas name in library")
                 index = atlas_names.index(atlas_name)
                 atlas_filename = atlas_library['Atlases'][index]['atlas_file']
                 atlas_labels = atlas_library['Atlases'][index]['atlas_labels']
@@ -122,6 +126,7 @@ def fmri_roi_extraction(subjects=None,config_file=None, target_dir=None, target_
                 if custom_type is 'sphere':
                     sphere_flag = True
             else:
+                logging.debug("Did Not Find Atlas Name in Library")
                 if any([not os.path.exists(custom_atlas), not os.path.exists(custom_label), custom_type not in ['label', 'maps', 'spheres']]):
                     raise ValueError('You are attempting to use a custom atlas, but have not specified one or more of the following: \n'
                                      '\t A custom atlas mask file (.nii or .nii.gz)' 
