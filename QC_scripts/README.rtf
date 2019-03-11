@@ -1,0 +1,78 @@
+{\rtf1\ansi\ansicpg1252\cocoartf1671\cocoasubrtf100
+{\fonttbl\f0\fswiss\fcharset0 ArialMT;\f1\froman\fcharset0 Times-Roman;\f2\fswiss\fcharset0 Arial-BoldMT;
+}
+{\colortbl;\red255\green255\blue255;\red0\green0\blue0;}
+{\*\expandedcolortbl;;\cssrgb\c0\c0\c0;}
+\margl1440\margr1440\vieww10800\viewh8400\viewkind0
+\deftab720
+\pard\pardeftab720\sl400\partightenfactor0
+
+\f0\fs24 \cf2 \expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec2 Kelly\'92s first goal is get these more consolidated, and anything else mentioned following each script. 
+\f1 \
+\pard\pardeftab720\sl400\partightenfactor0
+
+\f0 \cf2 \outl0\strokewidth0 *Note that for scrubbed data, the NANs of missing time points must be removed prior to running QC metrics. \
+
+\f1 \cf2 \outl0\strokewidth0 \strokec2 \
+\pard\pardeftab720\sl400\partightenfactor0
+
+\f0 \cf2 To get the QC and distance-dependence QC output, the scripts must be run in this order:
+\f1 \
+\pard\pardeftab720\sl400\partightenfactor0
+
+\f2\b \cf2 1. generateAdjMats.py
+\f0\b0 : short script to obtain the adjacency matrices required for future steps of processing. Requires: ts2adjmat_edits.R
+\f1 \
+\pard\pardeftab720\sl280\partightenfactor0
+\cf2 \
+\pard\pardeftab720\sl400\partightenfactor0
+
+\f2\b \cf2 2. generateCohortFilesXCP.py
+\f0\b0 : another short script to obtain a \'93cohort file\'94 (list of subject numbers, meanFD, and adjacency matrix location, based on the Ciric script conventions). Needs to be updated for multiple tasks/runs. Currently has input of subject lists, should be able to do it for all subjects as well. 
+\f1 \
+\pard\pardeftab720\sl280\partightenfactor0
+\cf2 \
+\pard\pardeftab720\sl400\partightenfactor0
+
+\f2\b \cf2 3. runQCFC.py: 
+\f0\b0 very short script to run the QCFC itself, using the desired cohort file. Requires: qcfc.R
+\f1 \
+\pard\pardeftab720\sl280\partightenfactor0
+\cf2 \
+\pard\pardeftab720\sl400\partightenfactor0
+
+\f2\b \cf2 4. run_getQCFCmats.py: 
+\f0\b0 short command script to run an R script that obtains QCFC matrices. Requires: getQCFCmats.R. 
+\f1 \
+\pard\pardeftab720\sl280\partightenfactor0
+\cf2 \
+\pard\pardeftab720\sl400\partightenfactor0
+
+\f2\b \cf2 5. runDistanceDependenceQCFC.py: 
+\f0\b0 a short command script to run the distance-dependent QCFC module by the Satterwaithe group. Requires: qcfcDistanceDependence.
+\f1 \
+\pard\pardeftab720\sl280\partightenfactor0
+\cf2 \
+\pard\pardeftab720\sl400\partightenfactor0
+
+\f0 \cf2 Additional scripts:
+\f1 \
+\pard\pardeftab720\sl400\partightenfactor0
+
+\f2\b \cf2 voxtsplots.py: 
+\f0\b0 a script to run the R function that obtains the grayplots for each subject. Note that it currently does each file in the directory, should be more specific. Needs to be updated for multiple sessions/runs. Also need to add in a function within here to obtain the ROI depth map (right now it loads in one that\'92s already made). Requires: voxts_edits, layerLabels (to make the depth map)
+\f1 \
+\pard\pardeftab720\sl280\partightenfactor0
+\cf2 \
+\pard\pardeftab720\sl400\partightenfactor0
+
+\f2\b \cf2 checkCorrelations.py: 
+\f0\b0 a script to get the mean of the positive and negative correlations for each subject, and save it in a file, to look for any issues/outliers. 
+\f1 \
+\pard\pardeftab720\sl280\partightenfactor0
+\cf2 \
+\pard\pardeftab720\sl340\partightenfactor0
+
+\f2\b \cf2 checkGroupCorrelations.py: 
+\f0\b0 a script to get the mean positive correlation, mean negative correlation, maximum correlation value, and minimum correlation value for an entire group of subjects (provided by user). Can split up by diagnostic category to do a rough check for differences, or do it for all subjects as a quick heuristic. }
