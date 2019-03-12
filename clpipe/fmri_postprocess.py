@@ -123,7 +123,10 @@ def _fmri_postprocess_subject(config, subject, task, tr=None):
     for image in subject_files:
         if task is None or 'task-' + task in image:
             logging.info('Processing ' + image)
-            _fmri_postprocess_image(config, image, tr)
+            try:
+                _fmri_postprocess_image(config, image, tr)
+            except ValueError:
+                logging.info("Something went wrong with this image: " + image)
 
 
 def _fmri_postprocess_image(config, file, tr=None):
