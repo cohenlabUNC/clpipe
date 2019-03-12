@@ -53,6 +53,7 @@
 	},
 	"ROIExtractionOptions": {
 		"TargetDirectory": "",
+		"TargetSuffix": "",
 		"OutputDirectory": "",
 		"Atlases": ["power"],
         "MemoryUsage":"3000",

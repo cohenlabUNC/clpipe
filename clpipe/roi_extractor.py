@@ -130,7 +130,7 @@ def fmri_roi_extraction(subjects=None,config_file=None, target_dir=None, target_
                 atlas_filename = atlas_library['Atlases'][index]['atlas_file']
                 atlas_labels = atlas_library['Atlases'][index]['atlas_labels']
                 atlas_type = atlas_library['Atlases'][index]['atlas_type']
-                if custom_type is 'sphere':
+                if 'sphere' in custom_type:
                     sphere_flag = True
             else:
                 logging.debug("Did Not Find Atlas Name in Library")
