@@ -91,8 +91,8 @@ def fmri_postprocess(config_file=None, subjects=None, target_dir=None, target_su
                 targetSuffix=config.config['PostProcessingOptions']['TargetSuffix'],
                 outputDir=config.config['PostProcessingOptions']['OutputDirectory'],
                 outputSuffix=config.config['PostProcessingOptions']['OutputSuffix'],
-                task = task_string,
-                tr = tr_string,
+                taskString = task_string,
+                trString = tr_string,
                 logOutputDir=log_output_dir,
                 sub=sub
             )
