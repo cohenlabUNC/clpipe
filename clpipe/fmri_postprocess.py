@@ -322,6 +322,7 @@ def _ev_mat_prep(event_file, filt, TR, ntp, config_block):
 
 def _beta_series_calc(data, filt_ev_mat, filt_confound_mat):
     beta_maker = numpy.zeros(filt_ev_mat.shape)
+    logging.debug(beta_maker.shape)
     for index in range(filt_ev_mat.shape[1]):
         logging.debug(filt_ev_mat[:,index].shape)
         logging.debug(filt_confound_mat.shape)
