@@ -259,7 +259,7 @@ def _fmri_postprocess_image(config, file, task = None, tr=None, beta_series = Fa
                 order = int(config.config['BetaSeriesOptions']['FilteringOrder'])
                 filt = clpipe.postprocutils.utils.calc_filter(hp, lp, tr, order)
                 confounds = clpipe.postprocutils.utils.apply_filter(filt, confounds)
-            filt_ev_array = _ev_mat_prep(events_file, filt, tr, ntp, beta_series_options)
+            filt_ev_array, valid_events = _ev_mat_prep(events_file, filt, tr, ntp, beta_series_options)
 
             image = load_image(file)
             data = image.get_data()
@@ -277,7 +277,7 @@ def _fmri_postprocess_image(config, file, task = None, tr=None, beta_series = Fa
             output_file_path = _build_output_directory_structure(config, file, beta_series)
             events_output = os.path.splitext(os.path.splitext(output_file_path)[0])[0] + "_usedevents.tsv"
             save_image(beta_image, output_file_path)
-            events_output.to_csv(events_output, sep = ' ')
+            valid_events.to_csv(events_output, sep = ' ')
         else:
             logging.info("Did not find an events file for " + file)
             return
