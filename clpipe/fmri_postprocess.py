@@ -133,7 +133,7 @@ def _fmri_postprocess_subject(config, subject, task, tr=None, beta_series = Fals
             logging.info('Processing ' + image)
             try:
                 _fmri_postprocess_image(config, image, task,  tr, beta_series)
-            except ValueError as err:
+            except Error as err:
                 logging.exception(err)
 
 
@@ -272,7 +272,7 @@ def _fmri_postprocess_image(config, file, task = None, tr=None, beta_series = Fa
             beta_image_2d = _beta_series_calc(data, filt_ev_array, confounds)
             beta_series_dims = orgImageShape[:-1]
             beta_series_dims =  beta_series_dims + (len(valid_events),)
-            beta_3d = beta_image_2d.reshape(beta_series_dims)
+            beta_3d = beta_image_2d.transpose().reshape(beta_series_dims)
             beta_image = Image(beta_3d, coordMap)
             output_file_path = _build_output_directory_structure(config, file, beta_series)
             events_output = os.path.splitext(os.path.splitext(output_file_path)[0])[0] + "_usedevents.tsv"
