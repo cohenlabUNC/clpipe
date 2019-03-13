@@ -269,9 +269,9 @@ def _fmri_postprocess_image(config, file, task = None, tr=None, beta_series = Fa
             data = numpy.transpose(data)
             data = (data - data.mean(axis=0))
             logging.debug(filt_ev_array)
-            beta_image_2d, used_events = _beta_series_calc(data, filt_ev_array, confounds)
+            beta_image_2d = _beta_series_calc(data, filt_ev_array, confounds)
             beta_series_dims = orgImageShape[:-1]
-            beta_series_dims =  beta_series_dims + (len(used_events),)
+            beta_series_dims =  beta_series_dims + (len(valid_events),)
             beta_3d = beta_image_2d.reshape(beta_series_dims)
             beta_image = Image(beta_3d, coordMap)
             output_file_path = _build_output_directory_structure(config, file, beta_series)
