@@ -268,6 +268,7 @@ def _fmri_postprocess_image(config, file, task = None, tr=None, beta_series = Fa
             data = data.reshape((numpy.prod(numpy.shape(data)[:-1]), data.shape[-1]))
             data = numpy.transpose(data)
             data = (data - data.mean(axis=0))
+            logging.debug(filt_ev_array)
             beta_image_2d, used_events = _beta_series_calc(data, filt_ev_array, confounds)
             beta_series_dims = orgImageShape[:-1]
             beta_series_dims =  beta_series_dims + (len(used_events),)
@@ -320,7 +321,7 @@ def _ev_mat_prep(event_file, filt, TR, ntp, config_block):
 
 
 def _beta_series_calc(data, filt_ev_mat, filt_confound_mat):
-    beta_maker = numpy.zeros((filt_ev_mat.shape))
+    beta_maker = numpy.zeros(filt_ev_mat.shape)
     for index, col in filt_ev_mat.itercols():
         temp_mat = numpy.concatenate([filt_ev_mat[:,index], numpy.sum(filt_ev_mat,1) - filt_ev_mat[:,index], filt_confound_mat])
         temp_beta = numpy.linalg.pinv(temp_mat)
