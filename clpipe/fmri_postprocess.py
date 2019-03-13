@@ -48,7 +48,7 @@ def fmri_postprocess(config_file=None, subjects=None, target_dir=None, target_su
 
     config = ConfigParser()
     config.config_updater(config_file)
-    config.setup_postproc(target_dir, target_suffix, output_dir, output_suffix)
+    config.setup_postproc(target_dir, target_suffix, output_dir, output_suffix, beta_series)
     config.validate_config()
 
     if config_file is None:
@@ -116,6 +116,7 @@ def fmri_postprocess(config_file=None, subjects=None, target_dir=None, target_su
             click.echo(batch_manager.print_jobs())
     else:
         for sub in subjects:
+            logging.debug(beta_series)
             logging.info('Running Subject ' + sub)
             _fmri_postprocess_subject(config, sub, task, beta_series)
 

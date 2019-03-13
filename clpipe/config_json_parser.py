@@ -56,18 +56,22 @@ class ConfigParser:
             self.config['FMRIPrepOptions']['OutputDirectory'] = os.path.abspath(outputDir)
             os.makedirs(self.config['FMRIPrepOptions']['OutputDirectory'], exist_ok=True)
 
-    def setup_postproc(self, target_dir, target_suffix, output_dir, output_suffix):
+    def setup_postproc(self, target_dir, target_suffix, output_dir, output_suffix, beta_series = False):
+        target_output = 'PostProcessingOptions'
+        if beta_series:
+            target_output = 'BetaSeriesOptions'
+
         if target_dir is not None:
-            self.config['PostProcessingOptions']['TargetDirectory'] = os.path.abspath(target_dir)
-            if not os.path.isdir(self.config['PostProcessingOptions']['TargetDirectory']):
+            self.config[target_output]['TargetDirectory'] = os.path.abspath(target_dir)
+            if not os.path.isdir(self.config[target_output]['TargetDirectory']):
                 raise ValueError('Target Directory does not exist')
         if output_dir is not None:
-            self.config['PostProcessingOptions']['OutputDirectory'] = os.path.abspath(output_dir)
-            os.makedirs(self.config['PostProcessingOptions']['OutputDirectory'], exist_ok=True)
+            self.config[target_output]['OutputDirectory'] = os.path.abspath(output_dir)
+            os.makedirs(self.config[target_output]['OutputDirectory'], exist_ok=True)
         if target_suffix is not None:
-            self.config['PostProcessingOptions']['TargetSuffix'] = target_suffix
+            self.config[target_output]['TargetSuffix'] = target_suffix
         if output_suffix is not None:
-            self.config['PostProcessingOptions']['OutputSuffix'] = output_suffix
+            self.config[target_output]['OutputSuffix'] = output_suffix
 
     def setup_heudiconv(self, dicom_directory, heuristic_file, output_directory):
         if dicom_directory is not None:
