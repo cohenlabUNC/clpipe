@@ -398,7 +398,7 @@ def _find_events(config, filepath):
     file_components = file_name.split("_")
 
     file_components = [x for x in file_components if 'desc-' not in x]
-
+    file_components = [x for x in file_components if 'space-' not in x]
     sub_comp = [x for x in file_components if 'sub-' in x]
     ses_comp = [x for x in file_components if 'ses-' in x]
 
