@@ -228,7 +228,9 @@ def _fmri_postprocess_image(config, file, task = None, tr=None, beta_series = Fa
         beta_series_options = config.config['BetaSeriesOptions']['TaskSpecificOptions']
 
         avail_tasks = [x['Task'] for x in beta_series_options]
+        logging.debug(avail_tasks)
         img_task = _find_image_task(file)
+        logging.debug(img_task)
         if img_task not in avail_tasks:
             logging.info('Did not find beta series specification for the task ' +img_task+ ' for image ' +file )
             return
@@ -239,6 +241,7 @@ def _fmri_postprocess_image(config, file, task = None, tr=None, beta_series = Fa
         lp = float(config.config['BetaSeriesOptions']['FilteringLowPass'])
 
         events_file = _find_events(config, file)
+        logging.debug(events_file)
         if os.path.exists(events_file):
             confounds, fdts = _regression_prep(config, confound_regressors, beta_series)
             ntp = len(confounds)
