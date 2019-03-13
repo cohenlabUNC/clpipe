@@ -303,7 +303,7 @@ def _ev_mat_prep(event_file, filt, TR, ntp, config_block):
     hrf = nipy.modalities.fmri.hrf.spm_hrf_compat(timeCourse)
     indexSample = numpy.arange(0, TR * ntp / (TR / 16.0), TR / (TR / 16.0))
     indexSample = indexSample.astype("int")
-    eventArray = numpy.zeros(ntp, len(valid_trials))
+    eventArray = numpy.zeros((ntp, len(valid_trials)))
     for index, row in valid_events.iterrows():
         ev_loop = numpy.zeros(n_up)
         index1 = numpy.logical_and((time_up >= row["onset"]), (time_up <= row["onset"] + row["duration"]))
