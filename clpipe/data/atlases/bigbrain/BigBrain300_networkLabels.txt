@@ -1,0 +1,300 @@
+Unassigned
+Unassigned
+Unassigned
+Unassigned
+Unassigned
+Unassigned
+Unassigned
+Unassigned
+Unassigned
+Unassigned
+Unassigned
+Unassigned
+Somatomotor Dorsal
+Somatomotor Dorsal
+Somatomotor Dorsal
+Somatomotor Dorsal
+Somatomotor Dorsal
+Somatomotor Dorsal
+Somatomotor Dorsal
+Somatomotor Dorsal
+Somatomotor Dorsal
+Somatomotor Dorsal
+Somatomotor Dorsal
+Somatomotor Dorsal
+Somatomotor Dorsal
+Somatomotor Dorsal
+Somatomotor Dorsal
+Somatomotor Dorsal
+Somatomotor Dorsal
+Somatomotor Dorsal
+Somatomotor Dorsal
+Somatomotor Dorsal
+Somatomotor Dorsal
+Somatomotor Dorsal
+Somatomotor Dorsal
+Somatomotor Dorsal
+Somatomotor Dorsal
+Somatomotor Dorsal
+Somatomotor Dorsal
+Somatomotor Dorsal
+Somatomotor Dorsal
+Somatomotor Dorsal
+Somatomotor Dorsal
+Somatomotor Dorsal
+Somatomotor Ventral
+Somatomotor Ventral
+Somatomotor Ventral
+Somatomotor Ventral
+Somatomotor Ventral
+Cingulo-Opercular
+Cingulo-Opercular
+Cingulo-Opercular
+Cingulo-Opercular
+Cingulo-Opercular
+Cingulo-Opercular
+Cingulo-Opercular
+Cingulo-Opercular
+Cingulo-Opercular
+Cingulo-Opercular
+Cingulo-Opercular
+Cingulo-Opercular
+Cingulo-Opercular
+Cingulo-Opercular
+Auditory
+Auditory
+Auditory
+Auditory
+Auditory
+Auditory
+Auditory
+Auditory
+Auditory
+Auditory
+Auditory
+Auditory
+Default Mode
+Default Mode
+Default Mode
+Default Mode
+Default Mode
+Default Mode
+Default Mode
+Default Mode
+Default Mode
+Default Mode
+Default Mode
+Default Mode
+Default Mode
+Default Mode
+Default Mode
+Default Mode
+Default Mode
+Default Mode
+Default Mode
+Default Mode
+Default Mode
+Default Mode
+Default Mode
+Default Mode
+Default Mode
+Default Mode
+Default Mode
+Default Mode
+Default Mode
+Default Mode
+Default Mode
+Default Mode
+Default Mode
+Default Mode
+Default Mode
+Default Mode
+Default Mode
+Default Mode
+Default Mode
+Default Mode
+Default Mode
+Default Mode
+Default Mode
+Default Mode
+Default Mode
+Default Mode
+Default Mode
+Default Mode
+Default Mode
+Default Mode
+Default Mode
+Default Mode
+Default Mode
+Default Mode
+Default Mode
+Parietal Memory
+Parietal Memory
+Parietal Memory
+Parietal Memory
+Parietal Memory
+Visual
+Visual
+Visual
+Visual
+Visual
+Visual
+Visual
+Visual
+Visual
+Visual
+Visual
+Visual
+Visual
+Visual
+Visual
+Visual
+Visual
+Visual
+Visual
+Visual
+Visual
+Visual
+Visual
+Visual
+Visual
+Visual
+Visual
+Visual
+Visual
+Visual
+Visual
+Visual
+Visual
+Visual
+Fronto-Parietal
+Fronto-Parietal
+Fronto-Parietal
+Fronto-Parietal
+Fronto-Parietal
+Fronto-Parietal
+Fronto-Parietal
+Fronto-Parietal
+Fronto-Parietal
+Fronto-Parietal
+Fronto-Parietal
+Fronto-Parietal
+Fronto-Parietal
+Fronto-Parietal
+Fronto-Parietal
+Fronto-Parietal
+Fronto-Parietal
+Fronto-Parietal
+Fronto-Parietal
+Fronto-Parietal
+Fronto-Parietal
+Fronto-Parietal
+Fronto-Parietal
+Fronto-Parietal
+Fronto-Parietal
+Fronto-Parietal
+Fronto-Parietal
+Salience
+Salience
+Salience
+Salience
+Salience
+Salience
+Salience
+Salience
+Salience
+Salience
+Salience
+Salience
+Salience
+Salience
+Ventral Attention
+Ventral Attention
+Ventral Attention
+Ventral Attention
+Ventral Attention
+Ventral Attention
+Ventral Attention
+Ventral Attention
+Ventral Attention
+Dorsal Attention
+Dorsal Attention
+Dorsal Attention
+Dorsal Attention
+Dorsal Attention
+Dorsal Attention
+Dorsal Attention
+Dorsal Attention
+Dorsal Attention
+Dorsal Attention
+Dorsal Attention
+Dorsal Attention
+Dorsal Attention
+Dorsal Attention
+Medial Temporal
+Medial Temporal
+Hippocampus- Medial Temporal
+Hippocampus- Medial Temporal
+Hippocampus- Default Mode
+Hippocampus- Default Mode
+Reward
+Reward
+Reward
+Reward
+Amygdala- Reward
+Amygdala- Reward
+Ventral Striatum- Reward
+Ventral Striatum- Reward
+Basal Ganglia- Default Mode
+Basal Ganglia- Default Mode
+Basal Ganglia- Fronto-Parietal
+Basal Ganglia- Fronto-Parietal
+Basal Ganglia- Somatomotor Dorsal
+Basal Ganglia- Somatomotor Dorsal
+Basal Ganglia- Somatomotor Dorsal
+Basal Ganglia- Somatomotor Dorsal
+Basal Ganglia- Somatomotor Dorsal
+Basal Ganglia- Somatomotor Dorsal
+Basal Ganglia- Somatomotor Dorsal
+Basal Ganglia- Somatomotor Dorsal
+Basal Ganglia- Somatomotor Dorsal
+Basal Ganglia- Somatomotor Dorsal
+Thalamus- Default Mode
+Thalamus- Default Mode
+Thalamus- Visual
+Thalamus- Visual
+Thalamus- Cingulo-Opercular
+Thalamus- Cingulo-Opercular
+Thalamus- Cingulo-Opercular
+Thalamus- Cingulo-Opercular
+Thalamus- Somatomotor Dorsal
+Thalamus- Somatomotor Dorsal
+Thalamus- Somatomotor Dorsal
+Thalamus- Somatomotor Dorsal
+Cerebellum- Unassigned
+Cerebellum- Unassigned
+Cerebellum- Unassigned
+Cerebellum- Default Mode
+Cerebellum- Default Mode
+Cerebellum- Default Mode
+Cerebellum- Default Mode
+Cerebellum- Default Mode
+Cerebellum- Default Mode
+Cerebellum- Visual
+Cerebellum- Fronto-Parietal
+Cerebellum- Fronto-Parietal
+Cerebellum- Fronto-Parietal
+Cerebellum- Fronto-Parietal
+Cerebellum- Fronto-Parietal
+Cerebellum- Fronto-Parietal
+Cerebellum- Fronto-Parietal
+Cerebellum- Cingulo-Opercular
+Cerebellum- Cingulo-Opercular
+Cerebellum- Cingulo-Opercular
+Cerebellum- Somatomotor Dorsal
+Cerebellum- Somatomotor Dorsal
+Cerebellum- Somatomotor Dorsal
+Cerebellum- Somatomotor Dorsal
+Cerebellum- Somatomotor Dorsal
+Cerebellum- Somatomotor Dorsal
+Cerebellum- Somatomotor Dorsal

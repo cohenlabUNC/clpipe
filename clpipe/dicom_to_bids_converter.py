@@ -71,9 +71,9 @@ def dicom_to_nifti_to_bids_converter(subjects = None, dicom_directory=None, conf
     """This command uses heudiconv to convert dicoms into BIDS formatted NiFTI files. Users can specify any number of subjects, or leave subjects blank to convert all subjects. """
     if not debug:
         sys.excepthook = exception_handler
-        logging.basicConfig(level=logging.DEBUG)
-    else:
         logging.basicConfig(level=logging.INFO)
+    else:
+        logging.basicConfig(level=logging.DEBUG)
 
     config = ConfigParser()
     config.config_updater(config_file)

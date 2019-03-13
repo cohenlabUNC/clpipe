@@ -18,9 +18,9 @@ def fmri_process_check(config_file, output_file=None, debug=False):
     """This command checks a BIDS dataset, an fMRIprep'ed dataset and a postprocessed dataset, and creates a CSV file that lists all scans across all three datasets. Use to find which subjects/scans failed processing."""
     if not debug:
         sys.excepthook = exception_handler
-        logging.basicConfig(level=logging.DEBUG)
-    else:
         logging.basicConfig(level=logging.INFO)
+    else:
+        logging.basicConfig(level=logging.DEBUG)
 
     config = ConfigParser()
     config.config_updater(config_file)

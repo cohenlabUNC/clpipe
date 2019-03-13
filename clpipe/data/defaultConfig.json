@@ -51,6 +51,36 @@
 		"SpectralInterpolationBinSize": 5000,
 		"BIDSValidatorImage": "/proj/hng/singularity_imgs/validator.simg"
 	},
+	"BetaSeriesOptions": {
+		"TargetDirectory": "",
+		"TargetSuffix": "preproc_bold.nii.gz",
+		"OutputDirectory": "",
+		"OutputSuffix": "betaseries.nii.gz",
+		"ConfoundSuffix": "desc-confounds_regressors.tsv",
+		"Regress": true,
+		"NuisanceRegression": "QuadLagged",
+		"WhiteMatter": true,
+		"CSF": true,
+		"GlobalSignalRegression": false,
+		"FilteringHighPass": 0.008,
+		"FilteringLowPass": 0.1,
+		"FilteringOrder": 12,
+		"TaskSpecificOptions": [
+			{
+				"Task": "",
+				"ExcludeColumnInfo": "trial_type",
+				"ExcludeTrialTypes": ["block"]
+			}
+		]},
+	"ROIExtractionOptions": {
+		"TargetDirectory": "",
+		"TargetSuffix": "",
+		"OutputDirectory": "",
+		"Atlases": ["power"],
+        "MemoryUsage":"3000",
+        "TimeUsage": "2:0:0",
+        "NThreads": "1"
+	},
 	"RunLog": [],
 	"BatchConfig": "slurmUNCConfig.json"
 }

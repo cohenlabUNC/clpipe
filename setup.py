@@ -30,6 +30,7 @@ setup(name='clpipe',
       fmri_process_check=clpipe.fmri_process_check:fmri_process_check
       get_reports=clpipe.get_reports:get_reports
       grab_config_file=clpipe.grab_config_file:grab_config_file
+      fmri_roi_extraction=clpipe.roi_extractor:fmri_roi_extraction
       ''',
       zip_safe=False
       )
