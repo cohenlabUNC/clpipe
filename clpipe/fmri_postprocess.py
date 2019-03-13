@@ -329,6 +329,7 @@ def _beta_series_calc(data, filt_ev_mat, filt_confound_mat):
         logging.debug((numpy.sum(filt_ev_mat,1) - filt_ev_mat[:,index]).shape)
         temp_mat = numpy.concatenate([numpy.expand_dims(filt_ev_mat[:,index],1), numpy.expand_dims(numpy.sum(filt_ev_mat,1) - filt_ev_mat[:,index],1), filt_confound_mat],1)
         temp_beta = numpy.linalg.pinv(temp_mat)
+        logging.debug(temp_beta.shape)
         beta_maker[:, index] = temp_beta[index,:]
 
     betas = numpy.matmul(beta_maker, data)
