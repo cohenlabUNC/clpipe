@@ -291,7 +291,9 @@ def _ev_mat_prep(event_file, filt, TR, ntp, config_block):
     events = pandas.read_table(event_file)
     #Change back to 'trial_type' once testing is complete
     trial_types = events.loc[:,'trialtype'].tolist()
-    valid_trials = [ind for ind, x in enumerate(trial_types) if x not in config_block['ExcludeTrialTypes']]
+    logging.debug(trial_types)
+    logging.debug(config_block['ExcludeTrialTypes'])
+    valid_trials = [ind for ind, x in enumerate(trial_types) if x not in [config_block['ExcludeTrialTypes']]]
     valid_events = events.iloc[valid_trials,:]
 
     timeCourse = numpy.arange(0, 32 + TR / 16.0, (TR / 16.0))
