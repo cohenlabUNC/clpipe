@@ -64,6 +64,7 @@
 		"GlobalSignalRegression": false,
 		"FilteringHighPass": 0.008,
 		"FilteringLowPass": 0.1,
+		"FilteringOrder": 12,
 		"TaskSpecificOptions": [
 			{
 				"Task": "",
