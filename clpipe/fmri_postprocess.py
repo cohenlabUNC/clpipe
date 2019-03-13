@@ -332,7 +332,7 @@ def _beta_series_calc(data, filt_ev_mat, filt_confound_mat):
         logging.debug(temp_beta.shape)
         beta_maker[:, index] = temp_beta[0,:]
 
-    betas = numpy.matmul(beta_maker, data)
+    betas = numpy.matmul(beta_maker.transpose(), data)
     return betas
 
 
