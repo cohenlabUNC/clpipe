@@ -323,6 +323,9 @@ def _ev_mat_prep(event_file, filt, TR, ntp, config_block):
 def _beta_series_calc(data, filt_ev_mat, filt_confound_mat):
     beta_maker = numpy.zeros(filt_ev_mat.shape)
     for index in range(filt_ev_mat.shape[1]):
+        logging.debug(filt_ev_mat[:,index].shape)
+        logging.debug(filt_confound_mat.shape)
+        logging.debug((numpy.sum(filt_ev_mat,1) - filt_ev_mat[:,index]).shape)
         temp_mat = numpy.concatenate([filt_ev_mat[:,index], numpy.sum(filt_ev_mat,1) - filt_ev_mat[:,index], filt_confound_mat])
         temp_beta = numpy.linalg.pinv(temp_mat)
         beta_maker[:, index] = temp_beta[:, index]
