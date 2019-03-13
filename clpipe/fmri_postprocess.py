@@ -118,7 +118,7 @@ def fmri_postprocess(config_file=None, subjects=None, target_dir=None, target_su
         for sub in subjects:
             logging.debug(beta_series)
             logging.info('Running Subject ' + sub)
-            _fmri_postprocess_subject(config, sub, task, beta_series)
+            _fmri_postprocess_subject(config, sub, task, tr, beta_series)
 
 
 def _fmri_postprocess_subject(config, subject, task, tr=None, beta_series = False):
