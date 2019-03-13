@@ -235,7 +235,7 @@ def _fmri_postprocess_image(config, file, task = None, tr=None, beta_series = Fa
             logging.info('Did not find beta series specification for the task ' +img_task+ ' for image ' +file )
             return
         else:
-            beta_series_options = beta_series_options[avail_tasks.index(task)]
+            beta_series_options = beta_series_options[avail_tasks.index(img_task)]
 
 
         hp = float(config.config['BetaSeriesOptions']['FilteringHighPass'])
