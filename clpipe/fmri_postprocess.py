@@ -402,6 +402,7 @@ def _find_events(config, filepath):
 
     file_components = [x for x in file_components if 'desc-' not in x]
     file_components = [x for x in file_components if 'space-' not in x]
+    file_components = [x for x in file_components if 'bold' not in x]
     sub_comp = [x for x in file_components if 'sub-' in x]
     ses_comp = [x for x in file_components if 'ses-' in x]
 
@@ -412,7 +413,7 @@ def _find_events(config, filepath):
     else:
         event_path = os.path.join(config.config['FMRIPrepOptions']['BIDSDirectory'], sub_comp[0], 'func',
                                   event_name)
-    return event_name
+    return event_path
 
 def _build_output_directory_structure(config, filepath, beta_series_toggle = False):
     output_type = 'PostProcessingOptions'
