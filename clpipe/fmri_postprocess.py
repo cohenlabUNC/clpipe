@@ -133,7 +133,7 @@ def _fmri_postprocess_subject(config, subject, task, tr=None, beta_series = Fals
             logging.info('Processing ' + image)
             try:
                 _fmri_postprocess_image(config, image, task,  tr, beta_series)
-            except Error as err:
+            except Exception as err:
                 logging.exception(err)
 
 
