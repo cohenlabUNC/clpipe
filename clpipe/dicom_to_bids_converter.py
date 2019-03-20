@@ -77,7 +77,7 @@ def dicom_to_nifti_to_bids_converter(subjects = None, dicom_directory=None, conf
 
     config = ConfigParser()
     config.config_updater(config_file)
-    config.setup_heudiconv(os.path.abspath(dicom_directory),
+    config.setup_heudiconv(dicom_directory,
                            os.path.abspath(heuristic_file),
                            os.path.abspath(output_directory))
 
