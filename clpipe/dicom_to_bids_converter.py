@@ -65,9 +65,10 @@ def dicom_to_nifti_to_bids_converter_setup(subject = None, session = None, dicom
 @click.option('-dicom_directory', default = '',help = 'The specially formatted dicom directory string. Please see help pages at https://clpipe.readthedocs.io/en/latest/index.html for more details')
 @click.option('-output_directory', default = '', help = 'Where to output the converted dataset')
 @click.option('-log_output_dir', default = '', help = 'Where to put the log files. Defaults to Batch_Output in the current working directory.')
+@click.option('-overwrite', is_flag=True, default=False, help = 'Overwrite previous files?')
 @click.option('-submit', is_flag=True, default=False, help = 'Submit jobs to HPC')
 @click.option('-debug', is_flag=True, default=False, help = 'Debug flag for traceback')
-def dicom_to_nifti_to_bids_converter(subjects = None, dicom_directory=None, config_file = None,  submit=False, output_directory= None, heuristic_file = None,debug = False, log_output_dir = None):
+def dicom_to_nifti_to_bids_converter(subjects = None, dicom_directory=None, config_file = None,  submit=False, output_directory= None, heuristic_file = None,debug = False, log_output_dir = None, overwrite = False):
     """This command uses heudiconv to convert dicoms into BIDS formatted NiFTI files. Users can specify any number of subjects, or leave subjects blank to convert all subjects. """
     if not debug:
         sys.excepthook = exception_handler
@@ -121,7 +122,9 @@ def dicom_to_nifti_to_bids_converter(subjects = None, dicom_directory=None, conf
     else:
         heudiconv_string = '''module add heudiconv \n heudiconv -d {dicomdirectory} -s {subject} ''' \
                            ''' -f {heuristic} -o {output_directory} -b --minmeta'''
-
+    if overwrite:
+        heudiconv_string = '''module add heudiconv \n heudiconv -d {dicomdirectory} -s {subject} ''' \
+                           ''' -f {heuristic} -o {output_directory} -b --minmeta --overwrite'''
     batch_manager = BatchManager(config.config['BatchConfig'], log_output_dir)
     batch_manager.createsubmissionhead()
     for file in fileinfo:

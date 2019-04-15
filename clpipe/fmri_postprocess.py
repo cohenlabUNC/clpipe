@@ -210,7 +210,8 @@ def _fmri_postprocess_image(config, file, task = None, tr=None, beta_series = Fa
 
         data = numpy.transpose(data)
         data = data.reshape(orgImageShape)
-        out_image = Image(data, coordMap)
+        data32 = numpy.float32(data)
+        out_image = Image(data32, coordMap)
 
         output_file_path = _build_output_directory_structure(config, file)
         logging.info('Saving post processed data to ' + output_file_path)
