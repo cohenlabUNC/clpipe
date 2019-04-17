@@ -371,7 +371,7 @@ def _regression_prep(config, confound_filepath, beta_series_toggle = False):
         confound_temp = confounds.pow(2)
         confound_temp = confound_temp.fillna(0)
         confounds = pandas.concat([confounds, confound_temp], axis=1, ignore_index=True)
-
+    confounds.to_csv('test.csv')
     return confounds, fd
 
 
