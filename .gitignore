@@ -58,3 +58,4 @@ crashlytics-build.properties
 staticfiles
 .env
 TestFiles/dicom_info_13002.tsv
+.DS_Store
