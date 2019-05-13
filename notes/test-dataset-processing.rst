@@ -27,3 +27,15 @@ Not sure how to interpret the output of the bids validation
 Now going to try fmriprep preprocessing
 
 CMD used:  fmriprep_process -config_file ./testingConfig.json -working_dir ./workingDirectory -output_dir ./preprocessedOutput -log_output_dir ./preprocessing_logs -submit -debug
+
+Turns out the processing command stops if bids validator finds any errors... which happens since the config.json is copied into the output bids folder
+
+Deleting the created directories and removed the copied config file from the outputBids/ folder and going to re-run
+
+CMD used:  fmriprep_process -config_file ./testingConfig.json -working_dir ./workingDirectory -output_dir ./preprocessedOutput -log_output_dir ./preprocessing_logs -submit -debug
+
+It worked this time, now going to run post processing
+
+CMD used: fmri_postprocess -config_file ./testingConfig.json -target_dir ./preprocessedOutput -output_dir ./postprocessedOutput -log_output_dir ./postprocessing_logs -submit -debug
+
+Not sure what the -batch command really does? Tried it with and without -batch, neither seemed to submit to longleaf
