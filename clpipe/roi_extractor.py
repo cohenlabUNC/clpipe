@@ -223,6 +223,6 @@ def _fmri_roi_extract_image(data, atlas_path, atlas_type, radius, overlap_ok):
         logging.debug('Maps Extract')
         maps_masker = NiftiMapsMasker(atlas_path, allow_overlap = overlap_ok)
         timeseries = maps_masker.fit_transform(data)
-    timeseries = timeseries.replace(0.0, np.nan)
+    timeseries[timeseries == 0.0] = np.nan
 
     return timeseries
