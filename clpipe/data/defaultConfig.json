@@ -14,7 +14,7 @@
 		"FMRIPrepPath": "/proj/hng/singularity_imgs/fmriprep_1.3.2.simg",
 		"FreesurferLicensePath": "/proj/hng/singularity_imgs/license.txt",
 		"FMRIPrepMemoryUsage": "20000",
-		"FMRIPrepTimeUsage": "8:0:0"
+		"FMRIPrepTimeUsage": "16:0:0"
 	},
 	"PostProcessingOptions": {
 		"TargetDirectory": "",
