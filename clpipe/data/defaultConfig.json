@@ -36,7 +36,7 @@
 		"GlobalSignalRegression": false,
 		"FilteringHighPass": 0.008,
 		"FilteringLowPass": 0.1,
-		"FilteringOrder": 12,
+		"FilteringOrder": 2,
 		"OversamplingFreq": 4,
 		"PercentFreqSample": 1,
 		"Scrubbing": true,
