@@ -39,3 +39,15 @@ It worked this time, now going to run post processing
 CMD used: fmri_postprocess -config_file ./testingConfig.json -target_dir ./preprocessedOutput -output_dir ./postprocessedOutput -log_output_dir ./postprocessing_logs -submit -debug
 
 Not sure what the -batch command really does? Tried it with and without -batch, neither seemed to submit to longleaf
+
+Finally got it working, CMD used: fmri_postprocess -config_file ./testingConfig.json -target_dir ./preprocessedOutput/fmriprep -output_dir ./postprocessedOutput -log_output_dir ./postprocessing_logs -submit -debug 
+
+Why no -batch?
+
+Note: for target dir, had to do /fmriprep in preprocessed output, probably would be confusing for most people.
+
+Going to run ROI Extraction now
+
+CMD used: fmri_roi_extraction -config_file ./testingConfig.json -target_dir ./postprocessedOutput/ -target_suffix “preproc_bold_.nii” -output_dir ./roiextractedOutput -log_output_dir ./roiex_logs -submit -debug
+
+Nothing was created but job was run "successfully"
