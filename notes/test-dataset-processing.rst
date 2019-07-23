@@ -51,3 +51,7 @@ Going to run ROI Extraction now
 CMD used: fmri_roi_extraction -config_file ./testingConfig.json -target_dir ./postprocessedOutput/ -target_suffix “preproc_bold_.nii” -output_dir ./roiextractedOutput -log_output_dir ./roiex_logs -submit -debug
 
 Nothing was created but job was run "successfully"
+
+Note: Cannot use quotes in the target suffix parameter
+
+Correct CMD: fmri_roi_extraction -config_file ./testingConfig.json -target_dir ./postprocessedOutput/ -target_suffix preproc_bold_.nii -output_dir ./roiextractedOutput -log_output_dir ./roiex_logs -submit -debug
