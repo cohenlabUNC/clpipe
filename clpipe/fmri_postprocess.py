@@ -128,9 +128,9 @@ def fmri_postprocess(config_file=None, subjects=None, target_dir=None, target_su
 
 
 def _fmri_postprocess_subject(config, subject, task, tr=None, beta_series = False):
-  if beta_series:
+    if beta_series:
           output_type = 'BetaSeriesOptions'
-  else:
+    else:
           output_type = 'PostProcessingOptions'
     search_string = os.path.abspath(
         os.path.join(config.config[output_type]['TargetDirectory'], "sub-" + subject, "**",
