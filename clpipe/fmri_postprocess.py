@@ -439,10 +439,11 @@ def _build_output_directory_structure(config, filepath, beta_series_toggle = Fal
     target_directory = filepath[filepath.find('sub-'):]
     target_directory = os.path.dirname(target_directory)
     target_directory = os.path.join(config.config[output_type]['OutputDirectory'], target_directory)
+    logging.debug(target_directory)
     os.makedirs(target_directory, exist_ok=True)
     file_name = os.path.basename(filepath)
     sans_ext = os.path.splitext(os.path.splitext(file_name)[0])[0]
-
+    logging.debug(config.config[output_type]['OutputSuffix'])
     file_name = sans_ext + '_' + config.config[output_type]['OutputSuffix']
     logging.debug(file_name)
     return os.path.join(target_directory, file_name)
