@@ -50,7 +50,10 @@ def fmri_postprocess(config_file=None, subjects=None, target_dir=None, target_su
     config.config_updater(config_file)
     config.setup_postproc(target_dir, target_suffix, output_dir, output_suffix, beta_series)
     config.validate_config()
-
+    if beta_series:
+          output_type = 'BetaSeriesOptions'
+        else:
+          output_type = 'PostProcessingOptions'
     if config_file is None:
         config_file = resource_filename(__name__, "data/defaultConfig.json")
 
@@ -61,13 +64,13 @@ def fmri_postprocess(config_file=None, subjects=None, target_dir=None, target_su
             log_output_dir = os.path.abspath(log_output_dir)
             os.makedirs(log_output_dir, exist_ok=True)
     else:
-        log_output_dir = os.path.join(config.config['PostProcessingOptions']['OutputDirectory'], "BatchOutput")
+        log_output_dir = os.path.join(config.config[output_type]['OutputDirectory'], "BatchOutput")
         os.makedirs(log_output_dir, exist_ok=True)
 
     if not subjects:
         subjectstring = "ALL"
-        sublist = [o.replace('sub-', '') for o in os.listdir(config.config['PostProcessingOptions']['TargetDirectory'])
-                   if os.path.isdir(os.path.join(config.config['PostProcessingOptions']['TargetDirectory'], o)) and 'sub-' in o]
+        sublist = [o.replace('sub-', '') for o in os.listdir(config.config[output_type]['TargetDirectory'])
+                   if os.path.isdir(os.path.join(config.config[output_type]['TargetDirectory'], o)) and 'sub-' in o]
     else:
         subjectstring = " , ".join(subjects)
         sublist = subjects
@@ -85,7 +88,7 @@ def fmri_postprocess(config_file=None, subjects=None, target_dir=None, target_su
         beta_series_string = '-beta_series'
 
     if batch:
-        config_string = config.config_json_dump(config.config['PostProcessingOptions']['OutputDirectory'], os.path.basename(config_file))
+        config_string = config.config_json_dump(config.config[output_type]['OutputDirectory'], os.path.basename(config_file))
         batch_manager = BatchManager(config.config['BatchConfig'], log_output_dir)
         batch_manager.update_mem_usage(config.config['PostProcessingOptions']['PostProcessingMemoryUsage'])
         batch_manager.update_time(config.config['PostProcessingOptions']['PostProcessingTimeUsage'])
@@ -93,10 +96,10 @@ def fmri_postprocess(config_file=None, subjects=None, target_dir=None, target_su
         for sub in sublist:
             sub_string_temp = submission_string.format(
                 config=config_string,
-                targetDir=config.config['PostProcessingOptions']['TargetDirectory'],
-                targetSuffix=config.config['PostProcessingOptions']['TargetSuffix'],
-                outputDir=config.config['PostProcessingOptions']['OutputDirectory'],
-                outputSuffix=config.config['PostProcessingOptions']['OutputSuffix'],
+                targetDir=config.config[output_type]['TargetDirectory'],
+                targetSuffix=config.config[output_type]['TargetSuffix'],
+                outputDir=config.config[output_type]['OutputDirectory'],
+                outputSuffix=config.config[output_type]['OutputSuffix'],
                 taskString = task_string,
                 trString = tr_string,
                 logOutputDir=log_output_dir,
@@ -112,7 +115,7 @@ def fmri_postprocess(config_file=None, subjects=None, target_dir=None, target_su
             batch_manager.compilejobstrings()
             batch_manager.submit_jobs()
             config.update_runlog(subjectstring, "PostProcessing")
-            config.config_json_dump(config.config['PostProcessingOptions']['OutputDirectory'], os.path.basename(config_file))
+            config.config_json_dump(config.config[output_type]['OutputDirectory'], os.path.basename(config_file))
         else:
             batch_manager.createsubmissionhead()
             batch_manager.compilejobstrings()
@@ -125,9 +128,13 @@ def fmri_postprocess(config_file=None, subjects=None, target_dir=None, target_su
 
 
 def _fmri_postprocess_subject(config, subject, task, tr=None, beta_series = False):
+  if beta_series:
+          output_type = 'BetaSeriesOptions'
+        else:
+          output_type = 'PostProcessingOptions'
     search_string = os.path.abspath(
-        os.path.join(config.config['PostProcessingOptions']['TargetDirectory'], "sub-" + subject, "**",
-                     "*" + config.config['PostProcessingOptions']['TargetSuffix']))
+        os.path.join(config.config[output_type]['TargetDirectory'], "sub-" + subject, "**",
+                     "*" + config.config[output_type]['TargetSuffix']))
 
     subject_files = glob.glob(search_string, recursive=True)
     logging.info('Finding Image Files')
