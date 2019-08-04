@@ -230,7 +230,7 @@ def _fmri_postprocess_image(config, file, task = None, tr=None, beta_series = Fa
                           delimiter=",")
     else:
         beta_series_options = config.config['BetaSeriesOptions']['TaskSpecificOptions']
-
+        
         avail_tasks = [x['Task'] for x in beta_series_options]
         logging.debug(avail_tasks)
         img_task = _find_image_task(file)
@@ -347,6 +347,8 @@ def _regression_prep(config, confound_filepath, beta_series_toggle = False):
     stream_toggle = 'PostProcessingOptions'
     if beta_series_toggle:
         stream_toggle = 'BetaSeriesOptions'
+        logging.info("Using beta series regression options.")
+        logging.debug(stream_toggle)
     regression_type = json.load(resource_stream(__name__, 'data/RegressionOptions.json'))
     target_label = next((item for item in regression_type['RegressionOptions'] if
                          item["Name"] == config.config[stream_toggle]['NuisanceRegression']), False)
@@ -432,6 +434,7 @@ def _build_output_directory_structure(config, filepath, beta_series_toggle = Fal
     output_type = 'PostProcessingOptions'
     if beta_series_toggle:
         output_type = 'BetaSeriesOptions'
+        logging.debug(output_type)
 
     target_directory = filepath[filepath.find('sub-'):]
     target_directory = os.path.dirname(target_directory)
