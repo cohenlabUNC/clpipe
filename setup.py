@@ -19,7 +19,8 @@ setup(name='clpipe',
                         'sphinx_rtd_theme',
                         'psutil',
                         'parse',
-                        'nilearn'],
+                        'nilearn',
+                        'dcm2bids'],
       entry_points='''
       [console_scripts]
       fmriprep_process=clpipe.fmri_preprocess:fmriprep_process
@@ -31,6 +32,7 @@ setup(name='clpipe',
       get_reports=clpipe.get_reports:get_reports
       grab_config_file=clpipe.grab_config_file:grab_config_file
       fmri_roi_extraction=clpipe.roi_extractor:fmri_roi_extraction
+      convert2bids=clpipe.dcm2bids_wrapper:convert2bids
       ''',
       zip_safe=False
       )
