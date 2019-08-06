@@ -89,8 +89,8 @@ def convert2bids(dicom_dir=None, dicom_dir_format=None, bids_dir = None, conv_co
                 dicom_dir=config.config['DICOMToBIDSOptions']['DICOMDirectory'],
                 subject=i['subject'],
                 session=i['session'],
-                conv_config_file=config.config['DICOMToBIDsOptions']['ConversionConfig'],
-                bids_dir=config.config['DICOMToBIDsOptions']['BIDSDirectory']
+                conv_config_file=config.config['DICOMToBIDSOptions']['ConversionConfig'],
+                bids_dir=config.config['DICOMToBIDSOptions']['BIDSDirectory']
             ))
         batch_manager.addjob(job1)
 
