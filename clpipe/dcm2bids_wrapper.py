@@ -59,9 +59,9 @@ def convert2bids(dicom_dir=None, dicom_dir_format=None, bids_dir = None, conv_co
         raise FileNotFoundError('There are no subjects/sessions found for that format string.')
 
     if session_toggle:
-        conv_string = '''dcm2bids -d {dicom_dir} -o {bids_dir} -p {subject} -s {session} -c {conv_config_file}'''
+        conv_string = '''module add dcm2niix; dcm2bids -d {dicom_dir} -o {bids_dir} -p {subject} -s {session} -c {conv_config_file}'''
     else:
-        conv_string = '''dcm2bids -d {dicom_dir} -o {bids_dir} -p {subject} -c {conv_config_file}'''
+        conv_string = '''module add dcm2niix; dcm2bids -d {dicom_dir} -o {bids_dir} -p {subject} -c {conv_config_file}'''
 
     if overwrite:
         conv_string = conv_string + " --clobber --forceDcm2niix"
@@ -70,13 +70,13 @@ def convert2bids(dicom_dir=None, dicom_dir_format=None, bids_dir = None, conv_co
     batch_manager.createsubmissionhead()
     batch_manager.update_mem_usage(config.config['DICOMToBIDSOptions']['MemUsage'])
     batch_manager.update_time(config.config['DICOMToBIDSOptions']['TimeUsage'])
-
-    for i in sub_sess_list:
+    batch_manager.update_time(config.config['DICOMToBIDSOptions']['CoreUsage'])
+    for ind,i in enumerate(sub_sess_list):
 
         if session_toggle:
              job_id = 'convert_sub-' + i['subject'] + '_ses-' + i['session']
              job1 = Job(job_id, conv_string.format(
-                dicom_dir=config.config['DICOMToBIDSOptions']['DICOMDirectory'],
+                dicom_dir=folders[ind],
                 subject = i['subject'],
                 session =i['session'],
                 conv_config_file = config.config['DICOMToBIDSOptions']['ConversionConfig'],
@@ -85,7 +85,7 @@ def convert2bids(dicom_dir=None, dicom_dir_format=None, bids_dir = None, conv_co
         else:
             job_id = 'convert_sub-' + i['subject']
             job1 = Job(job_id, conv_string.format(
-                dicom_dir=config.config['DICOMToBIDSOptions']['DICOMDirectory'],
+                dicom_dir=folders[ind],
                 subject=i['subject'],
                 session=i['session'],
                 conv_config_file=config.config['DICOMToBIDSOptions']['ConversionConfig'],
