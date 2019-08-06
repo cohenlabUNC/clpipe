@@ -15,7 +15,7 @@ class BatchManager:
         self.submissionlist = []
         if outputDirectory is None:
             outputDirectory = '.'
-        self.outputDir = outputDirectory
+        self.outputDir = os.path.abspath(outputDirectory)
         if not os.path.isdir(outputDirectory):
             os.makedirs(outputDirectory)
 

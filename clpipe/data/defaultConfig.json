@@ -12,10 +12,10 @@
 		"BIDSDirectory": "",
 		"WorkingDirectory": "",
 		"OutputDirectory": "",
-		"FMRIPrepPath": "/proj/hng/singularity_imgs/fmriprep1.2.6.simg",
+		"FMRIPrepPath": "/proj/hng/singularity_imgs/fmriprep_1.3.2.simg",
 		"FreesurferLicensePath": "/proj/hng/singularity_imgs/license.txt",
 		"FMRIPrepMemoryUsage": "20000",
-		"FMRIPrepTimeUsage": "8:0:0"
+		"FMRIPrepTimeUsage": "16:0:0"
 	},
 	"PostProcessingOptions": {
 		"TargetDirectory": "",
@@ -37,7 +37,7 @@
 		"GlobalSignalRegression": false,
 		"FilteringHighPass": 0.008,
 		"FilteringLowPass": 0.1,
-		"FilteringOrder": 12,
+		"FilteringOrder": 2,
 		"OversamplingFreq": 4,
 		"PercentFreqSample": 1,
 		"Scrubbing": true,
