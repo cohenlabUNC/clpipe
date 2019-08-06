@@ -18,7 +18,7 @@ import dcm2bids
 @click.option('-dicom_dir_format', help = 'Format string for how subjects/sessions are organized within the dicom_dir.')
 @click.option('-BIDS_dir', help = 'The dicom info output file name.')
 @click.option('-overwrite', is_flag = True, default = False, help = "Overwrite existing BIDS data?")
-@click.option('-log_dir', default = '', help = 'Where to put the log files. Defaults to Batch_Output in the current working directory.')
+@click.option('-log_dir', help = 'Where to put the log files. Defaults to Batch_Output in the current working directory.')
 @click.option('-submit', is_flag=True, default=False, help = 'Submit jobs to HPC')
 def convert2bids(dicom_dir=None, dicom_dir_format=None, bids_dir = None, conv_config_file = None, config_file = None, overwrite = None, log_dir = None, submit = None):
     config = ConfigParser()
