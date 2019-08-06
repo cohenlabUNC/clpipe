@@ -29,7 +29,7 @@ def convert2bids(dicom_dir=None, dicom_dir_format=None, bids_dir = None, conv_co
                           dicom_dir_format,
                           log_dir)
 
-    if not any([config.config['DICOMToBIDSOptions']['DICOMDirectory'],
+    if not all([config.config['DICOMToBIDSOptions']['DICOMDirectory'],
             config.config['DICOMToBIDSOptions']['BIDSDirectory'],
             config.config['DICOMToBIDSOptions']['ConversionConfig'],
             config.config['DICOMToBIDSOptions']['DICOMFormatString'],
