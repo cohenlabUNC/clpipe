@@ -7,7 +7,7 @@
 		"DICOMFormatString": "",
 		"TimeUsage": "1:0:0",
 		"MemUsage": "5000",
-        "CoreUsage": 2,
+        "CoreUsage": "2",
         "LogDirectory": ""
 	},
 	"FMRIPrepOptions": {
