@@ -82,6 +82,17 @@ class ConfigParser:
         if heuristic_file is not None:
             self.config['DicomToBidsOptions']['HeuristicFile'] = os.path.abspath(heuristic_file)
 
+    def setup_dcm2bids(self, dicom_directory, heuristic_file, output_directory, dicom_format_string):
+        if dicom_directory is not None:
+            self.config['DicomToBidsOptions']['DICOMDirectory'] = os.path.abspath(dicom_directory)
+        if output_directory is not None:
+            self.config['DicomToBidsOptions']['BIDSDirectory'] = os.path.abspath(output_directory)
+            os.makedirs(self.config['DicomToBidsOptions']['OutputDirectory'], exist_ok=True)
+        if heuristic_file is not None:
+            self.config['DicomToBidsOptions']['ConversionConfig'] = os.path.abspath(heuristic_file)
+        if dicom_format_string is not None:
+            self.config['DicomToBidsOptions']['DicomFormatString'] = dicom_format_string
+
     def setup_roiextract(self, target_dir, target_suffix, output_dir):
         if target_dir is not None:
             self.config['ROIExtractionOptions']['TargetDirectory'] = os.path.abspath(target_dir)
