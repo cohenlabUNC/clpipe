@@ -77,7 +77,7 @@ def convert2bids(dicom_dir=None, dicom_dir_format=None, bids_dir = None, conv_co
         if session_toggle:
              job_id = 'convert_sub-' + i['subject'] + '_ses-' + i['session']
              job1 = Job(job_id, conv_string.format(
-                dicomdirectory=config.config['DicomToBidsOptions']['DICOMDirectory'],
+                dicom_dir=config.config['DICOMToBIDsOptions']['DICOMDirectory'],
                 subject = i['subject'],
                 session =i['session'],
                 conv_config_file = config.config['DICOMToBIDsOptions']['ConversionConfig'],
@@ -86,7 +86,7 @@ def convert2bids(dicom_dir=None, dicom_dir_format=None, bids_dir = None, conv_co
         else:
             job_id = 'convert_sub-' + i['subject']
             job1 = Job(job_id, conv_string.format(
-                dicomdirectory=config.config['DicomToBidsOptions']['DICOMDirectory'],
+                dicom_dir=config.config['DICOMToBIDsOptions']['DICOMDirectory'],
                 subject=i['subject'],
                 session=i['session'],
                 conv_config_file=config.config['DICOMToBIDsOptions']['ConversionConfig'],
