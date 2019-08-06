@@ -70,7 +70,7 @@ def convert2bids(dicom_dir=None, dicom_dir_format=None, bids_dir = None, conv_co
     batch_manager.createsubmissionhead()
     batch_manager.update_mem_usage(config.config['DICOMToBIDSOptions']['MemUsage'])
     batch_manager.update_time(config.config['DICOMToBIDSOptions']['TimeUsage'])
-    batch_manager.update_time(config.config['DICOMToBIDSOptions']['CoreUsage'])
+    batch_manager.update_nthreads(config.config['DICOMToBIDSOptions']['CoreUsage'])
     for ind,i in enumerate(sub_sess_list):
 
         if session_toggle:
