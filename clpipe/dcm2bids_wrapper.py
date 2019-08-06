@@ -28,10 +28,10 @@ def convert2bids(dicom_dir=None, dicom_dir_format=None, bids_dir = None, conv_co
                           bids_dir,
                           dicom_dir_format)
 
-    if not any([config.config['DICOMToBIDsOptions']['DICOMDirectory'],
-            config.config['DICOMToBIDsOptions']['BIDSDirectory'],
-            config.config['DICOMToBIDsOptions']['ConversionConfig'],
-            config.config['DICOMToBIDsOptions']['DICOMFormatString']]):
+    if not any([config.config['DICOMToBIDSOptions']['DICOMDirectory'],
+            config.config['DICOMToBIDSOptions']['BIDSDirectory'],
+            config.config['DICOMToBIDSOptions']['ConversionConfig'],
+            config.config['DICOMToBIDSOptions']['DICOMFormatString']]):
         raise ValueError('DICOM directory, BIDS directory, ConversionConfig, and/or format string are not specified.')
 
     if not log_output_dir:
@@ -69,28 +69,28 @@ def convert2bids(dicom_dir=None, dicom_dir_format=None, bids_dir = None, conv_co
 
     batch_manager = BatchManager(config.config['BatchConfig'], log_output_dir)
     batch_manager.createsubmissionhead()
-    batch_manager.update_mem_usage(config.config['DICOMToBIDsOptions']['MemUsage'])
-    batch_manager.update_time(config.config['DICOMToBIDsOptions']['TimeUsage'])
+    batch_manager.update_mem_usage(config.config['DICOMToBIDSOptions']['MemUsage'])
+    batch_manager.update_time(config.config['DICOMToBIDSOptions']['TimeUsage'])
 
     for i in sub_sess_list:
 
         if session_toggle:
              job_id = 'convert_sub-' + i['subject'] + '_ses-' + i['session']
              job1 = Job(job_id, conv_string.format(
-                dicom_dir=config.config['DICOMToBIDsOptions']['DICOMDirectory'],
+                dicom_dir=config.config['DICOMToBIDSOptions']['DICOMDirectory'],
                 subject = i['subject'],
                 session =i['session'],
-                conv_config_file = config.config['DICOMToBIDsOptions']['ConversionConfig'],
-                bids_dir = config.config['DICOMToBIDsOptions']['BIDsDirectory']
+                conv_config_file = config.config['DICOMToBIDSOptions']['ConversionConfig'],
+                bids_dir = config.config['DICOMToBIDSOptions']['BIDSDirectory']
             ))
         else:
             job_id = 'convert_sub-' + i['subject']
             job1 = Job(job_id, conv_string.format(
-                dicom_dir=config.config['DICOMToBIDsOptions']['DICOMDirectory'],
+                dicom_dir=config.config['DICOMToBIDSOptions']['DICOMDirectory'],
                 subject=i['subject'],
                 session=i['session'],
                 conv_config_file=config.config['DICOMToBIDsOptions']['ConversionConfig'],
-                bids_dir=config.config['DICOMToBIDsOptions']['BIDsDirectory']
+                bids_dir=config.config['DICOMToBIDsOptions']['BIDSDirectory']
             ))
         batch_manager.addjob(job1)
 

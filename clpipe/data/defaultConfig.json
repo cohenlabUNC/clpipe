@@ -1,6 +1,6 @@
 {
 	"ConfigTitle": "Default Configuration File",
-	"DICOMToBIDsOptions": {
+	"DICOMToBIDSOptions": {
 		"DICOMDirectory": "",
 		"BIDSDirectory": "",
 		"ConversionConfig": "",
