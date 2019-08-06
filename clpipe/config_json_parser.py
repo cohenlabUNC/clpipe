@@ -93,7 +93,7 @@ class ConfigParser:
         if dicom_format_string is not None:
             self.config['DICOMToBIDSOptions']['DICOMFormatString'] = dicom_format_string
         if  log_output_dir is not None:
-            self.config['DICOMToBIDSOptions']['LogDirectory'] = log_output_dir
+            self.config['DICOMToBIDSOptions']['LogDirectory'] = os.path.abspath(log_output_dir)
             os.makedirs(self.config['DICOMToBIDSOptions']['LogDirectory'], exist_ok=True)
 
     def setup_roiextract(self, target_dir, target_suffix, output_dir):
