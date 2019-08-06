@@ -6,7 +6,8 @@
 		"ConversionConfig": "",
 		"DICOMFormatString": "",
 		"TimeUsage": "1:0:0",
-		"MemUsage": "5000"
+		"MemUsage": "5000",
+        "LogDirectory": ""
 	},
 	"FMRIPrepOptions": {
 		"BIDSDirectory": "",
@@ -15,7 +16,8 @@
 		"FMRIPrepPath": "/proj/hng/singularity_imgs/fmriprep_1.3.2.simg",
 		"FreesurferLicensePath": "/proj/hng/singularity_imgs/license.txt",
 		"FMRIPrepMemoryUsage": "20000",
-		"FMRIPrepTimeUsage": "16:0:0"
+		"FMRIPrepTimeUsage": "16:0:0",
+        "LogDirectory": ""
 	},
 	"PostProcessingOptions": {
 		"TargetDirectory": "",
@@ -50,7 +52,8 @@
 		"PostProcessingTimeUsage": "8:0:0",
 		"NThreads": "1",
 		"SpectralInterpolationBinSize": 5000,
-		"BIDSValidatorImage": "/proj/hng/singularity_imgs/validator.simg"
+		"BIDSValidatorImage": "/proj/hng/singularity_imgs/validator.simg",
+        "LogDirectory": ""
 	},
 	"BetaSeriesOptions": {
 		"TargetDirectory": "",
@@ -72,7 +75,9 @@
 				"ExcludeColumnInfo": "trial_type",
 				"ExcludeTrialTypes": ["block"]
 			}
-		]},
+		],
+      "LogDirectory": ""
+    },
 	"ROIExtractionOptions": {
 		"TargetDirectory": "",
 		"TargetSuffix": "",
@@ -80,7 +85,8 @@
 		"Atlases": ["power"],
         "MemoryUsage":"3000",
         "TimeUsage": "2:0:0",
-        "NThreads": "1"
+        "NThreads": "1",
+        "LogDirectory": ""
 	},
 	"RunLog": [],
 	"BatchConfig": "slurmUNCConfig.json"

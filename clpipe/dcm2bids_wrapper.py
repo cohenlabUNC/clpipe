@@ -18,26 +18,25 @@ import dcm2bids
 @click.option('-dicom_dir_format', help = 'Format string for how subjects/sessions are organized within the dicom_dir.')
 @click.option('-BIDS_dir', help = 'The dicom info output file name.')
 @click.option('-overwrite', is_flag = True, default = False, help = "Overwrite existing BIDS data?")
-@click.option('-log_output_dir', default = '', help = 'Where to put the log files. Defaults to Batch_Output in the current working directory.')
+@click.option('-log_dir', default = '', help = 'Where to put the log files. Defaults to Batch_Output in the current working directory.')
 @click.option('-submit', is_flag=True, default=False, help = 'Submit jobs to HPC')
-def convert2bids(dicom_dir=None, dicom_dir_format=None, bids_dir = None, conv_config_file = None, config_file = None, overwrite = None, log_output_dir = None, submit = None):
+def convert2bids(dicom_dir=None, dicom_dir_format=None, bids_dir = None, conv_config_file = None, config_file = None, overwrite = None, log_dir = None, submit = None):
     config = ConfigParser()
     config.config_updater(config_file)
     config.setup_dcm2bids(dicom_dir,
                           conv_config_file,
                           bids_dir,
-                          dicom_dir_format)
+                          dicom_dir_format,
+                          log_dir)
 
     if not any([config.config['DICOMToBIDSOptions']['DICOMDirectory'],
             config.config['DICOMToBIDSOptions']['BIDSDirectory'],
             config.config['DICOMToBIDSOptions']['ConversionConfig'],
-            config.config['DICOMToBIDSOptions']['DICOMFormatString']]):
-        raise ValueError('DICOM directory, BIDS directory, ConversionConfig, and/or format string are not specified.')
+            config.config['DICOMToBIDSOptions']['DICOMFormatString'],
+            config.config['DICOMToBIDSOptions']['LogDirectory']]):
+        raise ValueError('DICOM directory, BIDS directory, conversion config, log directory and/or format string are not specified.')
 
-    if not log_output_dir:
-        log_output_dir = os.path.abspath(os.path.join('.', 'Batch_Output'))
-    else:
-        log_output_dir = os.path.abspath(log_output_dir)
+
 
     dicom_dir = config.config['DICOMToBIDSOptions']['DICOMDirectory']
     dicom_dir_format = config.config['DICOMToBIDSOptions']['DICOMFormatString']
@@ -67,7 +66,7 @@ def convert2bids(dicom_dir=None, dicom_dir_format=None, bids_dir = None, conv_co
     if overwrite:
         conv_string = conv_string + " --clobber --forceDcm2niix"
 
-    batch_manager = BatchManager(config.config['BatchConfig'], log_output_dir)
+    batch_manager = BatchManager(config.config['BatchConfig'], config.config['DICOMToBIDSOptions']['LogDirectory'])
     batch_manager.createsubmissionhead()
     batch_manager.update_mem_usage(config.config['DICOMToBIDSOptions']['MemUsage'])
     batch_manager.update_time(config.config['DICOMToBIDSOptions']['TimeUsage'])
@@ -97,6 +96,6 @@ def convert2bids(dicom_dir=None, dicom_dir_format=None, bids_dir = None, conv_co
     batch_manager.compilejobstrings()
     if submit:
         batch_manager.submit_jobs()
-        config.config_json_dump(os.path.abspath(config_file), config_file)
+        config.config_json_dump(os.path.dirname(os.path.abspath(config_file)), config_file)
     else:
         batch_manager.print_jobs()
