@@ -39,8 +39,8 @@ def convert2bids(dicom_dir=None, dicom_dir_format=None, bids_dir = None, conv_co
     else:
         log_output_dir = os.path.abspath(log_output_dir)
 
-    dicom_dir = config.config['DICOMToBIDsOptions']['DICOMDirectory']
-    dicom_dir_format = config.config['DICOMToBIDsOptions']['DICOMFormatString']
+    dicom_dir = config.config['DICOMToBIDSOptions']['DICOMDirectory']
+    dicom_dir_format = config.config['DICOMToBIDSOptions']['DICOMFormatString']
 
 
     formatStr = dicom_dir_format.replace("{subject}", "*")
