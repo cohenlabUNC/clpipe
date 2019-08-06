@@ -23,9 +23,10 @@ import dcm2bids
 def convert2bids(dicom_dir=None, dicom_dir_format=None, bids_dir = None, conv_config_file = None, config_file = None, overwrite = None, log_output_dir = None, submit = None):
     config = ConfigParser()
     config.config_updater(config_file)
-    config.setup_dcm2bids(os.path.abspath(dicom_dir),
-                           os.path.abspath(conv_config_file),
-                           os.path.abspath(bids_dir))
+    config.setup_dcm2bids(dicom_dir,
+                          conv_config_file,
+                          bids_dir,
+                          dicom_dir_format)
 
     if not any([config.config['DICOMToBIDsOptions']['DICOMDirectory'],
             config.config['DICOMToBIDsOptions']['BIDSDirectory'],
