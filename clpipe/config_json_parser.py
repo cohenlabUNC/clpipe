@@ -67,7 +67,7 @@ class ConfigParser:
                                            'data_ROI_ts', 'postproc_default'),
                               )
         processing_streams = self.get_processing_stream_names()
-
+        print(processing_streams)
         if processing_streams:
             for stream in processing_streams:
                 self.update_processing_stream(stream,
