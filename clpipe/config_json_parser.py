@@ -93,8 +93,6 @@ class ConfigParser:
 
         if target_dir is not None:
             self.config[target_output]['TargetDirectory'] = os.path.abspath(target_dir)
-            if not os.path.isdir(self.config[target_output]['TargetDirectory']):
-                raise ValueError('Target Directory does not exist')
         if output_dir is not None:
             self.config[target_output]['OutputDirectory'] = os.path.abspath(output_dir)
             os.makedirs(self.config[target_output]['OutputDirectory'], exist_ok=True)
