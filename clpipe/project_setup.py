@@ -23,6 +23,8 @@ def project_setup(project_title = None, project_dir = None, source_data = None, 
     config = ConfigParser()
     if move_source_data or symlink_source_data:
         source_data = os.path.join(os.path.abspath(project_dir), 'data_DICOMs')
+    if symlink_source_data:
+        os.symlink(os.path.abspath(source_data), os.path.join(os.path.abspath(project_dir), 'data_DICOMs'), target_is_directory=True)
     config.setup_project(project_title, project_dir, source_data)
     bids_dir = config.config['DICOMToBIDSOptions']['BIDSDirectory']
     os.system('dcm2bids_scaffold -o'+bids_dir)
