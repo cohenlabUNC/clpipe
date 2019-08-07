@@ -17,13 +17,11 @@ from .error_handler import exception_handler
               help='Where to generate the working directory. If a configuration file is provided with a working directory, this argument is not necessary.')
 @click.option('-output_dir', type=click.Path(dir_okay=True, file_okay=False),
               help='Where to put the preprocessed data. If a configuration file is provided with a output directory, this argument is not necessary.')
-@click.option('-log_output_dir', type=click.Path(dir_okay=True, file_okay=False),
-              help='Where to put HPC output files (such as SLURM output files). If not specified, defaults to <outputDir>/batchOutput.')
+@click.option('-log_dir', type=click.Path(dir_okay=True, file_okay=False),
+              help='Where to put HPC output files (such as SLURM output files)')
 @click.option('-submit', is_flag=True, default=False, help='Flag to submit commands to the HPC')
 @click.option('-debug', is_flag=True, help='Flag to enable detailed error messages and traceback')
-def fmriprep_process(bids_dir=None, working_dir=None, output_dir=None, config_file=None, subjects=None,
-                     log_output_dir=None,
-                     submit=False, debug=False):
+def fmriprep_process(bids_dir=None, working_dir=None, output_dir=None, config_file=None, subjects=None,log_dir=None,submit=False, debug=False):
     """This command runs a BIDS formatted dataset through fMRIprep. Specify subject IDs to run specific subjects. If left blank, runs all subjects."""
 
     if not debug:
@@ -34,21 +32,13 @@ def fmriprep_process(bids_dir=None, working_dir=None, output_dir=None, config_fi
 
     config = ConfigParser()
     config.config_updater(config_file)
-    config.setup_fmriprep_directories(bids_dir, working_dir, output_dir)
+    config.setup_fmriprep_directories(bids_dir, working_dir, output_dir, log_dir)
     config.validate_config()
-    if not all([config.config['FMRIPrepOptions']['BIDSDirectory'], config.config['FMRIPrepOptions']['OutputDirectory'],
-                config.config['FMRIPrepOptions']['WorkingDirectory']]):
+    if not any([config.config['FMRIPrepOptions']['BIDSDirectory'], config.config['FMRIPrepOptions']['OutputDirectory'],
+                config.config['FMRIPrepOptions']['WorkingDirectory'],
+                config.config['FMRIPrepOptions']['LogDirectory']]):
         raise ValueError(
             'Please make sure the BIDS, working and output directories are specified in either the configfile or in the command. At least one is not specified.')
-    if log_output_dir is not None:
-        if os.path.isdir(log_output_dir):
-            log_output_dir = os.path.abspath(log_output_dir)
-        else:
-            log_output_dir = os.path.abspath(log_output_dir)
-            os.makedirs(log_output_dir, exist_ok=True)
-    else:
-        log_output_dir = os.path.join(config.config['FMRIPrepOptions']['OutputDirectory'], "batchOutput")
-        os.makedirs(log_output_dir, exist_ok=True)
 
     singularity_string = '''unset PYTHONPATH; singularity run -B {bindPaths} -e --no-home {fmriprepInstance} {bidsDir} {outputDir} participant ''' \
                          '''--participant-label {participantLabels} -w {workingdir} --fs-license-file {fslicense} --nthreads {threads}'''
@@ -61,7 +51,7 @@ def fmriprep_process(bids_dir=None, working_dir=None, output_dir=None, config_fi
         subjectstring = " , ".join(subjects)
         sublist = subjects
 
-    batch_manager = BatchManager(config.config['BatchConfig'], log_output_dir)
+    batch_manager = BatchManager(config.config['BatchConfig'], config.config['FMRIPrepOptions']['LogDirectory'])
     batch_manager.update_mem_usage(config.config['FMRIPrepOptions']['FMRIPrepMemoryUsage'])
     batch_manager.update_time(config.config['FMRIPrepOptions']['FMRIPrepTimeUsage'])
     for sub in sublist:

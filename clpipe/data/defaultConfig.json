@@ -67,10 +67,10 @@
 		"NuisanceRegression": "QuadLagged",
 		"WhiteMatter": true,
 		"CSF": true,
-		"GlobalSignalRegression": false,
+		"GlobalSignalRegression": true,
 		"FilteringHighPass": 0.008,
-		"FilteringLowPass": 0.1,
-		"FilteringOrder": 12,
+		"FilteringLowPass": -1,
+		"FilteringOrder": 2,
 		"TaskSpecificOptions": [
 			{
 				"Task": "",
@@ -80,6 +80,33 @@
 		],
       "LogDirectory": ""
     },
+	"ProcessingStreams": [
+		{
+			"ProcessingStream": "noGSR",
+			"PostProcessingOptions": {
+				"GlobalSignalRegression": false,
+				"OutputDirectory": "",
+				"OutputSuffix": ""
+			},
+			"BetaSeriesOptions": {
+				"GlobalSignalRegression": false,
+				"OutputDirectory": "",
+				"OutputSuffix": ""
+			}
+		},
+		{
+			"ProcessingStream": "noScrub",
+			"PostProcessingOptions": {
+				"Scrubbing": false,
+				"OutputDirectory": "",
+				"OutputSuffix": ""
+			},
+			"BetaSeriesOptions":{
+
+			}
+		}
+
+	],
 	"ROIExtractionOptions": {
 		"TargetDirectory": "",
 		"TargetSuffix": "",
