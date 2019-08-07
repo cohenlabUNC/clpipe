@@ -25,7 +25,7 @@ def project_setup(project_title = None, project_dir = None, source_data = None, 
         source_data = os.path.join(os.path.abspath(project_dir), 'data_DICOMs')
     config.setup_project(project_title, project_dir, source_data)
     bids_dir = config.config['DICOMToBIDSOptions']['DICOMDirectory']
-    os.system('dcm2bids_scaffold '+bids_dir)
+    os.system('dcm2bids_scaffold -o'+bids_dir)
     config.config_json_dump(config.config['ProjectDirectory'], 'clpipe_config.json')
 
     with resource_stream(__name__, 'data/defaultConvConfig.json') as def_conv_config:
