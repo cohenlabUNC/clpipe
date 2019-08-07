@@ -48,6 +48,7 @@ class ConfigParser:
         self.config['ConfigTitle'] = project_title
         self.config['ProjectDirectory'] = os.path.abspath(project_dir),
         print(os.path.abspath(source_data))
+        print(self.config['ProjectDirectory'])
         print(os.path.join(self.config['ProjectDirectory'], 'conversion_config.json'))
         print(os.path.join(self.config['ProjectDirectory'], 'data_BIDS'))
         self.setup_dcm2bids(os.path.abspath(source_data),
