@@ -24,8 +24,7 @@ def project_setup(project_title = None, project_dir = None, source_data = None, 
     if move_source_data or symlink_source_data:
         source_data = os.path.join(os.path.abspath(project_dir), 'data_DICOMs')
     config.setup_project(project_title, project_dir, source_data)
-    bids_dir = config.config['DICOMToBIDSOptions']['DICOMDirectory']
-    print(bids_dir)
+    bids_dir = config.config['DICOMToBIDSOptions']['BIDSDirectory']
     os.system('dcm2bids_scaffold -o'+bids_dir)
     config.config_json_dump(config.config['ProjectDirectory'], 'clpipe_config.json')
 
