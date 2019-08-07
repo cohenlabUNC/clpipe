@@ -47,7 +47,7 @@ class ConfigParser:
     def setup_project(self, project_title, project_dir, source_data):
         self.config['ConfigTitle'] = project_title
         self.config['ProjectDirectory'] = os.path.abspath(project_dir),
-        print(os.path.abspath(source_data))
+        print(os.path.abspath(project_dir))
         print(self.config['ProjectDirectory'])
         print(os.path.join(self.config['ProjectDirectory'], 'conversion_config.json'))
         print(os.path.join(self.config['ProjectDirectory'], 'data_BIDS'))
