@@ -30,7 +30,7 @@ def project_setup(project_title = None, project_dir = None, source_data = None, 
 
     with resource_stream(__name__, 'data/defaultConvConfig.json') as def_conv_config:
         conv_config = json.load(def_conv_config)
-
-    with open(config.config['DICOMToBIDSOptions']['ConversionConfig']) as fp:
+        
+    with open(config.config['DICOMToBIDSOptions']['ConversionConfig'], 'w') as fp:
         json.dump(conv_config, fp, indent = '\t')
 
