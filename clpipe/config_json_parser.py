@@ -122,7 +122,7 @@ class ConfigParser:
             self.config['DICOMToBIDSOptions']['DICOMDirectory'] = os.path.abspath(dicom_directory)
         if output_directory is not None:
             self.config['DICOMToBIDSOptions']['BIDSDirectory'] = os.path.abspath(output_directory)
-            os.makedirs(self.config['DICOMToBIDsOptions']['BIDSDirectory'], exist_ok=True)
+            os.makedirs(self.config['DICOMToBIDSOptions']['BIDSDirectory'], exist_ok=True)
         if heuristic_file is not None:
             self.config['DICOMToBIDSOptions']['ConversionConfig'] = os.path.abspath(heuristic_file)
         if dicom_format_string is not None:
