@@ -68,7 +68,7 @@ class ConfigParser:
                               )
         processing_streams = self.get_processing_stream_names()
 
-        if not processing_streams:
+        if processing_streams:
             for stream in processing_streams:
                 self.update_processing_stream(stream,
                                               output_dir= os.path.join(self.config['ProjectDirectory'], 'data_postproc', 'postproc_'+stream),
