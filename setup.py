@@ -33,6 +33,7 @@ setup(name='clpipe',
       grab_config_file=clpipe.grab_config_file:grab_config_file
       fmri_roi_extraction=clpipe.roi_extractor:fmri_roi_extraction
       convert2bids=clpipe.dcm2bids_wrapper:convert2bids
+      project_setup=clpipe.project_setup:project_setup
       ''',
       zip_safe=False
       )
