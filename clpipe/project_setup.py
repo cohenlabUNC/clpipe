@@ -34,3 +34,6 @@ def project_setup(project_title = None, project_dir = None, source_data = None, 
     with open(config.config['DICOMToBIDSOptions']['ConversionConfig'], 'w') as fp:
         json.dump(conv_config, fp, indent = '\t')
 
+    os.makedirs(os.path.join(config.config['ProjectDirectory'], 'analyses'), exist_ok=True)
+    os.makedirs(os.path.join(config.config['ProjectDirectory'], 'scripts'), exist_ok=True)
+
