@@ -1,5 +1,5 @@
 {
-	"ConfigTitle": "Default Configuration File",
+	"ProjectTitle": "Default Configuration File",
 	"ProjectDirectory": "",
 	"DICOMToBIDSOptions": {
 		"DICOMDirectory": "",

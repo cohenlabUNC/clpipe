@@ -45,7 +45,7 @@ class ConfigParser:
         validate(self.config, self.configSchema)
 
     def setup_project(self, project_title, project_dir, source_data):
-        self.config['ConfigTitle'] = project_title
+        self.config['ProjectTitle'] = project_title
         self.config['ProjectDirectory'] = os.path.abspath(project_dir)
         self.setup_dcm2bids(os.path.abspath(source_data),
                             os.path.join(self.config['ProjectDirectory'], 'conversion_config.json'),
