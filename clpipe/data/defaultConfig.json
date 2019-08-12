@@ -1,5 +1,6 @@
 {
-	"ConfigTitle": "Default Configuration File",
+	"ProjectTitle": "A Neuroimaging Project",
+	"Authors/Contributors": "",
 	"ProjectDirectory": "",
 	"DICOMToBIDSOptions": {
 		"DICOMDirectory": "",
@@ -49,7 +50,6 @@
 		"ScrubAhead": 2,
 		"ScrubBehind": 2,
 		"ScrubContig": 4,
-		"SpatialSmoothing": "SUSAN",
 		"PostProcessingMemoryUsage": "20000",
 		"PostProcessingTimeUsage": "8:0:0",
 		"NThreads": "1",
@@ -69,8 +69,8 @@
 		"CSF": true,
 		"GlobalSignalRegression": false,
 		"FilteringHighPass": 0.008,
-		"FilteringLowPass": 0.1,
-		"FilteringOrder": 12,
+		"FilteringLowPass": -1,
+		"FilteringOrder": 2,
 		"TaskSpecificOptions": [
 			{
 				"Task": "",

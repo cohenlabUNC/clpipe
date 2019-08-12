@@ -12,6 +12,7 @@ import dcm2bids
 
 
 @click.command()
+
 @click.option('-config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True), default = None, help = 'The configuration file for the study, use if you have a custom batch configuration.')
 @click.option('-conv_config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True), default = None, help = 'The configuration file for the study, use if you have a custom batch configuration.')
 @click.option('-dicom_dir', help = 'The folder where subject dicoms are located.')
@@ -19,8 +20,10 @@ import dcm2bids
 @click.option('-BIDS_dir', help = 'The dicom info output file name.')
 @click.option('-overwrite', is_flag = True, default = False, help = "Overwrite existing BIDS data?")
 @click.option('-log_dir', help = 'Where to put the log files. Defaults to Batch_Output in the current working directory.')
+@click.option('-subject', required = False, help = 'A subject  to convert using the supplied configuration file.  Use to convert single subjects, else leave empty')
+@click.option('-session', required = False, help = 'A session  to convert using the supplied configuration file.  Use in combination with -subject to convert single subject/sessions, else leave empty')
 @click.option('-submit', is_flag=True, default=False, help = 'Submit jobs to HPC')
-def convert2bids(dicom_dir=None, dicom_dir_format=None, bids_dir = None, conv_config_file = None, config_file = None, overwrite = None, log_dir = None, submit = None):
+def convert2bids(dicom_dir=None, dicom_dir_format=None, bids_dir = None, conv_config_file = None, config_file = None, overwrite = None, log_dir = None, subject =None, session = None, submit = None):
     config = ConfigParser()
     config.config_updater(config_file)
     config.setup_dcm2bids(dicom_dir,
@@ -52,7 +55,11 @@ def convert2bids(dicom_dir=None, dicom_dir_format=None, bids_dir = None, conv_co
     folders = glob.glob(os.path.join(dicom_dir, formatStr+'/'))
     sub_sess_list = [parse.parse(pstring, x) for x in folders]
 
+    if subject is not None:
+        sub_sess_list = [x for x in sub_sess_list if x['subject'] == subject]
 
+    if session is not None:
+        sub_sess_list = [x for x in sub_sess_list if x['session'] == session]
 
     if len(sub_sess_list) == 0:
         sys.excepthook = exception_handler
