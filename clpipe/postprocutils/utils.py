@@ -76,3 +76,4 @@ def regress(pred, target):
     predVal = numpy.matmul(pred, beta)
     toReturn = target - predVal
     return toReturn
+
