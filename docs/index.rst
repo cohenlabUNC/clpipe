@@ -16,8 +16,9 @@ clpipe was developed to streamline the processing of MRI data using the high per
    :caption: Contents:
 
    install
+   project_setup
    configfiles
-   heudiconv
+   dicom2bids
    bidsvalidation
    fmriprep
    postprocessing

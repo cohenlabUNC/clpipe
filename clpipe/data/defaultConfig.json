@@ -1,11 +1,20 @@
 {
-	"ConfigTitle": "Default Configuration File",
-	"DicomToBidsOptions": {
+<<<<<<< HEAD
+	"ProjectTitle": "A Neuroimaging Project",
+	"Authors/Contributors": "",
+=======
+	"ProjectTitle": "Default Configuration File",
+>>>>>>> ef7306e9dbb466273f5a53ede40b0f0a8fc32909
+	"ProjectDirectory": "",
+	"DICOMToBIDSOptions": {
 		"DICOMDirectory": "",
-		"OutputDirectory": "",
-		"HeuristicFile": "",
-		"TimeUsage": "4:0:0",
-		"MemoryUsage": "5000"
+		"BIDSDirectory": "",
+		"ConversionConfig": "",
+		"DICOMFormatString": "",
+		"TimeUsage": "1:0:0",
+		"MemUsage": "5000",
+        "CoreUsage": "2",
+        "LogDirectory": ""
 	},
 	"FMRIPrepOptions": {
 		"BIDSDirectory": "",
@@ -14,7 +23,8 @@
 		"FMRIPrepPath": "/proj/hng/singularity_imgs/fmriprep_1.3.2.simg",
 		"FreesurferLicensePath": "/proj/hng/singularity_imgs/license.txt",
 		"FMRIPrepMemoryUsage": "20000",
-		"FMRIPrepTimeUsage": "16:0:0"
+		"FMRIPrepTimeUsage": "16:0:0",
+        "LogDirectory": ""
 	},
 	"PostProcessingOptions": {
 		"TargetDirectory": "",
@@ -33,9 +43,9 @@
 		"NuisanceRegression": "QuadLagged",
 		"WhiteMatter": true,
 		"CSF": true,
-		"GlobalSignalRegression": false,
+		"GlobalSignalRegression": true,
 		"FilteringHighPass": 0.008,
-		"FilteringLowPass": 0.1,
+		"FilteringLowPass": -1,
 		"FilteringOrder": 2,
 		"OversamplingFreq": 4,
 		"PercentFreqSample": 1,
@@ -44,12 +54,12 @@
 		"ScrubAhead": 2,
 		"ScrubBehind": 2,
 		"ScrubContig": 4,
-		"SpatialSmoothing": "SUSAN",
 		"PostProcessingMemoryUsage": "20000",
 		"PostProcessingTimeUsage": "8:0:0",
 		"NThreads": "1",
 		"SpectralInterpolationBinSize": 5000,
-		"BIDSValidatorImage": "/proj/hng/singularity_imgs/validator.simg"
+		"BIDSValidatorImage": "/proj/hng/singularity_imgs/validator.simg",
+        "LogDirectory": ""
 	},
 	"BetaSeriesOptions": {
 		"TargetDirectory": "",
@@ -61,17 +71,46 @@
 		"NuisanceRegression": "QuadLagged",
 		"WhiteMatter": true,
 		"CSF": true,
-		"GlobalSignalRegression": false,
+		"GlobalSignalRegression": true,
 		"FilteringHighPass": 0.008,
-		"FilteringLowPass": 0.1,
-		"FilteringOrder": 12,
+		"FilteringLowPass": -1,
+		"FilteringOrder": 2,
 		"TaskSpecificOptions": [
 			{
 				"Task": "",
 				"ExcludeColumnInfo": "trial_type",
 				"ExcludeTrialTypes": ["block"]
 			}
-		]},
+		],
+      "LogDirectory": ""
+    },
+	"ProcessingStreams": [
+		{
+			"ProcessingStream": "noGSR",
+			"PostProcessingOptions": {
+				"GlobalSignalRegression": false,
+				"OutputDirectory": "",
+				"OutputSuffix": ""
+			},
+			"BetaSeriesOptions": {
+				"GlobalSignalRegression": false,
+				"OutputDirectory": "",
+				"OutputSuffix": ""
+			}
+		},
+		{
+			"ProcessingStream": "noScrub",
+			"PostProcessingOptions": {
+				"Scrubbing": false,
+				"OutputDirectory": "",
+				"OutputSuffix": ""
+			},
+			"BetaSeriesOptions":{
+
+			}
+		}
+
+	],
 	"ROIExtractionOptions": {
 		"TargetDirectory": "",
 		"TargetSuffix": "",
@@ -79,7 +118,8 @@
 		"Atlases": ["power"],
         "MemoryUsage":"3000",
         "TimeUsage": "2:0:0",
-        "NThreads": "1"
+        "NThreads": "1",
+        "LogDirectory": ""
 	},
 	"RunLog": [],
 	"BatchConfig": "slurmUNCConfig.json"

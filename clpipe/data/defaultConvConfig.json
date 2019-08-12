@@ -1,0 +1,13 @@
+{
+    "descriptions": [
+        {
+            "dataType": "func",
+            "modalityLabel": "bold",
+            "customLabels": "task-srt",
+            "criteria": {
+				"SeriesDescription":"*_srt",
+                "ImageType": ["ORIG*", "PRIMARY", "M", "ND", "MOSAIC"]
+            }
+        }
+    ]
+}

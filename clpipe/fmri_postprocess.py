@@ -28,14 +28,15 @@ import nipy.modalities.fmri.hrf
 @click.option('-output_suffix', help = 'What suffix to append to the postprocessed files. If a configuration file is provided with a output suffix, this argument is not necessary.')
 @click.option('-task', help = 'Which task to postprocess. If left blank, defaults to all tasks.')
 @click.option('-TR', help = 'The TR of the scans. If a config file is not provided, this option is required. If a config file is provided, this information is found from the sidecar jsons.')
-@click.option('-log_output_dir', type=click.Path(dir_okay=True, file_okay=False), help = 'Where to put HPC output files. If not specified, defaults to <outputDir>/batchOutput.')
+@click.option('-processing_stream', help = 'Optional processing stream selector.')
+@click.option('-log_dir', type=click.Path(dir_okay=True, file_okay=False), help = 'Where to put HPC output files. If not specified, defaults to <outputDir>/batchOutput.')
 @click.option('-beta_series', is_flag = True, default = False, help = "Flag to activate beta-series correlation correlation. ADVANCED METHOD, refer to the documentation.")
 @click.option('-submit', is_flag = True, default=False, help = 'Flag to submit commands to the HPC.')
 @click.option('-batch/-single', default=True, help = 'Submit to batch, or run in current session. Mainly used internally.')
 @click.option('-debug', is_flag = True, default=False, help = 'Print detailed processing information and traceback for errors.')
 def fmri_postprocess(config_file=None, subjects=None, target_dir=None, target_suffix=None, output_dir=None,
-                     output_suffix=None, log_output_dir=None,
-                     submit=False, batch=True, task=None, tr=None, debug = False, beta_series = False):
+                     output_suffix=None, log_dir=None,
+                     submit=False, batch=True, task=None, tr=None, processing_stream = None, debug = False, beta_series = False):
     """This command runs an fMRIprep'ed dataset through additional processing, as defined in the configuration file. To run specific subjects, specify their IDs. If no IDs are specified, all subjects are ran."""
     if not debug:
         sys.excepthook = exception_handler
@@ -48,7 +49,8 @@ def fmri_postprocess(config_file=None, subjects=None, target_dir=None, target_su
 
     config = ConfigParser()
     config.config_updater(config_file)
-    config.setup_postproc(target_dir, target_suffix, output_dir, output_suffix, beta_series)
+    config.setup_postproc(target_dir, target_suffix, output_dir, output_suffix, beta_series,
+                          log_dir)
     config.validate_config()
     if beta_series:
           output_type = 'BetaSeriesOptions'
@@ -57,15 +59,22 @@ def fmri_postprocess(config_file=None, subjects=None, target_dir=None, target_su
     if config_file is None:
         config_file = resource_filename(__name__, "data/defaultConfig.json")
 
-    if log_output_dir is not None:
-        if os.path.isdir(log_output_dir):
-            log_output_dir = os.path.abspath(log_output_dir)
+    alt_proc_toggle = False
+    if processing_stream is not None:
+        processing_stream_config = config.config['PostProcessingOptions']['ProcessingStreams']
+        processing_stream_config = [i for i in processing_stream_config if i['ProcessingStream'] == processing_stream]
+        if len(processing_stream_config) == 0:
+            raise KeyError('The processing stream you specified was not found.')
+        alt_proc_toggle = True
+
+    if alt_proc_toggle:
+        if beta_series:
+            config.config['BetaSeriesOptions'].update(processing_stream_config[0]['BetaSeriesOptions'])
         else:
-            log_output_dir = os.path.abspath(log_output_dir)
-            os.makedirs(log_output_dir, exist_ok=True)
-    else:
-        log_output_dir = os.path.join(config.config[output_type]['OutputDirectory'], "BatchOutput")
-        os.makedirs(log_output_dir, exist_ok=True)
+            config.config['PostProcessinggOptions'].update(processing_stream_config[0]['PostProcessingOptions'])
+
+
+
 
     if not subjects:
         subjectstring = "ALL"
@@ -89,7 +98,7 @@ def fmri_postprocess(config_file=None, subjects=None, target_dir=None, target_su
 
     if batch:
         config_string = config.config_json_dump(config.config[output_type]['OutputDirectory'], os.path.basename(config_file))
-        batch_manager = BatchManager(config.config['BatchConfig'], log_output_dir)
+        batch_manager = BatchManager(config.config['BatchConfig'], config.config[output_type]['LogDirectory'])
         batch_manager.update_mem_usage(config.config['PostProcessingOptions']['PostProcessingMemoryUsage'])
         batch_manager.update_time(config.config['PostProcessingOptions']['PostProcessingTimeUsage'])
         batch_manager.update_nthreads(config.config['PostProcessingOptions']['NThreads'])
@@ -102,7 +111,7 @@ def fmri_postprocess(config_file=None, subjects=None, target_dir=None, target_su
                 outputSuffix=config.config[output_type]['OutputSuffix'],
                 taskString = task_string,
                 trString = tr_string,
-                logOutputDir=log_output_dir,
+                logOutputDir=config.config[output_type]['LogDirectory'],
                 beta_series = beta_series_string,
                 sub=sub
             )
@@ -114,8 +123,6 @@ def fmri_postprocess(config_file=None, subjects=None, target_dir=None, target_su
             batch_manager.createsubmissionhead()
             batch_manager.compilejobstrings()
             batch_manager.submit_jobs()
-            config.update_runlog(subjectstring, "PostProcessing")
-            config.config_json_dump(config.config[output_type]['OutputDirectory'], os.path.basename(config_file))
         else:
             batch_manager.createsubmissionhead()
             batch_manager.compilejobstrings()
@@ -383,7 +390,7 @@ def _regression_prep(config, confound_filepath, beta_series_toggle = False):
         confound_temp = confounds.pow(2)
         confound_temp = confound_temp.fillna(0)
         confounds = pandas.concat([confounds, confound_temp], axis=1, ignore_index=True)
-
+    confounds.to_csv('test.csv')
     return confounds, fd
 
 
