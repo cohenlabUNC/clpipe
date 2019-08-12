@@ -1,7 +1,6 @@
 {
 	"ProjectTitle": "A Neuroimaging Project",
 	"Authors/Contributors": "",
-	"ProjectTitle": "Default Configuration File",
 	"ProjectDirectory": "",
 	"DICOMToBIDSOptions": {
 		"DICOMDirectory": "",
