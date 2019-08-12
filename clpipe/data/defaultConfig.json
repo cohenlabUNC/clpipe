@@ -71,7 +71,6 @@
 		"NuisanceRegression": "QuadLagged",
 		"WhiteMatter": true,
 		"CSF": true,
-		"GlobalSignalRegression": false,
 		"GlobalSignalRegression": true,
 		"FilteringHighPass": 0.008,
 		"FilteringLowPass": -1,
