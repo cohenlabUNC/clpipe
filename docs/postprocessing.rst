@@ -32,7 +32,23 @@ When performing functional connectivity analysis, there are several additional p
                              suffix, this argument is not necessary.
     -task TEXT               Which task to postprocess. If left blank, defaults
                              to all tasks.
-    -TR TEXT                 The TR of the scans. If a co
+    -TR TEXT                 The TR of the scans. If a cofig file is not
+                             provided, this option is required. If a config file
+                             is provided, this information is found from the
+                             sidecar jsons.
+    -processing_stream TEXT  Optional processing stream selector.
+    -log_dir DIRECTORY       Where to put HPC output files. If not specified,
+                             defaults to <outputDir>/batchOutput.
+    -beta_series             Flag to activate beta-series correlation
+                             correlation. ADVANCED METHOD, refer to the
+                             documentation.
+    -submit                  Flag to submit commands to the HPC.
+    -batch / -single         Submit to batch, or run in current session. Mainly
+                             used internally.
+    -debug                   Print detailed processing information and traceback
+                             for errors.
+    --help                   Show this message and exit.
+
 
 
 Processing Checker
