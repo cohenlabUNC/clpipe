@@ -195,8 +195,28 @@ These options are for the beta series calculations. This is a complex method, pl
             * ``Task:`` Task name, must match BIDS task- signifier.
             * ``ExcludeColumnInfo`` The name of the column in the BIDS formatted events files that contain the information about the trials needed to be excluded from the beta series analysis. (for example, if you have events nested within blocks, then you would want to exclude the block "events")
             * ``ExcludeTrialType:`` A list of trial types to exclude.
+    * ``LogDirectory:`` Where cluster output files are stored.
 
 
+Processing Streams
+------------------
+
+* ``ProcessingStreams:`` A list of processing streams, consisting of the following:
+
+    *``ProcessingStream:``: The name of the processing stream
+            *``PostProcessingOptions:``: A list of options to overwrite.
+            *``BetaSeriesOptions:``: A list of options to overwrite.
+
+These options are for specific processing streams, and allow the user to overwrite the defaults.
+
+
+ROI Extraction Options
+----------------------
+*```ROIExtractionOptions:``` Options for ROI extraction
+    * ``TargetDirectory:`` What directory holds your fMRIPrep preprocessed data.
+    * ``TargetSuffix:`` What suffix do your preprocessed fMRI NiFTi files have? Default is preproc_bold.nii.gz.
+    * ``OutputDirectory:`` Where you want your postprocessed files to go.
+    * ``Atlases``: A list of atlas names. Please refer to the ROI extraction documentation for a full list of included atlases.
 
 Other Options
 -------------
