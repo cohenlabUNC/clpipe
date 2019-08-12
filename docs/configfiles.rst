@@ -94,6 +94,33 @@ This command will create a default configuration file with whatever name you spe
 		],
       "LogDirectory": ""
     },
+	"ProcessingStreams": [
+		{
+			"ProcessingStream": "noGSR",
+			"PostProcessingOptions": {
+				"GlobalSignalRegression": false,
+				"OutputDirectory": "",
+				"OutputSuffix": ""
+			},
+			"BetaSeriesOptions": {
+				"GlobalSignalRegression": false,
+				"OutputDirectory": "",
+				"OutputSuffix": ""
+			}
+		},
+		{
+			"ProcessingStream": "noScrub",
+			"PostProcessingOptions": {
+				"Scrubbing": false,
+				"OutputDirectory": "",
+				"OutputSuffix": ""
+			},
+			"BetaSeriesOptions":{
+
+			}
+		}
+
+	],
 	"ROIExtractionOptions": {
 		"TargetDirectory": "",
 		"TargetSuffix": "",
