@@ -77,6 +77,7 @@ Once you have updated your conversion configuration file, you can convert your e
 
 
 .. code-block:: console
+
     convert2bids [OPTIONS]
 
         Options:
