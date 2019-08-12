@@ -1,6 +1,7 @@
 {
 	"ProjectTitle": "A Neuroimaging Project",
 	"Authors/Contributors": "",
+	"ProjectTitle": "Default Configuration File",
 	"ProjectDirectory": "",
 	"DICOMToBIDSOptions": {
 		"DICOMDirectory": "",
@@ -68,6 +69,7 @@
 		"WhiteMatter": true,
 		"CSF": true,
 		"GlobalSignalRegression": false,
+		"GlobalSignalRegression": true,
 		"FilteringHighPass": 0.008,
 		"FilteringLowPass": -1,
 		"FilteringOrder": 2,
@@ -80,6 +82,33 @@
 		],
       "LogDirectory": ""
     },
+	"ProcessingStreams": [
+		{
+			"ProcessingStream": "noGSR",
+			"PostProcessingOptions": {
+				"GlobalSignalRegression": false,
+				"OutputDirectory": "",
+				"OutputSuffix": ""
+			},
+			"BetaSeriesOptions": {
+				"GlobalSignalRegression": false,
+				"OutputDirectory": "",
+				"OutputSuffix": ""
+			}
+		},
+		{
+			"ProcessingStream": "noScrub",
+			"PostProcessingOptions": {
+				"Scrubbing": false,
+				"OutputDirectory": "",
+				"OutputSuffix": ""
+			},
+			"BetaSeriesOptions":{
+
+			}
+		}
+
+	],
 	"ROIExtractionOptions": {
 		"TargetDirectory": "",
 		"TargetSuffix": "",

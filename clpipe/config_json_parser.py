@@ -45,7 +45,7 @@ class ConfigParser:
         validate(self.config, self.configSchema)
 
     def setup_project(self, project_title, project_dir, source_data):
-        self.config['ConfigTitle'] = project_title
+        self.config['ProjectTitle'] = project_title
         self.config['ProjectDirectory'] = os.path.abspath(project_dir)
         self.setup_dcm2bids(os.path.abspath(source_data),
                             os.path.join(self.config['ProjectDirectory'], 'conversion_config.json'),
@@ -55,17 +55,28 @@ class ConfigParser:
                                         None, os.path.join(self.config['ProjectDirectory'], 'data_fmriprep'))
         self.setup_postproc(os.path.join(self.config['FMRIPrepOptions']['OutputDirectory'], 'fmriprep'),
                             target_suffix= None,
-                            output_dir= os.path.join(self.config['ProjectDirectory'], 'data_postproc', 'postproc_1'),
+                            output_dir= os.path.join(self.config['ProjectDirectory'], 'data_postproc', 'postproc_default'),
                             output_suffix= 'postproc_1.nii.gz')
         self.setup_postproc(os.path.join(self.config['FMRIPrepOptions']['OutputDirectory'], 'fmriprep'),
                             target_suffix=None,
-                            output_dir=os.path.join(self.config['ProjectDirectory'], 'data_postproc', 'betaseries_1'),
+                            output_dir=os.path.join(self.config['ProjectDirectory'], 'data_postproc', 'betaseries_default'),
                             output_suffix='betaseries_1.nii.gz', beta_series=True)
-        self.setup_roiextract(target_dir = os.path.join(self.config['ProjectDirectory'], 'data_postproc', 'postproc_1'),
-                              target_suffix= 'postproc_1.nii.gz',
+        self.setup_roiextract(target_dir = os.path.join(self.config['ProjectDirectory'], 'data_postproc', 'postproc_default'),
+                              target_suffix= 'postproc.nii.gz',
                               output_dir= os.path.join(self.config['ProjectDirectory'],
-                                           'data_ROI_ts', 'postproc_1'),
+                                           'data_ROI_ts', 'postproc_default'),
                               )
+        processing_streams = self.get_processing_stream_names()
+        print(processing_streams)
+        if processing_streams:
+            for stream in processing_streams:
+                self.update_processing_stream(stream,
+                                              output_dir= os.path.join(self.config['ProjectDirectory'], 'data_postproc', 'postproc_'+stream),
+                                              output_suffix='postproc_'+stream+".nii.gz")
+                self.update_processing_stream(stream,
+                                              output_dir= os.path.join(self.config['ProjectDirectory'], 'data_postproc', 'betaseries_'+stream),
+                                              output_suffix='betaseries_'+stream+".nii.gz", beta_series=True)
+
 
 
     def setup_fmriprep_directories(self, bidsDir, workingDir, outputDir, log_dir = None):
@@ -147,6 +158,32 @@ class ConfigParser:
             self.config['ROIExtractionOptions']['LogDirectory'] = os.path.join(self.config['ProjectDirectory'], 'logs',
                                                                              'ROI_extraction_logs')
         os.makedirs(self.config['ROIExtractionOptions']['LogDirectory'], exist_ok=True)
+
+    def get_processing_stream_names(self):
+        try:
+            names = [i["ProcessingStream"] for i in self.config['ProcessingStreams']]
+        except(KeyError):
+            return False
+        return names
+
+    def update_processing_stream(self, stream_name, output_dir = None, output_suffix = None, log_dir = None, beta_series = False):
+        target_output = 'PostProcessingOptions'
+        log_target = stream_name+'_postproc_logs'
+        if beta_series:
+            target_output = 'BetaSeriesOptions'
+            log_target = stream_name+'_betaseries_logs'
+
+        index = [ind  for ind,e in enumerate(self.config['ProcessingStreams']) if e['ProcessingStream'] == stream_name][0]
+        if output_dir is not None:
+            self.config['ProcessingStreams'][index][target_output]['OutputDir'] = os.path.abspath(output_dir)
+            os.makedirs(self.config['ProcessingStreams'][index][target_output]['OutputDir'], exist_ok=True)
+        if output_suffix is not None:
+            self.config['ProcessingStreams'][index][target_output]['OutputSuffix'] = output_suffix
+        if log_dir is not None:
+            self.config['ProcessingStreams'][index][target_output]['LogDirectory'] = os.path.abspath(log_dir)
+        else:
+            self.config['ProcessingStreams'][index][target_output]['LogDirectory'] = os.path.join(self.config['ProjectDirectory'], 'logs', log_target)
+        os.makedirs(self.config[target_output]['LogDirectory'], exist_ok=True)
 
     def update_runlog(self, subjects, whatran):
         newLog = {'DateRan': datetime.datetime.now().strftime("%I:%M%p on %B %d, %Y"),

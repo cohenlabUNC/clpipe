@@ -2,13 +2,11 @@ import click
 from .batch_manager import BatchManager,Job
 from .config_json_parser import ConfigParser
 import os
-from pkg_resources import resource_stream, resource_filename
 import parse
 import glob
 from .error_handler import exception_handler
 import sys
-import logging
-import dcm2bids
+
 
 
 @click.command()
@@ -106,3 +104,5 @@ def convert2bids(dicom_dir=None, dicom_dir_format=None, bids_dir = None, conv_co
         config.config_json_dump(os.path.dirname(os.path.abspath(config_file)), config_file)
     else:
         batch_manager.print_jobs()
+
+

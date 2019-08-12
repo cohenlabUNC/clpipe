@@ -21,11 +21,12 @@ def project_setup(project_title = None, project_dir = None, source_data = None, 
                   symlink_source_data = None, submit = None, debug = None):
 
     config = ConfigParser()
-    if symlink_source_data:
-        os.symlink(os.path.abspath(source_data), os.path.join(os.path.abspath(project_dir), 'data_DICOMs'))
+    org_source = os.path.abspath(source_data)
     if move_source_data or symlink_source_data:
         source_data = os.path.join(os.path.abspath(project_dir), 'data_DICOMs')
     config.setup_project(project_title, project_dir, source_data)
+    if symlink_source_data:
+        os.symlink(os.path.abspath(org_source), os.path.join(os.path.abspath(project_dir), 'data_DICOMs'))
     bids_dir = config.config['DICOMToBIDSOptions']['BIDSDirectory']
     os.system('dcm2bids_scaffold -o'+bids_dir)
     config.config_json_dump(config.config['ProjectDirectory'], 'clpipe_config.json')
