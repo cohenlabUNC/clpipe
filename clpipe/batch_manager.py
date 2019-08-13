@@ -64,7 +64,7 @@ class BatchManager:
             head.append(self.config['NThreadsCommand']  + self.config['NThreads'])
         if self.config['JobIDCommandActive']:
             head.append(self.config['JobIDCommand'] + '"{jobid}"')
-        if self.config('OutputCommandActive'):
+        if self.config['OutputCommandActive']:
             head.append(self.config['OutputCommand']  + os.path.abspath(os.path.join(self.outputDir, 'Output-{jobid}.out')))
         head.append(self.config['CommandWrapper'])
 
