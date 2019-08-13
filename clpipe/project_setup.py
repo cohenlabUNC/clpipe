@@ -1,7 +1,6 @@
 import os
 import click
 from .config_json_parser import ConfigParser
-from .error_handler import exception_handler
 from pkg_resources import resource_stream
 import json
 
@@ -15,10 +14,8 @@ import json
               help='Move source data into project/data_DICOMs folder. USE WITH CAUTION.')
 @click.option('-symlink_source_data', is_flag = True, default = False,
               help = 'symlink the source data into project/data_dicoms. Usually safe to do.')
-@click.option('-submit', is_flag=True, default=False, help='Flag to submit commands to the HPC')
-@click.option('-debug', is_flag=True, help='Flag to enable detailed error messages and traceback.')
 def project_setup(project_title = None, project_dir = None, source_data = None, move_source_data = None,
-                  symlink_source_data = None, submit = None, debug = None):
+                  symlink_source_data = None):
 
     config = ConfigParser()
     org_source = os.path.abspath(source_data)

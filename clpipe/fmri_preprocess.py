@@ -53,6 +53,7 @@ def fmriprep_process(bids_dir=None, working_dir=None, output_dir=None, config_fi
     batch_manager = BatchManager(config.config['BatchConfig'], config.config['FMRIPrepOptions']['LogDirectory'])
     batch_manager.update_mem_usage(config.config['FMRIPrepOptions']['FMRIPrepMemoryUsage'])
     batch_manager.update_time(config.config['FMRIPrepOptions']['FMRIPrepTimeUsage'])
+    batch_manager.update_email(config.config["EmailAddress"])
     for sub in sublist:
         batch_manager.addjob(Job("sub-" + sub + "fmriprep", singularity_string.format(
             fmriprepInstance=config.config['FMRIPrepOptions']['FMRIPrepPath'],

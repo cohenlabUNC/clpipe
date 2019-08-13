@@ -101,6 +101,7 @@ def fmri_roi_extraction(subjects=None,config_file=None, target_dir=None, target_
     batch_manager.update_mem_usage(config.config['ROIExtractionOptions']['MemoryUsage'])
     batch_manager.update_time(config.config['ROIExtractionOptions']['TimeUsage'])
     batch_manager.update_nthreads(config.config['ROIExtractionOptions']['NThreads'])
+    batch_manager.update_email(config.config["EmailAddress"])
     batch_manager.createsubmissionhead()
     for subject in sublist:
         for cur_atlas in atlas_list:

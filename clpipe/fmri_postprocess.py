@@ -102,6 +102,7 @@ def fmri_postprocess(config_file=None, subjects=None, target_dir=None, target_su
         batch_manager.update_mem_usage(config.config['PostProcessingOptions']['PostProcessingMemoryUsage'])
         batch_manager.update_time(config.config['PostProcessingOptions']['PostProcessingTimeUsage'])
         batch_manager.update_nthreads(config.config['PostProcessingOptions']['NThreads'])
+        batch_manager.update_email(config.config["EmailAddress"])
         for sub in sublist:
             sub_string_temp = submission_string.format(
                 config=config_string,
