@@ -24,7 +24,7 @@ def test_batch_setup(config_file = None, batch_config = None, log_dir = None, su
     batch_manager.update_time("1:0:0")
     batch_manager.update_nthreads("1")
     os.makedirs(os.path.abspath(log_dir),   exist_ok=True)
-    submission_string = 'python3 -c \\\"print(\\\"Hello Cluster\\\")\\\"'
+    submission_string = 'python3 -c \"print(\\\\\"Hello Cluster\\\\\")\"'
 
     test_IDs = ["Test-" + str(i) for i in range(10)]
 
