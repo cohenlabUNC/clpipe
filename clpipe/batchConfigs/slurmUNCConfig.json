@@ -11,7 +11,7 @@
   "MemoryDefault": "20000",
   "TimeCommand": "--time={time}",
   "TimeDefault": "16:0:0",
-  "JobIDCommand": "--job-name={jobid}",
+  "JobIDCommand": "--job-name=\"{jobid}\"",
   "OutputCommand": "--output={output}",
   "CommandWrapper": "--wrap=",
 
