@@ -20,6 +20,7 @@ def test_batch_setup(config_file = None, batch_config = None, log_dir = None, su
         config.config['BatchConfig'] = batch_config
 
     batch_manager = BatchManager(config.config['BatchConfig'], os.path.abspath(log_dir))
+    batch_manager.update_email(config.config["EmailAddress"])
     os.makedirs(os.path.abspath(log_dir),   exist_ok=True)
     if batch_manager.config['NoQuotes']:
         submission_string = 'python3 -c \"print(\\\\\\\"Hello Cluster\\\\\\\")\"'

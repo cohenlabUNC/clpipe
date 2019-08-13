@@ -11,7 +11,8 @@
   "JobIDCommand": "-N {jobid}",
   "OutputCommand": "-o {output}",
   "CommandWrapper": "-b y ",
-
+  "EmailAddress": "",
+  "EmailCommand": "-M {email}",
   "NoQuotes": true,
   "TimeCommandActive": false,
   "ThreadCommandActive": false,

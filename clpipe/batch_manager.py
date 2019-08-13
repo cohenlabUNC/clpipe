@@ -34,6 +34,9 @@ class BatchManager:
     def update_nthreads(self, threads):
         self.config['NThreads'] = threads
 
+    def update_email(self, email):
+        self.config['EmailAddress'] = email
+
     def addjob(self, job):
         self.jobs.append(job)
 
@@ -72,6 +75,9 @@ class BatchManager:
         if self.config['OutputCommandActive']:
             head.append(self.config['OutputCommand'].format(
                 output =os.path.abspath(os.path.join(self.outputDir, 'Output-{jobid}.out'))))
+        if self.config["EmailAddress"]:
+            head.append(self.config['EmailCommand'].format(
+                email=self.config["EmailAddress"]))
         head.append(self.config['CommandWrapper'])
 
         return " ".join(head)
