@@ -7,7 +7,7 @@ from .batch_manager import BatchManager, Job
 @click.command()
 @click.option('-config_file', required = False ,type=click.Path(exists=False, dir_okay=False, file_okay=True), default=None,
               help='A config file. Optional if you have a batch_config specified')
-@click.option('-batch_config', type=click.Path(exists=True, dir_okay=False, file_okay=True),
+@click.option('-batch_config', type=click.Path(exists=False, dir_okay=False, file_okay=True),
               help='A batch config file. Optional if a batch_config is provided in the supplied config file.')
 @click.option('-log_dir', type=click.Path(exists=False, dir_okay=True, file_okay=False),
               help='Where to put the test output. Defaults to current working directory', default = os.getcwd())
