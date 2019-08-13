@@ -10,7 +10,7 @@ from .batch_manager import BatchManager, Job
 @click.option('-batch_config', type=click.Path(exists=True, dir_okay=False, file_okay=True),
               help='A batch config file. Optional if a batch_config is provided in the supplied config file.')
 @click.option('-log_dir', is_flag = True, type=click.Path(exists=False, dir_okay=True, file_okay=False),
-              help='Where to put the test output. Defaults to current working directory', default = '.')
+              help='Where to put the test output. Defaults to current working directory', default = os.getcwd())
 @click.option('-submit', is_flag=True, default=False, help='Flag to submit commands to the HPC')
 def test_batch_setup(config_file = None, batch_config = None, log_dir = None, submit = None):
 
