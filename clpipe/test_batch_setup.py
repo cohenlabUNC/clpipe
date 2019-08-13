@@ -12,12 +12,12 @@ from .batch_manager import BatchManager, Job
 @click.option('-log_dir', is_flag = True, type=click.Path(exists=False, dir_okay=True, file_okay=False),
               help='Where to put the test output. Defaults to current working directory', default = '.')
 @click.option('-submit', is_flag=True, default=False, help='Flag to submit commands to the HPC')
-def test_batch_setup(config_file = None, batch_config_file = None, log_dir = None, submit = None):
+def test_batch_setup(config_file = None, batch_config = None, log_dir = None, submit = None):
 
     config = ConfigParser()
     config.config_updater(config_file)
-    if batch_config_file is not None:
-        config.config['BatchConfig'] = batch_config_file
+    if batch_config is not None:
+        config.config['BatchConfig'] = batch_config
 
     batch_manager = BatchManager(config.config['BatchConfig'], os.path.abspath(log_dir))
     os.makedirs(os.path.abspath(log_dir),   exist_ok=True)
