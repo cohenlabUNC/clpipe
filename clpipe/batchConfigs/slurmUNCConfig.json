@@ -14,7 +14,8 @@
   "JobIDCommand": "--job-name=\"{jobid}\"",
   "OutputCommand": "--output={output}",
   "CommandWrapper": "--wrap=",
-
+  "EmailAddress": "",
+  "EmailCommand": "-M {email}",
   "NoQuotes": false,
   "TimeCommandActive": true,
   "ThreadCommandActive": true,
