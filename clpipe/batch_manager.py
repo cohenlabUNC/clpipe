@@ -57,15 +57,21 @@ class BatchManager:
             temp = e['command'] + '=' + e['args']
             head.append(temp)
 
-        head.append(self.config['MemoryCommand'] + self.config['MemoryDefault'])
+        head.append(self.config['MemoryCommand'].format(
+            mem =self.config['MemoryDefault']))
         if self.config['TimeCommandActive']:
-            head.append(self.config['TimeCommand'] + self.config['TimeDefault'])
+            head.append(self.config['TimeCommand'].format(
+                time = self.config['TimeDefault']))
         if self.config['ThreadCommandActive']:
-            head.append(self.config['NThreadsCommand']  + self.config['NThreads'])
+            head.append(self.config['NThreadsCommand'].format(
+                nthreads = self.config['NThreads']
+            ))
         if self.config['JobIDCommandActive']:
-            head.append(self.config['JobIDCommand'] + '"{jobid}"')
+            head.append(self.config['JobIDCommand'].format(
+                jobid = '"{jobid}"'))
         if self.config['OutputCommandActive']:
-            head.append(self.config['OutputCommand']  + os.path.abspath(os.path.join(self.outputDir, 'Output-{jobid}.out')))
+            head.append(self.config['OutputCommand'].format(
+                output =os.path.abspath(os.path.join(self.outputDir, 'Output-{jobid}.out'))))
         head.append(self.config['CommandWrapper'])
 
         return " ".join(head)
