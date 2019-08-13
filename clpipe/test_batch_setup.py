@@ -9,7 +9,7 @@ from .batch_manager import BatchManager, Job
               help='A config file. Optional if you have a batch_config specified')
 @click.option('-batch_config', type=click.Path(exists=True, dir_okay=False, file_okay=True),
               help='A batch config file. Optional if a batch_config is provided in the supplied config file.')
-@click.option('-log_dir', is_flag = True, default = False,type=click.Path(exists=False, dir_okay=True, file_okay=False),
+@click.option('-log_dir', is_flag = True, type=click.Path(exists=False, dir_okay=True, file_okay=False),
               help='Where to put the test output. Defaults to current working directory', default = '.')
 @click.option('-submit', is_flag=True, default=False, help='Flag to submit commands to the HPC')
 def test_batch_setup(config_file = None, batch_config_file = None, log_dir = None, submit = None):
@@ -20,7 +20,7 @@ def test_batch_setup(config_file = None, batch_config_file = None, log_dir = Non
         config.config['BatchConfig'] = batch_config_file
 
     batch_manager = BatchManager(config.config['BatchConfig'], os.path.abspath(log_dir))
-
+    os.makedirs(os.path.abspath(log_dir),   exist_ok=True)
     submission_string = 'echo "Hello Cluster!"'
 
     test_IDs = ["Test-" + str(i) for i in range(10)]
