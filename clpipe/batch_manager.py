@@ -68,7 +68,7 @@ class BatchManager:
             ))
         if self.config['JobIDCommandActive']:
             head.append(self.config['JobIDCommand'].format(
-                jobid = '"{jobid}"'))
+                jobid = '{jobid}'))
         if self.config['OutputCommandActive']:
             head.append(self.config['OutputCommand'].format(
                 output =os.path.abspath(os.path.join(self.outputDir, 'Output-{jobid}.out'))))
