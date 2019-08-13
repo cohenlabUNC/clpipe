@@ -2,6 +2,7 @@
 	"ProjectTitle": "A Neuroimaging Project",
 	"Authors/Contributors": "",
 	"ProjectDirectory": "",
+	"EmailAddress": "",
 	"DICOMToBIDSOptions": {
 		"DICOMDirectory": "",
 		"BIDSDirectory": "",

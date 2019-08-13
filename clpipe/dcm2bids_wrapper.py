@@ -64,9 +64,9 @@ def convert2bids(dicom_dir=None, dicom_dir_format=None, bids_dir = None, conv_co
         raise FileNotFoundError('There are no subjects/sessions found for that format string.')
 
     if session_toggle:
-        conv_string = '''module add dcm2niix; dcm2bids -d {dicom_dir} -o {bids_dir} -p {subject} -s {session} -c {conv_config_file}'''
+        conv_string = '''dcm2bids -d {dicom_dir} -o {bids_dir} -p {subject} -s {session} -c {conv_config_file}'''
     else:
-        conv_string = '''module add dcm2niix; dcm2bids -d {dicom_dir} -o {bids_dir} -p {subject} -c {conv_config_file}'''
+        conv_string = '''dcm2bids -d {dicom_dir} -o {bids_dir} -p {subject} -c {conv_config_file}'''
 
     if overwrite:
         conv_string = conv_string + " --clobber --forceDcm2niix"

@@ -1,0 +1,24 @@
+{
+  "SubmissionHead": "qsub",
+  "SubmissionOptions": [],
+  "SubOptionsEqual": [],
+  "NThreadsCommand": "",
+  "NThreads": "",
+  "MemoryCommand": "-l h_vmem={mem}G,vf={mem}G",
+  "MemoryDefault": "8",
+  "TimeCommand": "",
+  "TimeDefault": "",
+  "JobIDCommand": "-N {jobid}",
+  "OutputCommand": "-o {output}",
+  "CommandWrapper": "-b y ",
+  "EmailAddress": "",
+  "EmailCommand": "-M {email}",
+  "NoQuotes": true,
+  "TimeCommandActive": false,
+  "ThreadCommandActive": false,
+  "JobIDCommandActive": true,
+  "OutputCommandActive": true,
+
+
+  "SingularityBindPaths": "/mnt"
+}

@@ -34,6 +34,7 @@ setup(name='clpipe',
       fmri_roi_extraction=clpipe.roi_extractor:fmri_roi_extraction
       convert2bids=clpipe.dcm2bids_wrapper:convert2bids
       project_setup=clpipe.project_setup:project_setup
+      test_batch_setup=clpipe.test_batch_setup:test_batch_setup
       ''',
       zip_safe=False
       )
