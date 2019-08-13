@@ -8,7 +8,7 @@
   "MemoryDefault": "8",
   "TimeCommand": "",
   "TimeDefault": "",
-  "JobIDCommand": "-N {jobID}",
+  "JobIDCommand": "-N {jobid}",
   "OutputCommand": "-o {output}",
   "CommandWrapper": "-b y ",
 
