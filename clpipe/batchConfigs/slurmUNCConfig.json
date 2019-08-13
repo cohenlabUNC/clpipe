@@ -13,7 +13,7 @@
   "TimeDefault": "1:0:0",
   "JobIDCommand": "--job-name=\"{jobid}\"",
   "OutputCommand": "--output={output}",
-  "CommandWrapper": "--wrap=",
+  "CommandWrapper": "--wrap=\"{cmdwrap}\"",
   "EmailAddress": "",
   "EmailCommand": "-M {email}",
   "NoQuotes": false,
