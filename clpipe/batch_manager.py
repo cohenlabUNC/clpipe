@@ -43,11 +43,7 @@ class BatchManager:
     def compilejobstrings(self):
         header = self.createsubmissionhead()
         for job in self.jobs:
-            temp = header.format(jobid=job.jobID)
-            if self.config['NoQuotes']:
-                temp = temp + job.jobString
-            else:
-                temp = temp + '"' + job.jobString + '"'
+            temp = header.format(jobid=job.jobID, cmdwrap = job.jobString)
             self.submissionlist.append(temp)
 
 
