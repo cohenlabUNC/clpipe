@@ -1,0 +1,23 @@
+{
+  "SubmissionHead": "qsub",
+  "SubmissionOptions": [],
+  "SubOptionsEqual": [],
+  "NThreadsCommand": "",
+  "NThreads": "",
+  "MemoryCommand": "--mem=",
+  "MemoryDefault": "20000",
+  "TimeCommand": "",
+  "TimeDefault": "",
+  "JobIDCommand": "-N ",
+  "OutputCommand": "-o ",
+  "CommandWrapper": "-b y ",
+
+  "NoQuotes": true,
+  "TimeCommandActive": false,
+  "ThreadCommandActive": false,
+  "JobIDCommandActive": true,
+  "OutputCommandActive": true,
+
+
+  "SingularityBindPaths": "/mnt"
+}

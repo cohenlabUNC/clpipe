@@ -4,14 +4,20 @@ from pkg_resources import resource_stream
 import os
 import sys
 
-
+#Todo: We need to update the batch manager to be more flexible, so as to allow for no-quotes, no equals, and to not have various options
+# for example, BIAC doesn't have time or number of cores as options.
 
 class BatchManager:
 
     def __init__(self, batchsystemConfig, outputDirectory=None):
         self.jobs = []
-        with resource_stream(__name__, "batchConfigs/" + batchsystemConfig) as bat_config:
-            self.config = json.load(bat_config)
+        if os.path.exists(os.path.abspath(batchsystemConfig)):
+            with os.open(os.path.abspath(batchsystemConfig)) as bat_config:
+                self.config = json.load(bat_config)
+        else:
+            with resource_stream(__name__, "batchConfigs/" + batchsystemConfig) as bat_config:
+                self.config = json.load(bat_config)
+
         self.submissionlist = []
         if outputDirectory is None:
             outputDirectory = '.'
@@ -34,7 +40,13 @@ class BatchManager:
     def compilejobstrings(self):
         header = self.createsubmissionhead()
         for job in self.jobs:
-            self.submissionlist.append(header.format(jobid=job.jobID) + '"' + job.jobString + '"')
+            temp = header.format(jobid=job.jobID)
+            if self.config['NoQuotes']:
+                temp = temp + job.jobString
+            else:
+                temp = temp + '"' + job.jobString + '"'
+            self.submissionlist.append(temp)
+
 
     def createsubmissionhead(self):
         head = [self.config['SubmissionHead']]
@@ -46,12 +58,16 @@ class BatchManager:
             head.append(temp)
 
         head.append(self.config['MemoryCommand'] + self.config['MemoryDefault'])
-        head.append(self.config['TimeCommand'] + self.config['TimeDefault'])
-        head.append(self.config['NThreadsCommand'] + '=' + self.config['NThreads'])
-        head.append(self.config['JobIDCommand'] + '=' + '"{jobid}"')
-        head.append(
-            self.config['OutputCommand'] + '=' + os.path.abspath(os.path.join(self.outputDir, 'Output-{jobid}.out')))
-        head.append(self.config['CommandWrapper'] + '=')
+        if self.config['TimeCommandActive']:
+            head.append(self.config['TimeCommand'] + self.config['TimeDefault'])
+        if self.config['ThreadCommandActive']:
+            head.append(self.config['NThreadsCommand']  + self.config['NThreads'])
+        if self.config['JobIDCommandActive']:
+            head.append(self.config['JobIDCommand'] + '"{jobid}"')
+        if self.config('OutputCommandActive'):
+            head.append(self.config['OutputCommand']  + os.path.abspath(os.path.join(self.outputDir, 'Output-{jobid}.out')))
+        head.append(self.config['CommandWrapper'])
+
         return " ".join(head)
 
     def submit_jobs(self):

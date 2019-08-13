@@ -5,14 +5,22 @@
     "args": "1"
   }],
   "SubOptionsEqual": [],
-  "NThreadsCommand": "--cpus-per-task",
+  "NThreadsCommand": "--cpus-per-task=",
   "NThreads": "8",
   "MemoryCommand": "--mem=",
   "MemoryDefault": "20000",
   "TimeCommand": "--time=",
   "TimeDefault": "16:0:0",
-  "JobIDCommand": "--job-name",
-  "OutputCommand": "--output",
-  "CommandWrapper": "--wrap",
+  "JobIDCommand": "--job-name=",
+  "OutputCommand": "--output=",
+  "CommandWrapper": "--wrap=",
+
+  "NoQuotes": false,
+  "TimeCommandActive": true,
+  "ThreadCommandActive": true,
+  "JobIDCommandActive": true,
+  "OutputCommandActive": true,
+
+
   "SingularityBindPaths": "/proj,/pine,/nas02,/nas"
 }
