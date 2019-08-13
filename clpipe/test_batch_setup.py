@@ -20,6 +20,9 @@ def test_batch_setup(config_file = None, batch_config = None, log_dir = None, su
         config.config['BatchConfig'] = batch_config
 
     batch_manager = BatchManager(config.config['BatchConfig'], os.path.abspath(log_dir))
+    batch_manager.update_mem_usage("1000")
+    batch_manager.update_time("1:0:0")
+    batch_manager.update_nthreads("1")
     os.makedirs(os.path.abspath(log_dir),   exist_ok=True)
     submission_string = 'python3 -c \"print(\"Hello Cluster\")\"'
 
