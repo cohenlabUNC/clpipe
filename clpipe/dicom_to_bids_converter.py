@@ -19,7 +19,7 @@ import logging
 def dicom_to_nifti_to_bids_converter_setup(subject = None, session = None, dicom_directory=None, output_file=None, config_file = None,  submit=False):
     """This command can be used to compute and extract a dicom information spreadsheet so that a heuristic file can be written. Users should specify a subject with all scans of interest present, and run this command on all sessions of interest. """
     config = ConfigParser()
-    config.config_updater(config_file)
+    config.config_updater()
 
     heuristic_file = resource_filename(__name__, 'data/setup_heuristic.py')
 
