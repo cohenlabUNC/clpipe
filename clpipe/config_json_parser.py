@@ -119,12 +119,12 @@ class ConfigParser:
 
     def setup_heudiconv(self, dicom_directory, heuristic_file, output_directory):
         if dicom_directory is not None:
-            self.config['DicomToBidsOptions']['DICOMDirectory'] = os.path.abspath(dicom_directory)
+            self.config['DICOMToBIDSOptions']['DICOMDirectory'] = os.path.abspath(dicom_directory)
         if output_directory is not None:
-            self.config['DicomToBidsOptions']['OutputDirectory'] = os.path.abspath(output_directory)
-            os.makedirs(self.config['DicomToBidsOptions']['OutputDirectory'], exist_ok=True)
+            self.config['DICOMToBIDSOptions']['OutputDirectory'] = os.path.abspath(output_directory)
+            os.makedirs(self.config['DICOMToBIDSOptions']['OutputDirectory'], exist_ok=True)
         if heuristic_file is not None:
-            self.config['DicomToBidsOptions']['HeuristicFile'] = os.path.abspath(heuristic_file)
+            self.config['DICOMToBIDSOptions']['HeuristicFile'] = os.path.abspath(heuristic_file)
 
     def setup_dcm2bids(self, dicom_directory, heuristic_file, output_directory, dicom_format_string, log_dir = None):
         if dicom_directory is not None:
