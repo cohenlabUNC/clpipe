@@ -76,7 +76,7 @@ def dicom_to_nifti_to_bids_converter(subjects = None, dicom_directory=None, subm
         logging.basicConfig(level=logging.DEBUG)
 
     config = ConfigParser()
-    config.config_updater(config_file)
+    config.config_updater()
     config.setup_heudiconv(dicom_directory,
                            os.path.abspath(heuristic_file),
                            os.path.abspath(output_directory))
@@ -156,6 +156,5 @@ def dicom_to_nifti_to_bids_converter(subjects = None, dicom_directory=None, subm
     batch_manager.compilejobstrings()
     if submit:
         batch_manager.submit_jobs()
-        config.config_json_dump(config.config['DICOMToBIDSOptions']['OutputDirectory'], config_file)
     else:
         batch_manager.print_jobs()
