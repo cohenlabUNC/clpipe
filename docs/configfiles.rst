@@ -93,7 +93,18 @@ This command will create a default configuration file with whatever name you spe
 			}
 		],
       "LogDirectory": ""
-    },
+    },"SUSANOptions": {
+		"TargetDirectory": "",
+		"TargetSuffix": "preproc_bold.nii.gz",
+		"OutputDirectory": "",
+		"OutputSuffix": "preproc_susan.nii.gz",
+		"BrightnessThreshold": 500,
+		"FWHM": 0,
+		"MemoryUsage": "5000",
+		"TimeUsage": "2:0:0",
+		"NThreads": "4",
+        "LogDirectory": ""
+	},
 	"ProcessingStreams": [
 		{
 			"ProcessingStream": "noGSR",
@@ -106,6 +117,10 @@ This command will create a default configuration file with whatever name you spe
 				"GlobalSignalRegression": false,
 				"OutputDirectory": "",
 				"OutputSuffix": ""
+			},
+			"SUSANOptions": {
+				"OutputSuffix": "preproc_susan250.nii.gz",
+				"BrightnessThreshold": 250
 			}
 		},
 		{
@@ -117,6 +132,8 @@ This command will create a default configuration file with whatever name you spe
 			},
 			"BetaSeriesOptions":{
 
+			},
+			"SUSANOptions": {
 			}
 		}
 
@@ -224,6 +241,12 @@ These options are for the beta series calculations. This is a complex method, pl
             * ``ExcludeTrialType:`` A list of trial types to exclude.
     * ``LogDirectory:`` Where cluster output files are stored.
 
+SUSAN Smoothing
+---------------
+
+* ``SUSANOptions`` Options for FSL's SUSAN smoothing procedure
+    * ``BrightnessThreshold``: The voxel intensity threshold used to distinguish where to smooth. It should be above background level, but below the contrast between edges.
+    * ``FWHM``: The size of the smoothing kernel. Specifically the full width half max of the Gaussian kernel. Scaled in millimeters. 0 uses a 3x3x3 voxel smoother.
 
 Processing Streams
 ------------------
