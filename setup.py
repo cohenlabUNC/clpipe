@@ -36,6 +36,7 @@ setup(name='clpipe',
       convert2bids=clpipe.dcm2bids_wrapper:convert2bids
       project_setup=clpipe.project_setup:project_setup
       test_batch_setup=clpipe.test_batch_setup:test_batch_setup
+      susan_smoothing = clpipe.susan_smoothing:susan_smoothing
       ''',
       zip_safe=False
       )
