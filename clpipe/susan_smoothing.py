@@ -87,8 +87,7 @@ def susan_smoothing(config_file=None, subjects=None, target_dir=None, target_suf
     else:
         procstream = ""
     if batch:
-        config_string = config.config_json_dump(config.config[output_type]['OutputDirectory'],
-                                                os.path.basename(config_file))
+        config_string = os.path.abspath(config_file)
         batch_manager = BatchManager(config.config['BatchConfig'], config.config[output_type]['LogDirectory'])
         batch_manager.update_mem_usage(config.config['PostProcessingOptions']['PostProcessingMemoryUsage'])
         batch_manager.update_time(config.config['PostProcessingOptions']['PostProcessingTimeUsage'])
