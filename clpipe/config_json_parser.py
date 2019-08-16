@@ -181,7 +181,7 @@ class ConfigParser:
         else:
             self.config['SUSANOptions']['LogDirectory'] = os.path.join(self.config['ProjectDirectory'], 'logs',
                                                                                'SUSAN_logs')
-        os.makedirs(self.config['ROIExtractionOptions']['LogDirectory'], exist_ok=True)
+        os.makedirs(self.config['SUSANOptions']['LogDirectory'], exist_ok=True)
 
     def get_processing_stream_names(self):
         try:
