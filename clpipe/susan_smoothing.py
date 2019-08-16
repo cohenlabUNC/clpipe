@@ -131,6 +131,7 @@ def _susan_subject(config, subject, task):
             try:
                 sus.inputs.in_file = image
                 sus.inputs.out_file = _build_output_directory_structure(config, image)
+                logging.info('Running ' + sus.cmdline())
                 result = sus.run()
                 logging.debug(result)
             except Exception as err:
