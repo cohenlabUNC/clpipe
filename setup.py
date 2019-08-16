@@ -20,7 +20,8 @@ setup(name='clpipe',
                         'psutil',
                         'parse',
                         'nilearn',
-                        'dcm2bids'],
+                        'dcm2bids',
+                        'nipype'],
       entry_points='''
       [console_scripts]
       fmriprep_process=clpipe.fmri_preprocess:fmriprep_process

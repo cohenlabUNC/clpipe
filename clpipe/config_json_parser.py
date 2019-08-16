@@ -56,16 +56,21 @@ class ConfigParser:
         self.setup_postproc(os.path.join(self.config['FMRIPrepOptions']['OutputDirectory'], 'fmriprep'),
                             target_suffix= None,
                             output_dir= os.path.join(self.config['ProjectDirectory'], 'data_postproc', 'postproc_default'),
-                            output_suffix= 'postproc_1.nii.gz')
+                            output_suffix= 'postproc.nii.gz')
         self.setup_postproc(os.path.join(self.config['FMRIPrepOptions']['OutputDirectory'], 'fmriprep'),
                             target_suffix=None,
                             output_dir=os.path.join(self.config['ProjectDirectory'], 'data_postproc', 'betaseries_default'),
-                            output_suffix='betaseries_1.nii.gz', beta_series=True)
+                            output_suffix='betaseries.nii.gz', beta_series=True)
         self.setup_roiextract(target_dir = os.path.join(self.config['ProjectDirectory'], 'data_postproc', 'postproc_default'),
                               target_suffix= 'postproc.nii.gz',
                               output_dir= os.path.join(self.config['ProjectDirectory'],
                                            'data_ROI_ts', 'postproc_default'),
                               )
+        self.setup_susan(os.path.join(self.config['ProjectDirectory'], 'data_postproc', 'postproc_default'),
+                            target_suffix='postproc.nii.gz',
+                            output_dir=os.path.join(self.config['ProjectDirectory'], 'data_postproc',
+                                                    'postproc_default'),
+                            output_suffix='postproc_default.nii.gz')
         processing_streams = self.get_processing_stream_names()
         print(processing_streams)
         if processing_streams:
@@ -157,6 +162,25 @@ class ConfigParser:
         else:
             self.config['ROIExtractionOptions']['LogDirectory'] = os.path.join(self.config['ProjectDirectory'], 'logs',
                                                                              'ROI_extraction_logs')
+        os.makedirs(self.config['ROIExtractionOptions']['LogDirectory'], exist_ok=True)
+
+    def setup_susan(self, target_dir, target_suffix, output_dir, output_suffix, log_dir):
+        if target_dir is not None:
+            self.config['SUSANOptions']['TargetDirectory'] = os.path.abspath(target_dir)
+            if not os.path.isdir(self.config['SUSANOptions']['TargetDirectory']):
+                raise ValueError('Target Directory does not exist')
+        if output_dir is not None:
+            self.config['SUSANOptions']['OutputDirectory'] = os.path.abspath(output_dir)
+            os.makedirs(self.config['SUSANOptions']['OutputDirectory'], exist_ok=True)
+        if target_suffix is not None:
+            self.config['SUSANOptions']['TargetSuffix'] = target_suffix
+        if output_suffix is not None:
+            self.config['SUSANOptions']['OutputSuffix'] = output_suffix
+        if log_dir is not None:
+            self.config['SUSANOptions']['LogDirectory'] = os.path.abspath(log_dir)
+        else:
+            self.config['SUSANOptions']['LogDirectory'] = os.path.join(self.config['ProjectDirectory'], 'logs',
+                                                                               'SUSAN_logs')
         os.makedirs(self.config['ROIExtractionOptions']['LogDirectory'], exist_ok=True)
 
     def get_processing_stream_names(self):

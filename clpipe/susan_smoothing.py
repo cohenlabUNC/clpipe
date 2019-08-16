@@ -17,7 +17,7 @@ import psutil
 import sys
 from .error_handler import exception_handler
 import nipy.modalities.fmri.hrf
-
+from nipype.interfaces import fsl
 
 @click.command()
 @click.argument('subjects', nargs=-1, required=False, default=None)
@@ -50,15 +50,12 @@ def susan_smoothing(config_file=None, subjects=None, target_dir=None, target_suf
     else:
         logging.basicConfig(level=logging.DEBUG)
 
-    if config_file is None and tr is None:
-        raise ValueError('No config file and no specified TR. Please include one.')
-
     config = ConfigParser()
     config.config_updater(config_file)
-    config.setup_susan(target_dir, target_suffix, output_dir, output_suffix, beta_series,
+    config.setup_susan(target_dir, target_suffix, output_dir, output_suffix,
                           log_dir)
     config.validate_config()
-    output_type = 'BetaSeriesOptions'
+    output_type = 'SUSANOptions'
 
     alt_proc_toggle = False
     if processing_stream is not None:
@@ -69,7 +66,7 @@ def susan_smoothing(config_file=None, subjects=None, target_dir=None, target_suf
         alt_proc_toggle = True
 
     if alt_proc_toggle:
-        config.config['PostProcessingOptions'].update(processing_stream_config[0]['SUSANOptions'])
+        config.config['SUSANOptions'].update(processing_stream_config[0]['SUSANOptions'])
 
     if not subjects:
         subjectstring = "ALL"
@@ -82,7 +79,6 @@ def susan_smoothing(config_file=None, subjects=None, target_dir=None, target_suf
     submission_string = '''susan_smoothing -config_file={config} -target_dir={targetDir} -target_suffix={targetSuffix} ''' \
                         '''-output_dir={outputDir} -output_suffix={outputSuffix} {procstream} -log_dir={logOutputDir} {taskString} -single {sub}'''
     task_string = ""
-    tr_string = ""
     beta_series_string = ""
     if task is not None:
         task_string = '-task=' + task
@@ -107,7 +103,6 @@ def susan_smoothing(config_file=None, subjects=None, target_dir=None, target_suf
                 outputSuffix=config.config[output_type]['OutputSuffix'],
                 procstream=procstream,
                 taskString=task_string,
-                trString=tr_string,
                 logOutputDir=config.config[output_type]['LogDirectory'],
                 beta_series=beta_series_string,
                 sub=sub
@@ -115,7 +110,7 @@ def susan_smoothing(config_file=None, subjects=None, target_dir=None, target_suf
             if debug:
                 sub_string_temp = sub_string_temp + " -debug"
 
-            batch_manager.addjob(Job("PostProcessing" + sub, sub_string_temp))
+            batch_manager.addjob(Job("SUSAN" + sub, sub_string_temp))
         if submit:
             batch_manager.createsubmissionhead()
             batch_manager.compilejobstrings()
@@ -126,26 +121,46 @@ def susan_smoothing(config_file=None, subjects=None, target_dir=None, target_suf
             click.echo(batch_manager.print_jobs())
     else:
         for sub in subjects:
-            logging.debug(beta_series)
+
             logging.info('Running Subject ' + sub)
-            _fmri_postprocess_subject(config, sub, task, tr, beta_series)
+            _susan_subject(config, sub, task)
 
 
-def _fmri_postprocess_subject(config, subject, task, tr=None, beta_series=False):
-    if beta_series:
-        output_type = 'BetaSeriesOptions'
-    else:
-        output_type = 'PostProcessingOptions'
+def _susan_subject(config, subject, task):
+    output_type = 'SUSANOptions'
     search_string = os.path.abspath(
         os.path.join(config.config[output_type]['TargetDirectory'], "sub-" + subject, "**",
                      "*" + config.config[output_type]['TargetSuffix']))
 
     subject_files = glob.glob(search_string, recursive=True)
+    sus = fsl.SUSAN()
+    sus.inputs.brightness_threshold = config.config[output_type]['BrightnessThreshold']
+    sus.inputs.fwhm = config.config[output_type]['FWHM']
+    sus.inputs.output_type = 'NIFTI_GZ'
     logging.info('Finding Image Files')
     for image in subject_files:
         if task is None or 'task-' + task in image:
             logging.info('Processing ' + image)
             try:
-                _fmri_postprocess_image(config, image, task, tr, beta_series)
+                sus.inputs.in_file = image
+                sus.inputs.out_file = _build_output_directory_structure(config, image)
+                result = sus.run()
+                logging.debug(result)
             except Exception as err:
                 logging.exception(err)
+
+def _build_output_directory_structure(config, filepath):
+    output_type = 'SUSANOptions'
+
+    target_directory = filepath[filepath.find('sub-'):]
+    target_directory = os.path.dirname(target_directory)
+    target_directory = os.path.join(config.config[output_type]['OutputDirectory'], target_directory)
+    logging.debug(target_directory)
+    os.makedirs(target_directory, exist_ok=True)
+    file_name = os.path.basename(filepath)
+    sans_ext = os.path.splitext(os.path.splitext(file_name)[0])[0]
+    logging.debug(config.config[output_type]['OutputSuffix'])
+    file_name = sans_ext + '_' + config.config[output_type]['OutputSuffix']
+    logging.debug(file_name)
+    return os.path.join(target_directory, file_name)
+
