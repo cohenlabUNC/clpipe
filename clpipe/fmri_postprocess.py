@@ -61,7 +61,7 @@ def fmri_postprocess(config_file=None, subjects=None, target_dir=None, target_su
 
     alt_proc_toggle = False
     if processing_stream is not None:
-        processing_stream_config = config.config['PostProcessingOptions']['ProcessingStreams']
+        processing_stream_config = config.config['ProcessingStreams']
         processing_stream_config = [i for i in processing_stream_config if i['ProcessingStream'] == processing_stream]
         if len(processing_stream_config) == 0:
             raise KeyError('The processing stream you specified was not found.')
@@ -85,7 +85,7 @@ def fmri_postprocess(config_file=None, subjects=None, target_dir=None, target_su
         sublist = subjects
 
     submission_string = '''fmri_postprocess -config_file={config} -target_dir={targetDir} -target_suffix={targetSuffix} ''' \
-                        '''-output_dir={outputDir} -output_suffix={outputSuffix} -log_output_dir={logOutputDir} {taskString} {trString} {beta_series} -single {sub}'''
+                        '''-output_dir={outputDir} -output_suffix={outputSuffix} {procstream} -log_dir={logOutputDir} {taskString} {trString} {beta_series} -single {sub}'''
     task_string = ""
     tr_string = ""
     beta_series_string = ""
@@ -95,7 +95,10 @@ def fmri_postprocess(config_file=None, subjects=None, target_dir=None, target_su
         tr_string = '-tr='+tr
     if beta_series:
         beta_series_string = '-beta_series'
-
+    if processing_stream is not None:
+        procstream = "-processing_stream=" + processing_stream
+    else:
+        procstream = ""
     if batch:
         config_string = config.config_json_dump(config.config[output_type]['OutputDirectory'], os.path.basename(config_file))
         batch_manager = BatchManager(config.config['BatchConfig'], config.config[output_type]['LogDirectory'])
@@ -110,6 +113,7 @@ def fmri_postprocess(config_file=None, subjects=None, target_dir=None, target_su
                 targetSuffix=config.config[output_type]['TargetSuffix'],
                 outputDir=config.config[output_type]['OutputDirectory'],
                 outputSuffix=config.config[output_type]['OutputSuffix'],
+                procstream = procstream,
                 taskString = task_string,
                 trString = tr_string,
                 logOutputDir=config.config[output_type]['LogDirectory'],

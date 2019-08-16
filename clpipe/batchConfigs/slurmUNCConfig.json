@@ -15,7 +15,7 @@
   "OutputCommand": "--output={output}",
   "CommandWrapper": "--wrap=\"{cmdwrap}\"",
   "EmailAddress": "",
-  "EmailCommand": "-M {email}",
+  "EmailCommand": "--mail-user {email} --mail-type=FAIL",
   "NoQuotes": false,
   "TimeCommandActive": true,
   "ThreadCommandActive": true,
