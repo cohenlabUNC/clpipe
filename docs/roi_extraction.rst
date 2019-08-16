@@ -52,5 +52,5 @@ clpipe comes with a variety of functional and anatomical atlases, which can be u
       --help                     Show this message and exit.
 
 
-
+To view the available built-in atlases, you can use the ``get_available_atlases`` command.
 

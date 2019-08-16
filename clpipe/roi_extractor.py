@@ -240,4 +240,4 @@ def get_available_atlases():
         print('Atlas Label: ' + atlas['atlas_name'])
         print('Atlas Type: ' + atlas['atlas_type'])
         print('Atlas Citation: ' + atlas['atlas_citation'])
-        print('\n')
+        print('')
