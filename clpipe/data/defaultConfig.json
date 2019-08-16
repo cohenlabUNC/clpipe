@@ -86,8 +86,11 @@
 		"TargetSuffix": "preproc_bold.nii.gz",
 		"OutputDirectory": "",
 		"OutputSuffix": "preproc_susan.nii.gz",
-		"BrightnessThreshold": 2000,
-		"FWHM": 8.0,
+		"BrightnessThreshold": 500,
+		"FWHM": 0,
+		"MemoryUsage": "5000",
+		"TimeUsage": "2:0:0",
+		"NThreads": "4",
         "LogDirectory": ""
 	},
 	"ProcessingStreams": [
@@ -102,6 +105,10 @@
 				"GlobalSignalRegression": false,
 				"OutputDirectory": "",
 				"OutputSuffix": ""
+			},
+			"SUSANOptions": {
+				"OutputSuffix": "preproc_susan250.nii.gz",
+				"BrightnessThreshold": 250
 			}
 		},
 		{
@@ -113,6 +120,8 @@
 			},
 			"BetaSeriesOptions":{
 
+			},
+			"SUSANOptions": {
 			}
 		}
 

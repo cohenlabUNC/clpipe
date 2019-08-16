@@ -1,22 +1,11 @@
 import os
 import glob
 import click
-import pandas
-from nipy import load_image
-from nipy.core.image.image import Image
-from nipy import save_image
 from .batch_manager import BatchManager, Job
 from .config_json_parser import ConfigParser
-import json
-from pkg_resources import resource_stream, resource_filename
-import clpipe.postprocutils
-import numpy
 import logging
-import gc
-import psutil
 import sys
 from .error_handler import exception_handler
-import nipy.modalities.fmri.hrf
 from nipype.interfaces import fsl
 
 @click.command()
@@ -24,14 +13,14 @@ from nipype.interfaces import fsl
 @click.option('-config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True), default=None,
               help='Use a given configuration file. If left blank, uses the default config file, requiring definition of BIDS, working and output directories.')
 @click.option('-target_dir', type=click.Path(exists=True, dir_okay=True, file_okay=False),
-              help='Which fmriprep directory to process. If a configuration file is provided with a BIDS directory, this argument is not necessary. Note, must point to the ``fmriprep`` directory, not its parent directory.')
+              help='Which directory to process. If a configuration file is provided.')
 @click.option('-target_suffix',
               help='Which file suffix to use. If a configuration file is provided with a target suffix, this argument is not necessary. Defaults to "preproc_bold.nii.gz"')
 @click.option('-output_dir', type=click.Path(dir_okay=True, file_okay=False),
               help='Where to put the postprocessed data. If a configuration file is provided with a output directory, this argument is not necessary.')
 @click.option('-output_suffix',
-              help='What suffix to append to the postprocessed files. If a configuration file is provided with a output suffix, this argument is not necessary.')
-@click.option('-task', help='Which task to postprocess. If left blank, defaults to all tasks.')
+              help='What suffix to append to the smoothed files. If a configuration file is provided with a output suffix, this argument is not necessary.')
+@click.option('-task', help='Which task to smooth. If left blank, defaults to all tasks.')
 @click.option('-processing_stream', help = 'Optional processing stream selector.')
 @click.option('-log_dir', type=click.Path(dir_okay=True, file_okay=False),
               help='Where to put HPC output files. If not specified, defaults to <outputDir>/batchOutput.')
@@ -43,7 +32,6 @@ from nipype.interfaces import fsl
 def susan_smoothing(config_file=None, subjects=None, target_dir=None, target_suffix=None, output_dir=None,
                      output_suffix=None, log_dir=None,
                      submit=False, batch=True, task=None, debug = None, processing_stream = None):
-    """This command runs an fMRIprep'ed dataset through additional processing, as defined in the configuration file. To run specific subjects, specify their IDs. If no IDs are specified, all subjects are ran."""
     if not debug:
         sys.excepthook = exception_handler
         logging.basicConfig(level=logging.INFO)
@@ -89,9 +77,9 @@ def susan_smoothing(config_file=None, subjects=None, target_dir=None, target_suf
     if batch:
         config_string = os.path.abspath(config_file)
         batch_manager = BatchManager(config.config['BatchConfig'], config.config[output_type]['LogDirectory'])
-        batch_manager.update_mem_usage(config.config['PostProcessingOptions']['PostProcessingMemoryUsage'])
-        batch_manager.update_time(config.config['PostProcessingOptions']['PostProcessingTimeUsage'])
-        batch_manager.update_nthreads(config.config['PostProcessingOptions']['NThreads'])
+        batch_manager.update_mem_usage(config.config['SUSANOptions']['MemoryUsage'])
+        batch_manager.update_time(config.config['SUSANOptions']['TimeUsage'])
+        batch_manager.update_nthreads(config.config['SUSANOptions']['NThreads'])
         batch_manager.update_email(config.config["EmailAddress"])
         for sub in sublist:
             sub_string_temp = submission_string.format(
