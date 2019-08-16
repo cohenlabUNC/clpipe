@@ -20,7 +20,8 @@ setup(name='clpipe',
                         'psutil',
                         'parse',
                         'nilearn',
-                        'dcm2bids'],
+                        'dcm2bids',
+                        'nipype'],
       entry_points='''
       [console_scripts]
       fmriprep_process=clpipe.fmri_preprocess:fmriprep_process
@@ -35,6 +36,8 @@ setup(name='clpipe',
       convert2bids=clpipe.dcm2bids_wrapper:convert2bids
       project_setup=clpipe.project_setup:project_setup
       test_batch_setup=clpipe.test_batch_setup:test_batch_setup
+      susan_smoothing = clpipe.susan_smoothing:susan_smoothing
+      get_available_atlases=clpipe.roi_extractor:get_available_atlases
       ''',
       zip_safe=False
       )

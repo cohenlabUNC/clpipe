@@ -227,3 +227,17 @@ def _fmri_roi_extract_image(data, atlas_path, atlas_type, radius, overlap_ok):
     timeseries[timeseries == 0.0] = np.nan
 
     return timeseries
+
+
+@click.command()
+def get_available_atlases():
+
+    with resource_stream(__name__, 'data/atlasLibrary.json') as at_lib:
+        atlas_library = json.load(at_lib)
+
+    for atlas in atlas_library['Atlases']:
+
+        print('Atlas Label: ' + atlas['atlas_name'])
+        print('Atlas Type: ' + atlas['atlas_type'])
+        print('Atlas Citation: ' + atlas['atlas_citation'])
+        print('')

@@ -25,7 +25,7 @@
 	},
 	"PostProcessingOptions": {
 		"TargetDirectory": "",
-		"TargetSuffix": "preproc_bold.nii.gz",
+		"TargetSuffix": "space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz",
 		"OutputDirectory": "",
 		"OutputSuffix": "",
 		"ConfoundSuffix": "desc-confounds_regressors.tsv",
@@ -81,6 +81,18 @@
 		],
       "LogDirectory": ""
     },
+	"SUSANOptions": {
+		"TargetDirectory": "",
+		"TargetSuffix": "preproc_bold.nii.gz",
+		"OutputDirectory": "",
+		"OutputSuffix": "preproc_susan.nii.gz",
+		"BrightnessThreshold": 500,
+		"FWHM": 0,
+		"MemoryUsage": "5000",
+		"TimeUsage": "2:0:0",
+		"NThreads": "4",
+        "LogDirectory": ""
+	},
 	"ProcessingStreams": [
 		{
 			"ProcessingStream": "noGSR",
@@ -93,6 +105,10 @@
 				"GlobalSignalRegression": false,
 				"OutputDirectory": "",
 				"OutputSuffix": ""
+			},
+			"SUSANOptions": {
+				"OutputSuffix": "preproc_susan250.nii.gz",
+				"BrightnessThreshold": 250
 			}
 		},
 		{
@@ -104,6 +120,8 @@
 			},
 			"BetaSeriesOptions":{
 
+			},
+			"SUSANOptions": {
 			}
 		}
 

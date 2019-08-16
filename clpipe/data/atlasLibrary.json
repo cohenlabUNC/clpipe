@@ -4,94 +4,111 @@
       "atlas_name": "harvard_oxford",
       "atlas_file": "data/atlases/harvard_oxford/HarvardOxford-cort-maxprob-thr25-2mm.nii.gz",
       "atlas_labels": "data/atlases/harvard_oxford/HarvardOxford_labels.txt",
-      "atlas_type": "label"
+      "atlas_type": "label",
+      "atlas_citation": ""
     },
     {
       "atlas_name": "craddock200",
       "atlas_file": "data/atlases/craddock/cc200_roi_atlas.nii.gz",
       "atlas_labels": "data/atlases/craddock/CC200_ROI_labels.csv",
-      "atlas_type": "label"
+      "atlas_type": "label",
+      "atlas_citation": ""
     },
     {
       "atlas_name": "craddock400",
       "atlas_file": "data/atlases/craddock/cc400_roi_atlas.nii.gz",
       "atlas_labels": "data/atlases/craddock/CC400_ROI_labels.csv",
-      "atlas_type": "label"
+      "atlas_type": "label",
+      "atlas_citation": ""
     },
     {
       "atlas_name": "destrieux_rois",
       "atlas_file": "data/atlases/destrieux/destrieux2009_rois.nii.gz",
       "atlas_labels": "data/atlases/destrieux/destrieux2009_rois_labels.csv",
-      "atlas_type": "label"
+      "atlas_type": "label",
+      "atlas_citation": ""
     },
     {
       "atlas_name": "destrieux_rois_lateralized",
       "atlas_file": "data/atlases/destrieux/destrieux2009_rois_lateralized.nii.gz",
       "atlas_labels": "data/atlases/destrieux/destrieux2009_rois_labels_lateralized.csv",
-      "atlas_type": "label"
+      "atlas_type": "label",
+      "atlas_citation": ""
     },
     {"atlas_name": "dosenbach",
       "atlas_file": "data/atlases/dosenbach/dos160_roi_atlas.nii.gz",
       "atlas_labels": "data/atlases/dosenbach/dos160_labels.csv",
-      "atlas_type": "label"
+      "atlas_type": "label",
+      "atlas_citation": ""
     },
     {"atlas_name": "eickhoff_zilles",
       "atlas_file": "data/atlases/eickhoff_zilles/ez_roi_atlas.nii.gz",
       "atlas_labels": "data/atlases/eickhoff_zilles/ez_labels.csv",
-      "atlas_type": "label"
+      "atlas_type": "label",
+      "atlas_citation": ""
     },
 
     {
       "atlas_name": "msdl",
       "atlas_file": "data/atlases/msdl/msdl_rois.nii.gz",
       "atlas_labels": "data/atlases/msdl/msdl_rois_labels.csv",
-      "atlas_type": "maps"
+      "atlas_type": "maps",
+      "atlas_citation": ""
     },
     {
       "atlas_name": "power",
       "atlas_file": "data/atlases/power/power_atlas_coordinates.txt",
       "atlas_labels": "data/atlases/power/Consensus264.xls",
-      "atlas_type": "sphere"
+      "atlas_type": "sphere",
+      "atlas_citation": ""
     },
     { "atlas_name": "yeo_7Network_Strict",
       "atlas_file": "data/atlases/yeo/Yeo2011_7Networks_MNI152_FreeSurferConformed1mm.nii.gz",
       "atlas_labels": "data/atlases/yeo/Yeo2011_7Networks_ColorLUT.txt",
-      "atlas_type": "label"
+      "atlas_type": "label",
+      "atlas_citation": ""
     },
     { "atlas_name": "yeo_7Network_Liberal",
       "atlas_file": "data/atlases/yeo/Yeo2011_7Networks_MNI152_FreeSurferConformed1mm_LiberalMask.nii.gz",
       "atlas_labels": "data/atlases/yeo/Yeo2011_7Networks_ColorLUT.txt",
-      "atlas_type": "label"
+      "atlas_type": "label",
+      "atlas_citation": ""
     },
     { "atlas_name": "yeo_17Network_Strict",
       "atlas_file": "data/atlases/yeo/Yeo2011_17Networks_MNI152_FreeSurferConformed1mm.nii.gz",
       "atlas_labels": "data/atlases/yeo/Yeo2011_7Networks_ColorLUT.txt",
-      "atlas_type": "label"
+      "atlas_type": "label",
+      "atlas_citation": ""
     },
     { "atlas_name": "yeo_17Network_Liberal",
       "atlas_file": "data/atlases/yeo/Yeo2011_17Networks_MNI152_FreeSurferConformed1mm_LiberalMask.nii.gz",
       "atlas_labels": "data/atlases/yeo/Yeo2011_7Networks_ColorLUT.txt",
-      "atlas_type": "label"
+      "atlas_type": "label",
+      "atlas_citation": ""
     },
     { "atlas_name": "aal",
       "atlas_file": "data/atlases/aal/AAL.nii.gz",
       "atlas_labels": "data/atlases/aal/aal_labels.csv",
-      "atlas_type": "label"
+      "atlas_type": "label",
+      "atlas_citation": ""
     },
     { "atlas_name": "schaefer7Networks",
       "atlas_file": "data/atlases/schaefer/Schaefer2018_100Parcels_7Networks_order_FSLMNI152_2mm.nii.gz",
       "atlas_labels": "data/atlases/schaefer/Schaefer2018_100Parcels_7Networks_order_FSLMNI152_2mm_labels.csv",
-      "atlas_type": "label"
+      "atlas_type": "label",
+      "atlas_citation": ""
     },
     { "atlas_name": "schaefer17Networks",
       "atlas_file": "data/atlases/schaefer/Schaefer2018_100Parcels_17Networks_order_FSLMNI152_2mm.nii.gz",
       "atlas_labels": "data/atlases/schaefer/Schaefer2018_100Parcels_17Networks_order_FSLMNI152_2mm_labels.csv",
-      "atlas_type": "label"
+      "atlas_type": "label",
+      "atlas_citation": ""
     },
     { "atlas_name": "bigbrain",
       "atlas_file": "data/atlases/bigbrain/BigBrain300_MNI_coordinates.txt",
       "atlas_labels": "data/atlases/bigbrain/BigBrain300_ROIinfo.xlsx",
-      "atlas_type": "sphere"
+      "atlas_type": "sphere",
+      "atlas_citation": ""
     }
   ]
 
