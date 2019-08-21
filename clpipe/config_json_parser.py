@@ -164,7 +164,7 @@ class ConfigParser:
                                                                              'ROI_extraction_logs')
         os.makedirs(self.config['ROIExtractionOptions']['LogDirectory'], exist_ok=True)
 
-    def setup_susan(self, target_dir, target_suffix, output_dir, output_suffix, log_dir):
+    def setup_susan(self, target_dir, target_suffix, output_dir, output_suffix, log_dir =None):
         if target_dir is not None:
             self.config['SUSANOptions']['TargetDirectory'] = os.path.abspath(target_dir)
             if not os.path.isdir(self.config['SUSANOptions']['TargetDirectory']):
