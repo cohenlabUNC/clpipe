@@ -39,8 +39,8 @@ def fmriprep_process(bids_dir=None, working_dir=None, output_dir=None, config_fi
         raise ValueError(
             'Please make sure the BIDS, working and output directories are specified in either the configfile or in the command. At least one is not specified.')
 
-    singularity_string = '''unset PYTHONPATH; singularity run -B {bindPaths} -e --no-home {fmriprepInstance} {bidsDir} {outputDir} participant ''' \
-                         '''--participant-label {participantLabels} -w {workingdir} --fs-license-file {fslicense} --nthreads {threads}'''
+    singularity_string = '''unset PYTHONPATH; singularity run -B {bindPaths} {batchcommands} {fmriprepInstance} {bidsDir} {outputDir} participant ''' \
+                         '''--participant-label {participantLabels} -w {workingdir} --fs-license-file {fslicense} {threads}'''
 
     if not subjects:
         subjectstring = "ALL"
@@ -55,15 +55,22 @@ def fmriprep_process(bids_dir=None, working_dir=None, output_dir=None, config_fi
     batch_manager.update_time(config.config['FMRIPrepOptions']['FMRIPrepTimeUsage'])
     batch_manager.update_nthreads(config.config['FMRIPrepOptions']['NThreads'])
     batch_manager.update_email(config.config["EmailAddress"])
+
+    if batch_manager.config['ThreadCommandActive']:
+        threads = '--nthreads ' + batch_manager.get_threads_command()[1]
+    else:
+        threads = ''
+
     for sub in sublist:
         batch_manager.addjob(Job("sub-" + sub + "fmriprep", singularity_string.format(
             fmriprepInstance=config.config['FMRIPrepOptions']['FMRIPrepPath'],
             bidsDir=config.config['FMRIPrepOptions']['BIDSDirectory'],
             outputDir=config.config['FMRIPrepOptions']['OutputDirectory'],
             workingdir=config.config['FMRIPrepOptions']['WorkingDirectory'],
+            batchcommands=batch_manager.config["FMRIPrepBatchCommands"],
             participantLabels=sub,
             fslicense=config.config['FMRIPrepOptions']['FreesurferLicensePath'],
-            threads=batch_manager.get_threads_command()[1],
+            threads= threads,
             bindPaths=batch_manager.config['SingularityBindPaths'],
         )))
 
