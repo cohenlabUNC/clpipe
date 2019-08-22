@@ -16,6 +16,7 @@
   "CommandWrapper": "--wrap=\"{cmdwrap}\"",
   "EmailAddress": "",
   "EmailCommand": "--mail-user {email} --mail-type=FAIL",
+  "FMRIprepBatchCommands": "-e --no-home",
   "NoQuotes": false,
   "TimeCommandActive": true,
   "ThreadCommandActive": true,
