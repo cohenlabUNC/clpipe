@@ -13,7 +13,7 @@
   "CommandWrapper": "-b y \"{cmdwrap}\"",
   "EmailAddress": "",
   "EmailCommand": "-M {email}",
-  "FMRIprepBatchCommands": "-e",
+  "FMRIPrepBatchCommands": "-e",
   "NoQuotes": false,
   "TimeCommandActive": false,
   "ThreadCommandActive": false,
