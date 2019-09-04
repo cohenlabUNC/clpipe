@@ -20,8 +20,8 @@ class ConfigParser:
         with resource_stream(__name__, 'data/defaultConfig.json') as def_config:
             self.config = json.load(def_config)
         self.setup_default_config()
-        with resource_stream(__name__, 'data/configSchema.json') as def_schema:
-            self.configSchema = json.load(def_schema)
+        #with resource_stream(__name__, 'data/configSchema.json') as def_schema:
+         #   self.configSchema = json.load(def_schema)
 
     def config_updater(self, new_config):
         if new_config is None:
@@ -42,7 +42,8 @@ class ConfigParser:
         pass
 
     def validate_config(self):
-        validate(self.config, self.configSchema)
+       # validate(self.config, self.configSchema)
+        return 1
 
     def setup_project(self, project_title, project_dir, source_data):
         self.config['ProjectTitle'] = project_title
