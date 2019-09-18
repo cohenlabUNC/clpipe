@@ -78,7 +78,5 @@ def fmriprep_process(bids_dir=None, working_dir=None, output_dir=None, config_fi
     batch_manager.compilejobstrings()
     if submit:
         batch_manager.submit_jobs()
-        config.update_runlog(subjectstring, "FMRIprep")
-        config.config_json_dump(config.config['FMRIPrepOptions']['OutputDirectory'], config_file)
     else:
         batch_manager.print_jobs()
