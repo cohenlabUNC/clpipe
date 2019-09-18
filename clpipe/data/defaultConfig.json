@@ -19,6 +19,7 @@
 		"OutputDirectory": "",
 		"FMRIPrepPath": "/proj/hng/singularity_imgs/fmriprep_1.3.2.simg",
 		"FreesurferLicensePath": "/proj/hng/singularity_imgs/license.txt",
+		"CommandLineOpts": "",
 		"FMRIPrepMemoryUsage": "20000",
 		"FMRIPrepTimeUsage": "16:0:0",
 		"NThreads": "8",
