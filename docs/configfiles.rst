@@ -31,6 +31,7 @@ This command will create a default configuration file with whatever name you spe
 		"OutputDirectory": "",
 		"FMRIPrepPath": "/proj/hng/singularity_imgs/fmriprep_1.3.2.simg",
 		"FreesurferLicensePath": "/proj/hng/singularity_imgs/license.txt",
+		"CommandLineOpts": "",
 		"FMRIPrepMemoryUsage": "20000",
 		"FMRIPrepTimeUsage": "16:0:0",
         "LogDirectory": ""
@@ -173,6 +174,7 @@ FMRIPrep Options
     * ``WorkingDirectory`` Where you want your working files to go. Use absolute paths. For Longleaf users, use /pine/scr/<o>/<n>/<onyen>, where <onyen> is your onyen, and <o> <n> are the first and second letters of your onyen respectively.
     * ``FMRIPrepPath:`` Where the fMRIprep Singularity image is.
     * ``FreesurferLicensePath:`` Where your Freesurfer license .txt file is.
+    * ``CommandLineOpts:`` Additional arguments to pass to FMRIprep
     * ``FMRIPrepMemoryUsage:`` How much memory in RAM each subject's preprocessing will use, in Mbs. Default is 20000Mb or 20Gb.
     * ``FMRIPrepTimeUsage:`` How much time on the cluster FMRIPrep is allowed to use. Defaults to 16 hours.
     * ``LogDirectory:`` Where cluster output files are stored.
