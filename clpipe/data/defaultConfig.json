@@ -57,7 +57,7 @@
 		"PostProcessingTimeUsage": "8:0:0",
 		"NThreads": "1",
 		"SpectralInterpolationBinSize": 5000,
-		"BIDSValidatorImage": "/proj/hng/singularity_imgs/validator.simg",
+		"BIDSValidatorImage": "/proj/hng/singularity_imgs/bidsvalidator_1.3.3.simg",
         "LogDirectory": ""
 	},
 	"BetaSeriesOptions": {
