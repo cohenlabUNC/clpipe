@@ -17,7 +17,7 @@
 		"BIDSDirectory": "",
 		"WorkingDirectory": "",
 		"OutputDirectory": "",
-		"FMRIPrepPath": "/proj/hng/singularity_imgs/fmriprep_1.3.2.simg",
+		"FMRIPrepPath": "/proj/hng/singularity_imgs/validator.simg",
 		"FreesurferLicensePath": "/proj/hng/singularity_imgs/license.txt",
 		"CommandLineOpts": "",
 		"FMRIPrepMemoryUsage": "20000",
