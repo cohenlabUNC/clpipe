@@ -73,7 +73,6 @@ class ConfigParser:
                                                     'postproc_default'),
                             output_suffix='postproc_default.nii.gz')
         processing_streams = self.get_processing_stream_names()
-        print(processing_streams)
         if processing_streams:
             for stream in processing_streams:
                 self.update_processing_stream(stream,
