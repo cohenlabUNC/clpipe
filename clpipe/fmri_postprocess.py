@@ -75,7 +75,7 @@ def fmri_postprocess(config_file=None, subjects=None, target_dir=None, target_su
                                            processing_stream_config[0]['BetaSeriesOptions']['LogDirectory'])
             config.config['BetaSeriesOptions'].update(processing_stream_config[0]['BetaSeriesOptions'])
         else:
-            config.config['PostProcessinggOptions'].update(processing_stream_config[0]['PostProcessingOptions'])
+            config.config['PostProcessingOptions'].update(processing_stream_config[0]['PostProcessingOptions'])
             config.update_processing_stream(processing_stream, processing_stream_config[0]['PostProcessingOptions']['OutputDirectory'],
                                            processing_stream_config[0]['PostProcessingOptions']['OutputSuffix'],
                                            processing_stream_config[0]['PostProcessingOptions']['LogDirectory'])
