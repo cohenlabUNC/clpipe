@@ -200,7 +200,7 @@ class ConfigParser:
         index = [ind  for ind,e in enumerate(self.config['ProcessingStreams']) if e['ProcessingStream'] == stream_name][0]
         if output_dir is not None:
             self.config['ProcessingStreams'][index][target_output]['OutputDirectory'] = os.path.abspath(output_dir)
-            os.makedirs(self.config['ProcessingStreams'][index][target_output]['OutputDir'], exist_ok=True)
+            os.makedirs(self.config['ProcessingStreams'][index][target_output]['OutputDirectory'], exist_ok=True)
         if output_suffix is not None:
             self.config['ProcessingStreams'][index][target_output]['OutputSuffix'] = output_suffix
         if log_dir is not None:
