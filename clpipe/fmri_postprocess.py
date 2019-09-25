@@ -168,7 +168,12 @@ def _fmri_postprocess_subject(config, subject, task, tr=None, beta_series = Fals
 
 def _fmri_postprocess_image(config, file, task = None, tr=None, beta_series = False):
     confound_regressors = _find_confounds(config, file)
-
+    output_file_path = _build_output_directory_structure(config, file, beta_series)
+    
+    if os.path.exists(output_file_path):
+      logging.info("Output File Exists! Skipping.")
+      return 0
+    
     logging.info('Looking for: ' + confound_regressors)
 
     if not os.path.exists(confound_regressors):
