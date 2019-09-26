@@ -206,8 +206,8 @@ def _fmri_roi_extract_subject(subject, task, atlas_name, atlas_filename, atlas_l
       file_outname = os.path.splitext(os.path.basename(file))[0] 
       if '.nii' in file_outname:
            file_outname = os.path.splitext(file_outname)[0]
-      if os.path.exists(os.path.join(config.config['ROIExtractionOptions']['OutputDirectory'], atlas_name), file_outname +"_atlas-" + atlas_name+ '.csv')):
-        logging.info("File Exists! Skipping")
+      if os.path.exists(os.path.join(config.config['ROIExtractionOptions']['OutputDirectory'], atlas_name+'/'+ file_outname +"_atlas-" + atlas_name+ '.csv')):
+           logging.info("File Exists! Skipping")
       else:
         ROI_ts = _fmri_roi_extract_image(file, atlas_path, atlas_type, radius, overlap_ok)
         np.savetxt(os.path.join(os.path.join(config.config['ROIExtractionOptions']['OutputDirectory'], atlas_name), file_outname +"_atlas-" + atlas_name+ '.csv'), ROI_ts, delimiter=',')
