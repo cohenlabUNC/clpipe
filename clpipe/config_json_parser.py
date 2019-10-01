@@ -14,7 +14,7 @@ from pkg_resources import resource_stream
 def update_config_file(config_file=None):
     '''Updates an existing configuration file with any new fields. Does not modify existing fields.'''
     new_config = config_json_parser(config_file)
-    temp = new_config
+    temp = config_json_parser(config_file)
     with resource_stream(__name__, 'data/defaultConfig.json') as def_config:
             config_default = json.load(def_config)
     new_config = update(new_config, config_default)
