@@ -32,6 +32,7 @@ import shutil
 @click.option('-custom_type', help = 'What type of atlas? (label, maps, or spheres). Not needed if specified in config.')
 @click.option('-radius', help = "If a sphere atlas, what radius sphere, in mm. Not needed if specified in config.", default = '5')
 @click.option('-overlap_ok', is_flag=True, default=False, help = "Are overlapping ROIs allowed?")
+@click.option('-overwrite', is_flag=True, default=False, help = "Overwrite existing ROI timeseries?")
 @click.option('-log_output_dir', type=click.Path(dir_okay=True, file_okay=False),
               help='Where to put HPC output files (such as SLURM output files). If not specified, defaults to <outputDir>/batchOutput.')
 @click.option('-submit', is_flag=True, default=False, help='Flag to submit commands to the HPC')
@@ -43,7 +44,7 @@ def fmri_roi_extraction(subjects=None,config_file=None, target_dir=None, target_
                         custom_label = None,
                         custom_type = None,
                         radius = '5',
-                        submit=False, single=False, overlap_ok= False, debug=False):
+                        submit=False, single=False, overlap_ok= False, debug=False, overwrite = False):
     if not debug:
         sys.excepthook = exception_handler
         logging.basicConfig(level=logging.INFO)
@@ -172,7 +173,7 @@ def fmri_roi_extraction(subjects=None,config_file=None, target_dir=None, target_
             batch_manager.addjob(Job('ROI_extract_' + subject +'_'+atlas_name, sub_string_temp))
             if single:
                 logging.info('Running Subject '+ subject + ' Atlas: '+ atlas_name + ' Atlas Type: ' + atlas_type)
-                _fmri_roi_extract_subject(subject, task, atlas_name, atlas_filename, atlas_labels, atlas_type, custom_radius, custom_flag, config, overlap_ok)
+                _fmri_roi_extract_subject(subject, task, atlas_name, atlas_filename, atlas_labels, atlas_type, custom_radius, custom_flag, config, overlap_ok, overwrite)
     if not single:
         if submit:
             batch_manager.compilejobstrings()
@@ -181,7 +182,7 @@ def fmri_roi_extraction(subjects=None,config_file=None, target_dir=None, target_
             batch_manager.compilejobstrings()
             click.echo(batch_manager.print_jobs())
 
-def _fmri_roi_extract_subject(subject, task, atlas_name, atlas_filename, atlas_label, atlas_type,radius, custom_flag, config, overlap_ok):
+def _fmri_roi_extract_subject(subject, task, atlas_name, atlas_filename, atlas_label, atlas_type,radius, custom_flag, config, overlap_ok, overwrite):
     if not custom_flag:
         atlas_path = resource_filename(__name__, atlas_filename)
         atlas_labelpath = resource_filename(__name__, atlas_label)
@@ -211,7 +212,7 @@ def _fmri_roi_extract_subject(subject, task, atlas_name, atlas_filename, atlas_l
            if '.nii' in file_outname:
                file_outname = os.path.splitext(file_outname)[0]
            if os.path.exists(os.path.join(config.config['ROIExtractionOptions']['OutputDirectory'],
-                                          atlas_name + '/' + file_outname + "_atlas-" + atlas_name + '.csv')):
+                                          atlas_name + '/' + file_outname + "_atlas-" + atlas_name + '.csv')) and not overwrite:
                logging.info("File Exists! Skipping")
            else:
                ROI_ts = _fmri_roi_extract_image(file, atlas_path, atlas_type, radius, overlap_ok, mask = mask_file)
@@ -237,7 +238,7 @@ def _fmri_roi_extract_subject(subject, task, atlas_name, atlas_filename, atlas_l
                 file_outname = os.path.splitext(os.path.basename(file))[0]
                 if '.nii' in file_outname:
                     file_outname = os.path.splitext(file_outname)[0]
-                if os.path.exists(os.path.join(config.config['ROIExtractionOptions']['OutputDirectory'], atlas_name+'/'+ file_outname +"_atlas-" + atlas_name+ '.csv')):
+                if os.path.exists(os.path.join(config.config['ROIExtractionOptions']['OutputDirectory'], atlas_name+'/'+ file_outname +"_atlas-" + atlas_name+ '.csv')) and not overwrite:
                     logging.info("File Exists! Skipping")
                 else:
                     ROI_ts = _fmri_roi_extract_image(file, atlas_path, atlas_type, radius, overlap_ok)
