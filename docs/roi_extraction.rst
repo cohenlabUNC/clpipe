@@ -42,6 +42,7 @@ clpipe comes with a variety of functional and anatomical atlases, which can be u
       -radius TEXT               If a sphere atlas, what radius sphere, in mm. Not
                                  needed if specified in config.
       -overlap_ok                Are overlapping ROIs allowed?
+      -overwrite                 Overwrite existing files?
       -log_output_dir DIRECTORY  Where to put HPC output files (such as SLURM
                                  output files). If not specified, defaults to
                                  <outputDir>/batchOutput.
@@ -54,3 +55,4 @@ clpipe comes with a variety of functional and anatomical atlases, which can be u
 
 To view the available built-in atlases, you can use the ``get_available_atlases`` command.
 
+By default, ROIs are calculated with respect to the brain mask, and ROIs with fewer than the "PropVoxels" option voxels will be set to NAN. If any ROI has no voxels in the brain mask, then all ROIs will be extracted without respect to the brain mask, and then ROIs with fewer than "PropVoxels" voxels will be set to NAN. This is a workaround for the limitations on Nilearn's ROI extractor functions.
