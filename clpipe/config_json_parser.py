@@ -3,8 +3,27 @@ import getpass
 import json
 import os
 import collections
+import click
 from jsonschema import validate
 from pkg_resources import resource_stream
+
+
+@click.command()
+@click.option('-config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True), default=None, required = True,
+              help='Configuration file to update.')
+def update_config_file(config_file=None):
+    '''Updates an existing configuration file with any new fields. Does not modify existing fields.'''
+    new_config = config_json_parser(config_file)
+    temp = new_config
+    with resource_stream(__name__, 'data/defaultConfig.json') as def_config:
+            config_default = json.load(def_config)
+    new_config = update(new_config, config_default)
+    new_config = update(new_config, temp)
+    with open(config_file, 'w') as fp:
+        json.dump(new_config, fp, indent="\t")
+
+
+
 
 
 def config_json_parser(json_path):
