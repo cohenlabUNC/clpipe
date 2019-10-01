@@ -133,6 +133,8 @@
 		"TargetSuffix": "",
 		"OutputDirectory": "",
 		"Atlases": ["power"],
+		"RequireMask": true,
+		"PropVoxels": 0.5,
         "MemoryUsage":"3000",
         "TimeUsage": "2:0:0",
         "NThreads": "1",
