@@ -61,6 +61,7 @@ def fmri_postprocess(config_file=None, subjects=None, target_dir=None, target_su
 
     alt_proc_toggle = False
     if processing_stream is not None:
+        
         processing_stream_config = config.config['ProcessingStreams']
         processing_stream_config = [i for i in processing_stream_config if i['ProcessingStream'] == processing_stream]
         if len(processing_stream_config) == 0:
@@ -69,9 +70,15 @@ def fmri_postprocess(config_file=None, subjects=None, target_dir=None, target_su
 
     if alt_proc_toggle:
         if beta_series:
+            config.update_processing_stream(processing_stream, processing_stream_config[0]['BetaSeriesOptions']['OutputDirectory'],
+                                           processing_stream_config[0]['BetaSeriesOptions']['OutputSuffix'],
+                                           processing_stream_config[0]['BetaSeriesOptions']['LogDirectory'])
             config.config['BetaSeriesOptions'].update(processing_stream_config[0]['BetaSeriesOptions'])
         else:
-            config.config['PostProcessinggOptions'].update(processing_stream_config[0]['PostProcessingOptions'])
+            config.config['PostProcessingOptions'].update(processing_stream_config[0]['PostProcessingOptions'])
+            config.update_processing_stream(processing_stream, processing_stream_config[0]['PostProcessingOptions']['OutputDirectory'],
+                                           processing_stream_config[0]['PostProcessingOptions']['OutputSuffix'],
+                                           processing_stream_config[0]['PostProcessingOptions']['LogDirectory'])
 
 
 
@@ -161,7 +168,12 @@ def _fmri_postprocess_subject(config, subject, task, tr=None, beta_series = Fals
 
 def _fmri_postprocess_image(config, file, task = None, tr=None, beta_series = False):
     confound_regressors = _find_confounds(config, file)
-
+    output_file_path = _build_output_directory_structure(config, file, beta_series)
+    
+    if os.path.exists(output_file_path):
+      logging.info("Output File Exists! Skipping.")
+      return 0
+    
     logging.info('Looking for: ' + confound_regressors)
 
     if not os.path.exists(confound_regressors):

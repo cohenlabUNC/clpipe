@@ -40,7 +40,7 @@ def fmriprep_process(bids_dir=None, working_dir=None, output_dir=None, config_fi
             'Please make sure the BIDS, working and output directories are specified in either the configfile or in the command. At least one is not specified.')
 
     singularity_string = '''unset PYTHONPATH; singularity run -B {bindPaths} {batchcommands} {fmriprepInstance} {bidsDir} {outputDir} participant ''' \
-                         '''--participant-label {participantLabels} -w {workingdir} --fs-license-file {fslicense} {threads}'''
+                         '''--participant-label {participantLabels} -w {workingdir} --fs-license-file {fslicense} {threads} {otheropts}'''
 
     if not subjects:
         subjectstring = "ALL"
@@ -72,12 +72,11 @@ def fmriprep_process(bids_dir=None, working_dir=None, output_dir=None, config_fi
             fslicense=config.config['FMRIPrepOptions']['FreesurferLicensePath'],
             threads= threads,
             bindPaths=batch_manager.config['SingularityBindPaths'],
+            otheropts=config.config['FMRIPrepOptions']['CommandLineOpts']
         )))
 
     batch_manager.compilejobstrings()
     if submit:
         batch_manager.submit_jobs()
-        config.update_runlog(subjectstring, "FMRIprep")
-        config.config_json_dump(config.config['FMRIPrepOptions']['OutputDirectory'], config_file)
     else:
         batch_manager.print_jobs()

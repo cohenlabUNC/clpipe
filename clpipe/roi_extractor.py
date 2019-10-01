@@ -138,8 +138,8 @@ def fmri_roi_extraction(subjects=None,config_file=None, target_dir=None, target_
                 custom_flag = True
                 if any([not os.path.exists(custom_atlas), not os.path.exists(custom_label), custom_type not in ['label', 'maps', 'sphere']]):
                     raise ValueError('You are attempting to use a custom atlas, but have not specified one or more of the following: \n'
-                                     '\t A custom atlas mask file (.nii or .nii.gz)' 
-                                     '\t A custom atlas label file (a file with information about the atlas)' 
+                                     '\t A custom atlas mask file (.nii or .nii.gz)'
+                                     '\t A custom atlas label file (a file with information about the atlas)'
                                      '\t A custom atlas type (label, maps or spheres)')
                 else:
                     atlas_filename = custom_atlas
@@ -208,7 +208,11 @@ def _fmri_roi_extract_subject(subject, task, atlas_name, atlas_filename, atlas_l
        file_outname = os.path.splitext(os.path.basename(file))[0]
        if '.nii' in file_outname:
            file_outname = os.path.splitext(file_outname)[0]
-       np.savetxt(os.path.join(os.path.join(config.config['ROIExtractionOptions']['OutputDirectory'], atlas_name), file_outname +"_atlas-" + atlas_name+ '.csv'), ROI_ts, delimiter=',')
+      if os.path.exists(os.path.join(config.config['ROIExtractionOptions']['OutputDirectory'], atlas_name+'/'+ file_outname +"_atlas-" + atlas_name+ '.csv')):
+           logging.info("File Exists! Skipping")
+      else:
+        ROI_ts = _fmri_roi_extract_image(file, atlas_path, atlas_type, radius, overlap_ok)
+        np.savetxt(os.path.join(os.path.join(config.config['ROIExtractionOptions']['OutputDirectory'], atlas_name), file_outname +"_atlas-" + atlas_name+ '.csv'), ROI_ts, delimiter=',')
 
 
 def _fmri_roi_extract_image(data, mask, atlas_path, atlas_type, radius, overlap_ok):
