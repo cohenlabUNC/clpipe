@@ -215,8 +215,12 @@ def _fmri_roi_extract_subject(subject, task, atlas_name, atlas_filename, atlas_l
                                           atlas_name + '/' + file_outname + "_atlas-" + atlas_name + '.csv')) and not overwrite:
                logging.info("File Exists! Skipping")
            else:
-               ROI_ts = _fmri_roi_extract_image(file, atlas_path, atlas_type, radius, overlap_ok, mask = mask_file)
-               
+               try:
+                  ROI_ts = _fmri_roi_extract_image(file, atlas_path, atlas_type, radius, overlap_ok, mask = mask_file)
+               except ValueError as err:
+                   logging.warning(err)
+                   logging.warning("Extracting ROIs without using brain mask.")
+                   ROI_ts = _fmri_roi_extract_image(file, atlas_path, atlas_type, radius, overlap_ok, mask = mask_file)
                temp_mask = concat_imgs([mask_file,mask_file])
                mask_ROIs = _fmri_roi_extract_image(temp_mask, atlas_path, atlas_type, radius, overlap_ok, mask = mask_file)
                logging.debug(mask_ROIs[0])
