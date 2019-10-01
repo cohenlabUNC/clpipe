@@ -222,7 +222,7 @@ def _fmri_roi_extract_subject(subject, task, atlas_name, atlas_filename, atlas_l
                    logging.warning("Extracting ROIs without using brain mask.")
                    ROI_ts = _fmri_roi_extract_image(file, atlas_path, atlas_type, radius, overlap_ok)
                temp_mask = concat_imgs([mask_file,mask_file])
-               mask_ROIs = _fmri_roi_extract_image(temp_mask, atlas_path, atlas_type, radius, overlap_ok, mask = mask_file)
+               mask_ROIs = _fmri_roi_extract_image(temp_mask, atlas_path, atlas_type, radius, overlap_ok)
                logging.debug(mask_ROIs[0])
                to_remove = [ind for ind,prop in np.ndenumerate(mask_ROIs[0]) if prop < config.config['ROIExtractionOptions']['PropVoxels']]
                logging.debug(to_remove)
