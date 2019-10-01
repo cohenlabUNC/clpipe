@@ -1,8 +1,11 @@
 import numpy as np
-from nilearn.input_data import NiftiSpheresMasker
-from nilearn.input_data import NiftiLabelsMasker
-from nilearn.input_data import NiftiMapsMasker
-from nilearn.image import concat_imgs
+import warnings
+with warnings.catch_warnings():
+    warnings.filterwarnings("ignore",category=DeprecationWarning)
+    from nilearn.input_data import NiftiSpheresMasker
+    from nilearn.input_data import NiftiLabelsMasker
+    from nilearn.input_data import NiftiMapsMasker
+    from nilearn.image import concat_imgs
 import os
 import click
 import sys
