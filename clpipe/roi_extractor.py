@@ -203,6 +203,7 @@ def _fmri_roi_extract_subject(subject, task, atlas_name, atlas_filename, atlas_l
 
     for file in subject_files:
        logging.info("Extracting the " + atlas_name + " atlas for " + file)
+       mask _mask_finder()
        ROI_ts = _fmri_roi_extract_image(file, atlas_path, atlas_type, radius, overlap_ok)
        file_outname = os.path.splitext(os.path.basename(file))[0]
        if '.nii' in file_outname:
@@ -210,19 +211,19 @@ def _fmri_roi_extract_subject(subject, task, atlas_name, atlas_filename, atlas_l
        np.savetxt(os.path.join(os.path.join(config.config['ROIExtractionOptions']['OutputDirectory'], atlas_name), file_outname +"_atlas-" + atlas_name+ '.csv'), ROI_ts, delimiter=',')
 
 
-def _fmri_roi_extract_image(data, atlas_path, atlas_type, radius, overlap_ok):
+def _fmri_roi_extract_image(data, mask, atlas_path, atlas_type, radius, overlap_ok):
     if 'label' in atlas_type:
         logging.debug('Labels Extract')
-        label_masker = NiftiLabelsMasker(atlas_path)
+        label_masker = NiftiLabelsMasker(atlas_path, mask_img=mask)
         timeseries = label_masker.fit_transform(data)
     if 'sphere' in atlas_type:
         atlas_path = np.loadtxt(atlas_path)
         logging.debug('Sphere Extract')
-        spheres_masker = NiftiSpheresMasker(atlas_path, float(radius), allow_overlap = overlap_ok)
+        spheres_masker = NiftiSpheresMasker(atlas_path, float(radius),mask_img=mask, allow_overlap = overlap_ok)
         timeseries = spheres_masker.fit_transform(data)
     if 'maps' in atlas_type:
         logging.debug('Maps Extract')
-        maps_masker = NiftiMapsMasker(atlas_path, allow_overlap = overlap_ok)
+        maps_masker = NiftiMapsMasker(atlas_path,mask_img=mask, allow_overlap = overlap_ok)
         timeseries = maps_masker.fit_transform(data)
     timeseries[timeseries == 0.0] = np.nan
 
