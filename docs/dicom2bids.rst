@@ -51,11 +51,19 @@ The other important ingredient in converting your DICOMs to BIDS format is the c
 				"SeriesDescription":"*_srt",
                 "ImageType": ["ORIG*", "PRIMARY", "M", "ND", "MOSAIC"]
             }
+        },
+	{
+            "dataType": "anat",
+            "modalityLabel": "T1w",
+            "criteria": {
+				"SeriesDescription":"MPRAGE",
+                "ImageType": ["ORIG*", "PRIMARY", "M", "ND", "MOSAIC"]
+            }
         }
     ]
     }
 
-This configuration file looks for all scans that have "_srt" anywhere in the SeriesDescription field of the header, converts them into NIFTI, labels them in the BIDS standards, and adds the custom label of `task-srt`. Any header field in the dicoms can be used as criteria. If multiple scans meet the criteria, then they will be labeled `run-1, run-2, ...` in order of acquisition.
+This configuration file looks for all scans that have "_srt" anywhere in the SeriesDescription field of the header, converts them into NIFTI, labels them in the BIDS standards, and adds the custom label of `task-srt`. It does the same for anatomical scans with "MPRAGE" contained in the series description. Any header field in the dicoms can be used as criteria. If multiple scans meet the criteria, then they will be labeled `run-1, run-2, ...` in order of acquisition.
 
 To obtain the information from the header, dcm2bids has a handy helper function:
 

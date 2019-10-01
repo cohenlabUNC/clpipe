@@ -19,7 +19,7 @@ import logging
 def dicom_to_nifti_to_bids_converter_setup(subject = None, session = None, dicom_directory=None, output_file=None, config_file = None,  submit=False):
     """This command can be used to compute and extract a dicom information spreadsheet so that a heuristic file can be written. Users should specify a subject with all scans of interest present, and run this command on all sessions of interest. """
     config = ConfigParser()
-    config.config_updater(config_file)
+    
 
     heuristic_file = resource_filename(__name__, 'data/setup_heuristic.py')
 
@@ -59,7 +59,6 @@ def dicom_to_nifti_to_bids_converter_setup(subject = None, session = None, dicom
         batch_manager.print_jobs()
 
 @click.command()
-@click.option('-config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True), default=None, help = 'The configuration file for the study.')
 @click.argument('subjects', nargs=-1, required=False, default=None)
 @click.option('-heuristic_file', default = '', help = 'A heuristic file to use')
 @click.option('-dicom_directory', default = '',help = 'The specially formatted dicom directory string. Please see help pages at https://clpipe.readthedocs.io/en/latest/index.html for more details')
@@ -68,7 +67,7 @@ def dicom_to_nifti_to_bids_converter_setup(subject = None, session = None, dicom
 @click.option('-overwrite', is_flag=True, default=False, help = 'Overwrite previous files?')
 @click.option('-submit', is_flag=True, default=False, help = 'Submit jobs to HPC')
 @click.option('-debug', is_flag=True, default=False, help = 'Debug flag for traceback')
-def dicom_to_nifti_to_bids_converter(subjects = None, dicom_directory=None, config_file = None,  submit=False, output_directory= None, heuristic_file = None,debug = False, log_output_dir = None, overwrite = False):
+def dicom_to_nifti_to_bids_converter(subjects = None, dicom_directory=None, submit=False, output_directory= None, heuristic_file = None,debug = False, log_output_dir = None, overwrite = False):
     """This command uses heudiconv to convert dicoms into BIDS formatted NiFTI files. Users can specify any number of subjects, or leave subjects blank to convert all subjects. """
     if not debug:
         sys.excepthook = exception_handler
@@ -77,14 +76,13 @@ def dicom_to_nifti_to_bids_converter(subjects = None, dicom_directory=None, conf
         logging.basicConfig(level=logging.DEBUG)
 
     config = ConfigParser()
-    config.config_updater(config_file)
     config.setup_heudiconv(dicom_directory,
                            os.path.abspath(heuristic_file),
                            os.path.abspath(output_directory))
 
-    if not any([config.config['DicomToBidsOptions']['DICOMDirectory'],
-            config.config['DicomToBidsOptions']['OutputDirectory'],
-            config.config['DicomToBidsOptions']['HeuristicFile']]):
+    if not any([config.config['DICOMToBIDSOptions']['DICOMDirectory'],
+            config.config['DICOMToBIDSOptions']['OutputDirectory'],
+            config.config['DICOMToBIDSOptions']['HeuristicFile']]):
         raise ValueError('DICOM directory, output directory and/or heuristic file are not specified.')
 
     if not log_output_dir:
@@ -94,9 +92,9 @@ def dicom_to_nifti_to_bids_converter(subjects = None, dicom_directory=None, conf
 
     heuristic_file = resource_filename(__name__, 'data/setup_heuristic.py')
 
-    parse_string = config.config['DicomToBidsOptions']['DICOMDirectory'].replace('/*', '')
+    parse_string = config.config['DICOMToBIDSOptions']['DICOMDirectory'].replace('/*', '')
     parse_string = parse_string.replace('*', '')
-    if '{session}' in config.config['DicomToBidsOptions']['DICOMDirectory']:
+    if '{session}' in config.config['DICOMToBIDSOptions']['DICOMDirectory']:
         session_toggle = True
         all_dicoms = glob.glob(parse_string.format(
             subject = "*",
@@ -137,19 +135,19 @@ def dicom_to_nifti_to_bids_converter(subjects = None, dicom_directory=None, conf
              session_id = session_id.replace('*', '')
              job_id = 'convert_sub-' + file['subject'] + '_ses-' + file['session']
              job1 = Job(job_id, heudiconv_string.format(
-                dicomdirectory=config.config['DicomToBidsOptions']['DICOMDirectory'],
+                dicomdirectory=config.config['DICOMToBIDSOptions']['DICOMDirectory'],
                 subject=subject_id,
                 sess=session_id,
-                heuristic = config.config['DicomToBidsOptions']['HeuristicFile'],
-                output_directory = config.config['DicomToBidsOptions']['OutputDirectory']
+                heuristic = config.config['DICOMToBIDSOptions']['HeuristicFile'],
+                output_directory = config.config['DICOMToBIDSOptions']['OutputDirectory']
             ))
         else:
             job_id = 'convert_sub-' + file['subject']
             job1 = Job(job_id, heudiconv_string.format(
-                dicomdirectory=config.config['DicomToBidsOptions']['DICOMDirectory'],
+                dicomdirectory=config.config['DICOMToBIDSOptions']['DICOMDirectory'],
                 subject=subject_id,
-                heuristic=config.config['DicomToBidsOptions']['HeuristicFile'],
-                output_directory=os.path.abspath(config.config['DicomToBidsOptions']['OutputDirectory'])
+                heuristic=config.config['DICOMToBIDSOptions']['HeuristicFile'],
+                output_directory=os.path.abspath(config.config['DICOMToBIDSOptions']['OutputDirectory'])
             ))
         batch_manager.addjob(job1)
 
@@ -157,6 +155,5 @@ def dicom_to_nifti_to_bids_converter(subjects = None, dicom_directory=None, conf
     batch_manager.compilejobstrings()
     if submit:
         batch_manager.submit_jobs()
-        config.config_json_dump(config.config['DicomToBidsOptions']['OutputDirectory'], config_file)
     else:
         batch_manager.print_jobs()

@@ -23,4 +23,5 @@ clpipe was developed to streamline the processing of MRI data using the high per
    fmriprep
    postprocessing
    susan
+   roi_extraction
 

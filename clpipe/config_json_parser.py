@@ -20,8 +20,8 @@ class ConfigParser:
         with resource_stream(__name__, 'data/defaultConfig.json') as def_config:
             self.config = json.load(def_config)
         self.setup_default_config()
-        with resource_stream(__name__, 'data/configSchema.json') as def_schema:
-            self.configSchema = json.load(def_schema)
+        #with resource_stream(__name__, 'data/configSchema.json') as def_schema:
+         #   self.configSchema = json.load(def_schema)
 
     def config_updater(self, new_config):
         if new_config is None:
@@ -42,7 +42,8 @@ class ConfigParser:
         pass
 
     def validate_config(self):
-        validate(self.config, self.configSchema)
+       # validate(self.config, self.configSchema)
+        return 1
 
     def setup_project(self, project_title, project_dir, source_data):
         self.config['ProjectTitle'] = project_title
@@ -72,7 +73,6 @@ class ConfigParser:
                                                     'postproc_default'),
                             output_suffix='postproc_default.nii.gz')
         processing_streams = self.get_processing_stream_names()
-        print(processing_streams)
         if processing_streams:
             for stream in processing_streams:
                 self.update_processing_stream(stream,
@@ -124,12 +124,12 @@ class ConfigParser:
 
     def setup_heudiconv(self, dicom_directory, heuristic_file, output_directory):
         if dicom_directory is not None:
-            self.config['DicomToBidsOptions']['DICOMDirectory'] = os.path.abspath(dicom_directory)
+            self.config['DICOMToBIDSOptions']['DICOMDirectory'] = os.path.abspath(dicom_directory)
         if output_directory is not None:
-            self.config['DicomToBidsOptions']['OutputDirectory'] = os.path.abspath(output_directory)
-            os.makedirs(self.config['DicomToBidsOptions']['OutputDirectory'], exist_ok=True)
+            self.config['DICOMToBIDSOptions']['OutputDirectory'] = os.path.abspath(output_directory)
+            os.makedirs(self.config['DICOMToBIDSOptions']['OutputDirectory'], exist_ok=True)
         if heuristic_file is not None:
-            self.config['DicomToBidsOptions']['HeuristicFile'] = os.path.abspath(heuristic_file)
+            self.config['DICOMToBIDSOptions']['HeuristicFile'] = os.path.abspath(heuristic_file)
 
     def setup_dcm2bids(self, dicom_directory, heuristic_file, output_directory, dicom_format_string, log_dir = None):
         if dicom_directory is not None:
@@ -164,7 +164,7 @@ class ConfigParser:
                                                                              'ROI_extraction_logs')
         os.makedirs(self.config['ROIExtractionOptions']['LogDirectory'], exist_ok=True)
 
-    def setup_susan(self, target_dir, target_suffix, output_dir, output_suffix, log_dir):
+    def setup_susan(self, target_dir, target_suffix, output_dir, output_suffix, log_dir =None):
         if target_dir is not None:
             self.config['SUSANOptions']['TargetDirectory'] = os.path.abspath(target_dir)
             if not os.path.isdir(self.config['SUSANOptions']['TargetDirectory']):
@@ -199,8 +199,8 @@ class ConfigParser:
 
         index = [ind  for ind,e in enumerate(self.config['ProcessingStreams']) if e['ProcessingStream'] == stream_name][0]
         if output_dir is not None:
-            self.config['ProcessingStreams'][index][target_output]['OutputDir'] = os.path.abspath(output_dir)
-            os.makedirs(self.config['ProcessingStreams'][index][target_output]['OutputDir'], exist_ok=True)
+            self.config['ProcessingStreams'][index][target_output]['OutputDirectory'] = os.path.abspath(output_dir)
+            os.makedirs(self.config['ProcessingStreams'][index][target_output]['OutputDirectory'], exist_ok=True)
         if output_suffix is not None:
             self.config['ProcessingStreams'][index][target_output]['OutputSuffix'] = output_suffix
         if log_dir is not None:
