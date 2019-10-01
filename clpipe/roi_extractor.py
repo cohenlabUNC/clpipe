@@ -2,12 +2,13 @@ import numpy as np
 from nilearn.input_data import NiftiSpheresMasker
 from nilearn.input_data import NiftiLabelsMasker
 from nilearn.input_data import NiftiMapsMasker
+from nilearn.image import concat_imgs
 import os
 import click
 import sys
 import logging
 from .batch_manager import BatchManager, Job
-from .config_json_parser import ConfigParser
+from .config_json_parser import ConfigParser, file_folder_generator
 from .error_handler import exception_handler
 import json
 from pkg_resources import resource_stream, resource_filename
@@ -203,19 +204,48 @@ def _fmri_roi_extract_subject(subject, task, atlas_name, atlas_filename, atlas_l
 
     for file in subject_files:
        logging.info("Extracting the " + atlas_name + " atlas for " + file)
-       mask _mask_finder()
-       ROI_ts = _fmri_roi_extract_image(file, atlas_path, atlas_type, radius, overlap_ok)
-       file_outname = os.path.splitext(os.path.basename(file))[0]
-       if '.nii' in file_outname:
-           file_outname = os.path.splitext(file_outname)[0]
-      if os.path.exists(os.path.join(config.config['ROIExtractionOptions']['OutputDirectory'], atlas_name+'/'+ file_outname +"_atlas-" + atlas_name+ '.csv')):
-           logging.info("File Exists! Skipping")
-      else:
-        ROI_ts = _fmri_roi_extract_image(file, atlas_path, atlas_type, radius, overlap_ok)
-        np.savetxt(os.path.join(os.path.join(config.config['ROIExtractionOptions']['OutputDirectory'], atlas_name), file_outname +"_atlas-" + atlas_name+ '.csv'), ROI_ts, delimiter=',')
+       mask_file = _mask_finder(file, config)
+       if os.path.exists(mask_file):
+           logging.info("Found brain mask "+mask_file + ". Using to mask ROI extraction.")
+           file_outname = os.path.splitext(os.path.basename(file))[0]
+           if '.nii' in file_outname:
+               file_outname = os.path.splitext(file_outname)[0]
+           if os.path.exists(os.path.join(config.config['ROIExtractionOptions']['OutputDirectory'],
+                                          atlas_name + '/' + file_outname + "_atlas-" + atlas_name + '.csv')):
+               logging.info("File Exists! Skipping")
+           else:
+               ROI_ts = _fmri_roi_extract_image(file, atlas_path, atlas_type, radius, overlap_ok, mask = mask_file)
+               mask_ts =_fmri_roi_extract_image(mask_file, atlas_path, atlas_type, radius, overlap_ok)
+               temp_mask = concat_imgs([mask_ts,mask_ts])
+               mask_ROIs = _fmri_roi_extract_image(temp_mask, atlas_path, atlas_type, radius, overlap_ok, mask = mask_file)
+               logging.debug(mask_ROIs[0])
+               to_remove = [ind for ind,prop in np.ndenumerate(mask_ROIs[0]) if prop < config.config['ROIExtractionOptions']['PropVoxels']]
+               logging.debug(to_remove)
+
+               ROI_ts[:, to_remove] = np.nan
+               np.savetxt(
+                   os.path.join(os.path.join(config.config['ROIExtractionOptions']['OutputDirectory'], atlas_name),
+                                file_outname + "_atlas-" + atlas_name + '.csv'), ROI_ts, delimiter=',')
+               np.savetxt(
+                   os.path.join(os.path.join(config.config['ROIExtractionOptions']['OutputDirectory'], atlas_name),
+                                file_outname + "_atlas-" + atlas_name + '_voxel_prop.csv'), mask_ROIs[0], delimiter=',')
+       else:
+           logging.warning("Did not find brain mask: "+mask_file)
+           if config.config['ROIExtractionOptions']['RequireMask']:
+               logging.warning("Skipping this scan due to missing brain mask.")
+           else:
+                file_outname = os.path.splitext(os.path.basename(file))[0]
+                if '.nii' in file_outname:
+                    file_outname = os.path.splitext(file_outname)[0]
+                if os.path.exists(os.path.join(config.config['ROIExtractionOptions']['OutputDirectory'], atlas_name+'/'+ file_outname +"_atlas-" + atlas_name+ '.csv')):
+                    logging.info("File Exists! Skipping")
+                else:
+                    ROI_ts = _fmri_roi_extract_image(file, atlas_path, atlas_type, radius, overlap_ok)
+                    np.savetxt(os.path.join(os.path.join(config.config['ROIExtractionOptions']['OutputDirectory'], atlas_name), file_outname +"_atlas-" + atlas_name+ '.csv'), ROI_ts, delimiter=',')
 
 
-def _fmri_roi_extract_image(data, mask, atlas_path, atlas_type, radius, overlap_ok):
+
+def _fmri_roi_extract_image(data,  atlas_path, atlas_type, radius, overlap_ok,mask = None):
     if 'label' in atlas_type:
         logging.debug('Labels Extract')
         label_masker = NiftiLabelsMasker(atlas_path, mask_img=mask)
@@ -246,3 +276,10 @@ def get_available_atlases():
         print('Atlas Type: ' + atlas['atlas_type'])
         print('Atlas Citation: ' + atlas['atlas_citation'])
         print('')
+
+def _mask_finder(data, config):
+
+    file_struct = file_folder_generator(os.path.basename(data), "func", target_suffix=config.config['ROIExtractionOptions']['TargetSuffix'])
+    target_mask = os.path.join(config.config['FMRIPrepOptions']['TargetDirectory'], 'fmriprep', os.path.join(file_struct[-1])+'_desc-brain_mask.nii.gz')
+    return(target_mask)
+

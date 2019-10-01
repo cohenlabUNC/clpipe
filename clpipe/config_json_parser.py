@@ -216,6 +216,19 @@ class ConfigParser:
                   "WhoRan": getpass.getuser()}
         self.config['RunLog'].append(newLog)
 
+def file_folder_generator(basename, modality, target_suffix = None):
+    if target_suffix is not None:
+        basename = basename.replace(target_suffix, "")
+
+    comps = basename.split("_")
+    if comps[-1] is "":
+        comps = comps[0:-1]
+    sub = comps[0]
+    ses = comps[1]
+    front_matter = '_'.join(comps[0:-2])
+    type = comps[-1]
+    path = os.path.join(sub, ses, modality, front_matter)
+    return [sub, ses, modality, front_matter, type, path]
 
 def update(d, u):
     for k, v in u.items():
