@@ -52,13 +52,17 @@ def convert2bids(dicom_dir=None, dicom_dir_format=None, bids_dir = None, conv_co
     pstring = os.path.join(dicom_dir, dicom_dir_format)
     folders = glob.glob(os.path.join(dicom_dir, formatStr+'/'))
     sub_sess_list = [parse.parse(pstring, x) for x in folders]
-
+    sub_inds = [ind for ind, x in enumerate(sub_sess_list)]
+    sess_inds = [ind for ind, x in enumerate(sub_sess_list)]
     if subject is not None:
-        sub_sess_list = [x for x in sub_sess_list if x['subject'] == subject]
+        sub_inds = [ind for ind, x in enumerate(sub_sess_list) if x['subject'] == subject]
 
     if session is not None:
-        sub_sess_list = [x for x in sub_sess_list if x['session'] == session]
+        sess_inds = [ind for ind, x in enumerate(sub_sess_list) if x['session'] == session]
 
+    sub_sess_inds = list(set(sub_inds) & set(sess_inds))
+    folders = folders[sub_sess_inds]
+    sub_sess_list = sub_sess_list[sub_sess_inds]
     if len(sub_sess_list) == 0:
         sys.excepthook = exception_handler
         raise FileNotFoundError('There are no subjects/sessions found for that format string.')
