@@ -39,7 +39,7 @@ def fmriprep_process(bids_dir=None, working_dir=None, output_dir=None, config_fi
         raise ValueError(
             'Please make sure the BIDS, working and output directories are specified in either the configfile or in the command. At least one is not specified.')
 
-    singularity_string = '''unset PYTHONPATH; singularity run -B {bindPaths} {batchcommands} {fmriprepInstance} {bidsDir} {outputDir} participant ''' \
+    singularity_string = '''unset PYTHONPATH; export SINGULARITYENV_TEMPLATEFLOW_HOME={workingdir}/templateflow; singularity run -B {bindPaths} {batchcommands} {fmriprepInstance} {bidsDir} {outputDir} participant ''' \
                          '''--participant-label {participantLabels} -w {workingdir} --fs-license-file {fslicense} {threads} {otheropts}'''
 
     if not subjects:
