@@ -39,6 +39,7 @@ setup(name='clpipe',
       susan_smoothing = clpipe.susan_smoothing:susan_smoothing
       get_available_atlases=clpipe.roi_extractor:get_available_atlases
       update_config_file=clpipe.config_json_parser:update_config_file
+      test_func=clpipe.utils:test_func
       ''',
       zip_safe=False
       )
