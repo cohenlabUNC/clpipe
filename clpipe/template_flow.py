@@ -27,6 +27,6 @@ def _templateflow_setup(config_file=None, debug=False):
     templateflow_path = config.config["FMRIPrepOptions"]["TemplateFlowPath"]
     logging.info("Setting TemplateFlow storage path to "+ templateflow_path)
     os.environ["TEMPLATEFLOW_HOME"] =templateflow_path
-    logging.info("Downloading requested templates " +  config.config['FMRIPrepOptions']["TemplateFlowTemplates"])
+    logging.info("Downloading requested templates " +  " ".join(config.config['FMRIPrepOptions']["TemplateFlowTemplates"]))
     api.get(config.config['FMRIPrepOptions']["TemplateFlowTemplates"])
 
