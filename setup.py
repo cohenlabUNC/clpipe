@@ -41,6 +41,7 @@ setup(name='clpipe',
       get_available_atlases=clpipe.roi_extractor:get_available_atlases
       update_config_file=clpipe.config_json_parser:update_config_file
       templateflow_setup=clpipe.template_flow:templateflow_setup
+      test_func=clpipe.utils:test_func
       ''',
       zip_safe=False
       )
