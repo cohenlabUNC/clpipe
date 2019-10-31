@@ -66,8 +66,6 @@ class ConfigParser:
 
     def setup_project(self, project_title, project_dir, source_data):
         self.config['ProjectTitle'] = project_title
-        self.config['FMRIPrepOptions']['TemplateFlowPath'] = os.path.join(os.path.abspath(project_dir), "templateflow_dir")
-        os.makedirs(self.config['FMRIPrepOptions']['TemplateFlowPath'])
         self.config['ProjectDirectory'] = os.path.abspath(project_dir)
         self.setup_dcm2bids(os.path.abspath(source_data),
                             os.path.join(self.config['ProjectDirectory'], 'conversion_config.json'),
