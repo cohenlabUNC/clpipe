@@ -21,7 +21,9 @@ setup(name='clpipe',
                         'parse',
                         'nilearn',
                         'dcm2bids',
-                        'nipype'],
+                        'nipype',
+                        'templateflow',
+                        'deepdiff'],
       entry_points='''
       [console_scripts]
       fmriprep_process=clpipe.fmri_preprocess:fmriprep_process
@@ -39,6 +41,8 @@ setup(name='clpipe',
       susan_smoothing = clpipe.susan_smoothing:susan_smoothing
       get_available_atlases=clpipe.roi_extractor:get_available_atlases
       update_config_file=clpipe.config_json_parser:update_config_file
+      templateflow_setup=clpipe.template_flow:templateflow_setup
+      test_func=clpipe.utils:test_func
       ''',
       zip_safe=False
       )
