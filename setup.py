@@ -22,7 +22,8 @@ setup(name='clpipe',
                         'nilearn',
                         'dcm2bids',
                         'nipype',
-                        'templateflow'],
+                        'templateflow',
+                        'deepdiff'],
       entry_points='''
       [console_scripts]
       fmriprep_process=clpipe.fmri_preprocess:fmriprep_process

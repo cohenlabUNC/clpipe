@@ -1,5 +1,5 @@
 import click
-
+import os
 @click.command()
 @click.argument('subjects', nargs=-1, required=False, default=None)
 @click.option('-config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True), default=None,
@@ -8,6 +8,10 @@ import click
 @click.option('-debug', is_flag=True, help='Flag to enable detailed error messages and traceback')
 def test_func( config_file=None, subjects=None,submit=False, debug=False):
     ctx = click.get_current_context()
-    print(ctx.get_usage())
-    print(ctx.command.collect_usage_pieces(ctx))
+    ctx.info_name
+
+
+def command_log(config):
+    ctx = click.get_current_context()
     print(ctx.info_name)
+    print(os.getlogin())
