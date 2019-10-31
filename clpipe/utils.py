@@ -9,3 +9,4 @@ import click
 def test_func( config_file=None, subjects=None,submit=False, debug=False):
     ctx = click.get_current_context()
     print(ctx.get_usage())
+    print(ctx.command.collect_usage_pieces())
