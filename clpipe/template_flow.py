@@ -11,6 +11,10 @@ from templateflow import api
               help='Use a given configuration file. If left blank, uses the default config file, requiring definition of BIDS, working and output directories.')
 @click.option('-debug', is_flag=True, help='Flag to enable detailed error messages and traceback')
 def templateflow_setup(config_file=None, debug=False):
+    _templateflow_setup(config_file, debug)
+
+
+def _templateflow_setup(config_file=None, debug=False):
     if not debug:
         sys.excepthook = exception_handler
         logging.basicConfig(level=logging.INFO)
@@ -22,6 +26,7 @@ def templateflow_setup(config_file=None, debug=False):
 
     templateflow_path = config.config["FMRIPrepOptions"]["TemplateFlowPath"]
     logging.info("Setting TemplateFlow storage path to "+ templateflow_path)
-    os.system("export TEMPLATEFLOW_HOME=" + templateflow_path)
-    logging.info("Downloading requested templates")
+    os.system("export TEMPLATEFLOW_HOME="+templateflow_path)
+    logging.info("Downloading requested templates " + " ".join(config.config['FMRIPrepOptions']["TemplateFlowTemplates"]))
     api.get(config.config['FMRIPrepOptions']["TemplateFlowTemplates"])
+

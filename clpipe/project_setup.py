@@ -3,7 +3,7 @@ import click
 from .config_json_parser import ConfigParser
 from pkg_resources import resource_stream
 import json
-from .template_flow import templateflow_setup
+from .template_flow import _templateflow_setup
 
 @click.command()
 @click.option('-project_title', required=True, default=None)
@@ -37,5 +37,5 @@ def project_setup(project_title = None, project_dir = None, source_data = None, 
 
     os.makedirs(os.path.join(config.config['ProjectDirectory'], 'analyses'), exist_ok=True)
     os.makedirs(os.path.join(config.config['ProjectDirectory'], 'scripts'), exist_ok=True)
-
-    templateflow_setup(os.path.join(os.path.abspath(project_dir), 'clpipe_config.json'))
+    #print(os.path.join(os.path.abspath(project_dir), 'clpipe_config.json'))
+    #_templateflow_setup(os.path.join(os.path.abspath(project_dir), 'clpipe_config.json'))
