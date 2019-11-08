@@ -41,27 +41,76 @@ The other important ingredient in converting your DICOMs to BIDS format is the c
 
 .. code-block:: json
 
-    {
-    "descriptions": [
-        {
-            "dataType": "func",
-            "modalityLabel": "bold",
-            "customLabels": "task-srt",
-            "criteria": {
-				"SeriesDescription":"*_srt",
-                "ImageType": ["ORIG*", "PRIMARY", "M", "ND", "MOSAIC"]
-            }
-        },
-	{
-            "dataType": "anat",
-            "modalityLabel": "T1w",
-            "criteria": {
-				"SeriesDescription":"MPRAGE",
-                "ImageType": ["ORIG*", "PRIMARY", "M", "ND", "MOSAIC"]
-            }
-        }
-    ]
-    }
+   {
+	"descriptions": [
+		{
+			"dataType": "anat",
+			"modalityLabel": "T1w",
+			"customLabels": "",
+			"criteria": {
+				"SeriesDescription": "T1w_MPRAGE",
+				"ImageType": ["ORIGINAL", "PRIMARY", "M", "ND", "NORM"]
+			}
+		},
+		{
+			"dataType": "anat",
+			"modalityLabel": "T2w",
+			"customLabels": "",
+			"criteria": {
+				"SeriesDescription": "T2_AX_struct"
+			}
+		},
+		{
+			"dataType": "func",
+			"modalityLabel": "bold",
+			"customLabels": "task-rest",
+			"criteria": {
+				"SeriesDescription": "*_resting_*"
+			}
+		},
+		{
+			"dataType": "func",
+			"modalityLabel": "bold",
+			"customLabels": "task-gngreg",
+			"criteria": {
+				"SeriesDescription": "*_GNGregular*"
+			}
+		},
+		{
+			"dataType": "func",
+			"modalityLabel": "bold",
+			"customLabels": "task-gngrew",
+			"criteria": {
+				"SeriesDescription": "*_GNGreward*"
+			}
+		},
+		{
+			"dataType": "dwi",
+			"modalityLabel": "dwi",
+			"customLabels": "acq-APref",
+			"criteria": {
+				"SeriesDescription": "*p2_AP_TRACEW*"
+			}
+		},
+		{
+			"dataType": "dwi",
+			"modalityLabel": "dwi",
+			"customLabels": "acq-PAref",
+			"criteria": {
+				"SeriesDescription": "*p2_PA"
+			}
+		},
+		{
+			"dataType": "dwi",
+			"modalityLabel": "dwi",
+			"customLabels": "acq-AP",
+			"criteria": {
+				"SeriesDescription": "*p2_AP"
+			}
+		}
+		
+		]
+	}
 
 This configuration file looks for all scans that have "_srt" anywhere in the SeriesDescription field of the header, converts them into NIFTI, labels them in the BIDS standards, and adds the custom label of `task-srt`. It does the same for anatomical scans with "MPRAGE" contained in the series description. Any header field in the dicoms can be used as criteria. If multiple scans meet the criteria, then they will be labeled `run-1, run-2, ...` in order of acquisition.
 
