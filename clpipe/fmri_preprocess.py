@@ -69,8 +69,8 @@ def fmriprep_process(bids_dir=None, working_dir=None, output_dir=None, config_fi
 
     for sub in sublist:
         batch_manager.addjob(Job("sub-" + sub + "fmriprep", singularity_string.format(
-            template1 = template1,
-            template2 = template2,
+            templateflow1 = template1,
+            templateflow2 = template2,
             fmriprepInstance=config.config['FMRIPrepOptions']['FMRIPrepPath'],
             bidsDir=config.config['FMRIPrepOptions']['BIDSDirectory'],
             outputDir=config.config['FMRIPrepOptions']['OutputDirectory'],
