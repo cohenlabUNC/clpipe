@@ -38,9 +38,15 @@ def fmriprep_process(bids_dir=None, working_dir=None, output_dir=None, config_fi
                 config.config['FMRIPrepOptions']['LogDirectory']]):
         raise ValueError(
             'Please make sure the BIDS, working and output directories are specified in either the configfile or in the command. At least one is not specified.')
-
-    singularity_string = '''unset PYTHONPATH; export SINGULARITYENV_TEMPLATEFLOW_HOME={templateflowpath}; singularity run -B ${{TEMPLATEFLOW_HOME:-$HOME/.cache/templateflow}}:{templateflowpath},{bindPaths} {batchcommands} {fmriprepInstance} {bidsDir} {outputDir} participant ''' \
+    singularity_string = '''unset PYTHONPATH; {templateflow1} singularity run -B {templateflow2}{bindPaths} {batchcommands} {fmriprepInstance} {bidsDir} {outputDir} participant ''' \
                          '''--participant-label {participantLabels} -w {workingdir} --fs-license-file {fslicense} {threads} {otheropts}'''
+
+    if config.config['FMRIPrepOptions']['TemplateFlowToggle']:
+        template1 = "export SINGULARITYENV_TEMPLATEFLOW_HOME={templateflowpath};".format(templateflowpath=config.config["FMRIPrepOptions"]["TemplateFlowPath"])
+        template2 = "${{TEMPLATEFLOW_HOME: -$HOME /.cache / templateflow}}:{templateflowpath},".format(templateflowpath =config.config["FMRIPrepOptions"]["TemplateFlowPath"])
+    else:
+        template1 = ""
+        template2 = ""
 
     if not subjects:
         subjectstring = "ALL"
@@ -63,7 +69,8 @@ def fmriprep_process(bids_dir=None, working_dir=None, output_dir=None, config_fi
 
     for sub in sublist:
         batch_manager.addjob(Job("sub-" + sub + "fmriprep", singularity_string.format(
-            templateflowpath = config.config["FMRIPrepOptions"]["TemplateFlowPath"],
+            template1 = template1,
+            template2 = template2,
             fmriprepInstance=config.config['FMRIPrepOptions']['FMRIPrepPath'],
             bidsDir=config.config['FMRIPrepOptions']['BIDSDirectory'],
             outputDir=config.config['FMRIPrepOptions']['OutputDirectory'],
