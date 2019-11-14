@@ -43,7 +43,7 @@ def fmriprep_process(bids_dir=None, working_dir=None, output_dir=None, config_fi
 
     if config.config['FMRIPrepOptions']['TemplateFlowToggle']:
         template1 = "export SINGULARITYENV_TEMPLATEFLOW_HOME={templateflowpath};".format(templateflowpath=config.config["FMRIPrepOptions"]["TemplateFlowPath"])
-        template2 = "${{TEMPLATEFLOW_HOME: -$HOME/.cache/templateflow}}:{templateflowpath},".format(templateflowpath =config.config["FMRIPrepOptions"]["TemplateFlowPath"])
+        template2 = "${{TEMPLATEFLOW_HOME:-$HOME/.cache/templateflow}}:{templateflowpath},".format(templateflowpath =config.config["FMRIPrepOptions"]["TemplateFlowPath"])
     else:
         template1 = ""
         template2 = ""
