@@ -40,8 +40,9 @@ def get_reports(config_file, output_name, debug):
                                os.path.basename(sub), 'figures'))
         ses_dirs = [f.path for f in os.scandir(sub) if f.is_dir()]
         for ses in [x for x in ses_dirs if 'ses-' in x]:
-            copy_tree(os.path.join(ses, 'figures'),
-                      os.path.join(config.config['FMRIPrepOptions']['WorkingDirectory'], 'reports_temp',
+            if os.path.isdir(os.path.join(ses, 'figures')):
+                   copy_tree(os.path.join(ses, 'figures'),
+                        os.path.join(config.config['FMRIPrepOptions']['WorkingDirectory'], 'reports_temp',
                                    os.path.basename(sub),os.path.basename(ses), 'figures'))
     images = glob.glob(os.path.join(fmriprepdir, 'fmriprep', '*.html'))
 
