@@ -19,7 +19,6 @@ def spec_inter(arr, tr, ofreq, scrub_mask, hifreq, binSize=5000):
     sinterm = numpy.sin(numpy.matmul(numpy.transpose(freqang), tobs_good) - (offsets * freqang).T)
     totbins = math.ceil(float(arr.shape[1]) / float(binSize))
     binnedRecon = []
-    print("fin")
     for bin in range(0, totbins):
         logging.debug("Bin "+ str(bin) +" out of " + str(totbins))
         binVox = numpy.arange(bin * binSize, (bin + 1) * binSize, 1)
