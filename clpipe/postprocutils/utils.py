@@ -1,5 +1,6 @@
 import numpy
-from scipy.signal import butter, sosfilt
+from scipy.signal import butter, sosfilt, iirnotch, filtfilt
+import logging
 
 
 def find_sub_list(sl, l):
@@ -77,3 +78,27 @@ def regress(pred, target):
     toReturn = target - predVal
     return toReturn
 
+def notch_filter(motion_params, band, tr):
+    logging.basicConfig(level=logging.INFO)
+    fs = 1/tr
+    if band[1] > fs/2:
+        logging.info('Respiratory band is above Nyquist frequency of acquisition')
+        logging.info('Original band: ' + str(band))
+        band[1] = abs(((band[1] + fs/2) % fs) - fs/2)
+        band[0] = abs(((band[0] + fs/2) % fs) - fs/2)
+        band.sort()
+        logging.info('Aliased band: ' + str(band))
+    mid = (band[1]+band[0])/2
+    bw = band[1]-band[0]
+    Q = mid/bw
+    filter = iirnotch(mid, Q, fs)
+    filt_motion_params = filtfilt(filter[0], filter[1], motion_params, axis=0)
+    diffs = numpy.diff(filt_motion_params, axis = 0)
+    diffs[:, 3:6] =diffs[:, 3:6]*50
+    filt_fd = numpy.sum(abs(diffs), axis = 1)
+    filt_fd = numpy.pad(filt_fd, (1,0), mode='constant', constant_values=[numpy.nan])
+    return filt_fd
+
+
+
+test = notch_filter(motion_params, band, 2.0)
