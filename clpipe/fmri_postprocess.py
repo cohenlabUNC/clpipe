@@ -61,7 +61,7 @@ def fmri_postprocess(config_file=None, subjects=None, target_dir=None, target_su
 
     alt_proc_toggle = False
     if processing_stream is not None:
-        
+
         processing_stream_config = config.config['ProcessingStreams']
         processing_stream_config = [i for i in processing_stream_config if i['ProcessingStream'] == processing_stream]
         if len(processing_stream_config) == 0:
@@ -129,7 +129,7 @@ def fmri_postprocess(config_file=None, subjects=None, target_dir=None, target_su
             )
             if debug:
               sub_string_temp = sub_string_temp + " -debug"
-            
+
             batch_manager.addjob(Job("PostProcessing" + sub, sub_string_temp))
         if submit:
             batch_manager.createsubmissionhead()
@@ -169,11 +169,11 @@ def _fmri_postprocess_subject(config, subject, task, tr=None, beta_series = Fals
 def _fmri_postprocess_image(config, file, task = None, tr=None, beta_series = False):
     confound_regressors = _find_confounds(config, file)
     output_file_path = _build_output_directory_structure(config, file, beta_series)
-    
+
     if os.path.exists(output_file_path):
       logging.info("Output File Exists! Skipping.")
       return 0
-    
+
     logging.info('Looking for: ' + confound_regressors)
 
     if not os.path.exists(confound_regressors):
@@ -209,6 +209,10 @@ def _fmri_postprocess_image(config, file, task = None, tr=None, beta_series = Fa
             scrub_behind = int(config.config['PostProcessingOptions']['ScrubBehind'])
             scrub_contig = int(config.config['PostProcessingOptions']['ScrubContig'])
             fd_thres = float(config.config['PostProcessingOptions']['ScrubFDThreshold'])
+            orig_fdts = fdts
+            if config.config['RespNotchFilter']:
+                fdts = _notch_filter_fd(config, confound_regressors, tr)
+
             scrubTargets = clpipe.postprocutils.utils.scrub_setup(fdts, fd_thres, scrub_behind, scrub_ahead, scrub_contig)
 
         hp = float(config.config['PostProcessingOptions']['FilteringHighPass'])
@@ -239,7 +243,7 @@ def _fmri_postprocess_image(config, file, task = None, tr=None, beta_series = Fa
             logging.info('Regressing Data Now')
             data = clpipe.postprocutils.utils.regress(confounds, data)
         if scrub_toggle:
-            logging.info('Scrubbing data now')
+            logging.info('Scrubbing data Now')
             data = clpipe.postprocutils.utils.scrub_image(data, scrubTargets)
 
         data = (data + row_means)
@@ -256,14 +260,14 @@ def _fmri_postprocess_image(config, file, task = None, tr=None, beta_series = Fa
         if scrub_toggle:
             file_name = os.path.basename(file)
             sans_ext = os.path.splitext(os.path.splitext(file_name)[0])[0]
-            toOut = numpy.vstack([numpy.arange(1, len(scrubTargets) + 1, 1), numpy.asarray(scrubTargets), fdts]).T
+            toOut = numpy.column_stack([numpy.arange(1, len(scrubTargets) + 1, 1), numpy.asarray(scrubTargets), fdts, orig_fdts])
             logging.info('Saving Scrub Targets to ' + os.path.join(os.path.dirname(output_file_path),
                                                                    sans_ext + "_scrubTargets.csv"))
             numpy.savetxt(os.path.join(os.path.dirname(output_file_path), sans_ext + "_scrubTargets.csv"), toOut,
                           delimiter=",")
     else:
         beta_series_options = config.config['BetaSeriesOptions']['TaskSpecificOptions']
-        
+
         avail_tasks = [x['Task'] for x in beta_series_options]
         logging.debug(avail_tasks)
         img_task = _find_image_task(file)
@@ -481,9 +485,12 @@ def _build_output_directory_structure(config, filepath, beta_series_toggle = Fal
     logging.debug(file_name)
     return os.path.join(target_directory, file_name)
 
-def _resp_notch_filt(config, confound_filepath):
-    confounds = pandas.read_table(confound_filepath, dtype="float", na_values="n/a")
+
+def _notch_filter_fd(config, confounds_filepath, tr):
+    confounds = pandas.read_table(confounds_filepath, dtype="float", na_values="n/a")
     confounds = confounds.fillna(0)
     reg_labels = config.config['PostProcessingOptions']['RegressionParameters']
-    motion_params = confounds[reg_labels['MotionParams']]
-    w0 = sum(config.config['PostProcessingOptions'])
+    confounds = numpy.array(confounds[reg_labels["MotionParams"]])
+    band = config.config['PostProcessingOptions']['RespNotchFilterBand']
+    filt_fd = clpipe.postprocutils.utils.notch_filter(confounds, band, tr)
+    return filt_fd
