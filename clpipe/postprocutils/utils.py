@@ -100,5 +100,3 @@ def notch_filter(motion_params, band, tr):
     return filt_fd
 
 
-
-test = notch_filter(motion_params, band, 2.0)
