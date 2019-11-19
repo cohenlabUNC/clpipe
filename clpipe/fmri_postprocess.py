@@ -183,7 +183,7 @@ def _fmri_postprocess_image(config, file, task = None, tr=None, beta_series = Fa
         logging.info('Found confound regressors')
         confounds, fdts = _regression_prep(config, confound_regressors)
         if config.config['PostProcessingOptions']['RespNotchFilter']:
-            fdts = _resp_notch_filt(config,confound_regressors)
+            fdts = __notch_filter_fd(config,confound_regressors)
         if tr is None:
             image_json_path = _find_json(config, file)
             with open(os.path.abspath(image_json_path), "r") as json_path:
