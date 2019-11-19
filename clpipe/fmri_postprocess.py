@@ -208,7 +208,7 @@ def _fmri_postprocess_image(config, file, task = None, tr=None, beta_series = Fa
             scrub_contig = int(config.config['PostProcessingOptions']['ScrubContig'])
             fd_thres = float(config.config['PostProcessingOptions']['ScrubFDThreshold'])
             orig_fdts = fdts
-            if config.config['RespNotchFilter']:
+            if config.config['PostProcessingOptions']['RespNotchFilter']:
                 fdts = _notch_filter_fd(config,  confound_regressors, tr)
 
             scrubTargets = clpipe.postprocutils.utils.scrub_setup(fdts, fd_thres, scrub_behind, scrub_ahead, scrub_contig)
