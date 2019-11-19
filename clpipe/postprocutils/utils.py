@@ -1,6 +1,8 @@
 import numpy
 import pkg_resources
-pkg_resources.require("scipy==1.2.2")
+import sys
+import getpass
+sys.path.insert(0,"/nas/longleaf/home/"+getpass.getuser()+"/.local/lib/python3.6/site-packages")
 from scipy.signal import butter, sosfilt, iirnotch, filtfilt
 import logging
 
