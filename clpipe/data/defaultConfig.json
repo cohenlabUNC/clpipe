@@ -56,6 +56,8 @@
 		"ScrubAhead": 1,
 		"ScrubBehind": 1,
 		"ScrubContig": 2,
+		"RespNotchFilter": true,
+		"RespNotchFilterBand":[0.31,0.43],
 		"PostProcessingMemoryUsage": "20000",
 		"PostProcessingTimeUsage": "8:0:0",
 		"NThreads": "1",
