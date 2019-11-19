@@ -17,7 +17,7 @@ import psutil
 import sys
 from .error_handler import exception_handler
 import nipy.modalities.fmri.hrf
-
+from scipy import signal
 
 @click.command()
 @click.argument('subjects', nargs=-1, required=False, default=None)
@@ -182,6 +182,8 @@ def _fmri_postprocess_image(config, file, task = None, tr=None, beta_series = Fa
     else:
         logging.info('Found confound regressors')
         confounds, fdts = _regression_prep(config, confound_regressors)
+        if config.config['PostProcessingOptions']['RespNotchFilter']:
+            fdts = _resp_notch_filt(config,confound_regressors)
         if tr is None:
             image_json_path = _find_json(config, file)
             with open(os.path.abspath(image_json_path), "r") as json_path:
@@ -254,7 +256,7 @@ def _fmri_postprocess_image(config, file, task = None, tr=None, beta_series = Fa
         if scrub_toggle:
             file_name = os.path.basename(file)
             sans_ext = os.path.splitext(os.path.splitext(file_name)[0])[0]
-            toOut = numpy.vstack([numpy.arange(1, len(scrubTargets) + 1, 1), numpy.asarray(scrubTargets)]).T
+            toOut = numpy.vstack([numpy.arange(1, len(scrubTargets) + 1, 1), numpy.asarray(scrubTargets), fdts]).T
             logging.info('Saving Scrub Targets to ' + os.path.join(os.path.dirname(output_file_path),
                                                                    sans_ext + "_scrubTargets.csv"))
             numpy.savetxt(os.path.join(os.path.dirname(output_file_path), sans_ext + "_scrubTargets.csv"), toOut,
@@ -478,3 +480,10 @@ def _build_output_directory_structure(config, filepath, beta_series_toggle = Fal
     file_name = sans_ext + '_' + config.config[output_type]['OutputSuffix']
     logging.debug(file_name)
     return os.path.join(target_directory, file_name)
+
+def _resp_notch_filt(config, confound_filepath):
+    confounds = pandas.read_table(confound_filepath, dtype="float", na_values="n/a")
+    confounds = confounds.fillna(0)
+    reg_labels = config.config['PostProcessingOptions']['RegressionParameters']
+    motion_params = confounds[reg_labels['MotionParams']]
+    w0 = sum(config.config['PostProcessingOptions'])
