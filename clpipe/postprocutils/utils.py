@@ -91,7 +91,7 @@ def notch_filter(motion_params, band, tr):
     mid = (band[1]+band[0])/2
     bw = band[1]-band[0]
     Q = mid/bw
-    filter = iirnotch(mid, Q, fs)
+    filter = iirnotch(mid, Q, fs=fs)
     filt_motion_params = filtfilt(filter[0], filter[1], motion_params, axis=0)
     diffs = numpy.diff(filt_motion_params, axis = 0)
     diffs[:, 3:6] =diffs[:, 3:6]*50
