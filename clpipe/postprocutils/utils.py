@@ -1,4 +1,6 @@
 import numpy
+import pkg_resources
+pkg_resources.require("scipy==1.2.2")
 from scipy.signal import butter, sosfilt, iirnotch, filtfilt
 import logging
 
