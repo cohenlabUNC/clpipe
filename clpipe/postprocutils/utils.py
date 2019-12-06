@@ -84,7 +84,7 @@ def regress(pred, target):
 
 def notch_filter(motion_params, band, tr):
     logging.basicConfig(level=logging.INFO)
-    logging.info('Using Respiratory Notch Filter at ' + band + ' frequencies.')
+    logging.info('Using Respiratory Notch Filter at ' + str(band) + ' frequencies.')
     fs = 1/tr
     if band[1] > fs/2:
         logging.info('Respiratory band is above Nyquist frequency of acquisition')
