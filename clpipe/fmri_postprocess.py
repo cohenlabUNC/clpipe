@@ -17,7 +17,7 @@ import psutil
 import sys
 from .error_handler import exception_handler
 import nipy.modalities.fmri.hrf
-
+from scipy import signal
 
 @click.command()
 @click.argument('subjects', nargs=-1, required=False, default=None)
@@ -31,12 +31,13 @@ import nipy.modalities.fmri.hrf
 @click.option('-processing_stream', help = 'Optional processing stream selector.')
 @click.option('-log_dir', type=click.Path(dir_okay=True, file_okay=False), help = 'Where to put HPC output files. If not specified, defaults to <outputDir>/batchOutput.')
 @click.option('-beta_series', is_flag = True, default = False, help = "Flag to activate beta-series correlation correlation. ADVANCED METHOD, refer to the documentation.")
+@click.option('-drop_tps', type=click.Path(dir_okay=True, file_okay=True))
 @click.option('-submit', is_flag = True, default=False, help = 'Flag to submit commands to the HPC.')
 @click.option('-batch/-single', default=True, help = 'Submit to batch, or run in current session. Mainly used internally.')
 @click.option('-debug', is_flag = True, default=False, help = 'Print detailed processing information and traceback for errors.')
 def fmri_postprocess(config_file=None, subjects=None, target_dir=None, target_suffix=None, output_dir=None,
                      output_suffix=None, log_dir=None,
-                     submit=False, batch=True, task=None, tr=None, processing_stream = None, debug = False, beta_series = False):
+                     submit=False, batch=True, task=None, tr=None, processing_stream = None, debug = False, beta_series = False,                       drop_tps = None):
     """This command runs an fMRIprep'ed dataset through additional processing, as defined in the configuration file. To run specific subjects, specify their IDs. If no IDs are specified, all subjects are ran."""
     if not debug:
         sys.excepthook = exception_handler
@@ -61,7 +62,7 @@ def fmri_postprocess(config_file=None, subjects=None, target_dir=None, target_su
 
     alt_proc_toggle = False
     if processing_stream is not None:
-        
+
         processing_stream_config = config.config['ProcessingStreams']
         processing_stream_config = [i for i in processing_stream_config if i['ProcessingStream'] == processing_stream]
         if len(processing_stream_config) == 0:
@@ -92,10 +93,13 @@ def fmri_postprocess(config_file=None, subjects=None, target_dir=None, target_su
         sublist = subjects
 
     submission_string = '''fmri_postprocess -config_file={config} -target_dir={targetDir} -target_suffix={targetSuffix} ''' \
-                        '''-output_dir={outputDir} -output_suffix={outputSuffix} {procstream} -log_dir={logOutputDir} {taskString} {trString} {beta_series} -single {sub}'''
+                        '''-output_dir={outputDir} -output_suffix={outputSuffix} {procstream} -log_dir={logOutputDir} {drop_tps} {taskString} {trString} {beta_series} -single {sub}'''
+    drop_tps_string = ""
     task_string = ""
     tr_string = ""
     beta_series_string = ""
+    if drop_tps is not None:
+        drop_tps_string  = '-drop_tps ' + drop_tps
     if task is not None:
         task_string = '-task='+task
     if tr is not None:
@@ -125,11 +129,12 @@ def fmri_postprocess(config_file=None, subjects=None, target_dir=None, target_su
                 trString = tr_string,
                 logOutputDir=config.config[output_type]['LogDirectory'],
                 beta_series = beta_series_string,
+                drop_tps = drop_tps_string,
                 sub=sub
             )
             if debug:
               sub_string_temp = sub_string_temp + " -debug"
-            
+
             batch_manager.addjob(Job("PostProcessing" + sub, sub_string_temp))
         if submit:
             batch_manager.createsubmissionhead()
@@ -143,10 +148,10 @@ def fmri_postprocess(config_file=None, subjects=None, target_dir=None, target_su
         for sub in subjects:
             logging.debug(beta_series)
             logging.info('Running Subject ' + sub)
-            _fmri_postprocess_subject(config, sub, task, tr, beta_series)
+            _fmri_postprocess_subject(config, sub, task, tr, beta_series, drop_tps)
 
 
-def _fmri_postprocess_subject(config, subject, task, tr=None, beta_series = False):
+def _fmri_postprocess_subject(config, subject, task, tr=None, beta_series = False, drop_tps = None):
     if beta_series:
           output_type = 'BetaSeriesOptions'
     else:
@@ -156,24 +161,33 @@ def _fmri_postprocess_subject(config, subject, task, tr=None, beta_series = Fals
                      "*" + config.config[output_type]['TargetSuffix']))
 
     subject_files = glob.glob(search_string, recursive=True)
+
+    drop_tps = pandas.read_csv(drop_tps)
+
     logging.info('Finding Image Files')
     for image in subject_files:
         if task is None or 'task-' + task in image:
             logging.info('Processing ' + image)
             try:
-                _fmri_postprocess_image(config, image, task,  tr, beta_series)
+                temp = drop_tps[drop_tps['file_name'].str.match(os.path.basename(image))]['TR_round']
+                if len(temp) is not 0:
+                        tps_drop = int(temp)
+                        logging.info('Found drop TP info, will remove last ' + str(tps_drop) + ' time points')
+                else:
+                        tps_drop = None
+                _fmri_postprocess_image(config, image, task,  tr, beta_series, tps_drop)
             except Exception as err:
                 logging.exception(err)
 
 
-def _fmri_postprocess_image(config, file, task = None, tr=None, beta_series = False):
+def _fmri_postprocess_image(config, file, task = None, tr=None, beta_series = False, drop_tps = None):
     confound_regressors = _find_confounds(config, file)
     output_file_path = _build_output_directory_structure(config, file, beta_series)
-    
+
     if os.path.exists(output_file_path):
       logging.info("Output File Exists! Skipping.")
       return 0
-    
+
     logging.info('Looking for: ' + confound_regressors)
 
     if not os.path.exists(confound_regressors):
@@ -182,6 +196,9 @@ def _fmri_postprocess_image(config, file, task = None, tr=None, beta_series = Fa
     else:
         logging.info('Found confound regressors')
         confounds, fdts = _regression_prep(config, confound_regressors)
+        if drop_tps is not None:
+            confounds = confounds.iloc[:(confounds.shape[0]-drop_tps)]
+            fdts = fdts.iloc[:(fdts.shape[0]-drop_tps)]
         if tr is None:
             image_json_path = _find_json(config, file)
             with open(os.path.abspath(image_json_path), "r") as json_path:
@@ -194,6 +211,11 @@ def _fmri_postprocess_image(config, file, task = None, tr=None, beta_series = Fa
         coordMap = image.coordmap
         data = data.reshape((numpy.prod(numpy.shape(data)[:-1]), data.shape[-1]))
         data = numpy.transpose(data)
+        if drop_tps is not None:
+            data = data[0:(data.shape[0]-drop_tps), :]
+            orgImageShape = list(orgImageShape)
+            orgImageShape[3] = data.shape[0]
+            orgImageShape = tuple(orgImageShape)
         row_means = data.mean(axis=0)
         data = (data - data.mean(axis=0))
     if not beta_series:
@@ -208,8 +230,8 @@ def _fmri_postprocess_image(config, file, task = None, tr=None, beta_series = Fa
             scrub_contig = int(config.config['PostProcessingOptions']['ScrubContig'])
             fd_thres = float(config.config['PostProcessingOptions']['ScrubFDThreshold'])
             orig_fdts = fdts
-            if config.config['RespNotchFilter']:
-                fdts = _notch_filter_fd(config, confound_regressors, tr)
+            if config.config['PostProcessingOptions']['RespNotchFilter']:
+                fdts = _notch_filter_fd(config,  confound_regressors, tr, drop_tps)
 
             scrubTargets = clpipe.postprocutils.utils.scrub_setup(fdts, fd_thres, scrub_behind, scrub_ahead, scrub_contig)
 
@@ -265,7 +287,7 @@ def _fmri_postprocess_image(config, file, task = None, tr=None, beta_series = Fa
                           delimiter=",")
     else:
         beta_series_options = config.config['BetaSeriesOptions']['TaskSpecificOptions']
-        
+
         avail_tasks = [x['Task'] for x in beta_series_options]
         logging.debug(avail_tasks)
         img_task = _find_image_task(file)
@@ -411,7 +433,7 @@ def _regression_prep(config, confound_filepath, beta_series_toggle = False):
         confound_temp = confounds.pow(2)
         confound_temp = confound_temp.fillna(0)
         confounds = pandas.concat([confounds, confound_temp], axis=1, ignore_index=True)
-    confounds.to_csv('test.csv')
+
     return confounds, fd
 
 
@@ -484,9 +506,11 @@ def _build_output_directory_structure(config, filepath, beta_series_toggle = Fal
     return os.path.join(target_directory, file_name)
 
 
-def _notch_filter_fd(config, confounds_filepath, tr):
+def _notch_filter_fd(config, confounds_filepath, tr, drop_tps = None):
     confounds = pandas.read_table(confounds_filepath, dtype="float", na_values="n/a")
     confounds = confounds.fillna(0)
+    if drop_tps is not None:
+        confounds = confounds.iloc[:(confounds.shape[0]-drop_tps)]
     reg_labels = config.config['PostProcessingOptions']['RegressionParameters']
     confounds = numpy.array(confounds[reg_labels["MotionParams"]])
     band = config.config['PostProcessingOptions']['RespNotchFilterBand']

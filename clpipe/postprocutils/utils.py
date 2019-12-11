@@ -1,4 +1,8 @@
 import numpy
+import pkg_resources
+import sys
+import getpass
+sys.path.insert(0,"/nas/longleaf/home/"+getpass.getuser()+"/.local/lib/python3.6/site-packages")
 from scipy.signal import butter, sosfilt, iirnotch, filtfilt
 import logging
 
@@ -80,6 +84,7 @@ def regress(pred, target):
 
 def notch_filter(motion_params, band, tr):
     logging.basicConfig(level=logging.INFO)
+    logging.info('Using Respiratory Notch Filter at ' + str(band) + ' frequencies.')
     fs = 1/tr
     if band[1] > fs/2:
         logging.info('Respiratory band is above Nyquist frequency of acquisition')
@@ -91,7 +96,7 @@ def notch_filter(motion_params, band, tr):
     mid = (band[1]+band[0])/2
     bw = band[1]-band[0]
     Q = mid/bw
-    filter = iirnotch(mid, Q, fs)
+    filter = iirnotch(mid, Q, fs=fs)
     filt_motion_params = filtfilt(filter[0], filter[1], motion_params, axis=0)
     diffs = numpy.diff(filt_motion_params, axis = 0)
     diffs[:, 3:6] =diffs[:, 3:6]*50
@@ -100,5 +105,3 @@ def notch_filter(motion_params, band, tr):
     return filt_fd
 
 
-
-test = notch_filter(motion_params, band, 2.0)

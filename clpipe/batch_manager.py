@@ -70,7 +70,7 @@ class BatchManager:
                 jobid = '{jobid}'))
         if self.config['OutputCommandActive']:
             head.append(self.config['OutputCommand'].format(
-                output =os.path.abspath(os.path.join(self.outputDir, 'Output-{jobid}.out'))))
+                output =os.path.abspath(os.path.join(self.outputDir, 'Output-{jobid}-jobid-%j.out'))))
         if self.config["EmailAddress"]:
             head.append(self.config['EmailCommand'].format(
                 email=self.config["EmailAddress"]))
