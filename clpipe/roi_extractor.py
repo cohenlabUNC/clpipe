@@ -290,5 +290,7 @@ def _mask_finder(data, config):
 
     file_struct = file_folder_generator(os.path.basename(data), "func", target_suffix=config.config['ROIExtractionOptions']['TargetSuffix'])
     target_mask = os.path.join(config.config['FMRIPrepOptions']['OutputDirectory'], 'fmriprep', os.path.join(file_struct[-1])+'_desc-brain_mask.nii.gz')
+    if not os.path.exists(target_mask):
+        target_mask =os.path.join(config.config['FMRIPrepOptions']['OutputDirectory'], 'fmriprep', os.path.join(file_struct[-1])+'_desc-brain_mask.nii')
     return(target_mask)
 
