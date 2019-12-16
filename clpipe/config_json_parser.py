@@ -243,17 +243,11 @@ def file_folder_generator(basename, modality, target_suffix = None):
     if comps[-1] is "":
         comps = comps[0:-1]
     sub = comps[0]
-    if "ses-" in comps[1]:
-        ses = comps[1]
-        front_matter = '_'.join(comps[0:-2])
-        type = comps[-1]
-        path = os.path.join(sub, ses, modality, front_matter)
-        return [sub, ses, modality, front_matter, type, path]
-    else:
-        front_matter = '_'.join(comps[0:-2])
-        type = comps[-1]
-        path = os.path.join(sub, modality, front_matter)
-        return [sub, modality, front_matter, type, path]
+    ses = comps[1]
+    front_matter = '_'.join(comps[0:-2])
+    type = comps[-1]
+    path = os.path.join(sub, ses, modality, front_matter)
+    return [sub, ses, modality, front_matter, type, path]
 
 def update(d, u):
     for k, v in u.items():
