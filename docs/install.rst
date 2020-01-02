@@ -14,6 +14,13 @@ If you don't have access to the global library (perhaps you are just a user of a
 
      pip3 install --user --upgrade git+git://github.com/cohenlabUNC/clpipe
 
+The installation command may print out warnings, which are fine:
+
+.. code-block:: console
+
+    WARNING: You are using pip version 19.2.3, however version 19.3.1 is available.
+    You should consider upgrading via the 'pip install --upgrade pip' command.
+
 The installation will also install any additional packaged needed.
 
 If you don't already have a Singularity image of fMRIprep, head over to their `site <https://fmriprep.readthedocs.io/en/latest/index.html>`_ and follow the directions. You will have to change the fMRIprep image path in your configuration file.
