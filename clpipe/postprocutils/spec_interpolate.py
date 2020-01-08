@@ -5,10 +5,12 @@ def spec_inter(arr, tr, ofreq, scrub_mask, hifreq, binSize=5000):
     scrub_mask = numpy.asarray(scrub_mask)
     goodtpindex = numpy.asarray([[i for i, e in enumerate(scrub_mask) if e == 0]])
     badtpindex = numpy.asarray([[i for i, e in enumerate(scrub_mask) if e == 1]])
-    tobs_good = goodtpindex * tr
+    tobs_good = (goodtpindex+1) * tr
     timespan = tobs_good.max() - tobs_good.min()
-    tpobs_all = numpy.arange(0.0, tr * float(scrub_mask.shape[0]), tr)
-    freq = numpy.arange(1 / (timespan * ofreq), hifreq * tobs_good.shape[1] / (2 * timespan), 1 / (timespan * ofreq))[
+    tpobs_all = numpy.arange(tr, tr * float(scrub_mask.shape[0] +1), tr)
+    freq = numpy.arange(1 / (timespan * ofreq),
+                        hifreq * tobs_good.shape[1] / (2 * timespan) + 1/(timespan*ofreq),
+                        1 / (timespan * ofreq))[
         numpy.newaxis]
     freqang = 2.0 * math.pi * freq
     offsets = numpy.arctan2(numpy.sin(numpy.matmul(numpy.transpose(2 * freqang), tobs_good)).sum(1),
@@ -42,8 +44,8 @@ def spec_inter(arr, tr, ofreq, scrub_mask, hifreq, binSize=5000):
         temp = C + S
         binnedRecon.append(temp)
     recon = numpy.hstack(binnedRecon)
-    recon_std = numpy.std(recon, 0)
-    data_std = numpy.std(arr[goodtpindex, :], 1)
+    recon_std = numpy.std(recon, 0, ddof=1)
+    data_std = numpy.std(arr[goodtpindex, :], 1, ddof=1)
     data_std[data_std == 0] = -1
     with numpy.errstate(divide='ignore', invalid='ignore'):
         cor_factor = recon_std / data_std

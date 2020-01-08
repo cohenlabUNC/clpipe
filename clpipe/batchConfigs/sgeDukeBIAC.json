@@ -1,0 +1,25 @@
+{
+  "SubmissionHead": "qsub",
+  "SubmissionOptions": [],
+  "SubOptionsEqual": [],
+  "NThreadsCommand": "",
+  "NThreads": "",
+  "MemoryCommand": "-l h_vmem={mem}G,vf={mem}G",
+  "MemoryDefault": "8",
+  "TimeCommand": "",
+  "TimeDefault": "",
+  "JobIDCommand": "-N {jobid}",
+  "OutputCommand": "-o {output}",
+  "CommandWrapper": "-b y \"{cmdwrap}\"",
+  "EmailAddress": "",
+  "EmailCommand": "-M {email}",
+  "FMRIPrepBatchCommands": "-e",
+  "NoQuotes": false,
+  "TimeCommandActive": false,
+  "ThreadCommandActive": false,
+  "JobIDCommandActive": true,
+  "OutputCommandActive": true,
+
+
+  "SingularityBindPaths": "/mnt"
+}

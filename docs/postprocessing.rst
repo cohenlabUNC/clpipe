@@ -6,44 +6,48 @@ When performing functional connectivity analysis, there are several additional p
 
 .. code-block:: console
 
-    Usage: fmri_postprocess [OPTIONS] [SUBJECTS]...
+   Usage: fmri_postprocess [OPTIONS] [SUBJECTS]...
 
-      This command runs an fMRIprep'ed dataset through additional processing, as
-      defined in the configuration file. To run specific subjects, specify their
-      IDs. If no IDs are specified, all subjects are ran.
+  This command runs an fMRIprep'ed dataset through additional processing, as
+  defined in the configuration file. To run specific subjects, specify their
+  IDs. If no IDs are specified, all subjects are ran.
 
     Options:
-      -config_file FILE         Use a given configuration file. If left blank, uses
-                               the default config file, requiring definition of
-                               BIDS, working and output directories.
-      -target_dir DIRECTORY     Which fmriprep directory to process. If a
-                               configuration file is provided with a BIDS
-                               directory, this argument is not necessary. Note,
-                               must point to the ``fmriprep`` directory, not its
-                               parent directory.
-      -target_suffix TEXT       Which file suffix to use. If a configuration file
-                               is provided with a target suffix, this argument is
-                               not necessary. Defaults to "preproc_bold.nii.gz"
-      -output_dir DIRECTORY     Where to put the postprocessed data. If a
-                               configuration file is provided with a output
-                               directory, this argument is not necessary.
-      -output_suffix TEXT       What suffix to append to the postprocessed files.
-                               If a configuration file is provided with a output
-                               suffix, this argument is not necessary.
-      -task TEXT               Which task to postprocess. If left blank, defaults
-                               to all tasks.
-      -TR TEXT                 The TR of the scans. If a config file is not
-                               provided, this option is required. If a config file
-                               is provided, this information is found from the
-                               sidecar jsons.
-      -log_output_dir DIRECTORY  Where to put HPC output files. If not specified,
-                               defaults to <outputDir>/batchOutput.
-      -submit                  Flag to submit commands to the HPC.
-      -batch                   Submit to batch, or run in current session. Mainly
-                               used internally.
-      -debug                   Print detailed processing information and traceback
-                               for errors.
-      --help                   Show this message and exit.
+    -config_file PATH        Use a given configuration file. If left blank, uses
+                             the default config file, requiring definition of
+                             BIDS, working and output directories.
+    -target_dir DIRECTORY    Which fmriprep directory to process. If a
+                             configuration file is provided with a BIDS
+                             directory, this argument is not necessary. Note,
+                             must point to the ``fmriprep`` directory, not its
+                             parent directory.
+    -target_suffix TEXT      Which file suffix to use. If a configuration file
+                             is provided with a target suffix, this argument is
+                             not necessary. Defaults to "preproc_bold.nii.gz"
+    -output_dir DIRECTORY    Where to put the postprocessed data. If a
+                             configuration file is provided with a output
+                             directory, this argument is not necessary.
+    -output_suffix TEXT      What suffix to append to the postprocessed files.
+                             If a configuration file is provided with a output
+                             suffix, this argument is not necessary.
+    -task TEXT               Which task to postprocess. If left blank, defaults
+                             to all tasks.
+    -TR TEXT                 The TR of the scans. If a cofig file is not
+                             provided, this option is required. If a config file
+                             is provided, this information is found from the
+                             sidecar jsons.
+    -processing_stream TEXT  Optional processing stream selector.
+    -log_dir DIRECTORY       Where to put HPC output files. If not specified,
+                             defaults to <outputDir>/batchOutput.
+    -beta_series             Flag to activate beta-series correlation
+                             correlation. ADVANCED METHOD, refer to the
+                             documentation.
+    -submit                  Flag to submit commands to the HPC.
+    -batch / -single         Submit to batch, or run in current session. Mainly
+                             used internally.
+    -debug                   Print detailed processing information and traceback
+                             for errors.
+    --help                   Show this message and exit.
 
 
 

@@ -1,24 +1,36 @@
 {
-	"ConfigTitle": "Default Configuration File",
-	"DicomToBidsOptions": {
+	"ProjectTitle": "A Neuroimaging Project",
+	"Authors/Contributors": "",
+	"ProjectDirectory": "",
+	"EmailAddress": "",
+	"DICOMToBIDSOptions": {
 		"DICOMDirectory": "",
-		"OutputDirectory": "",
-		"HeuristicFile": "",
-		"TimeUsage": "4:0:0",
-		"MemoryUsage": "5000"
+		"BIDSDirectory": "",
+		"ConversionConfig": "",
+		"DICOMFormatString": "",
+		"TimeUsage": "1:0:0",
+		"MemUsage": "5000",
+        "CoreUsage": "2",
+        "LogDirectory": ""
 	},
 	"FMRIPrepOptions": {
 		"BIDSDirectory": "",
 		"WorkingDirectory": "",
 		"OutputDirectory": "",
-		"FMRIPrepPath": "/proj/hng/singularity_imgs/fmriprep1.2.6.simg",
+		"FMRIPrepPath": "/proj/hng/singularity_imgs/fmriprep_1.3.2.simg",
 		"FreesurferLicensePath": "/proj/hng/singularity_imgs/license.txt",
+		"CommandLineOpts": "",
+		"TemplateFlowToggle": false,
+		"TemplateFlowPath": "",
+		"TemplateFlowTemplates": ["MNI152NLin2009cAsym", "MNI152NLin6Asym", "OASIS30ANTs", "MNIPediatricAsym", "MNIInfant"],
 		"FMRIPrepMemoryUsage": "20000",
-		"FMRIPrepTimeUsage": "8:0:0"
+		"FMRIPrepTimeUsage": "16:0:0",
+		"NThreads": "8",
+        "LogDirectory": ""
 	},
 	"PostProcessingOptions": {
 		"TargetDirectory": "",
-		"TargetSuffix": "preproc_bold.nii.gz",
+		"TargetSuffix": "space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz",
 		"OutputDirectory": "",
 		"OutputSuffix": "",
 		"ConfoundSuffix": "desc-confounds_regressors.tsv",
@@ -33,23 +45,25 @@
 		"NuisanceRegression": "QuadLagged",
 		"WhiteMatter": true,
 		"CSF": true,
-		"GlobalSignalRegression": false,
+		"GlobalSignalRegression": true,
 		"FilteringHighPass": 0.008,
-		"FilteringLowPass": 0.1,
-		"FilteringOrder": 12,
+		"FilteringLowPass": -1,
+		"FilteringOrder": 2,
 		"OversamplingFreq": 4,
 		"PercentFreqSample": 1,
 		"Scrubbing": true,
 		"ScrubFDThreshold": 0.3,
-		"ScrubAhead": 2,
-		"ScrubBehind": 2,
-		"ScrubContig": 4,
-		"SpatialSmoothing": "SUSAN",
+		"ScrubAhead": 1,
+		"ScrubBehind": 1,
+		"ScrubContig": 2,
+		"RespNotchFilter": true,
+		"RespNotchFilterBand":[0.31,0.43],
 		"PostProcessingMemoryUsage": "20000",
 		"PostProcessingTimeUsage": "8:0:0",
 		"NThreads": "1",
 		"SpectralInterpolationBinSize": 5000,
-		"BIDSValidatorImage": "/proj/hng/singularity_imgs/validator.simg"
+		"BIDSValidatorImage": "/proj/hng/singularity_imgs/validator.simg",
+        "LogDirectory": ""
 	},
 	"BetaSeriesOptions": {
 		"TargetDirectory": "",
@@ -61,25 +75,75 @@
 		"NuisanceRegression": "QuadLagged",
 		"WhiteMatter": true,
 		"CSF": true,
-		"GlobalSignalRegression": false,
+		"GlobalSignalRegression": true,
 		"FilteringHighPass": 0.008,
-		"FilteringLowPass": 0.1,
-		"FilteringOrder": 12,
+		"FilteringLowPass": -1,
+		"FilteringOrder": 2,
 		"TaskSpecificOptions": [
 			{
 				"Task": "",
 				"ExcludeColumnInfo": "trial_type",
 				"ExcludeTrialTypes": ["block"]
 			}
-		]},
+		],
+      "LogDirectory": ""
+    },
+	"SUSANOptions": {
+		"TargetDirectory": "",
+		"TargetSuffix": "preproc_bold.nii.gz",
+		"OutputDirectory": "",
+		"OutputSuffix": "preproc_susan.nii.gz",
+		"BrightnessThreshold": 500,
+		"FWHM": 0,
+		"MemoryUsage": "5000",
+		"TimeUsage": "2:0:0",
+		"NThreads": "4",
+        "LogDirectory": ""
+	},
+	"ProcessingStreams": [
+		{
+			"ProcessingStream": "noGSR",
+			"PostProcessingOptions": {
+				"GlobalSignalRegression": false,
+				"OutputDirectory": "",
+				"OutputSuffix": ""
+			},
+			"BetaSeriesOptions": {
+				"GlobalSignalRegression": false,
+				"OutputDirectory": "",
+				"OutputSuffix": ""
+			},
+			"SUSANOptions": {
+				"OutputSuffix": "preproc_susan250.nii.gz",
+				"BrightnessThreshold": 250
+			}
+		},
+		{
+			"ProcessingStream": "noScrub",
+			"PostProcessingOptions": {
+				"Scrubbing": false,
+				"OutputDirectory": "",
+				"OutputSuffix": ""
+			},
+			"BetaSeriesOptions":{
+
+			},
+			"SUSANOptions": {
+			}
+		}
+
+	],
 	"ROIExtractionOptions": {
 		"TargetDirectory": "",
 		"TargetSuffix": "",
 		"OutputDirectory": "",
 		"Atlases": ["power"],
+		"RequireMask": true,
+		"PropVoxels": 0.5,
         "MemoryUsage":"3000",
         "TimeUsage": "2:0:0",
-        "NThreads": "1"
+        "NThreads": "1",
+        "LogDirectory": ""
 	},
 	"RunLog": [],
 	"BatchConfig": "slurmUNCConfig.json"
