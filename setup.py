@@ -43,6 +43,7 @@ setup(name='clpipe',
       update_config_file=clpipe.config_json_parser:update_config_file
       templateflow_setup=clpipe.template_flow:templateflow_setup
       test_func=clpipe.utils:test_func
+      fmap_cleanup=clpipe.fmap_cleanup:fmap_cleanup
       ''',
       zip_safe=False
       )
