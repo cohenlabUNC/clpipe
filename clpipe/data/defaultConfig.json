@@ -23,6 +23,7 @@
 		"TemplateFlowToggle": false,
 		"TemplateFlowPath": "",
 		"TemplateFlowTemplates": ["MNI152NLin2009cAsym", "MNI152NLin6Asym", "OASIS30ANTs", "MNIPediatricAsym", "MNIInfant"],
+		"FMapCleanupROIs": 3,
 		"FMRIPrepMemoryUsage": "20000",
 		"FMRIPrepTimeUsage": "16:0:0",
 		"NThreads": "8",

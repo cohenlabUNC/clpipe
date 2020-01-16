@@ -92,18 +92,6 @@
       "atlas_type": "label",
       "atlas_citation": ""
     },
-    { "atlas_name": "schaefer7Networks",
-      "atlas_file": "data/atlases/schaefer/Schaefer2018_100Parcels_7Networks_order_FSLMNI152_2mm.nii.gz",
-      "atlas_labels": "data/atlases/schaefer/Schaefer2018_100Parcels_7Networks_order_FSLMNI152_2mm_labels.csv",
-      "atlas_type": "label",
-      "atlas_citation": ""
-    },
-    { "atlas_name": "schaefer17Networks",
-      "atlas_file": "data/atlases/schaefer/Schaefer2018_100Parcels_17Networks_order_FSLMNI152_2mm.nii.gz",
-      "atlas_labels": "data/atlases/schaefer/Schaefer2018_100Parcels_17Networks_order_FSLMNI152_2mm_labels.csv",
-      "atlas_type": "label",
-      "atlas_citation": ""
-    },
     { "atlas_name": "bigbrain",
       "atlas_file": "data/atlases/bigbrain/BigBrain300_MNI_coordinates.txt",
       "atlas_labels": "data/atlases/bigbrain/BigBrain300_ROIinfo.xlsx",
