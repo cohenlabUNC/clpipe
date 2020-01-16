@@ -161,18 +161,20 @@ def _fmri_postprocess_subject(config, subject, task, tr=None, beta_series = Fals
                      "*" + config.config[output_type]['TargetSuffix']))
 
     subject_files = glob.glob(search_string, recursive=True)
-
-    drop_tps = pandas.read_csv(drop_tps)
+    if drop_tps is not None:
+        drop_tps = pandas.read_csv(drop_tps)
 
     logging.info('Finding Image Files')
     for image in subject_files:
         if task is None or 'task-' + task in image:
             logging.info('Processing ' + image)
             try:
-                temp = drop_tps[drop_tps['file_name'].str.match(os.path.basename(image))]['TR_round']
-                if len(temp) is not 0:
-                        tps_drop = int(temp)
-                        logging.info('Found drop TP info, will remove last ' + str(tps_drop) + ' time points')
+                temp = None
+                if drop_tps is not None:
+                    temp = drop_tps[drop_tps['file_name'].str.match(os.path.basename(image))]['TR_round']
+                if temp is not None:
+                    tps_drop = int(temp)
+                    logging.info('Found drop TP info, will remove last ' + str(tps_drop) + ' time points')
                 else:
                         tps_drop = None
                 _fmri_postprocess_image(config, image, task,  tr, beta_series, tps_drop)
