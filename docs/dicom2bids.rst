@@ -37,7 +37,37 @@ Alternatively, you can use `{subject}/{session}`
 
 You can include other text in the formatting option, so that the program ignores that text. For example, `Subject-{subject}` used on a dataset with `Subject-01` as a folder will determine the subject id to be `01` not `Subject-01`.
 
-The other important ingredient in converting your DICOMs to BIDS format is the conversion configuration. An example file is generated when you use the project_setup command. Below is a brief example:
+dcm2bids Helper Function
+------
+
+To obtain the information from the header needed to complete the conversion config json, dcm2bids has a handy helper function:
+
+.. code-block:: console
+
+    usage: dcm2bids_helper [-h] -d DICOM_DIR [DICOM_DIR ...] [-o OUTPUT_DIR]
+
+    optional arguments:
+        -h, --help            show this help message and exit
+        -d DICOM_DIR [DICOM_DIR ...], --dicom_dir DICOM_DIR [DICOM_DIR ...] DICOM files directory
+        -o OUTPUT_DIR, --output_dir OUTPUT_DIR
+                        Output BIDS directory, Default: current directory
+
+            Documentation at https://github.com/cbedetti/Dcm2Bids
+
+This command will create convert an entire folder's data, and create a temporary directory containing all the converted files, and more importantly the sidecar jsons. These jsons contain the information needed to update the conversion configuration file.
+
+Note: If you are doing a longitudinal study and the sessions are different from each other, you should do this separately for each session. Ex:
+
+.. code-block:: console
+
+	dcm2bids_helper -d data_DICOMs/1005/01 -o temp_s1
+	dcm2bids_helper -d data_DICOMs/1005/02 -o temp_s2
+
+
+Conversion Config
+------
+
+The other important ingredient in converting your DICOMs to BIDS format is the conversion configuration. An example file is generated when you use the project_setup command in the project directory. Below is a brief example:
 
 .. code-block:: json
 
@@ -114,31 +144,17 @@ The other important ingredient in converting your DICOMs to BIDS format is the c
 
 This configuration file looks for all scans that have "_srt" anywhere in the SeriesDescription field of the header, converts them into NIFTI, labels them in the BIDS standards, and adds the custom label of `task-srt`. It does the same for anatomical scans with "MPRAGE" contained in the series description. Any header field in the dicoms can be used as criteria. If multiple scans meet the criteria, then they will be labeled `run-1, run-2, ...` in order of acquisition.
 
-To obtain the information from the header, dcm2bids has a handy helper function:
+Params:
 
-.. code-block:: console
+* ``dataType:`` “anat”,”func”,”dwi” [required]
+* ``modalityLabel:`` “T1w”,”T2w”,“bold”,”dwi” [required]
+* ``customLabels:`` What to name the ouput. Must be 'task-XXX'. May have restrictions for other modalities.
+* ``Criteria:`` How to select your scan from the DICOM header. Everything in criteria, when used in combination, needs to be unique to a run type (MPRage, T2-weighted, resting state, each task scan individually, DWI scans, etc--note that if you have different acquisition directions need to include that as well)
 
-    usage: dcm2bids_helper [-h] -d DICOM_DIR [DICOM_DIR ...] [-o OUTPUT_DIR]
-
-    optional arguments:
-        -h, --help            show this help message and exit
-        -d DICOM_DIR [DICOM_DIR ...], --dicom_dir DICOM_DIR [DICOM_DIR ...] DICOM files directory
-        -o OUTPUT_DIR, --output_dir OUTPUT_DIR
-                        Output BIDS directory, Default: current directory
-
-            Documentation at https://github.com/cbedetti/Dcm2Bids
-
-This command will create convert an entire folder's data, and create a temporary directory containing all the converted files, and more importantly the sidecar jsons. These jsons contain the information needed to update the conversion configuration file.
-
-Note: If you are doing a longitudinal study and the sessions are different from each other, you should do this separately for each session. Ex:
-
-.. code-block:: console
-
-	dcm2bids_helper -d data_DICOMs/1005/01 -o temp_s1
-	dcm2bids_helper -d data_DICOMs/1005/02 -o temp_s2
+Converting to Bids
+------
 
 Once you have updated your conversion configuration file, you can convert your entire dataset with:
-
 
 .. code-block:: console
 
