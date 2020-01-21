@@ -178,3 +178,23 @@ Once you have updated your conversion configuration file, you can convert your e
                                     file.  Use in combination with -subject to convert single
                                     subject/sessions, else leave empty.
         --help                      Show this message and exit.
+
+Common Errors:
+-----
+.. code-block:: console
+
+	json.decoder.JSONDecodeError: Expecting ',' delimiter: line XX column XX (char XX)
+
+Cause: In the conversion_config.json file, there are missing commas between entries. Note: will also error out if there are extra commas that aren’t needed (i.e., if there is no subsequent entry)
+
+.. code-block:: console
+
+	FileNotFoundError: [Errno 2] No such file or directory:
+
+Cause: Likely it is because the XXXX entry in the clpipe_config.json is not quite right. Remember you need a / after the session as well if that is a directory that files are inside of!
+
+.. code-block:: console
+
+	TypeError: __init__() missing 1 required positional argument: 'dataType'
+
+Cause: This is a necessary field that isn’t included in the conversion_config.json file; could be because it’s missing or it’s spelled incorrectly
