@@ -6,7 +6,7 @@ import json
 from .template_flow import _templateflow_setup
 
 @click.command()
-@click.option('-project_title', required=True, default=None)
+@click.option('-project_title', required=True, default=None, help='Any useful descriptor. Printed at the config but not otherwise used.')
 @click.option('-project_dir', required = True ,type=click.Path(exists=False, dir_okay=True, file_okay=True), default=None,
               help='Where the project will be located.')
 @click.option('-source_data', type=click.Path(exists=True, dir_okay=True, file_okay=False),
