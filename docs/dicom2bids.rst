@@ -130,6 +130,13 @@ To obtain the information from the header, dcm2bids has a handy helper function:
 
 This command will create convert an entire folder's data, and create a temporary directory containing all the converted files, and more importantly the sidecar jsons. These jsons contain the information needed to update the conversion configuration file.
 
+Note: If you are doing a longitudinal study and the sessions are different from each other, you should do this separately for each session. Ex:
+
+.. code-block:: console
+
+	dcm2bids_helper -d data_DICOMs/1005/01 -o temp_s1
+	dcm2bids_helper -d data_DICOMs/1005/02 -o temp_s2
+
 Once you have updated your conversion configuration file, you can convert your entire dataset with:
 
 
