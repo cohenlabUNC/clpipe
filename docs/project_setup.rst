@@ -9,7 +9,7 @@ clpipe contains a convenience command for setting up the directories and configu
     Usage: project_setup [OPTIONS]
 
     Options:
-        -project_title TEXT     [required]
+        -project_title TEXT     Any useful descriptor. Printed at the config but not otherwise used.  [required]
         -project_dir PATH       Where the project will be located.  [required]
         -source_data DIRECTORY  Where the raw data (usually DICOMs) are located.
         -symlink_source_data    symlink the source data into project/data_dicoms.
