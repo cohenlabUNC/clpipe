@@ -2,6 +2,8 @@
 Installation
 ============
 
+clpipe requires python 3.6.6, so make sure this is loaded into your command environment first. 
+
 Installation of clpipe is fairly simple. If you have priviledges to add python packages to a system, you can install the most recent version of clpipe with
 
 .. code-block:: console
