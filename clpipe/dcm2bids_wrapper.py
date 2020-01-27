@@ -23,7 +23,7 @@ import sys
 @click.option('-submit', is_flag=True, default=False, help = 'Submit jobs to HPC')
 
 def convert2bids(dicom_dir=None, dicom_dir_format=None, bids_dir = None, conv_config_file = None, config_file = None, overwrite = None, log_dir = None, subject =None, session = None, longitudinal = False, submit = None):
-    config = ConfigParser()
+    config = ClpipeConfigParser()
     config.config_updater(config_file)
     config.setup_dcm2bids(dicom_dir,
                           conv_config_file,
