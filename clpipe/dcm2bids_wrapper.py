@@ -20,8 +20,11 @@ import sys
 @click.option('-subject', required = False, help = 'A subject  to convert using the supplied configuration file.  Use to convert single subjects, else leave empty')
 @click.option('-session', required = False, help = 'A session  to convert using the supplied configuration file.  Use in combination with -subject to convert single subject/sessions, else leave empty')
 @click.option('-submit', is_flag=True, default=False, help = 'Submit jobs to HPC')
+<<<<<<< HEAD
 def convert2bids(dicom_dir=None, dicom_dir_format=None, bids_dir = None, conv_config_file = None, config_file = None, overwrite = None, log_dir = None, subject =None, session = None, submit = None):
     config = ClpipeConfigParser()
+=======
+>>>>>>> 6d49ea476e638e30e546360426b5436e0533b004
     config.config_updater(config_file)
     config.setup_dcm2bids(dicom_dir,
                           conv_config_file,
@@ -66,7 +69,6 @@ def convert2bids(dicom_dir=None, dicom_dir_format=None, bids_dir = None, conv_co
         sys.excepthook = exception_handler
         raise FileNotFoundError('There are no subjects/sessions found for that format string.')
 
-    if session_toggle:
         conv_string = '''dcm2bids -d {dicom_dir} -o {bids_dir} -p {subject} -s {session} -c {conv_config_file}'''
     else:
         conv_string = '''dcm2bids -d {dicom_dir} -o {bids_dir} -p {subject} -c {conv_config_file}'''
@@ -81,7 +83,6 @@ def convert2bids(dicom_dir=None, dicom_dir_format=None, bids_dir = None, conv_co
     batch_manager.update_nthreads(config.config['DICOMToBIDSOptions']['CoreUsage'])
     for ind,i in enumerate(sub_sess_list):
 
-        if session_toggle:
              job_id = 'convert_sub-' + i['subject'] + '_ses-' + i['session']
              job1 = Job(job_id, conv_string.format(
                 dicom_dir=folders[ind],

@@ -13,7 +13,7 @@ import logging
 
 @click.command()
 @click.option('-config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True), default = None, help = 'The configuration file for the study, use if you have a custom batch configuration.')
-@click.option('-fmap_cleanup_tp',  default = None, help = 'The configuration file for the study, use if you have a custom batch configuration.')
+@click.option('-fmap_cleanup_tp',  default = None, help = 'The number of timepoints from the beginning of the scan to include.')
 @click.option('-bids_dir', help = 'The dicom info output file name.')
 @click.option('-subject', required = False, help = 'A subject  to convert using the supplied configuration file.  Use to convert single subjects, else leave empty')
 @click.option('-single', is_flag = True, default = False)
