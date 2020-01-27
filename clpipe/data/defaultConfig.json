@@ -26,6 +26,7 @@
 		"FMRIPrepMemoryUsage": "20000",
 		"FMRIPrepTimeUsage": "16:0:0",
 		"NThreads": "8",
+		"FMapCleanupROIs": -1,
         "LogDirectory": ""
 	},
 	"PostProcessingOptions": {

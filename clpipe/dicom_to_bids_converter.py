@@ -1,6 +1,6 @@
 import click
 from .batch_manager import BatchManager,Job
-from .config_json_parser import ConfigParser
+from .config_json_parser import ClpipeConfigParser
 import os
 from pkg_resources import resource_stream, resource_filename
 import parse
@@ -18,7 +18,7 @@ import logging
 @click.option('-submit', is_flag = True, default=False, help = 'Submission job to HPC.')
 def dicom_to_nifti_to_bids_converter_setup(subject = None, session = None, dicom_directory=None, output_file=None, config_file = None,  submit=False):
     """This command can be used to compute and extract a dicom information spreadsheet so that a heuristic file can be written. Users should specify a subject with all scans of interest present, and run this command on all sessions of interest. """
-    config = ConfigParser()
+    config = ClpipeConfigParser()
     
 
     heuristic_file = resource_filename(__name__, 'data/setup_heuristic.py')
@@ -75,7 +75,7 @@ def dicom_to_nifti_to_bids_converter(subjects = None, dicom_directory=None, subm
     else:
         logging.basicConfig(level=logging.DEBUG)
 
-    config = ConfigParser()
+    config = ClpipeConfigParser()
     config.setup_heudiconv(dicom_directory,
                            os.path.abspath(heuristic_file),
                            os.path.abspath(output_directory))

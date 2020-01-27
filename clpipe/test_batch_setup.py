@@ -1,6 +1,6 @@
 import os
 import click
-from .config_json_parser import ConfigParser
+from .config_json_parser import ClpipeConfigParser
 from .batch_manager import BatchManager, Job
 import logging
 
@@ -13,7 +13,7 @@ import logging
               help='Where to put the test output. Defaults to current working directory', default = os.getcwd())
 @click.option('-submit', is_flag=True, default=False, help='Flag to submit commands to the HPC')
 def test_batch_setup(config_file = None, batch_config = None, log_dir = None, submit = None):
-    config = ConfigParser()
+    config = ClpipeConfigParser()
     config.config_updater(config_file)
     if batch_config is not None:
         config.config['BatchConfig'] = batch_config

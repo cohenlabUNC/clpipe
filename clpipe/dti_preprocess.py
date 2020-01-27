@@ -3,7 +3,7 @@ import click
 import sys
 import logging
 from .batch_manager import BatchManager, Job
-from .config_json_parser import ConfigParser
+from .config_json_parser import ClpipeConfigParser
 from .error_handler import exception_handler
 
 
@@ -30,7 +30,7 @@ def qsiprep_process(bids_dir=None, working_dir=None, output_dir=None, config_fil
     else:
         logging.basicConfig(level=logging.DEBUG)
 
-    config = ConfigParser()
+    config = ClpipeConfigParser()
     config.config_updater(config_file)
     config.setup_fmriprep_directories(bids_dir, working_dir, output_dir, log_dir)
     if not any([config.config['QSIprepOptions']['BIDSDirectory'], config.config['QSIprepOptions']['OutputDirectory'],

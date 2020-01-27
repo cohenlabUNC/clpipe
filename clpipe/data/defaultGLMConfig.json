@@ -1,0 +1,44 @@
+{
+  "GLMName": "A GLM Analysis",
+  "Authors": "Me, myself, and I",
+  "DateCreated": "",
+  "GLMSetupOptions": {
+    "ParentClpipeConfig":"",
+    "TargetDirectory": "",
+    "TargetSuffix": "",
+    "WorkingDirectory": "",
+    "TaskName": "",
+    "ReferenceImage": "",
+    "ResampleResolution": 2.0,
+    "ResampleOutputDirectory": "",
+    "SkullStrip": true,
+    "SUSANSmoothing": true,
+    "SUSANOptions": {
+      "BrightnessThreshold": 0,
+      "FWHM": 0
+    }
+  },
+  "Level1Setups": [
+    { "ModelName": "",
+      "FSFPrototype": "",
+      "ImageIncludeList": "",
+      "ImageExcludeList": "",
+      "ConfoundList": ""
+    }
+  ],
+  "Level2Setups": [
+    { "ModelName": "",
+      "FSFPrototype": "",
+      "SubjectList": "",
+      "ConfoundList": ""
+    }
+  ],
+    "Level3Setups": [
+    {
+      "ModelName": "",
+      "FSFPrototype": "",
+      "SubjectList": "",
+      "ConfoundList": ""
+    }
+  ]
+}

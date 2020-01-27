@@ -2,7 +2,7 @@ import os
 import glob
 import click
 from .batch_manager import BatchManager, Job
-from .config_json_parser import ClpipeConfigParser
+from .config_json_parser import ClpipeConfigParser, GLMConfigParser
 import logging
 import sys
 from .error_handler import exception_handler
@@ -10,28 +10,18 @@ from nipype.interfaces import fsl
 
 @click.command()
 @click.argument('subjects', nargs=-1, required=False, default=None)
-@click.option('-config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True), default=None,
-              help='Use a given configuration file. If left blank, uses the default config file, requiring definition of BIDS, working and output directories.')
-@click.option('-target_dir', type=click.Path(exists=True, dir_okay=True, file_okay=False),
-              help='Which directory to process. If a configuration file is provided.')
-@click.option('-target_suffix',
-              help='Which file suffix to use. If a configuration file is provided with a target suffix, this argument is not necessary. Defaults to "preproc_bold.nii.gz"')
-@click.option('-output_dir', type=click.Path(dir_okay=True, file_okay=False),
-              help='Where to put the postprocessed data. If a configuration file is provided with a output directory, this argument is not necessary.')
-@click.option('-output_suffix',
-              help='What suffix to append to the smoothed files. If a configuration file is provided with a output suffix, this argument is not necessary.')
-@click.option('-task', help='Which task to smooth. If left blank, defaults to all tasks.')
-@click.option('-processing_stream', help = 'Optional processing stream selector.')
-@click.option('-log_dir', type=click.Path(dir_okay=True, file_okay=False),
-              help='Where to put HPC output files. If not specified, defaults to <outputDir>/batchOutput.')
+@click.option('-config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True), default=None, required = T,
+              help='Use a given configuration file.')
+@click.option('-glm_config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True), default=None, required = True,
+              help='Use a given GLM configuration file.')
+
 @click.option('-submit', is_flag=True, default=False, help='Flag to submit commands to the HPC.')
 @click.option('-batch/-single', default=True,
               help='Submit to batch, or run in current session. Mainly used internally.')
 @click.option('-debug', is_flag=True, default=False,
               help='Print detailed processing information and traceback for errors.')
-def susan_smoothing(config_file=None, subjects=None, target_dir=None, target_suffix=None, output_dir=None,
-                     output_suffix=None, log_dir=None,
-                     submit=False, batch=True, task=None, debug = None, processing_stream = None):
+def glm_prep(subjects = None, config_file=None, glm_config_file = None,
+                     submit=False, batch=True, task=None, debug = None):
     if not debug:
         sys.excepthook = exception_handler
         logging.basicConfig(level=logging.INFO)
@@ -40,26 +30,13 @@ def susan_smoothing(config_file=None, subjects=None, target_dir=None, target_suf
 
     config = ClpipeConfigParser()
     config.config_updater(config_file)
-    config.setup_susan(target_dir, target_suffix, output_dir, output_suffix,
-                          log_dir)
-    config.validate_config()
-    output_type = 'SUSANOptions'
 
-    alt_proc_toggle = False
-    if processing_stream is not None:
-        processing_stream_config = config.config['ProcessingStreams']
-        processing_stream_config = [i for i in processing_stream_config if i['ProcessingStream'] == processing_stream]
-        if len(processing_stream_config) == 0:
-            raise KeyError('The processing stream you specified was not found.')
-        alt_proc_toggle = True
-
-    if alt_proc_toggle:
-        config.config['SUSANOptions'].update(processing_stream_config[0]['SUSANOptions'])
+    glm_config = GLMConfigParser(glm_config_file)
 
     if not subjects:
         subjectstring = "ALL"
-        sublist = [o.replace('sub-', '') for o in os.listdir(config.config[output_type]['TargetDirectory'])
-                   if os.path.isdir(os.path.join(config.config[output_type]['TargetDirectory'], o)) and 'sub-' in o]
+        sublist = [o.replace('sub-', '') for o in os.listdir(config.config['GLMSetupOptions']['TargetDirectory'])
+                   if os.path.isdir(os.path.join(config.config['GLMSetupOptions']['TargetDirectory'], o)) and 'sub-' in o]
     else:
         subjectstring = " , ".join(subjects)
         sublist = subjects
@@ -70,8 +47,6 @@ def susan_smoothing(config_file=None, subjects=None, target_dir=None, target_suf
     beta_series_string = ""
     if task is not None:
         task_string = '-task=' + task
-    if processing_stream is not None:
-        procstream = "-processing_stream=" + processing_stream
     else:
         procstream = ""
     if batch:
@@ -110,20 +85,20 @@ def susan_smoothing(config_file=None, subjects=None, target_dir=None, target_suf
         for sub in subjects:
 
             logging.info('Running Subject ' + sub)
-            _susan_subject(config, sub, task)
+            _glm_prep(glm_config, sub, task)
 
 
-def _susan_subject(config, subject, task):
-    output_type = 'SUSANOptions'
+def _glm_prep(glm_config, subject, task):
     search_string = os.path.abspath(
-        os.path.join(config.config[output_type]['TargetDirectory'], "sub-" + subject, "**",
-                     "*" + config.config[output_type]['TargetSuffix']))
+        os.path.join(glm_config.config["GLMSetupOptions"]['TargetDirectory'], "sub-" + subject, "**",
+                     "*" + glm_config.config["GLMSetupOptions"]['TargetSuffix']))
 
     subject_files = glob.glob(search_string, recursive=True)
-    sus = fsl.SUSAN()
-    sus.inputs.brightness_threshold = config.config[output_type]['BrightnessThreshold']
-    sus.inputs.fwhm = config.config[output_type]['FWHM']
-    sus.inputs.output_type = 'NIFTI_GZ'
+    if glm_config.config["GLMSetupOptions"]["SUSANSmoothing"]:
+        sus = fsl.SUSAN()
+        sus.inputs.brightness_threshold = glm_config.config["GLMSetupOptions"]['SUSANOptions']['BrightnessThreshold']
+        sus.inputs.fwhm = glm_config.config["GLMSetupOptions"]['SUSANOptions']['FWHM']
+        sus.inputs.output_type = 'NIFTI_GZ'
     logging.info('Finding Image Files')
     for image in subject_files:
         if task is None or 'task-' + task in image:

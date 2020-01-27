@@ -1,6 +1,6 @@
 import click
 from .batch_manager import BatchManager,Job
-from .config_json_parser import ConfigParser
+from .config_json_parser import ClpipeConfigParser
 import os
 import parse
 import glob
@@ -10,7 +10,6 @@ import sys
 
 
 @click.command()
-
 @click.option('-config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True), default = None, help = 'The configuration file for the study, use if you have a custom batch configuration.')
 @click.option('-conv_config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True), default = None, help = 'The configuration file for the study, use if you have a custom batch configuration.')
 @click.option('-dicom_dir', help = 'The folder where subject dicoms are located.')
@@ -22,7 +21,7 @@ import sys
 @click.option('-session', required = False, help = 'A session  to convert using the supplied configuration file.  Use in combination with -subject to convert single subject/sessions, else leave empty')
 @click.option('-submit', is_flag=True, default=False, help = 'Submit jobs to HPC')
 def convert2bids(dicom_dir=None, dicom_dir_format=None, bids_dir = None, conv_config_file = None, config_file = None, overwrite = None, log_dir = None, subject =None, session = None, submit = None):
-    config = ConfigParser()
+    config = ClpipeConfigParser()
     config.config_updater(config_file)
     config.setup_dcm2bids(dicom_dir,
                           conv_config_file,
