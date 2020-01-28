@@ -53,6 +53,15 @@ clpipe comes with a variety of functional and anatomical atlases, which can be u
       --help                     Show this message and exit.
 
 
+By default, ROIs are calculated with respect to the brain mask, and ROIs with fewer than the "PropVoxels" option voxels will be set to NAN. If any ROI has no voxels in the brain mask, then all ROIs will be extracted without respect to the brain mask, and then ROIs with fewer than "PropVoxels" voxels will be set to NAN. This is a workaround for the limitations on Nilearn's ROI extractor functions.
+
+Viewing Built-In Atlases
+-----
+
 To view the available built-in atlases, you can use the ``get_available_atlases`` command.
 
-By default, ROIs are calculated with respect to the brain mask, and ROIs with fewer than the "PropVoxels" option voxels will be set to NAN. If any ROI has no voxels in the brain mask, then all ROIs will be extracted without respect to the brain mask, and then ROIs with fewer than "PropVoxels" voxels will be set to NAN. This is a workaround for the limitations on Nilearn's ROI extractor functions.
+Outputs:
+
+* ``Atlast Label:`` XXX--name of the atlas
+* ``Atlas Type:`` “Label” (functionally defined),”Sphere” (spherical) or “Map” (ROIs can be overlapping)
+* ``Atlas Citation:`` XXX--paper citation for the atlas
