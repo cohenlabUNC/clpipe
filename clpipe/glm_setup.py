@@ -102,8 +102,8 @@ def _glm_prep(glm_config, subject, task):
     glm_setup.connect(input_node, 'out_file', resample, 'out_file')
     if glm_config.config["GLMSetupOptions"]["ApplyFMRIPREPMask"]:
         strip = pe.Node(fsl.ApplyMask(), name="mask_apply")
-        glm_setup.connect(input_node, strip, [('in_file', 'in_file'),
-                                         ('mask_file', 'mask_file')])
+        glm_setup.connect([(input_node, strip, [('in_file', 'in_file'),
+                                         ('mask_file', 'mask_file')])])
 
     if glm_config.config["GLMSetupOptions"]["SUSANSmoothing"]:
         sus = pe.Node(fsl.SUSAN(), name="susan_smoothing")
