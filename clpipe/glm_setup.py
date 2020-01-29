@@ -148,7 +148,7 @@ def _build_output_directory_structure(config, filepath):
     logging.debug(config.config["GLMSetupOptions"]['PreppedSuffix'])
     file_name = sans_ext + '_' + config.config["GLMSetupOptions"]['PreppedSuffix']
     logging.debug(file_name)
-    return os.path.join(target_directory, file_name)
+    return os.path.abspath(os.path.join(target_directory, file_name))
 
 def _mask_finder_glm(image, glm_config):
 
