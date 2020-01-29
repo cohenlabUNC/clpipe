@@ -33,14 +33,14 @@ clpipe comes with a variety of functional and anatomical atlases, which can be u
                                  named.
       -custom_atlas TEXT         A custom atlas image, in .nii or .nii.gz for
                                  label or maps, or a .txt tab delimited set of ROI
-                                 coordinates if for a sphere atlas. Not needed if
+                                 coordinates if for a sphere atlas. Can not be
                                  specified in config.
-      -custom_label TEXT         A custom atlas label file. Not needed if
+      -custom_label TEXT         A custom atlas label file. Can not be
                                  specified in config.
       -custom_type TEXT          What type of atlas? (label, maps, or spheres).
                                  Not needed if specified in config.
-      -radius TEXT               If a sphere atlas, what radius sphere, in mm. Not
-                                 needed if specified in config.
+      -radius TEXT               If a sphere atlas, what radius sphere, in mm. Can 
+                                 not be specified in config.
       -overlap_ok                Are overlapping ROIs allowed?
       -overwrite                 Overwrite existing files?
       -log_output_dir DIRECTORY  Where to put HPC output files (such as SLURM
