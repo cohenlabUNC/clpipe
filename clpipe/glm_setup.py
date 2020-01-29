@@ -126,7 +126,7 @@ def _glm_prep(glm_config, subject, task):
         if task is None or 'task-' + task in image:
             logging.info('Processing ' + image)
             try:
-                glm_setup.inputs.input.in_file = image
+                glm_setup.inputs.input.in_file = os.path.abspath(image)
 
                 glm_setup.inputs.input.out_file = _build_output_directory_structure(glm_config, image)
                 if glm_config.config["GLMSetupOptions"]["ApplyFMRIPREPMask"]:
@@ -161,4 +161,4 @@ def _mask_finder_glm(image, glm_config):
         logging.info("Mask not found for "+os.path.basename(image))
         return(None)
     else:
-        return(target_mask[0])
+        return(os.path.abspath(target_mask[0]))
