@@ -93,17 +93,15 @@ def _glm_prep(glm_config, subject, task):
     glm_setup = pe.Workflow(name='glm_setup')
     glm_setup.base_dir = os.path.join(glm_config.config["GLMSetupOptions"]['WorkingDirectory'], "sub-"+subject)
     input_node = pe.Node(IdentityInterface(fields=['in_file', 'out_file', 'mask_file']), name='input')
-    sus = pe.Node(fsl.SUSAN(), name="susan_smoothing")
-    strip = pe.Node(fsl.ApplyMask(), name="mask_apply")
+    strip = pe.Node(fsl.BinaryMaths(operation = 'mul'), name="mask_apply")
     resample = pe.Node(fsl.FLIRT(apply_isoxfm = glm_config.config["GLMSetupOptions"]["ResampleResolution"],
                                     reference = glm_config.config["GLMSetupOptions"]["ReferenceImage"]),
                        name="resample")
 
     glm_setup.connect(input_node, 'out_file', resample, 'out_file')
     if glm_config.config["GLMSetupOptions"]["ApplyFMRIPREPMask"]:
-        strip = pe.Node(fsl.ApplyMask(), name="mask_apply")
         glm_setup.connect([(input_node, strip, [('in_file', 'in_file'),
-                                         ('mask_file', 'mask_file')])])
+                                         ('mask_file', 'operand_file')])])
 
     if glm_config.config["GLMSetupOptions"]["SUSANSmoothing"]:
         sus = pe.Node(fsl.SUSAN(), name="susan_smoothing")
