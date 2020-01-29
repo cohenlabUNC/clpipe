@@ -151,7 +151,7 @@ def _build_output_directory_structure(config, filepath):
 def _mask_finder_glm(image, glm_config):
 
     image_base = os.path.basename(image)
-    image_base.replace(glm_config.config['GLMSetupOptions']['TargetSuffix'],glm_config.config['GLMSetupOptions']['MaskSuffix'])
+    image_base = image_base.replace(glm_config.config['GLMSetupOptions']['TargetSuffix'],glm_config.config['GLMSetupOptions']['MaskSuffix'])
     logging.debug(image_base)
     target_mask = glob.glob(os.path.join(glm_config.config['GLMSetupOptions']['MaskFolderRoot'],"**" ,image_base), recursive=True)
     logging.debug(target_mask)
