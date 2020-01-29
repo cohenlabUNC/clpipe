@@ -161,4 +161,4 @@ def _mask_finder_glm(image, glm_config):
         logging.info("Mask not found for "+os.path.basename(image))
         return(None)
     else:
-        return(target_mask)
+        return(target_mask[0])
