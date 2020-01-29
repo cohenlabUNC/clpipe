@@ -130,8 +130,8 @@ def _glm_prep(glm_config, subject, task):
 
                 glm_setup.inputs.input.out_file = _build_output_directory_structure(glm_config, image)
                 if glm_config.config["GLMSetupOptions"]["ApplyFMRIPREPMask"]:
-                    glm_config.inputs.input.mask_file = _mask_finder_glm(image, glm_config)
-                logging.info(glm_config.inputs)
+                    glm_setup.inputs.input.mask_file = _mask_finder_glm(image, glm_config)
+                logging.info(glm_setup.inputs)
 
             except Exception as err:
                 logging.exception(err)
