@@ -95,8 +95,7 @@ def _glm_prep(glm_config, subject, task):
     input_node = pe.Node(IdentityInterface(fields=['in_file', 'out_file', 'mask_file']), name='input')
     sus = pe.Node(fsl.SUSAN(), name="susan_smoothing")
     strip = pe.Node(fsl.ApplyMask(), name="mask_apply")
-    resample = pe.Node(fsl.ApplyXFM(apply_xfm = False,
-                                    apply_isoxfm = glm_config.config["GLMSetupOptions"]["ResampleResolution"],
+    resample = pe.Node(fsl.FLIRT(apply_isoxfm = glm_config.config["GLMSetupOptions"]["ResampleResolution"],
                                     reference = glm_config.config["GLMSetupOptions"]["ReferenceImage"]),
                        name="resample")
 
