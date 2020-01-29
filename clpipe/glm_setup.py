@@ -25,7 +25,7 @@ from nipype.interfaces.utility import IdentityInterface
 @click.option('-debug', is_flag=True, default=False,
               help='Print detailed processing information and traceback for errors.')
 def glm_setup(subjects = None, config_file=None, glm_config_file = None,
-                     submit=False, batch=True, task=None, debug = None):
+                     submit=False, batch=True, debug = None):
     if not debug:
         sys.excepthook = exception_handler
         logging.basicConfig(level=logging.INFO)
@@ -36,7 +36,7 @@ def glm_setup(subjects = None, config_file=None, glm_config_file = None,
     config.config_updater(config_file)
 
     glm_config = GLMConfigParser(glm_config_file)
-
+    task = glm_config.config['GLMSetupOptions']['TaskName']
     if not subjects:
         subjectstring = "ALL"
         sublist = [o.replace('sub-', '') for o in os.listdir(config.config['GLMSetupOptions']['TargetDirectory'])
