@@ -152,8 +152,8 @@ def _mask_finder_glm(image, glm_config):
 
     image_base = os.path.basename(image)
     image_base.replace(glm_config.config['GLMSetupOptions']['TargetSuffix'],glm_config.config['GLMSetupOptions']['MaskSuffix'])
-
-    target_mask = glob.glob(os.path.join(glm_config.config['GLMSetupOptions']['TargetDirectory'],"**" ,image_base), recursive=True)
+    logging.debug(image_base)
+    target_mask = glob.glob(os.path.join(glm_config.config['GLMSetupOptions']['MaskFolderRoot'],"**" ,image_base), recursive=True)
     logging.debug(target_mask)
     if len(target_mask) == 0:
         logging.info("Mask not found for "+os.path.basename(image))
