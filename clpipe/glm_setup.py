@@ -45,7 +45,7 @@ def glm_setup(subjects = None, config_file=None, glm_config_file = None,
         subjectstring = " , ".join(subjects)
         sublist = subjects
 
-    submission_string = '''glm_prep -config_file={config} -glm_config_file={glm_config} -single {debug} {sub} '''
+    submission_string = '''glm_setup -config_file={config} -glm_config_file={glm_config} -single {debug} {sub} '''
     if debug:
         debug_string = '-debug'
     else:
@@ -97,7 +97,7 @@ def _glm_prep(glm_config, subject, task):
     strip = pe.Node(fsl.ApplyMask(), name="mask_apply")
     resample = pe.Node(fsl.ApplyXFM(apply_xfm = False,
                                     apply_isoxfm = glm_config.config["GLMSetupOptions"]["ResampleResolution"],
-                                    reference = glm_config.config["GLMSetupOptions"]["ResampleReference"]),
+                                    reference = glm_config.config["GLMSetupOptions"]["ReferenceImage"]),
                        name="resample")
 
     glm_setup.connect(input_node, 'out_file', resample, 'out_file')
