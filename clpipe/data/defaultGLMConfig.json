@@ -11,12 +11,20 @@
     "ReferenceImage": "",
     "ResampleResolution": 2.0,
     "ResampleOutputDirectory": "",
-    "SkullStrip": true,
+    "ApplyFMRIPREPMask": true,
+    "MaskFolderRoot": "",
+    "MaskSuffix": "brain_mask.nii.gz",
     "SUSANSmoothing": true,
     "SUSANOptions": {
       "BrightnessThreshold": 0,
       "FWHM": 0
-    }
+    },
+    "PreppedDataDirectory": "",
+    "PreppedSuffix": "resampled.nii.gz",
+    "MemoryUsage": "5000",
+    "TimeUsage": "1:0:0",
+    "NThreads": "1",
+    "LogDirectory": ""
   },
   "Level1Setups": [
     { "ModelName": "",

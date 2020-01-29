@@ -44,6 +44,7 @@ setup(name='clpipe',
       templateflow_setup=clpipe.template_flow:templateflow_setup
       test_func=clpipe.utils:test_func
       fmap_cleanup=clpipe.fmap_cleanup:fmap_cleanup
+      glm_setup=clpipe.glm_setup:glm_setup
       ''',
       zip_safe=False
       )
