@@ -237,8 +237,7 @@ class ClpipeConfigParser:
 
 class GLMConfigParser:
     def __init__(self, glm_config_file):
-        with glm_config_file as config:
-            self.config = json.load(config)
+        self.config = config_json_parser(glm_config_file)
 
 
 
