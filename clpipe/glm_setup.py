@@ -121,7 +121,7 @@ def _glm_prep(glm_config, subject, task):
         glm_setup.connect(input_node, 'in_file', resample, 'in_file')
 
     for image in subject_files:
-        if task is None or 'task-' + task in image:
+        if task is None or 'task-' + task + '_' in image:
             logging.info('Processing ' + image)
             try:
                 glm_setup.inputs.input.in_file = os.path.abspath(image)
