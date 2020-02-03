@@ -172,9 +172,9 @@ def _fmri_postprocess_subject(config, subject, task, tr=None, beta_series = Fals
                 temp = None
                 if drop_tps is not None:
                     temp = drop_tps[drop_tps['file_name'].str.match(os.path.basename(image))]['TR_round']
-                if len(temp) is 1:
-                    tps_drop = int(temp)
-                    logging.info('Found drop TP info, will remove last ' + str(tps_drop) + ' time points')
+                    if len(temp) is 1:
+                        tps_drop = int(temp)
+                        logging.info('Found drop TP info, will remove last ' + str(tps_drop) + ' time points')
                 else:
                         tps_drop = None
                 _fmri_postprocess_image(config, image, task,  tr, beta_series, tps_drop)
