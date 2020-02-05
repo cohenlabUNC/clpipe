@@ -1,5 +1,5 @@
 import click
-from .config_json_parser import ConfigParser
+from .config_json_parser import ClpipeConfigParser
 import os
 import glob
 import shutil
@@ -26,7 +26,7 @@ def get_reports(config_file, output_name, debug):
     if config_file is None:
         raise ValueError('Please specify a configuration file.')
 
-    config = ConfigParser()
+    config = ClpipeConfigParser()
     config.config_updater(config_file)
 
     fmriprepdir = config.config['FMRIPrepOptions']['OutputDirectory']

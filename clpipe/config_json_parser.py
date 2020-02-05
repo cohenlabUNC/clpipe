@@ -33,7 +33,7 @@ def config_json_parser(json_path):
     return config
 
 
-class ConfigParser:
+class ClpipeConfigParser:
 
     def __init__(self):
         with resource_stream(__name__, 'data/defaultConfig.json') as def_config:
@@ -234,6 +234,12 @@ class ConfigParser:
                   'WhatRan': whatran,
                   "WhoRan": getpass.getuser()}
         self.config['RunLog'].append(newLog)
+
+class GLMConfigParser:
+    def __init__(self, glm_config_file):
+        self.config = config_json_parser(glm_config_file)
+
+
 
 def file_folder_generator(basename, modality, target_suffix = None):
     if target_suffix is not None:

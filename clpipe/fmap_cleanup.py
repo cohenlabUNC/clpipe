@@ -1,6 +1,6 @@
 import click
 from .batch_manager import BatchManager,Job
-from .config_json_parser import ConfigParser
+from .config_json_parser import ClpipeConfigParser
 from nipype.interfaces.fsl.utils import ExtractROI
 import os
 import parse
@@ -20,7 +20,7 @@ import logging
 @click.option('-submit', is_flag=True, default=False, help = 'Submit jobs to HPC')
 def fmap_cleanup(fmap_cleanup_tp = None, bids_dir = None, config_file = None, subject =None, single = None, submit = None):
 
-    config = ConfigParser()
+    config = ClpipeConfigParser()
     config.config_updater(config_file)
 
     if bids_dir is None:

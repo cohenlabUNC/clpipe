@@ -1,5 +1,5 @@
 import click
-from .config_json_parser import ConfigParser
+from .config_json_parser import ClpipeConfigParser
 import pandas as pd
 import os
 import glob
@@ -22,7 +22,7 @@ def fmri_process_check(config_file, output_file=None, debug=False):
     else:
         logging.basicConfig(level=logging.DEBUG)
 
-    config = ConfigParser()
+    config = ClpipeConfigParser()
     config.config_updater(config_file)
     config.validate_config()
 

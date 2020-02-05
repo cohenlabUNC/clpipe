@@ -6,7 +6,7 @@ from nipy import load_image
 from nipy.core.image.image import Image
 from nipy import save_image
 from .batch_manager import BatchManager, Job
-from .config_json_parser import ConfigParser
+from .config_json_parser import ClpipeConfigParser
 import json
 from pkg_resources import resource_stream, resource_filename
 import clpipe.postprocutils
@@ -48,7 +48,7 @@ def fmri_postprocess(config_file=None, subjects=None, target_dir=None, target_su
     if config_file is None and tr is None:
         raise ValueError('No config file and no specified TR. Please include one.')
 
-    config = ConfigParser()
+    config = ClpipeConfigParser()
     config.config_updater(config_file)
     config.setup_postproc(target_dir, target_suffix, output_dir, output_suffix, beta_series,
                           log_dir)
@@ -172,9 +172,9 @@ def _fmri_postprocess_subject(config, subject, task, tr=None, beta_series = Fals
                 temp = None
                 if drop_tps is not None:
                     temp = drop_tps[drop_tps['file_name'].str.match(os.path.basename(image))]['TR_round']
-                if temp is not None:
-                    tps_drop = int(temp)
-                    logging.info('Found drop TP info, will remove last ' + str(tps_drop) + ' time points')
+                    if len(temp) is 1:
+                        tps_drop = int(temp)
+                        logging.info('Found drop TP info, will remove last ' + str(tps_drop) + ' time points')
                 else:
                         tps_drop = None
                 _fmri_postprocess_image(config, image, task,  tr, beta_series, tps_drop)

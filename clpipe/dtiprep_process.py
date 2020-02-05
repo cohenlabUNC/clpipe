@@ -8,7 +8,7 @@ import click
 import sys
 import logging
 from .batch_manager import BatchManager, Job
-from .config_json_parser import ConfigParser
+from .config_json_parser import ClpipeConfigParser
 from .error_handler import exception_handler
 import glob
 import numpy as np
@@ -39,7 +39,7 @@ def dti_preprocess(bids_dir=None, working_dir=None, output_dir=None, config_file
     else:
         logging.basicConfig(level=logging.INFO)
 
-    config = ConfigParser()
+    config = ClpipeConfigParser()
     config.config_updater(config_file)
     config.setup_fmriprep_directories(bids_dir, working_dir, output_dir)
     config.validate_config()

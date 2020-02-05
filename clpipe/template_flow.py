@@ -2,7 +2,7 @@ import os
 import click
 import sys
 import logging
-from .config_json_parser import ConfigParser
+from .config_json_parser import ClpipeConfigParser
 from .error_handler import exception_handler
 from templateflow import api
 
@@ -21,7 +21,7 @@ def _templateflow_setup(config_file=None, debug=False):
     else:
         logging.basicConfig(level=logging.DEBUG)
 
-    config = ConfigParser()
+    config = ClpipeConfigParser()
     config.config_updater(config_file)
 
     templateflow_path = config.config["FMRIPrepOptions"]["TemplateFlowPath"]

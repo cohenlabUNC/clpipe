@@ -1,6 +1,6 @@
 import os
 import click
-from .config_json_parser import ConfigParser
+from .config_json_parser import ClpipeConfigParser
 from pkg_resources import resource_stream
 import json
 from .template_flow import _templateflow_setup
@@ -18,7 +18,7 @@ from .template_flow import _templateflow_setup
 def project_setup(project_title = None, project_dir = None, source_data = None, move_source_data = None,
                   symlink_source_data = None):
 
-    config = ConfigParser()
+    config = ClpipeConfigParser()
     org_source = os.path.abspath(source_data)
     if move_source_data or symlink_source_data:
         source_data = os.path.join(os.path.abspath(project_dir), 'data_DICOMs')
