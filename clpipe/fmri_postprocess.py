@@ -199,8 +199,9 @@ def _fmri_postprocess_image(config, file, task = None, tr=None, beta_series = Fa
         logging.info('Found confound regressors')
         confounds, fdts = _regression_prep(config, confound_regressors)
         if drop_tps is not None:
-            confounds = confounds.iloc[:(confounds.shape[0]-drop_tps)]
-            fdts = fdts.iloc[:(fdts.shape[0]-drop_tps)]
+            confounds = confounds.iloc[:(confounds.shape[0]-(drop_tps-1))]
+            logging.info('Removing last ' + str(drop_tps) + ' time points')
+            fdts = fdts.iloc[:(fdts.shape[0]-(drop_tps-1))]
         if tr is None:
             image_json_path = _find_json(config, file)
             with open(os.path.abspath(image_json_path), "r") as json_path:
@@ -214,7 +215,7 @@ def _fmri_postprocess_image(config, file, task = None, tr=None, beta_series = Fa
         data = data.reshape((numpy.prod(numpy.shape(data)[:-1]), data.shape[-1]))
         data = numpy.transpose(data)
         if drop_tps is not None:
-            data = data[0:(data.shape[0]-drop_tps), :]
+            data = data[0:(data.shape[0]-(drop_tps-1)), :]
             orgImageShape = list(orgImageShape)
             orgImageShape[3] = data.shape[0]
             orgImageShape = tuple(orgImageShape)
