@@ -450,25 +450,26 @@ def _find_json(config, filepath):
     jsons = glob.glob(os.path.join(config.config['FMRIPrepOptions']['BIDSDirectory'], '**', '*.json'), recursive=True)
 
     task = [task_name for task_name in components if "task-" in task_name][0]
-    
-    top_level_json = [json for json in jsons if json == task + "_bold.json"]
-    
+
+    top_level_json = [json for json in jsons if task + "_bold.json" in json]
+
     if len(top_level_json) is not 0:
         target_json = top_level_json[0]
-    
-    sub_level_json = [json for json in jsons if json == "_".join(components[0:2]) + "_bold.json"]
-    
+
+    sub_level_json = [json for json in jsons if "_".join(components[0:2]) + "_bold.json" in json]
+
     if len(sub_level_json) is not 0:
         target_json = sub_level_json[0]
-        
-    scan_level_json = [json for json in jsons if json == "_".join(components[0:3]) + "_bold.json"]
-    
+
+    scan_level_json = [json for json in jsons if "_".join(components[0:3]) + "_bold.json" in json]
+
     if len(scan_level_json) is not 0:
         target_json = scan_level_json[0]
-        
-    
+
+
     logging.debug(target_json)
     return target_json
+
 
 
 def _find_confounds(config, filepath):
