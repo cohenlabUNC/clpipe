@@ -113,7 +113,7 @@ def _glm_prep(glm_config, subject, task, drop_tps):
            glm_setup.connect([(input_node, strip, [('in_file', 'in_file'),
                                          ('mask_file', 'operand_file')])])
         else:
-            glm_setup.connect(drop, "out_file", strip, "in_file")
+            glm_setup.connect(drop, "roi_file", strip, "in_file")
             glm_setup.connect(input_node, "mask_file", strip, "operand_file")
 
     if glm_config.config["GLMSetupOptions"]["SUSANSmoothing"]:
@@ -124,7 +124,7 @@ def _glm_prep(glm_config, subject, task, drop_tps):
         if glm_config.config["GLMSetupOptions"]["ApplyFMRIPREPMask"]:
             glm_setup.connect(strip, 'out_file', sus, 'in_file')
         elif drop_tps is not None:
-            glm_setup.connect(drop, 'out_file', sus, 'in_file')
+            glm_setup.connect(drop, 'roi_file', sus, 'in_file')
         else:
             glm_setup.connect(input_node, 'in_file', sus, 'in_file')
 
@@ -133,7 +133,7 @@ def _glm_prep(glm_config, subject, task, drop_tps):
     elif glm_config.config["GLMSetupOptions"]["ApplyFMRIPREPMask"]:
         glm_setup.connect(strip, 'out_file', resample, 'in_file')
     elif drop_tps is not None:
-        glm_setup.connect(drop, 'out_file', resample, 'in_file')
+        glm_setup.connect(drop, 'roi_file', resample, 'in_file')
     else:
         glm_setup.connect(input_node, 'in_file', resample, 'in_file')
 
