@@ -11,6 +11,8 @@ import nipype.interfaces.fsl as fsl  # fsl
 import nipype.interfaces.utility as util  # utility
 import nipype.pipeline.engine as pe  # pypeline engine
 from nipype.interfaces.utility import IdentityInterface
+import nibabel as nib
+import pandas
 
 @click.command()
 @click.argument('subjects', nargs=-1, required=False, default=None)
@@ -18,14 +20,15 @@ from nipype.interfaces.utility import IdentityInterface
               help='Use a given configuration file.')
 @click.option('-glm_config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True), default=None, required = True,
               help='Use a given GLM configuration file.')
-
+@click.option('-drop_tps', type=click.Path(exists=True, dir_okay=False, file_okay=True), default=None, required = False,
+              help='Drop timepoints csv sheet')
 @click.option('-submit', is_flag=True, default=False, help='Flag to submit commands to the HPC.')
 @click.option('-batch/-single', default=True,
               help='Submit to batch, or run in current session. Mainly used internally.')
 @click.option('-debug', is_flag=True, default=False,
               help='Print detailed processing information and traceback for errors.')
 def glm_setup(subjects = None, config_file=None, glm_config_file = None,
-                     submit=False, batch=True, debug = None):
+                     submit=False, batch=True, debug = None, drop_tps = None):
     if not debug:
         sys.excepthook = exception_handler
         logging.basicConfig(level=logging.INFO)
@@ -77,10 +80,10 @@ def glm_setup(subjects = None, config_file=None, glm_config_file = None,
         for sub in subjects:
 
             logging.info('Running Subject ' + sub)
-            _glm_prep(glm_config, sub, task)
+            _glm_prep(glm_config, sub, task, drop_tps)
 
 
-def _glm_prep(glm_config, subject, task):
+def _glm_prep(glm_config, subject, task, drop_tps):
     fsl.FSLCommand.set_default_output_type('NIFTI_GZ')
 
 
@@ -97,11 +100,21 @@ def _glm_prep(glm_config, subject, task):
     resample = pe.Node(fsl.FLIRT(apply_isoxfm = glm_config.config["GLMSetupOptions"]["ResampleResolution"],
                                     reference = glm_config.config["GLMSetupOptions"]["ReferenceImage"]),
                        name="resample")
-
     glm_setup.connect(input_node, 'out_file', resample, 'out_file')
+    if drop_tps is not None:
+        drop_tps_data = pandas.read_csv(drop_tps)
+        drop = pe.Node(fsl.ExtractROI(), name = "drop_tps")
+        drop.inputs.t_min = 0
+        glm_setup.connect(input_node, "in_file", drop, "in_file")
+
+
     if glm_config.config["GLMSetupOptions"]["ApplyFMRIPREPMask"]:
-        glm_setup.connect([(input_node, strip, [('in_file', 'in_file'),
+        if drop_tps is None:
+           glm_setup.connect([(input_node, strip, [('in_file', 'in_file'),
                                          ('mask_file', 'operand_file')])])
+        else:
+            glm_setup.connect(drop, "out_file", strip, "in_file")
+            glm_setup.connect(input_node, "mask_file", strip, "operand_file")
 
     if glm_config.config["GLMSetupOptions"]["SUSANSmoothing"]:
         sus = pe.Node(fsl.SUSAN(), name="susan_smoothing")
@@ -110,6 +123,8 @@ def _glm_prep(glm_config, subject, task):
 
         if glm_config.config["GLMSetupOptions"]["ApplyFMRIPREPMask"]:
             glm_setup.connect(strip, 'out_file', sus, 'in_file')
+        elif drop_tps is not None:
+            glm_setup.connect(drop, 'out_file', sus, 'in_file')
         else:
             glm_setup.connect(input_node, 'in_file', sus, 'in_file')
 
@@ -117,13 +132,31 @@ def _glm_prep(glm_config, subject, task):
         glm_setup.connect(sus, 'smoothed_file', resample, 'in_file')
     elif glm_config.config["GLMSetupOptions"]["ApplyFMRIPREPMask"]:
         glm_setup.connect(strip, 'out_file', resample, 'in_file')
+    elif drop_tps is not None:
+        glm_setup.connect(drop, 'out_file', resample, 'in_file')
     else:
         glm_setup.connect(input_node, 'in_file', resample, 'in_file')
+
+    if drop_tps is not None:
+        drop_tps_data = pandas.read_csv(drop_tps)
 
     for image in subject_files:
         if task is None or 'task-' + task + '_' in image:
             logging.info('Processing ' + image)
             try:
+                if drop_tps is not None:
+                    img_data = nib.load(image)
+                    total_tps = img_data.get_data_shape()[3]
+                    tps_drop = None
+                    temp = None
+                    temp = drop_tps_data[drop_tps_data['file_name'].str.match(os.path.basename(image))]['TR_round']
+                    if len(temp) is 1:
+                        tps_drop = int(temp)
+                        logging.info('Found drop TP info, will remove last ' + str(tps_drop) + ' time points')
+                    if tps_drop is not None:
+                        total_tps = total_tps - tps_drop
+                    logging.info("Total timepoints are " + str(total_tps))
+                    glm_setup.inputs.drop_tps.t_size = total_tps
                 glm_setup.inputs.input.in_file = os.path.abspath(image)
 
                 glm_setup.inputs.input.out_file = _build_output_directory_structure(glm_config, image)
