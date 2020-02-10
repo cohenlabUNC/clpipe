@@ -449,12 +449,24 @@ def _find_json(config, filepath):
 
     jsons = glob.glob(os.path.join(config.config['FMRIPrepOptions']['BIDSDirectory'], '**', '*.json'), recursive=True)
 
-    count_overlap = []
-    for json_target in jsons:
-        count_overlap.append(sum([json_target.count(x) for x in components]))
-
-    max_value = max(count_overlap)
-    target_json = jsons[count_overlap.index(max_value)]
+    task = [task_name for task_name in components if "task-" in task_name][0]
+    
+    top_level_json = [json for json in jsons if json == task + "_bold.json"]
+    
+    if len(top_level_json) is not 0:
+        target_json = top_level_json[0]
+    
+    sub_level_json = [json for json in jsons if json == "_".join(components[0:2]) + "_bold.json"]
+    
+    if len(sub_level_json) is not 0:
+        target_json = sub_level_json[0]
+        
+    scan_level_json = [json for json in jsons if json == "_".join(components[0:3]) + "_bold.json"]
+    
+    if len(scan_level_json) is not 0:
+        target_json = scan_level_json[0]
+        
+    
     logging.debug(target_json)
     return target_json
 
