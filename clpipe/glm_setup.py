@@ -146,7 +146,7 @@ def _glm_prep(glm_config, subject, task, drop_tps):
             try:
                 if drop_tps is not None:
                     img_data = nib.load(image)
-                    total_tps = img_data.get_data_shape()[3]
+                    total_tps = img_data.shape[3]
                     tps_drop = None
                     temp = None
                     temp = drop_tps_data[drop_tps_data['file_name'].str.match(os.path.basename(image))]['TR_round']
