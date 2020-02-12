@@ -145,6 +145,21 @@
         "NThreads": "1",
         "LogDirectory": ""
 	},
+    "QSIPrepOptions": {
+        "BIDSDirectory": "",
+        "WorkingDirectory": "",
+        "OutputDirectory": "",
+        "QSIPrepPath": "/proj/hng/singularity_imgs/fmriprep_1.3.2.simg",
+        "FreesurferLicensePath": "/proj/hng/singularity_imgs/license.txt",
+        "CommandLineOpts": "",
+        "TemplateFlowToggle": false,
+        "TemplateFlowPath": "",
+        "TemplateFlowTemplates": ["MNI152NLin2009cAsym", "MNI152NLin6Asym", "OASIS30ANTs", "MNIPediatricAsym", "MNIInfant"],
+        "QSIPrepMemoryUsage": "20000",
+        "QSIPrepTimeUsage": "16:0:0",
+        "NThreads": "8",
+        "LogDirectory": ""
+    },
 	"RunLog": [],
 	"BatchConfig": "slurmUNCConfig.json"
 }

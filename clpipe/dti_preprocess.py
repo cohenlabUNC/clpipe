@@ -6,7 +6,6 @@ from .batch_manager import BatchManager, Job
 from .config_json_parser import ConfigParser
 from .error_handler import exception_handler
 
-
 @click.command()
 @click.argument('subjects', nargs=-1, required=False, default=None)
 @click.option('-config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True), default=None,
@@ -32,13 +31,13 @@ def qsiprep_process(bids_dir=None, working_dir=None, output_dir=None, config_fil
 
     config = ConfigParser()
     config.config_updater(config_file)
-    config.setup_fmriprep_directories(bids_dir, working_dir, output_dir, log_dir)
-    if not any([config.config['QSIprepOptions']['BIDSDirectory'], config.config['QSIprepOptions']['OutputDirectory'],
+    config.setup_qsiprep_directories(bids_dir, working_dir, output_dir, log_dir)
+    if not any([config.config['QSIprepOptions']['BIDSDirectory'],           config.config['QSIprepOptions']['OutputDirectory'],
                 config.config['QSIprepOptions']['WorkingDirectory'],
                 config.config['QSIprepOptions']['LogDirectory']]):
         raise ValueError(
             'Please make sure the BIDS, working and output directories are specified in either the configfile or in the command. At least one is not specified.')
-    singularity_string = '''unset PYTHONPATH; {templateflow1} singularity run -B {templateflow2}{bindPaths} {batchcommands} {fmriprepInstance} {bidsDir} {outputDir} participant ''' \
+    singularity_string = '''unset PYTHONPATH; {templateflow1} singularity run -B {templateflow2}{bindPaths} {batchcommands} {qsiprepInstance} {bidsDir} {outputDir} participant ''' \
                          '''--participant-label {participantLabels} -w {workingdir} --fs-license-file {fslicense} {threads} {otheropts}'''
 
     if config.config['QSIprepOptions']['TemplateFlowToggle']:
@@ -68,10 +67,10 @@ def qsiprep_process(bids_dir=None, working_dir=None, output_dir=None, config_fil
         threads = ''
 
     for sub in sublist:
-        batch_manager.addjob(Job("sub-" + sub + "fmriprep", singularity_string.format(
+        batch_manager.addjob(Job("sub-" + sub + "qsiprep", singularity_string.format(
             templateflow1 = template1,
             templateflow2 = template2,
-            fmriprepInstance=config.config['QSIprepOptions']['QSIprepPath'],
+            qsiprepInstance=config.config['QSIprepOptions']['QSIprepPath'],
             bidsDir=config.config['QSIprepOptions']['BIDSDirectory'],
             outputDir=config.config['QSIprepOptions']['OutputDirectory'],
             workingdir=config.config['QSIprepOptions']['WorkingDirectory'],

@@ -119,6 +119,22 @@ class ConfigParser:
         else:
             self.config['FMRIPrepOptions']['LogDirectory'] = os.path.join(self.config['ProjectDirectory'], 'logs', 'FMRIprep_logs')
 
+    def setup_qsiprep_directories(self, bidsDir, workingDir, outputDir, log_dir = None):
+        if bidsDir is not None:
+            self.config['QSIPrepOptions']['BIDSDirectory'] = os.path.abspath(bidsDir)
+            if not os.path.isdir(self.config['QSIPrepOptions']['BIDSDirectory']):
+                raise ValueError('BIDS Directory does not exist')
+        if workingDir is not None:
+            self.config['QSIPrepOptions']['WorkingDirectory'] = os.path.abspath(workingDir)
+            os.makedirs(self.config['QSIPrepOptions']['WorkingDirectory'], exist_ok=True)
+        if outputDir is not None:
+            self.config['QSIPrepOptions']['OutputDirectory'] = os.path.abspath(outputDir)
+            os.makedirs(self.config['QSIPrepOptions']['OutputDirectory'], exist_ok=True)
+        if log_dir is not None:
+            self.config['QSIPrepOptions']['LogDirectory'] = os.path.abspath(log_dir)
+        else:
+            self.config['QSIPrepOptions']['LogDirectory'] = os.path.join(self.config['ProjectDirectory'], 'logs', 'FMRIprep_logs')
+    
     def setup_postproc(self, target_dir, target_suffix, output_dir, output_suffix, beta_series = False, log_dir = None):
         target_output = 'PostProcessingOptions'
         log_target = 'postproc_logs'
