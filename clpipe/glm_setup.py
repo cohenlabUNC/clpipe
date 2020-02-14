@@ -13,6 +13,7 @@ import nipype.pipeline.engine as pe  # pypeline engine
 from nipype.interfaces.utility import IdentityInterface
 import nibabel as nib
 import pandas
+import re
 
 @click.command()
 @click.argument('subjects', nargs=-1, required=False, default=None)
@@ -144,6 +145,13 @@ def _glm_prep(glm_config, subject, task, drop_tps):
         if task is None or 'task-' + task + '_' in image:
             logging.info('Processing ' + image)
             try:
+                if glm_config.config['PrepareConfounds']:
+                    confound_file = _find_confounds(glm_config, image)
+                    confounds =  pandas.read_table(confound_file, dtype="float", na_values="n/a")
+
+                    if len(glm_config.config['Confounds']) > 0:
+                        cons_re = [re.compile(regex_wildcard(co)) for co in glm_config.config['Confounds']]
+
                 if drop_tps is not None:
                     img_data = nib.load(image)
                     total_tps = img_data.shape[3]
@@ -193,3 +201,12 @@ def _mask_finder_glm(image, glm_config):
         return(None)
     else:
         return(os.path.abspath(target_mask[0]))
+
+def _find_confounds(glm_config, filepath):
+    file_name = os.path.basename(filepath)
+    sans_ext = os.path.splitext(os.path.splitext(file_name)[0])[0]
+    root_file = sans_ext[:sans_ext.index('space')]
+    return os.path.join(os.path.dirname(filepath), root_file + glm_config.config['ConfoundSuffix'])
+
+def regex_wildcard(string):
+    return re.sub("\*", ".*", string)
