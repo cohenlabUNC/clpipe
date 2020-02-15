@@ -155,6 +155,7 @@ def _glm_prep(glm_config, subject, task, drop_tps):
                         cons_re = [re.compile(regex_wildcard(co)) for co in glm_config.config["GLMSetupOptions"]['Confounds']]
                         target_cols = []
                         for reg in cons_re:
+                            logging.debug(str([reg.match(col).group() for col in confounds.columns if reg.match(col) is not None]))
                             target_cols.extend([reg.match(col).group() for col in confounds.columns if reg.match(col) is not None])
                         logging.debug("Confound Columns " + str(target_cols))
                         confounds_mat = confounds[target_cols]
