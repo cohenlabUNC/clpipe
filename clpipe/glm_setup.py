@@ -156,7 +156,7 @@ def _glm_prep(glm_config, subject, task, drop_tps):
                         target_cols = []
                         for reg in cons_re:
                             target_cols.extend([reg.match(col).group() for col in confounds.columns if reg.match(col) is not None])
-                        logging.debug("Confound Columns " + target_cols)
+                        logging.debug("Confound Columns " + str(target_cols))
                         confounds_mat = confounds[target_cols]
                     if len(glm_config.config["GLMSetupOptions"]['ConfoundsQuad']) > 0:
                         cons_re = [re.compile(regex_wildcard(co)) for co in glm_config.config["GLMSetupOptions"]['ConfoundsQuad']]
@@ -164,7 +164,7 @@ def _glm_prep(glm_config, subject, task, drop_tps):
                         for reg in cons_re:
                             target_cols.extend(
                                 [reg.match(col).group() for col in confounds.columns if reg.match(col) is not None])
-                        logging.debug("Quad Columns " + target_cols)
+                        logging.debug("Quad Columns " + str(target_cols))
                         confounds_quad_mat = confounds[target_cols]
                         confounds_quad_mat = confounds_quad_mat**2
                         confounds_mat.append(confounds_quad_mat, ignore_index = True)
@@ -174,7 +174,7 @@ def _glm_prep(glm_config, subject, task, drop_tps):
                         for reg in cons_re:
                             target_cols.extend(
                                 [reg.match(col).group() for col in confounds.columns if reg.match(col) is not None])
-                        logging.debug("Lagged Columns " + target_cols)
+                        logging.debug("Lagged Columns " + str(target_cols))
                         confounds_lagged_mat = confounds[target_cols]
                         confounds_lagged_mat = pandas.diff(confounds_lagged_mat)
                         confounds_mat.append(confounds_lagged_mat, ignore_index=True)
@@ -184,7 +184,7 @@ def _glm_prep(glm_config, subject, task, drop_tps):
                         for reg in cons_re:
                             target_cols.extend(
                                 [reg.match(col).group() for col in confounds.columns if reg.match(col) is not None])
-                        logging.debug("Quadlagged Columns " + target_cols)
+                        logging.debug("Quadlagged Columns " + str(target_cols))
                         confounds_qlagged_mat = confounds[target_cols]
                         confounds_qlagged_mat = pandas.diff(confounds_qlagged_mat)
                         confounds_qlagged_mat = confounds_qlagged_mat**2
