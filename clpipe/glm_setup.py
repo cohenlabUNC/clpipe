@@ -237,6 +237,7 @@ def _glm_prep(glm_config, subject, task, drop_tps):
                         logging.debug(str(confounds_mat.shape))
                     confounds_out = os.path.splitext(glm_setup.inputs.input.out_file)[0] + "_confounds.tsv"
                     logging.debug(str(confounds_mat.columns))
+                    confounds_mat.fillna(0, inplace = True)
                     confounds_mat.to_csv(confounds_out,sep='\t',index=False,header=False)
                     logging.info("Outputting confound file to: " + confounds_out)
                 if glm_config.config["GLMSetupOptions"]["ApplyFMRIPREPMask"]:
