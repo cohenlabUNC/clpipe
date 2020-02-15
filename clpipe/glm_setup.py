@@ -226,7 +226,7 @@ def _glm_prep(glm_config, subject, task, drop_tps):
                         mot_outliers = _construct_motion_outliers(scrub_targets)
                         pandas.concat([confounds_mat.reset_index(),confounds_lagged_mat.reset_index()],axis=1)
                         pandas.concat([confounds_mat.reset_index(),mot_outliers.reset_index()],axis=1)
-                    confounds_out = os.path.splitext(glm_setup.inputs.input.out_file) + "_confounds.tsv"
+                    confounds_out = os.path.splitext(glm_setup.inputs.input.out_file)[0] + "_confounds.tsv"
                     confounds_mat.to_csv(confounds_out,sep='\t',index=False,header=False)
                     logging.info("Outputting confound file to: " + confounds_out)
                 if glm_config.config["GLMSetupOptions"]["ApplyFMRIPREPMask"]:
