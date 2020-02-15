@@ -167,6 +167,7 @@ def _glm_prep(glm_config, subject, task, drop_tps):
                                 [reg.match(col).group() for col in confounds.columns if reg.match(col) is not None])
                         logging.debug("Quad Columns " + str(target_cols))
                         confounds_quad_mat = confounds[target_cols]
+                        confounds_quad_mat.columns = [col + "_quad" for col in confounds_quad_mat.columns]
                         confounds_quad_mat = confounds_quad_mat**2
                         pandas.concat([confounds_mat.reset_index(drop = True),confounds_quad_mat.reset_index(drop = True)],axis=1, ignore_index=True)
                         logging.debug(str(confounds_mat.shape))
@@ -178,6 +179,7 @@ def _glm_prep(glm_config, subject, task, drop_tps):
                                 [reg.match(col).group() for col in confounds.columns if reg.match(col) is not None])
                         logging.debug("Lagged Columns " + str(target_cols))
                         confounds_lagged_mat = confounds[target_cols]
+                        confounds_lagged_mat.columns = [col + "_quad" for col in confounds_lagged_mat.columns]
                         confounds_lagged_mat = confounds_lagged_mat.diff()
                         pandas.concat([confounds_mat.reset_index(drop = True),confounds_lagged_mat.reset_index(drop = True)],axis=1, ignore_index=True)
                         logging.debug(str(confounds_mat.shape))
@@ -191,6 +193,7 @@ def _glm_prep(glm_config, subject, task, drop_tps):
                         confounds_qlagged_mat = confounds[target_cols]
                         confounds_qlagged_mat = confounds_qlagged_mat.diff()
                         confounds_qlagged_mat = confounds_qlagged_mat**2
+                        confounds_qlagged_mat.columns = [col + "_quadlag" for col in confounds_qlagged_mat.columns]
                         pandas.concat([confounds_mat.reset_index(drop = True),confounds_qlagged_mat.reset_index(drop = True)],axis=1,ignore_index=True)
                         logging.debug(str(confounds_mat.shape))
                     if glm_config.config["GLMSetupOptions"]['MotionOutliers']:
@@ -201,7 +204,9 @@ def _glm_prep(glm_config, subject, task, drop_tps):
                         logging.info("Behind: " + str(glm_config.config["GLMSetupOptions"]['ScrubBehind']))
                         logging.info("Contiguous: " + str(glm_config.config["GLMSetupOptions"]['ScrubContiguous']))
                         fdts = confounds[glm_config.config["GLMSetupOptions"]['ScrubVar']]
+                        logging.debug(str(fdts))
                         scrub_targets = clpipe.postprocutils.utils.scrub_setup(fdts, glm_config.config["GLMSetupOptions"]['Threshold'], glm_config.config["GLMSetupOptions"]['ScrubBehind'], glm_config.config["GLMSetupOptions"]['ScrubAhead'], glm_config.config["GLMSetupOptions"]['ScrubContiguous'])
+                        logging.debug(str(scrub_targets))
                 if drop_tps is not None:
                     img_data = nib.load(image)
                     total_tps = img_data.shape[3]
