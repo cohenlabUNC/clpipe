@@ -6,14 +6,14 @@ from .config_json_parser import ClpipeConfigParser, GLMConfigParser
 import logging
 import sys
 from .error_handler import exception_handler
-import nipype.interfaces.io as nio  # Data i/o
 import nipype.interfaces.fsl as fsl  # fsl
-import nipype.interfaces.utility as util  # utility
 import nipype.pipeline.engine as pe  # pypeline engine
 from nipype.interfaces.utility import IdentityInterface
 import nibabel as nib
 import pandas
 import re
+import clpipe.postprocutils
+import numpy as np
 
 @click.command()
 @click.argument('subjects', nargs=-1, required=False, default=None)
@@ -144,14 +144,60 @@ def _glm_prep(glm_config, subject, task, drop_tps):
     for image in subject_files:
         if task is None or 'task-' + task + '_' in image:
             logging.info('Processing ' + image)
+            confounds = None
             try:
                 if glm_config.config['PrepareConfounds']:
                     confound_file = _find_confounds(glm_config, image)
-                    confounds =  pandas.read_table(confound_file, dtype="float", na_values="n/a")
-
+                    if not os.path.exists(confound_file):
+                        raise ValueError("Cannot find confound file: "+ confound_file)
+                    confounds = pandas.read_table(confound_file, dtype="float", na_values="n/a")
                     if len(glm_config.config['Confounds']) > 0:
                         cons_re = [re.compile(regex_wildcard(co)) for co in glm_config.config['Confounds']]
-
+                        target_cols = []
+                        for reg in cons_re:
+                            target_cols.extend([reg.match(col).group() for col in confounds.columns if reg.match(col) is not None])
+                        logging.debug("Confound Columns " + target_cols)
+                        confounds_mat = confounds[target_cols]
+                    if len(glm_config.config['ConfoundsQuad']) > 0:
+                        cons_re = [re.compile(regex_wildcard(co)) for co in glm_config.config['ConfoundsQuad']]
+                        target_cols = []
+                        for reg in cons_re:
+                            target_cols.extend(
+                                [reg.match(col).group() for col in confounds.columns if reg.match(col) is not None])
+                        logging.debug("Quad Columns " + target_cols)
+                        confounds_quad_mat = confounds[target_cols]
+                        confounds_quad_mat = confounds_quad_mat**2
+                        confounds_mat.append(confounds_quad_mat, ignore_index = True)
+                    if len(glm_config.config['ConfoundsLagged']) > 0:
+                        cons_re = [re.compile(regex_wildcard(co)) for co in glm_config.config['ConfoundsLagged']]
+                        target_cols = []
+                        for reg in cons_re:
+                            target_cols.extend(
+                                [reg.match(col).group() for col in confounds.columns if reg.match(col) is not None])
+                        logging.debug("Lagged Columns " + target_cols)
+                        confounds_lagged_mat = confounds[target_cols]
+                        confounds_lagged_mat = pandas.diff(confounds_lagged_mat)
+                        confounds_mat.append(confounds_lagged_mat, ignore_index=True)
+                    if len(glm_config.config['ConfoundsQuadLagged']) > 0:
+                        cons_re = [re.compile(regex_wildcard(co)) for co in glm_config.config['ConfoundsQuadLagged']]
+                        target_cols = []
+                        for reg in cons_re:
+                            target_cols.extend(
+                                [reg.match(col).group() for col in confounds.columns if reg.match(col) is not None])
+                        logging.debug("Quadlagged Columns " + target_cols)
+                        confounds_qlagged_mat = confounds[target_cols]
+                        confounds_qlagged_mat = pandas.diff(confounds_qlagged_mat)
+                        confounds_qlagged_mat = confounds_qlagged_mat**2
+                        confounds_mat.append(confounds_qlagged_mat, ignore_index=True)
+                    if glm_config.config['MotionOutliers']:
+                        logging.info("Computing Motion Outliers: ")
+                        logging.info("Motion Outlier Variable: "+ glm_config.config['ScrubVar'])
+                        logging.info("Threshold: " + str(glm_config.config['Threshold']))
+                        logging.info("Ahead: " + str(glm_config.config['ScrubAhead']))
+                        logging.info("Behind: " + str(glm_config.config['ScrubBehind']))
+                        logging.info("Contiguous: " + str(glm_config.config['ScrubContiguous']))
+                        fdts = confounds[glm_config.config['Scrub_Var']]
+                        scrub_targets = clpipe.postprocutils.utils.scrub_setup(fdts, glm_config.config['Threshold'], glm_config.config['ScrubBehind'], glm_config.config['ScrubAhead'], glm_config.config['ScrubContiguous'])
                 if drop_tps is not None:
                     img_data = nib.load(image)
                     total_tps = img_data.shape[3]
@@ -163,11 +209,24 @@ def _glm_prep(glm_config, subject, task, drop_tps):
                         logging.info('Found drop TP info, will remove last ' + str(tps_drop) + ' time points')
                     if tps_drop is not None:
                         total_tps = total_tps - tps_drop
+                        if confounds is not None:
+                            confounds_mat = confounds_mat.head(total_tps)
+                            fdts = fdts.iloc[:(fdts.shape[0]-(tps_drop))]
+                        scrub_targets = clpipe.postprocutils.utils.scrub_setup(fdts, glm_config.config['Threshold'],
+                                                                               glm_config.config['ScrubBehind'],
+                                                                               glm_config.config['ScrubAhead'],
+                                                                               glm_config.config['ScrubContiguous'])
                     logging.info("Total timepoints are " + str(total_tps))
                     glm_setup.inputs.drop_tps.t_size = total_tps
                 glm_setup.inputs.input.in_file = os.path.abspath(image)
-
                 glm_setup.inputs.input.out_file = _build_output_directory_structure(glm_config, image)
+                if confounds is not None:
+                    if glm_config.config['MotionOutliers']:
+                        mot_outliers = _construct_motion_outliers(scrub_targets)
+                        confounds_mat.append(mot_outliers)
+                    confounds_out = os.path.splitext(glm_setup.inputs.input.out_file) + "_confounds.tsv"
+                    confounds_mat.to_csv(confounds_out,sep='\t',index=False,header=False)
+                    logging.info("Outputting confound file to: " + confounds_out)
                 if glm_config.config["GLMSetupOptions"]["ApplyFMRIPREPMask"]:
                     glm_setup.inputs.input.mask_file = _mask_finder_glm(image, glm_config)
                 logging.info(glm_setup.inputs)
@@ -210,3 +269,13 @@ def _find_confounds(glm_config, filepath):
 
 def regex_wildcard(string):
     return re.sub("\*", ".*", string)
+
+def _construct_motion_outliers(scrub_targets):
+    size = sum(scrub_targets)
+    mot_outliers = pandas.DataFrame(np.zeros((size,size)))
+    counter = 0
+    for i  in scrub_targets:
+        if i == 1:
+            mot_outliers.iloc[i, counter] = 1
+            counter += 1
+    return mot_outliers
