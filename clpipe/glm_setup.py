@@ -177,7 +177,7 @@ def _glm_prep(glm_config, subject, task, drop_tps):
                                 [reg.match(col).group() for col in confounds.columns if reg.match(col) is not None])
                         logging.debug("Lagged Columns " + str(target_cols))
                         confounds_lagged_mat = confounds[target_cols]
-                        confounds_lagged_mat = pandas.diff(confounds_lagged_mat)
+                        confounds_lagged_mat = confounds_lagged_mat.diff()
                         pandas.concat([confounds_mat.reset_index(),confounds_lagged_mat.reset_index()],axis=1)
                     if len(glm_config.config["GLMSetupOptions"]['ConfoundsQuadLagged']) > 0:
                         cons_re = [re.compile(regex_wildcard(co)) for co in glm_config.config["GLMSetupOptions"]['ConfoundsQuadLagged']]
@@ -187,7 +187,7 @@ def _glm_prep(glm_config, subject, task, drop_tps):
                                 [reg.match(col).group() for col in confounds.columns if reg.match(col) is not None])
                         logging.debug("Quadlagged Columns " + str(target_cols))
                         confounds_qlagged_mat = confounds[target_cols]
-                        confounds_qlagged_mat = pandas.diff(confounds_qlagged_mat)
+                        confounds_qlagged_mat = confounds_qlagged_mat.diff()
                         confounds_qlagged_mat = confounds_qlagged_mat**2
                         pandas.concat([confounds_mat.reset_index(),confounds_qlagged_mat.reset_index()],axis=1)
                     if glm_config.config["GLMSetupOptions"]['MotionOutliers']:
