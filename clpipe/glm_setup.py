@@ -285,8 +285,8 @@ def _construct_motion_outliers(scrub_targets):
     size = sum(scrub_targets)
     mot_outliers = pandas.DataFrame(np.zeros((len(scrub_targets),size)))
     counter = 0
-    for i  in scrub_targets:
+    for ind, i  in enumerate(scrub_targets):
         if i == 1:
-            mot_outliers.iloc[i, counter] = 1
+            mot_outliers.iloc[ind, counter] = 1
             counter += 1
     return mot_outliers
