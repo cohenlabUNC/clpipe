@@ -270,7 +270,7 @@ def _find_confounds(glm_config, filepath):
     return os.path.join(os.path.dirname(filepath), root_file + glm_config.config["GLMSetupOptions"]['ConfoundSuffix'])
 
 def regex_wildcard(string):
-    return re.sub("\*", ".*", string)
+    return '^'+re.sub("\*", ".*", string)+'$'
 
 def _construct_motion_outliers(scrub_targets):
     size = sum(scrub_targets)
