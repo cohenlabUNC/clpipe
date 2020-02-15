@@ -197,7 +197,7 @@ def _glm_prep(glm_config, subject, task, drop_tps):
                         logging.info("Ahead: " + str(glm_config.config["GLMSetupOptions"]['ScrubAhead']))
                         logging.info("Behind: " + str(glm_config.config["GLMSetupOptions"]['ScrubBehind']))
                         logging.info("Contiguous: " + str(glm_config.config["GLMSetupOptions"]['ScrubContiguous']))
-                        fdts = confounds[glm_config.config["GLMSetupOptions"]['Scrub_Var']]
+                        fdts = confounds[glm_config.config["GLMSetupOptions"]['ScrubVar']]
                         scrub_targets = clpipe.postprocutils.utils.scrub_setup(fdts, glm_config.config["GLMSetupOptions"]['Threshold'], glm_config.config["GLMSetupOptions"]['ScrubBehind'], glm_config.config["GLMSetupOptions"]['ScrubAhead'], glm_config.config["GLMSetupOptions"]['ScrubContiguous'])
                 if drop_tps is not None:
                     img_data = nib.load(image)
