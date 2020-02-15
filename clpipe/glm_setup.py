@@ -167,7 +167,7 @@ def _glm_prep(glm_config, subject, task, drop_tps):
                                 [reg.match(col).group() for col in confounds.columns if reg.match(col) is not None])
                         logging.debug("Quad Columns " + str(target_cols))
                         confounds_quad_mat = confounds[target_cols]
-                        confounds_quad_mat.columns = [col + "_quad" for col in confounds_quad_mat.columns]
+                        confounds_quad_mat.rename(lambda x: x+"_quad", inplace = True)
                         confounds_quad_mat = confounds_quad_mat**2
                         pandas.concat([confounds_mat.reset_index(drop = True),confounds_quad_mat.reset_index(drop = True)],axis=1, ignore_index=True)
                         logging.debug(str(confounds_mat.shape))
@@ -179,7 +179,7 @@ def _glm_prep(glm_config, subject, task, drop_tps):
                                 [reg.match(col).group() for col in confounds.columns if reg.match(col) is not None])
                         logging.debug("Lagged Columns " + str(target_cols))
                         confounds_lagged_mat = confounds[target_cols]
-                        confounds_lagged_mat.columns = [col + "_quad" for col in confounds_lagged_mat.columns]
+                        confounds_lagged_mat.rename(lambda x: x+"_lagged", inplace = True)
                         confounds_lagged_mat = confounds_lagged_mat.diff()
                         pandas.concat([confounds_mat.reset_index(drop = True),confounds_lagged_mat.reset_index(drop = True)],axis=1, ignore_index=True)
                         logging.debug(str(confounds_mat.shape))
@@ -193,7 +193,7 @@ def _glm_prep(glm_config, subject, task, drop_tps):
                         confounds_qlagged_mat = confounds[target_cols]
                         confounds_qlagged_mat = confounds_qlagged_mat.diff()
                         confounds_qlagged_mat = confounds_qlagged_mat**2
-                        confounds_qlagged_mat.columns = [col + "_quadlag" for col in confounds_qlagged_mat.columns]
+                        confounds_qlagged_mat.rename(lambda x: x+"_qlagged", inplace = True)
                         pandas.concat([confounds_mat.reset_index(drop = True),confounds_qlagged_mat.reset_index(drop = True)],axis=1,ignore_index=True)
                         logging.debug(str(confounds_mat.shape))
                     if glm_config.config["GLMSetupOptions"]['MotionOutliers']:
@@ -235,6 +235,7 @@ def _glm_prep(glm_config, subject, task, drop_tps):
                         confounds_mat = pandas.concat([confounds_mat.reset_index(drop = True),mot_outliers.reset_index(drop = True)],axis=1, ignore_index=True)
                         logging.debug(str(confounds_mat.shape))
                     confounds_out = os.path.splitext(glm_setup.inputs.input.out_file)[0] + "_confounds.tsv"
+                    logging.debug(str(confounds_mat.columns))
                     confounds_mat.to_csv(confounds_out,sep='\t',index=False,header=False)
                     logging.info("Outputting confound file to: " + confounds_out)
                 if glm_config.config["GLMSetupOptions"]["ApplyFMRIPREPMask"]:
