@@ -235,6 +235,8 @@ def _glm_prep(glm_config, subject, task, drop_tps):
                         mot_outliers = _construct_motion_outliers(scrub_targets)
                         confounds_mat = pandas.concat([confounds_mat,mot_outliers],axis=1, ignore_index=True)
                         logging.debug(str(confounds_mat.shape))
+                    if glm_config.config["GLMSetupOptions"]["DummyScans"] is not 0:
+                        confounds_mat = confounds_mat.iloc[glm_config.config["GLMSetupOptions"]["DummyScans"]:]
                     confounds_out = os.path.splitext(glm_setup.inputs.input.out_file)[0] + "_confounds.tsv"
                     logging.debug(str(confounds_mat.columns))
                     confounds_mat.fillna(0, inplace = True)

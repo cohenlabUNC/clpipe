@@ -9,6 +9,7 @@
     "WorkingDirectory": "",
     "TaskName": "",
     "ReferenceImage": "",
+    "DummyScans": 0,
     "ResampleResolution": 2.0,
     "ResampleOutputDirectory": "",
     "ApplyFMRIPREPMask": true,
