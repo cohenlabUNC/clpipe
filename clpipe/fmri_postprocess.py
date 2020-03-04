@@ -465,6 +465,10 @@ def _find_json(config, filepath):
 
     if len(scan_level_json) is not 0:
         target_json = scan_level_json[0]
+    else:
+      scan_level_json = [json for json in jsons if "_".join(components[0:4]) + "_bold.json" in json]
+      if len(scan_level_json) is not 0:
+        target_json = scan_level_json[0]
 
 
     logging.debug(target_json)
