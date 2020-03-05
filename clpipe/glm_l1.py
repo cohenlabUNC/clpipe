@@ -68,7 +68,8 @@ def _glm_l1_propagate(l1_block, glm_setup_options):
     image_files = [file for file in image_files if
                          "task-" + glm_setup_options["TaskName"] in file]
 
-    os.mkdir(l1_block['FSFDir'])
+    if not os.path.exists(l1_block['FSFDir']):
+        os.mkdir(l1_block['FSFDir'])
     for file in image_files:
         try:
             img_data = nib.load(file)
