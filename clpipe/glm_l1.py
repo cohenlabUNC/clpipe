@@ -3,16 +3,21 @@ import glob
 import logging
 import click
 from .config_json_parser import ClpipeConfigParser, GLMConfigParser
-
-
+import sys
+from .error_handler import exception_handler
 
 @click.command()
 @click.option('-glm_config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True), default=None, required = True,
               help='Use a given GLM configuration file.')
 @click.option('-l1_name',  default=None, required = True,
               help='Name for a given L1 model')
-def glm_l1_preparefsf(glm_config_file, l1_name):
-
+@click.option('-debug', is_flag=True, help='Flag to enable detailed error messages and traceback')
+def glm_l1_preparefsf(glm_config_file, l1_name, debug):
+    if not debug:
+        sys.excepthook = exception_handler
+        logging.basicConfig(level=logging.INFO)
+    else:
+        logging.basicConfig(level=logging.DEBUG)
     glm_config = GLMConfigParser(glm_config_file)
 
     l1_block = [x for x in glm_config.config['Level1Setups'] if x['ModelName'] is l1_name]
