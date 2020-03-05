@@ -98,7 +98,7 @@ def _get_ev_confound_mat(file_name, l1_block, glm_setup_options):
 
     file_prefix = os.path.basename(file_name).replace(glm_setup_options["TargetSuffix"], "")
 
-
+    logging.info(str([os.path.join(l1_block["EVDirectory"],"**",file_prefix + EV) for EV in l1_block['EVFileSuffices']]))
     EV_files = [glob.glob(os.path.join(l1_block["EVDirectory"],"**",file_prefix + EV), recursive=True) for EV in l1_block['EVFileSuffices']]
     EV_files = [item for sublist in EV_files for item in sublist]
     logging.info(EV_files)
