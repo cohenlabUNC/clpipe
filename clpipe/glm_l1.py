@@ -67,7 +67,7 @@ def _glm_l1_propagate(l1_block, glm_setup_options):
     image_files = [file for file in image_files if
                          "task-" + glm_setup_options["TaskName"] in file]
 
-
+    os.mkdir(l1_block['FSFDir'])
     for file in image_files:
         try:
             ev_conf = _get_ev_confound_mat(file, l1_block)
