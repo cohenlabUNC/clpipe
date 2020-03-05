@@ -61,7 +61,7 @@ def _glm_l1_propagate(l1_block, glm_setup_options):
         if len(files_not_found):
             logging.warning("Did not find the following files: " + str(files_not_found))
 
-    if l1_block['ImageIncludeList'] is not "":
+    if l1_block['ImageExcludeList'] is not "":
         image_files = [file_path for file_path in image_files if
                        os.path.basename(file_path) not in l1_block['ImageExcludeList']]
 
