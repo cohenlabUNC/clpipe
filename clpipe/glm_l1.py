@@ -83,7 +83,9 @@ def _glm_l1_propagate(l1_block, glm_setup_options):
             new_fsf[tps_inds[0]] = "set fmri(npts) " + str(total_tps) + "\n"
             new_fsf[output_ind[0]] = "set fmri(outputdir) \"" + os.path.abspath(out_dir) + "\"\n"
             new_fsf[image_files_ind[0]] = "set feat_files(1) \"" + os.path.abspath(file) + "\"\n"
-            new_fsf[regstandard_ind[0]] = "set fmri(regstandard) \"" + os.path.abspath(glm_setup_options['ReferenceImage']) + "\"\n"
+
+            if glm_setup_options['ReferenceImage'] is not "":
+                new_fsf[regstandard_ind[0]] = "set fmri(regstandard) \"" + os.path.abspath(glm_setup_options['ReferenceImage']) + "\"\n"
             if l1_block['ConfoundSuffix'] is not "":
                 new_fsf[confound_file_ind[0]] = "set fmri(confoundevs) \"" + os.path.abspath(ev_conf['Confounds'][0]) + "\"\n"
 
