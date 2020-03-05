@@ -45,10 +45,19 @@
   },
   "Level1Setups": [
     { "ModelName": "",
+      "TargetDirectory": "",
+      "TargetSuffix": "",
       "FSFPrototype": "",
       "ImageIncludeList": "",
       "ImageExcludeList": "",
-      "ConfoundList": ""
+      "FSFDir": "",
+      "EVDirectory": "",
+      "ConfoundDirectory": "",
+      "EVFileSuffices": ["_gohit.txt",
+                         "_goomission.txt"
+      ],
+      "ConfoundSuffix": "_confounds.tsv",
+      "OutputDir": ""
     }
   ],
   "Level2Setups": [

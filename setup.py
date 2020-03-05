@@ -45,6 +45,7 @@ setup(name='clpipe',
       test_func=clpipe.utils:test_func
       fmap_cleanup=clpipe.fmap_cleanup:fmap_cleanup
       glm_setup=clpipe.glm_setup:glm_setup
+      glm_l1_preparefsf=clpipe.glm_l1:glm_l1_preparefsf
       ''',
       zip_safe=False
       )
