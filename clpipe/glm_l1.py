@@ -22,10 +22,6 @@ def glm_l1_preparefsf(glm_config_file, l1_name, debug):
     glm_config = GLMConfigParser(glm_config_file)
 
     l1_block = [x for x in glm_config.config['Level1Setups'] if x['ModelName'] == str(l1_name)]
-    logging.debug(type(l1_name))
-    logging.debug(type(glm_config.config['Level1Setups'][0]['ModelName']))
-    logging.debug(glm_config.config['Level1Setups'][0]['ModelName'] is l1_name)
-    logging.debug(l1_block)
     if len(l1_block) is not 1:
         raise ValueError("L1 model not found, or multiple entries found.")
 
@@ -72,6 +68,7 @@ def _glm_l1_propagate(l1_block, glm_setup_options):
         os.mkdir(l1_block['FSFDir'])
     for file in image_files:
         try:
+            logging.info("Creating FSF File for " + file)
             img_data = nib.load(file)
             total_tps = img_data.shape[3]
             ev_conf = _get_ev_confound_mat(file, l1_block)
@@ -111,7 +108,7 @@ def _get_ev_confound_mat(file_name, l1_block):
     logging.info(EV_files)
     logging.info(len(l1_block['EVFileSuffices']))
     if len(EV_files) is not len(l1_block['EVFileSuffices']):
-        raise FileNotFoundError("Did not find enough EV files for this scan")
+        raise FileNotFoundError("Did not find enough EV files for this scan. Only found " + str(EV_files) +" and need " +str(len(l1_block['EVFileSuffices'])))
 
     if l1_block["ConfoundSuffix"] is not "":
         confound_file = glob.glob(os.path.join(l1_block["ConfoundDirectory"],"**",file_prefix + l1_block['ConfoundSuffix']), recursive = True)

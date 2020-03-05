@@ -236,9 +236,20 @@ class ClpipeConfigParser:
         self.config['RunLog'].append(newLog)
 
 class GLMConfigParser:
-    def __init__(self, glm_config_file):
-        self.config = config_json_parser(glm_config_file)
+    def __init__(self, glm_config_file = None):
+        if glm_config_file is None:
+            with resource_stream(__name__, 'data/defaultConfig.json') as def_config:
+                self.config = json.load(def_config)
+        else:
+            self.config = config_json_parser(glm_config_file)
 
+    def config_json_dump(self, outputdir, filepath):
+        if filepath is None:
+            filepath = "defaultGLMConfig.json"
+        outpath = os.path.join(os.path.abspath(outputdir), filepath)
+        with open(outpath, 'w') as fp:
+            json.dump(self.config, fp, indent="\t")
+        return(outpath)
 
 
 def file_folder_generator(basename, modality, target_suffix = None):
