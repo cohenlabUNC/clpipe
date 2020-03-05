@@ -70,7 +70,7 @@ def _glm_l1_propagate(l1_block, glm_setup_options):
 
     for file in image_files:
         try:
-            ev_conf = _get_ev_confound_mat(file, l1_block, glm_setup_options)
+            ev_conf = _get_ev_confound_mat(file, l1_block)
             out_dir = os.path.join(l1_block['OutputDir'],os.path.basename(file).replace(l1_block["TargetSuffix"], ".feat"))
             out_fsf = os.path.join(l1_block['FSFDir'],
                                    os.path.basename(file).replace(l1_block["TargetSuffix"], ".fsf"))
@@ -94,9 +94,9 @@ def _glm_l1_propagate(l1_block, glm_setup_options):
             logging.exception(err)
 
 
-def _get_ev_confound_mat(file_name, l1_block, glm_setup_options):
+def _get_ev_confound_mat(file_name, l1_block):
 
-    file_prefix = os.path.basename(file_name).replace(glm_setup_options["TargetSuffix"], "")
+    file_prefix = os.path.basename(file_name).replace(l1_block["TargetSuffix"], "")
 
     logging.info(str([os.path.join(l1_block["EVDirectory"],"**",file_prefix + EV) for EV in l1_block['EVFileSuffices']]))
     EV_files = [glob.glob(os.path.join(l1_block["EVDirectory"],"**",file_prefix + EV), recursive=True) for EV in l1_block['EVFileSuffices']]
