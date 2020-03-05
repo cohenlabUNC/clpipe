@@ -5,6 +5,7 @@ import click
 from .config_json_parser import ClpipeConfigParser, GLMConfigParser
 import sys
 from .error_handler import exception_handler
+import nibabel as nib
 
 @click.command()
 @click.option('-glm_config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True), default=None, required = True,
@@ -70,6 +71,8 @@ def _glm_l1_propagate(l1_block, glm_setup_options):
     os.mkdir(l1_block['FSFDir'])
     for file in image_files:
         try:
+            img_data = nib.load(file)
+            total_tps = img_data.shape[3]
             ev_conf = _get_ev_confound_mat(file, l1_block)
             out_dir = os.path.join(l1_block['OutputDir'],os.path.basename(file).replace(l1_block["TargetSuffix"], ".feat"))
             out_fsf = os.path.join(l1_block['FSFDir'],
