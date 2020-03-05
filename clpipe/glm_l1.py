@@ -21,8 +21,8 @@ def glm_l1_preparefsf(glm_config_file, l1_name, debug):
     glm_config = GLMConfigParser(glm_config_file)
 
     l1_block = [x for x in glm_config.config['Level1Setups'] if x['ModelName'] is str(l1_name)]
-    logging.debug(l1_name)
-    logging.debug(glm_config.config['Level1Setups'][0]['ModelName'])
+    logging.debug(type(l1_name))
+    logging.debug(type(glm_config.config['Level1Setups'][0]['ModelName']))
     logging.debug(glm_config.config['Level1Setups'][0]['ModelName'] is l1_name)
     logging.debug(l1_block)
     if len(l1_block) is not 1:
