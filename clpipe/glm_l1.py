@@ -20,7 +20,7 @@ def glm_l1_preparefsf(glm_config_file, l1_name, debug):
         logging.basicConfig(level=logging.DEBUG)
     glm_config = GLMConfigParser(glm_config_file)
 
-    l1_block = [x for x in glm_config.config['Level1Setups'] if x['ModelName'] is l1_name]
+    l1_block = [x for x in glm_config.config['Level1Setups'] if x['ModelName'] is str(l1_name)]
     logging.debug(l1_name)
     logging.debug(glm_config.config['Level1Setups'])
     logging.debug(l1_block)
