@@ -16,7 +16,9 @@ def glm_l1_preparefsf(glm_config_file, l1_name):
     glm_config = GLMConfigParser(glm_config_file)
 
     l1_block = [x for x in glm_config.config['Level1Setups'] if x['ModelName'] is l1_name]
-
+    logging.debug(l1_name)
+    logging.debug(glm_config.config['Level1Setups'])
+    logging.debug(l1_block)
     if len(l1_block) is not 1:
         raise ValueError("L1 model not found, or multiple entries found.")
 
