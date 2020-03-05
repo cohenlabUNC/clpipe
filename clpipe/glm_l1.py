@@ -47,7 +47,7 @@ def _glm_l1_propagate(l1_block, glm_setup_options):
     ev_file_inds = [i for i,e in enumerate(fsf_file_template) if "set fmri(custom" in e]
     confound_file_ind = [i for i,e in enumerate(fsf_file_template) if "set fmri(confoundevs)" in e]
     regstandard_ind = [i for i, e in enumerate(fsf_file_template) if "set fmri(regstandard)" in e]
-
+    tps_inds = [i for i, e in enumerate(fsf_file_template) if "set fmri(npts)" in e]
     if l1_block['ImageIncludeList'] is not "" and l1_block['ImageExcludeList'] is not "":
         raise ValueError("Only one of ImageIncludeList and ImageExcludeList should be non-empty")
 
@@ -79,6 +79,7 @@ def _glm_l1_propagate(l1_block, glm_setup_options):
                                    os.path.basename(file).replace(l1_block["TargetSuffix"], ".fsf"))
             new_fsf = fsf_file_template
 
+            new_fsf[tps_inds[0]] = "set fmri(npts) " + str(total_tps) + "\n"
             new_fsf[output_ind[0]] = "set fmri(outputdir) \"" + os.path.abspath(out_dir) + "\"\n"
             new_fsf[image_files_ind[0]] = "set feat_files(1) \"" + os.path.abspath(file) + "\"\n"
             new_fsf[regstandard_ind[0]] = "set fmri(regstandard) \"" + os.path.abspath(glm_setup_options['ReferenceImage']) + "\"\n"
