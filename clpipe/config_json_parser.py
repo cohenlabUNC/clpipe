@@ -238,7 +238,7 @@ class ClpipeConfigParser:
 class GLMConfigParser:
     def __init__(self, glm_config_file = None):
         if glm_config_file is None:
-            with resource_stream(__name__, 'data/defaultConfig.json') as def_config:
+            with resource_stream(__name__, 'data/defaultGLMConfig.json') as def_config:
                 self.config = json.load(def_config)
         else:
             self.config = config_json_parser(glm_config_file)
