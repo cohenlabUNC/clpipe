@@ -98,9 +98,10 @@ def _glm_prep(glm_config, subject, task, drop_tps):
     glm_setup.base_dir = os.path.join(glm_config.config["GLMSetupOptions"]['WorkingDirectory'], "sub-"+subject)
     input_node = pe.Node(IdentityInterface(fields=['in_file', 'out_file', 'mask_file']), name='input')
     strip = pe.Node(fsl.BinaryMaths(operation = 'mul'), name="mask_apply")
-    resample = pe.Node(fsl.FLIRT(apply_isoxfm = glm_config.config["GLMSetupOptions"]["ResampleResolution"],
-                                    reference = glm_config.config["GLMSetupOptions"]["ReferenceImage"]),
-                       name="resample")
+    resample = pe.Node(fsl.FLIRT(apply_xfm = True,
+                                 reference = glm_config.config["GLMSetupOptions"]["ReferenceImage"],
+                                 uses_qform = True),
+                                 name="resample")
     glm_setup.connect(input_node, 'out_file', resample, 'out_file')
     if drop_tps is not None:
         drop_tps_data = pandas.read_csv(drop_tps)

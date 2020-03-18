@@ -10,8 +10,6 @@
     "TaskName": "",
     "ReferenceImage": "",
     "DummyScans": 0,
-    "ResampleResolution": 2.0,
-    "ResampleOutputDirectory": "",
     "ApplyFMRIPREPMask": true,
     "MaskFolderRoot": "",
     "MaskSuffix": "brain_mask.nii.gz",
