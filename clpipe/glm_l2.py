@@ -62,7 +62,8 @@ def _glm_l2_propagate(l2_block, glm_setup_options):
                 if not os.path.exists(feat):
                     raise FileNotFoundError("Cannot find "+ feat)
                 else:
-                    shutil.rmtree(os.path.join(feat, "reg_standard"))
+                    if os.path.exists(os.path.join(feat, "reg_standard")):
+                        shutil.rmtree(os.path.join(feat, "reg_standard"))
                     shutil.copy(os.path.join(os.environ["FSLHOME"], 'etc/flirtsch/ident.mat'), os.path.join(feat, "reg/example_func2standard.mat"))
                     shutil.copy(os.path.join(feat, 'mean_func.nii.gz', os.path.join(feat, "reg/standard.nii.gz")),
                                 os.path.join(feat, "reg/example_func2standard.mat"))
