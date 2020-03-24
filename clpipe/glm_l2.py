@@ -66,7 +66,7 @@ def _glm_l2_propagate(l2_block, glm_setup_options):
                         shutil.rmtree(os.path.join(feat, "reg_standard"))
                     shutil.copy(os.path.join(os.environ["FSLDIR"], 'etc/flirtsch/ident.mat'), os.path.join(feat, "reg/example_func2standard.mat"))
                     shutil.copy(os.path.join(feat, 'mean_func.nii.gz'), os.path.join(feat, "reg/standard.nii.gz"))
-                    new_fsf[image_files_ind[counter - 1]] = "set feat_files(" + counter + ") \"" + os.path.abspath(
+                    new_fsf[image_files_ind[counter - 1]] = "set feat_files(" + str(counter) + ") \"" + os.path.abspath(
                         feat) + "\"\n"
                     counter = counter + 1
 
