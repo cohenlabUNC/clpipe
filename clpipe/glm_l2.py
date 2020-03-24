@@ -24,19 +24,18 @@ def glm_l2_preparefsf(glm_config_file, l2_name, debug):
         logging.basicConfig(level=logging.DEBUG)
     glm_config = GLMConfigParser(glm_config_file)
 
-    l1_block = [x for x in glm_config.config['Level1Setups'] if x['ModelName'] == str(l2_name)]
-    if len(l1_block) is not 1:
-        raise ValueError("L1 model not found, or multiple entries found.")
+    l2_block = [x for x in glm_config.config['Level2Setups'] if x['ModelName'] == str(l2_name)]
+    if len(l2_block) is not 1:
+        raise ValueError("L2 model not found, or multiple entries found.")
 
-    l1_block = l1_block[0]
+    l2_block = l2_block[0]
     glm_setup_options = glm_config.config['GLMSetupOptions']
 
-    _glm_l2_propagate(l1_block, glm_setup_options)
+    _glm_l2_propagate(l2_block, glm_setup_options)
 
 
 
 def _glm_l2_propagate(l2_block, glm_setup_options):
-    sub_tab = pd.read_csv("l2sublist.csv")
     sub_tab = pd.read_csv(l2_block['SubjectFile'])
     with open(l2_block['FSFPrototype']) as f:
         fsf_file_template=f.readlines()
