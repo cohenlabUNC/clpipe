@@ -45,7 +45,7 @@ def _glm_l2_propagate(l2_block, glm_setup_options):
     regstandard_ind = [i for i, e in enumerate(fsf_file_template) if "set fmri(regstandard)" in e]
 
 
-    sub_tab = sub_tab.loc(sub_tab['L2_name'] == l2_block['ModelName'])
+    sub_tab = sub_tab.loc[sub_tab['L2_name'] == l2_block['ModelName']]
 
     fsf_names = sub_tab.fsf_name.unique()
 
