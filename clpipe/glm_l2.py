@@ -70,10 +70,10 @@ def _glm_l2_propagate(l2_block, glm_setup_options):
                         feat) + "\"\n"
                     counter = counter + 1
 
-            out_dir = os.path.join(l2_block['OutputDir'], fsf, ".gfeat")
+            out_dir = os.path.join(l2_block['OutputDir'], fsf + ".gfeat")
             new_fsf[output_ind[0]] = "set fmri(outputdir) \"" + os.path.abspath(out_dir) + "\"\n"
             out_fsf = os.path.join(l2_block['FSFDir'],
-                                   fsf, ".fsf")
+                                   fsf + ".fsf")
 
             if glm_setup_options['ReferenceImage'] is not "":
                 new_fsf[regstandard_ind[0]] = "set fmri(regstandard) \"" + os.path.abspath(glm_setup_options['ReferenceImage']) + "\"\n"
