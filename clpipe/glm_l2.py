@@ -55,7 +55,7 @@ def _glm_l2_propagate(l2_block, glm_setup_options):
     for fsf in fsf_names:
         try:
             new_fsf = fsf_file_template
-            target_dirs = sub_tab.loc(sub_tab["fsf_name"] == fsf).feat_folders
+            target_dirs = sub_tab.loc[sub_tab["fsf_name"] == fsf].feat_folders
             counter = 1
             logging.info("Creating " + fsf)
             for feat in target_dirs:
