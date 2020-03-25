@@ -5,8 +5,8 @@ import os
 import collections
 import click
 from jsonschema import validate
-from pkg_resources import resource_stream
-
+from pkg_resources import resource_stream, resource_filename
+import shutil
 
 @click.command()
 @click.option('-config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True), default=None, required = True,
@@ -100,7 +100,34 @@ class ClpipeConfigParser:
                 self.update_processing_stream(stream,
                                               output_dir= os.path.join(self.config['ProjectDirectory'], 'data_postproc', 'betaseries_'+stream),
                                               output_suffix='betaseries_'+stream+".nii.gz", beta_series=True)
+        self.setup_glm(self.config['ProjectDirectory'])
 
+    def setup_glm(self, project_path):
+        glm_config = GLMConfigParser()
+
+        glm_config.config['GLMSetupOptions']['ParentClpipeConfig'] = os.path.join(project_path, "clpipe_config.json")
+        glm_config.config['GLMSetupOptions']['TargetDirectory'] = os.path.join(project_path, "data_fmriprep", "fmriprep")
+        glm_config.config['GLMSetupOptions']['MaskFolderRoot'] = glm_config.config['GLMSetupOptions']['TargetDirectory']
+        glm_config.config['GLMSetupOptions']['PreppedDataDirectory'] =  os.path.join(project_path, "data_GLMPrep")
+        os.mkdir(os.path.join(project_path, "data_GLMPrep"))
+
+        glm_config.config['Level1Setups'][0]['TargetDirectory'] = os.path.join(project_path, "data_GLMPrep")
+        glm_config.config['Level1Setups'][0]['FSFDir'] = os.path.join(project_path, "l1_fsfs")
+        glm_config.config['Level1Setups'][0]['EVDirectory'] = os.path.join(project_path, "data_onsets")
+        glm_config.config['Level1Setups'][0]['ConfoundDirectory'] = os.path.join(project_path, "data_GLMPrep")
+        os.mkdir(os.path.join(project_path, "l1_fsfs"))
+        os.mkdir(os.path.join(project_path, "data_onsets"))
+        glm_config.config['Level1Setups'][0]['OutputDir'] = os.path.join(project_path, "l1_feat_folders")
+
+        os.mkdir(os.path.join(project_path, "l1_feat_folders"))
+        glm_config.config['Level2Setups'][0]['OutputDir'] = os.path.join(project_path, "l2_gfeat_folders")
+        glm_config.config['Level2Setups'][0]['OutputDir'] = os.path.join(project_path, "l2_fsfs")
+
+        os.mkdir(os.path.join(project_path, "l2_fsfs"))
+        os.mkdir(os.path.join(project_path, "l2_gfeat_folders"))
+
+        glm_config.config_json_dump(project_path, "glm_config.json")
+        shutil.copy(resource_filename('clpipe', 'data/l2_sublist.csv'), os.path.join(project_path, "l2_sublist.csv"))
 
 
     def setup_fmriprep_directories(self, bidsDir, workingDir, outputDir, log_dir = None):

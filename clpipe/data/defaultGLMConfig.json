@@ -5,15 +5,16 @@
   "GLMSetupOptions": {
     "ParentClpipeConfig":"",
     "TargetDirectory": "",
-    "TargetSuffix": "",
-    "WorkingDirectory": "",
-    "TaskName": "",
-    "ReferenceImage": "",
+    "TargetSuffix": "space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz",
+    "WorkingDirectory": "FILL THIS IN",
+    "TaskName": "gng_example",
+    "ReferenceImage": "SET REFERENCE",
     "DummyScans": 0,
+    "DropTimepointsCSV": "",
     "ApplyFMRIPREPMask": true,
     "MaskFolderRoot": "",
-    "MaskSuffix": "brain_mask.nii.gz",
-    "SUSANSmoothing": true,
+    "MaskSuffix": "space-MNI152NLin2009cAsym_desc-brain_mask.nii.gz",
+    "SUSANSmoothing": false,
     "SUSANOptions": {
       "BrightnessThreshold": 0,
       "FWHM": 0
@@ -42,35 +43,30 @@
     "LogDirectory": ""
   },
   "Level1Setups": [
-    { "ModelName": "",
-      "TargetDirectory": "",
-      "TargetSuffix": "",
+    { "ModelName": "example_L!",
+      "TargetDirectory": "./data_BIDS",
+      "TargetSuffix": "resampled.nii.gz",
       "FSFPrototype": "",
       "ImageIncludeList": "",
       "ImageExcludeList": "",
-      "FSFDir": "",
-      "EVDirectory": "",
-      "ConfoundDirectory": "",
+      "FSFDir": "./fsf_test",
+      "EVDirectory": "./EV_test",
+      "ConfoundDirectory": "./confound_test",
       "EVFileSuffices": ["_gohit.txt",
-                         "_goomission.txt"
+                         "_goomission.txt",
+                         "_comission.txt",
+                         "_correct.txt"
       ],
       "ConfoundSuffix": "_confounds.tsv",
-      "OutputDir": ""
+      "OutputDir": "./test_l1feat"
     }
   ],
   "Level2Setups": [
-    { "ModelName": "",
+    { "ModelName": "tworun_gngreg",
       "FSFPrototype": "",
-      "SubjectList": "",
-      "ConfoundList": ""
-    }
-  ],
-    "Level3Setups": [
-    {
-      "ModelName": "",
-      "FSFPrototype": "",
-      "SubjectList": "",
-      "ConfoundList": ""
+      "SubjectFile": "l2_sublist.csv",
+      "FSFDir": "",
+      "OutputDir": ""
     }
   ]
 }
