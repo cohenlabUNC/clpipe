@@ -128,7 +128,8 @@ class ClpipeConfigParser:
 
         glm_config.config_json_dump(project_path, "glm_config.json")
         shutil.copy(resource_filename('clpipe', 'data/l2_sublist.csv'), os.path.join(project_path, "l2_sublist.csv"))
-
+        glm_config.config['GLMSetupOptions']['LogDirectory'] = os.path.join(project_path, "logs", "glm_setup_logs")
+        os.mkdir(os.path.join(project_path, "logs", "glm_setup_logs"))
 
     def setup_fmriprep_directories(self, bidsDir, workingDir, outputDir, log_dir = None):
         if bidsDir is not None:

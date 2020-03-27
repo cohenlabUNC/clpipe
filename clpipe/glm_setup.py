@@ -172,7 +172,7 @@ def _glm_prep(glm_config, subject, task, drop_tps):
                         confounds_quad_mat = confounds_quad_mat**2
                         confounds_mat = pandas.concat([confounds_mat,confounds_quad_mat],axis=1, ignore_index=True)
                         logging.debug(str(confounds_mat.shape))
-                    if len(glm_config.config["GLMSetupOptions"]['ConfoundsLagged']) > 0:
+                    if len(glm_config.config["GLMSetupOptions"]['ConfoundsDerive']) > 0:
                         cons_re = [re.compile(regex_wildcard(co)) for co in glm_config.config["GLMSetupOptions"]['ConfoundsLagged']]
                         target_cols = []
                         for reg in cons_re:
@@ -185,8 +185,8 @@ def _glm_prep(glm_config, subject, task, drop_tps):
                         confounds_mat = pandas.concat([confounds_mat,confounds_lagged_mat],axis=1, ignore_index=True)
                         logging.debug(str(confounds_mat.shape))
                         logging.debug(str(confounds_mat.head(5)))
-                    if len(glm_config.config["GLMSetupOptions"]['ConfoundsQuadLagged']) > 0:
-                        cons_re = [re.compile(regex_wildcard(co)) for co in glm_config.config["GLMSetupOptions"]['ConfoundsQuadLagged']]
+                    if len(glm_config.config["GLMSetupOptions"]['ConfoundsQuadDerive']) > 0:
+                        cons_re = [re.compile(regex_wildcard(co)) for co in glm_config.config["GLMSetupOptions"]['ConfoundsQuadDerive']]
                         target_cols = []
                         for reg in cons_re:
                             target_cols.extend(
@@ -254,13 +254,13 @@ def _build_output_directory_structure(config, filepath):
 
     target_directory = filepath[filepath.find('sub-'):]
     target_directory = os.path.dirname(target_directory)
-    target_directory = os.path.join(config.config["GLMSetupOptions"]['PreppedDataDirectory'], target_directory)
+    target_directory = os.path.join(config.config["GLMSetupOptions"]['OutputDirectory'], target_directory)
     logging.debug(target_directory)
     os.makedirs(target_directory, exist_ok=True)
     file_name = os.path.basename(filepath)
     sans_ext = os.path.splitext(os.path.splitext(file_name)[0])[0]
-    logging.debug(config.config["GLMSetupOptions"]['PreppedSuffix'])
-    file_name = sans_ext + '_' + config.config["GLMSetupOptions"]['PreppedSuffix']
+    logging.debug(config.config["GLMSetupOptions"]['OutputSuffix'])
+    file_name = sans_ext + '_' + config.config["GLMSetupOptions"]['OutputSuffix']
     logging.debug(file_name)
     return os.path.abspath(os.path.join(target_directory, file_name))
 
