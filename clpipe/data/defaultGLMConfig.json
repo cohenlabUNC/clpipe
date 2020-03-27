@@ -5,48 +5,67 @@
   "GLMSetupOptions": {
     "ParentClpipeConfig":"",
     "TargetDirectory": "",
-    "TargetSuffix": "",
-    "WorkingDirectory": "",
-    "TaskName": "",
-    "ReferenceImage": "",
-    "ResampleResolution": 2.0,
-    "ResampleOutputDirectory": "",
+    "TargetSuffix": "space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz",
+    "WorkingDirectory": "FILL THIS IN",
+    "TaskName": "gng_example",
+    "ReferenceImage": "SET REFERENCE",
+    "DummyScans": 0,
     "ApplyFMRIPREPMask": true,
     "MaskFolderRoot": "",
-    "MaskSuffix": "brain_mask.nii.gz",
-    "SUSANSmoothing": true,
+    "MaskSuffix": "space-MNI152NLin2009cAsym_desc-brain_mask.nii.gz",
+    "SUSANSmoothing": false,
     "SUSANOptions": {
       "BrightnessThreshold": 0,
       "FWHM": 0
     },
-    "PreppedDataDirectory": "",
-    "PreppedSuffix": "resampled.nii.gz",
+    "OutputDirectory": "",
+    "OutputSuffix": "resampled.nii.gz",
+    "PrepareConfounds": true,
+    "ConfoundSuffix": "desc-confounds_regressors.tsv",
+    "Confounds": ["trans_x", "trans_y", "trans_z", "rot_x", "rot_y", "rot_z",
+    "csf", "white_matter", "global_signal", "a_comp_cor.*"],
+    "ConfoundsQuad": ["trans_x", "trans_y", "trans_z", "rot_x", "rot_y", "rot_z",
+    "csf", "white_matter", "global_signal"],
+    "ConfoundsDerive": ["trans_x", "trans_y", "trans_z", "rot_x", "rot_y", "rot_z",
+    "csf", "white_matter", "global_signal"],
+    "ConfoundsQuadDerive": ["trans_x", "trans_y", "trans_z", "rot_x", "rot_y", "rot_z",
+    "csf", "white_matter", "global_signal"],
+    "MotionOutliers": true,
+    "ScrubVar": "framewise_displacement",
+    "Threshold": 0.2,
+    "ScrubAhead": 0,
+    "ScrubBehind": 0,
+    "ScrubContiguous": 5,
     "MemoryUsage": "5000",
     "TimeUsage": "1:0:0",
     "NThreads": "1",
     "LogDirectory": ""
   },
   "Level1Setups": [
-    { "ModelName": "",
+    { "ModelName": "example_L1",
+      "TargetDirectory": "./data_BIDS",
+      "TargetSuffix": "resampled.nii.gz",
       "FSFPrototype": "",
       "ImageIncludeList": "",
       "ImageExcludeList": "",
-      "ConfoundList": ""
+      "FSFDir": "./fsf_test",
+      "EVDirectory": "./EV_test",
+      "ConfoundDirectory": "./confound_test",
+      "EVFileSuffices": ["_gohit.txt",
+                         "_goomission.txt",
+                         "_comission.txt",
+                         "_correct.txt"
+      ],
+      "ConfoundSuffix": "_confounds.tsv",
+      "OutputDir": "./test_l1feat"
     }
   ],
   "Level2Setups": [
-    { "ModelName": "",
+    { "ModelName": "tworun_gngreg",
       "FSFPrototype": "",
-      "SubjectList": "",
-      "ConfoundList": ""
-    }
-  ],
-    "Level3Setups": [
-    {
-      "ModelName": "",
-      "FSFPrototype": "",
-      "SubjectList": "",
-      "ConfoundList": ""
+      "SubjectFile": "l2_sublist.csv",
+      "FSFDir": "",
+      "OutputDir": ""
     }
   ]
 }

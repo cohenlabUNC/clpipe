@@ -6,11 +6,14 @@ from .config_json_parser import ClpipeConfigParser, GLMConfigParser
 import logging
 import sys
 from .error_handler import exception_handler
-import nipype.interfaces.io as nio  # Data i/o
 import nipype.interfaces.fsl as fsl  # fsl
-import nipype.interfaces.utility as util  # utility
 import nipype.pipeline.engine as pe  # pypeline engine
 from nipype.interfaces.utility import IdentityInterface
+import nibabel as nib
+import pandas
+import re
+import clpipe.postprocutils
+import numpy as np
 
 @click.command()
 @click.argument('subjects', nargs=-1, required=False, default=None)
@@ -18,14 +21,15 @@ from nipype.interfaces.utility import IdentityInterface
               help='Use a given configuration file.')
 @click.option('-glm_config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True), default=None, required = True,
               help='Use a given GLM configuration file.')
-
+@click.option('-drop_tps', type=click.Path(exists=True, dir_okay=False, file_okay=True), default=None, required = False,
+              help='Drop timepoints csv sheet')
 @click.option('-submit', is_flag=True, default=False, help='Flag to submit commands to the HPC.')
 @click.option('-batch/-single', default=True,
               help='Submit to batch, or run in current session. Mainly used internally.')
 @click.option('-debug', is_flag=True, default=False,
               help='Print detailed processing information and traceback for errors.')
 def glm_setup(subjects = None, config_file=None, glm_config_file = None,
-                     submit=False, batch=True, debug = None):
+                     submit=False, batch=True, debug = None, drop_tps = None):
     if not debug:
         sys.excepthook = exception_handler
         logging.basicConfig(level=logging.INFO)
@@ -77,10 +81,10 @@ def glm_setup(subjects = None, config_file=None, glm_config_file = None,
         for sub in subjects:
 
             logging.info('Running Subject ' + sub)
-            _glm_prep(glm_config, sub, task)
+            _glm_prep(glm_config, sub, task, drop_tps)
 
 
-def _glm_prep(glm_config, subject, task):
+def _glm_prep(glm_config, subject, task, drop_tps):
     fsl.FSLCommand.set_default_output_type('NIFTI_GZ')
 
 
@@ -94,14 +98,25 @@ def _glm_prep(glm_config, subject, task):
     glm_setup.base_dir = os.path.join(glm_config.config["GLMSetupOptions"]['WorkingDirectory'], "sub-"+subject)
     input_node = pe.Node(IdentityInterface(fields=['in_file', 'out_file', 'mask_file']), name='input')
     strip = pe.Node(fsl.BinaryMaths(operation = 'mul'), name="mask_apply")
-    resample = pe.Node(fsl.FLIRT(apply_isoxfm = glm_config.config["GLMSetupOptions"]["ResampleResolution"],
-                                    reference = glm_config.config["GLMSetupOptions"]["ReferenceImage"]),
-                       name="resample")
-
+    resample = pe.Node(fsl.FLIRT(apply_xfm = True,
+                                 reference = glm_config.config["GLMSetupOptions"]["ReferenceImage"],
+                                 uses_qform = True),
+                                 name="resample")
     glm_setup.connect(input_node, 'out_file', resample, 'out_file')
+    if drop_tps is not None:
+        drop_tps_data = pandas.read_csv(drop_tps)
+        drop = pe.Node(fsl.ExtractROI(), name = "drop_tps")
+        drop.inputs.t_min = 0
+        glm_setup.connect(input_node, "in_file", drop, "in_file")
+
+
     if glm_config.config["GLMSetupOptions"]["ApplyFMRIPREPMask"]:
-        glm_setup.connect([(input_node, strip, [('in_file', 'in_file'),
+        if drop_tps is None:
+           glm_setup.connect([(input_node, strip, [('in_file', 'in_file'),
                                          ('mask_file', 'operand_file')])])
+        else:
+            glm_setup.connect(drop, "roi_file", strip, "in_file")
+            glm_setup.connect(input_node, "mask_file", strip, "operand_file")
 
     if glm_config.config["GLMSetupOptions"]["SUSANSmoothing"]:
         sus = pe.Node(fsl.SUSAN(), name="susan_smoothing")
@@ -110,6 +125,8 @@ def _glm_prep(glm_config, subject, task):
 
         if glm_config.config["GLMSetupOptions"]["ApplyFMRIPREPMask"]:
             glm_setup.connect(strip, 'out_file', sus, 'in_file')
+        elif drop_tps is not None:
+            glm_setup.connect(drop, 'roi_file', sus, 'in_file')
         else:
             glm_setup.connect(input_node, 'in_file', sus, 'in_file')
 
@@ -117,19 +134,118 @@ def _glm_prep(glm_config, subject, task):
         glm_setup.connect(sus, 'smoothed_file', resample, 'in_file')
     elif glm_config.config["GLMSetupOptions"]["ApplyFMRIPREPMask"]:
         glm_setup.connect(strip, 'out_file', resample, 'in_file')
+    elif drop_tps is not None:
+        glm_setup.connect(drop, 'roi_file', resample, 'in_file')
     else:
         glm_setup.connect(input_node, 'in_file', resample, 'in_file')
+
+    if drop_tps is not None:
+        drop_tps_data = pandas.read_csv(drop_tps)
 
     for image in subject_files:
         if task is None or 'task-' + task + '_' in image:
             logging.info('Processing ' + image)
+            confounds = None
             try:
+                if glm_config.config["GLMSetupOptions"]['PrepareConfounds']:
+                    confound_file = _find_confounds(glm_config, image)
+                    if not os.path.exists(confound_file):
+                        raise ValueError("Cannot find confound file: "+ confound_file)
+                    confounds = pandas.read_table(confound_file, dtype="float", na_values="n/a")
+                    if len(glm_config.config["GLMSetupOptions"]['Confounds']) > 0:
+                        cons_re = [re.compile(regex_wildcard(co)) for co in glm_config.config["GLMSetupOptions"]['Confounds']]
+                        target_cols = []
+                        for reg in cons_re:
+                            logging.debug(str([reg.match(col).group() for col in confounds.columns if reg.match(col) is not None]))
+                            target_cols.extend([reg.match(col).group() for col in confounds.columns if reg.match(col) is not None])
+                        logging.debug("Confound Columns " + str(target_cols))
+                        confounds_mat = confounds[target_cols]
+                    if len(glm_config.config["GLMSetupOptions"]['ConfoundsQuad']) > 0:
+                        cons_re = [re.compile(regex_wildcard(co)) for co in glm_config.config["GLMSetupOptions"]['ConfoundsQuad']]
+                        target_cols = []
+                        for reg in cons_re:
+                            target_cols.extend(
+                                [reg.match(col).group() for col in confounds.columns if reg.match(col) is not None])
+                        logging.debug("Quad Columns " + str(target_cols))
+                        confounds_quad_mat = confounds[target_cols]
+                        confounds_quad_mat.rename(columns =lambda x: x+"_quad", inplace = True)
+                        confounds_quad_mat = confounds_quad_mat**2
+                        confounds_mat = pandas.concat([confounds_mat,confounds_quad_mat],axis=1, ignore_index=True)
+                        logging.debug(str(confounds_mat.shape))
+                    if len(glm_config.config["GLMSetupOptions"]['ConfoundsDerive']) > 0:
+                        cons_re = [re.compile(regex_wildcard(co)) for co in glm_config.config["GLMSetupOptions"]['ConfoundsLagged']]
+                        target_cols = []
+                        for reg in cons_re:
+                            target_cols.extend(
+                                [reg.match(col).group() for col in confounds.columns if reg.match(col) is not None])
+                        logging.debug("Lagged Columns " + str(target_cols))
+                        confounds_lagged_mat = confounds[target_cols]
+                        confounds_lagged_mat.rename(columns =lambda x: x+"_lagged", inplace = True)
+                        confounds_lagged_mat = confounds_lagged_mat.diff()
+                        confounds_mat = pandas.concat([confounds_mat,confounds_lagged_mat],axis=1, ignore_index=True)
+                        logging.debug(str(confounds_mat.shape))
+                        logging.debug(str(confounds_mat.head(5)))
+                    if len(glm_config.config["GLMSetupOptions"]['ConfoundsQuadDerive']) > 0:
+                        cons_re = [re.compile(regex_wildcard(co)) for co in glm_config.config["GLMSetupOptions"]['ConfoundsQuadDerive']]
+                        target_cols = []
+                        for reg in cons_re:
+                            target_cols.extend(
+                                [reg.match(col).group() for col in confounds.columns if reg.match(col) is not None])
+                        logging.debug("Quadlagged Columns " + str(target_cols))
+                        confounds_qlagged_mat = confounds[target_cols]
+                        confounds_qlagged_mat = confounds_qlagged_mat.diff()
+                        confounds_qlagged_mat = confounds_qlagged_mat**2
+                        confounds_qlagged_mat.rename(columns =lambda x: x+"_qlagged", inplace = True)
+                        confounds_mat = pandas.concat([confounds_mat,confounds_qlagged_mat],axis=1,ignore_index=True)
+                        logging.debug(str(confounds_mat.shape))
+                    if glm_config.config["GLMSetupOptions"]['MotionOutliers']:
+                        logging.info("Computing Motion Outliers: ")
+                        logging.info("Motion Outlier Variable: "+ glm_config.config["GLMSetupOptions"]['ScrubVar'])
+                        logging.info("Threshold: " + str(glm_config.config["GLMSetupOptions"]['Threshold']))
+                        logging.info("Ahead: " + str(glm_config.config["GLMSetupOptions"]['ScrubAhead']))
+                        logging.info("Behind: " + str(glm_config.config["GLMSetupOptions"]['ScrubBehind']))
+                        logging.info("Contiguous: " + str(glm_config.config["GLMSetupOptions"]['ScrubContiguous']))
+                        fdts = confounds[glm_config.config["GLMSetupOptions"]['ScrubVar']]
+                        logging.debug(str(fdts))
+                        scrub_targets = clpipe.postprocutils.utils.scrub_setup(fdts, glm_config.config["GLMSetupOptions"]['Threshold'], glm_config.config["GLMSetupOptions"]['ScrubBehind'], glm_config.config["GLMSetupOptions"]['ScrubAhead'], glm_config.config["GLMSetupOptions"]['ScrubContiguous'])
+                        logging.debug(str(scrub_targets))
+                if drop_tps is not None:
+                    img_data = nib.load(image)
+                    total_tps = img_data.shape[3]
+                    tps_drop = None
+                    temp = None
+                    temp = drop_tps_data[drop_tps_data['file_name'].str.match(os.path.basename(image))]['TR_round']
+                    if len(temp) is 1:
+                        tps_drop = int(temp)
+                        logging.info('Found drop TP info, will remove last ' + str(tps_drop) + ' time points')
+                    if tps_drop is not None:
+                        total_tps = total_tps - tps_drop
+                        if confounds is not None:
+                            confounds_mat = confounds_mat.head(total_tps)
+                            fdts = fdts.iloc[:(fdts.shape[0]-(tps_drop))]
+                        scrub_targets = clpipe.postprocutils.utils.scrub_setup(fdts, glm_config.config["GLMSetupOptions"]['Threshold'],
+                                                                               glm_config.config["GLMSetupOptions"]['ScrubBehind'],
+                                                                               glm_config.config["GLMSetupOptions"]['ScrubAhead'],
+                                                                               glm_config.config["GLMSetupOptions"]['ScrubContiguous'])
+                    logging.info("Total timepoints are " + str(total_tps))
+                    glm_setup.inputs.drop_tps.t_size = total_tps
                 glm_setup.inputs.input.in_file = os.path.abspath(image)
-
                 glm_setup.inputs.input.out_file = _build_output_directory_structure(glm_config, image)
+                if confounds is not None:
+                    if glm_config.config["GLMSetupOptions"]['MotionOutliers']:
+                        mot_outliers = _construct_motion_outliers(scrub_targets)
+                        confounds_mat = pandas.concat([confounds_mat,mot_outliers],axis=1, ignore_index=True)
+                        logging.debug(str(confounds_mat.shape))
+                    if glm_config.config["GLMSetupOptions"]["DummyScans"] is not 0:
+                        confounds_mat = confounds_mat.iloc[glm_config.config["GLMSetupOptions"]["DummyScans"]:]
+                    confounds_out = os.path.splitext(glm_setup.inputs.input.out_file)[0] + "_confounds.tsv"
+                    logging.debug(str(confounds_mat.columns))
+                    confounds_mat.fillna(0, inplace = True)
+                    confounds_mat.to_csv(confounds_out,sep='\t',index=False,header=False)
+                    logging.info("Outputting confound file to: " + confounds_out)
                 if glm_config.config["GLMSetupOptions"]["ApplyFMRIPREPMask"]:
                     glm_setup.inputs.input.mask_file = _mask_finder_glm(image, glm_config)
-                logging.info(glm_setup.inputs)
+                logging.debug(glm_setup.inputs)
                 glm_setup.run()
             except Exception as err:
                 logging.exception(err)
@@ -138,13 +254,13 @@ def _build_output_directory_structure(config, filepath):
 
     target_directory = filepath[filepath.find('sub-'):]
     target_directory = os.path.dirname(target_directory)
-    target_directory = os.path.join(config.config["GLMSetupOptions"]['PreppedDataDirectory'], target_directory)
+    target_directory = os.path.join(config.config["GLMSetupOptions"]['OutputDirectory'], target_directory)
     logging.debug(target_directory)
     os.makedirs(target_directory, exist_ok=True)
     file_name = os.path.basename(filepath)
     sans_ext = os.path.splitext(os.path.splitext(file_name)[0])[0]
-    logging.debug(config.config["GLMSetupOptions"]['PreppedSuffix'])
-    file_name = sans_ext + '_' + config.config["GLMSetupOptions"]['PreppedSuffix']
+    logging.debug(config.config["GLMSetupOptions"]['OutputSuffix'])
+    file_name = sans_ext + '_' + config.config["GLMSetupOptions"]['OutputSuffix']
     logging.debug(file_name)
     return os.path.abspath(os.path.join(target_directory, file_name))
 
@@ -160,3 +276,22 @@ def _mask_finder_glm(image, glm_config):
         return(None)
     else:
         return(os.path.abspath(target_mask[0]))
+
+def _find_confounds(glm_config, filepath):
+    file_name = os.path.basename(filepath)
+    sans_ext = os.path.splitext(os.path.splitext(file_name)[0])[0]
+    root_file = sans_ext[:sans_ext.index('space')]
+    return os.path.join(os.path.dirname(filepath), root_file + glm_config.config["GLMSetupOptions"]['ConfoundSuffix'])
+
+def regex_wildcard(string):
+    return '^'+re.sub("\*", ".*", string)+'$'
+
+def _construct_motion_outliers(scrub_targets):
+    size = sum(scrub_targets)
+    mot_outliers = pandas.DataFrame(np.zeros((len(scrub_targets),size)))
+    counter = 0
+    for ind, i  in enumerate(scrub_targets):
+        if i == 1:
+            mot_outliers.iloc[ind, counter] = 1
+            counter += 1
+    return mot_outliers

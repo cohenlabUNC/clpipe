@@ -1,0 +1,150 @@
+==================================
+GLM Setup, L1 Models and L2 Models
+==================================
+
+
+clpipe includes functions to help you set up and run general linear models (GLM) on your neuroimaging data. It uses FSL's implementation of GLM (FEAT), and the functions provided in clpipe serve to help setup and manage the necessary files and folders.
+
+Currently, clpipe includes the following commands:
+
+1. :code:`glm_setup` This function serves to resample your fmriprepped data into a standard resolution and image size, apply a brain mask (calculated by FMRIprep), optionally perform SUSAN smoothing, and drop timepoints from the beginning and ending of the images. Note: The resampling is not registration and this :code:`glm_setup` function requires that you have already preprocessed your data using FMRIprep.
+2. :code:`glm_l1_preparefsfs` This function takes an fsf file that you have generated as a prototype, and copies/modifies it for use with the images in your dataset. Multiple different L1 fsfs can be used, and images can be excluded or explicitly included in a given L1. See below for details on the glm configuration file.
+3. :code:`glm_l2_preparefsfs` This function takes an fsf file, and a csv sheet that contains information about which image goes with which subject, and copies/modifies the fsf file for use with your dataset. Similarly to L1, multiple L2 fsf files can be specified. See below for details on how to do this.
+
+
+==================================
+GLM Configuration Files
+==================================
+
+In clpipe, a GLM configuration file describes the L1 and L2 setup for a single task. It is structured as follows:
+
+
+Preamble
+========
+
+* ``GLMName``: Descriptive Name
+* ``Authors``: Author List
+* ``DateCreated``: Date
+
+* ``GLMSetupOptions``: Options for the initial resampling of data
+
+    * ``ParentClpipeConfig``: File path to project's clpipe config json,
+    * ``TargetDirectory``: Directory containing the image files, defaults to fmriprep directory,
+    * ``TargetSuffix``: Suffix that designates the files to be resampled, defaults to ``space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz``,
+    * ``WorkingDirectory``: Working directory, must be user specified,
+    * ``TaskName``: Name of the task that the GLM is run on, must be the same as in the ``task-*``, descriptors
+    * ``ReferenceImage``: Reference image, used to determine dimensions and resolution. Should be the reference image for the space the data is normalized to, e.g. MNI152NLin2009cAsym ,
+    * ``DummyScans``: Number of timepoints at the beginning of the scan to drop. Specify as an integer
+    * ``ApplyFMRIPREPMask``: Apply brain mask, defaults to ``true``
+    * ``MaskFolderRoot``: Root of the directory tree that contains the masks, defaults to fmriprep directory,
+    * ``MaskSuffix``: Suffix of the mask file, defaults to ``space-MNI152NLin2009cAsym_desc-brain_mask.nii.gz``,
+    * ``SUSANSmoothing``: Perform Susan Smoothing? Defaults to ``false``
+    * ``SUSANOptions``: Options for SUSAN spatial smoothing
+        *   ``BrightnessThreshold``: Brightness threshold for SUSAN
+        *   ``FWHM``: Full Width Half Max (Same as in FEAT GUI, not the same as in SUSAN GUI)
+    * ``PreppedDataDirectory``: Output directory for resampled images, project setup defaults this to ``main project directory/data_glm``,
+    * ``PreppedSuffix``: Suffix for resampled data, defaults to ``resampled.nii.gz``,
+    * ``PrepareConfounds``: Boolean flag to prepare confound tables, defaults to true,
+    * ``ConfoundSuffix``: Suffix for files containing confound information, defaults to ``desc-confounds_regressors.tsv``,
+    * ``Confounds``: A list of confound names. Note, the use of `.*` specifies a wildcard (i.e. ``a_comp_cor.*`` will extract all confounds that begin with ``a_comp_cor``). Defaults to 6 motion parameters, CSF, WM and Global Signal.
+    * ``ConfoundsQuad``: Which confounds to calculate quadratic expansions. Defaults to previous confounds list.
+    * ``ConfoundsDerive``: Which confounds to calculate first derivatives? Defaults to previous confounds list.
+    * ``ConfoundsQuadDerive``: Which confounds to calculate quadratic expansions of first derivatives.
+    * ``MotionOutliers``: Calculate motion outliers. If ``true`` then dummy codes for motion outliers will be included in the confounds file. Defaults to true
+    * ``ScrubVar``: Which variable in the confounds file should be used to calculate motion outliers, defaults to framewise displacement
+    * ``Threshold``: Threshold at which to flag a timepoint as a motion outlier, defaults to .2
+    * ``ScrubAhead``: How many time points ahead of a flagged time point should be flagged also, defaults to 0
+    * ``ScrubBehind``: How many time points behind of a flagged time point should be flagged also, defaults to 0
+    * ``ScrubContiguous``: How many "good" contiguous timepoints are needed, defaults to 5
+    * ``MemoryUsage``: Memory usage, defaults to 5 GB
+    * ``TimeUsage``: Time usage, defaults to 1 hour
+    * ``NThreads``: Number of processing threads, defaults to 1
+    * ``LogDirectory``: Log directory, defaults to ``glm_setup_logs`` in the project logs directory.
+
+Level 1 Setups
+==============
+
+The entry ``Level1Setups`` contains a list of Level 1 specifications of the following form:
+
+* ``ModelName``: Name of this L1 setup. Will be used when you use the ``glm_l1_preparefsfs`` function
+* ``TargetDirectory``: Target directory containing the files to be analyzed, defaults to resampled data directory from GLM setup
+* ``TargetSuffix``: File suffix that specifies which files are to be used, defaults to ``resampled.nii.gz``,
+* ``FSFPrototype``: A .fsf file that acts as the prototype for this setup,
+* ``ImageIncludeList``: A list of which images should be included in this setup (MUTUALLY EXCLUSIVE WITH ``ImageExcludeList``)
+* ``ImageExcludeList``: A list of which images should NOT be included in this setup (MUTUALLY EXCLUSIVE WITH ``ImageIncludeList``)
+* ``FSFDir``: The directory that the generated .fsf files are created in, defaults to ``l1_fsfs``,
+* ``EVDirectory``: The directory that contains the onset files for each image. These files must be in FSL 3 column format. The filenames have specific structuring as well (see below),
+* ``ConfoundDirectory``: Directory that contains the confound files, defaults to the directory containing the resampled data,
+* ``EVFileSuffices``: A list of file suffices that specify which event file to use. NOTE: This list is ordered, so the first suffix corresponds with EV 1, the second with EV 2, etc.
+* ``ConfoundSuffix``: Suffix that specifies which files are the confound files.
+* ``OutputDir``: Where the resulting FEAT directories will be created.
+
+
+Filenames for EV Onset Files
+============================
+
+Event Onset files must be in the FSL 3 column format. Additionally, the file names for the onset files must be of the following form: filename of image - target suffix + EV file suffix. For example. If the image filename was "sub-1001_ses-01_task-gng_run-01_bold.nii.gz", the target suffix was "_bold.nii.gz" and a EV suffix was "_hit.txt", then the EV file should be named: "sub-1001_ses-01_task-gng_run-01_hit.txt``.
+
+
+Level 2 Setups
+==============
+
+The entry ``Level2Setups`` contains a list of Level 2 specifications of the following form:
+
+* ``ModelName``: The model name, used in the ``glm_l2_preparefsfs`` function.
+* ``FSFPrototype``: A .fsf prototype used in this setup.
+* ``SubjectFile``: A .csv file containing information as to which images go into which L2 model. See below for details.
+* ``FSFDir``: The directory in which the fsfs will be generated.
+* ``OutputDir``: Which folder will the L2 gfeat folders be generated
+
+
+Subject File Formatting
+=======================
+
+The L2 subject file maps each image onto a specific L2 model setup entry and onto a specific L2 model (i.e. assigns a subject's images to that subject.) This is a three column csv file, with the headers: ``fsf_name``, ``feat_folders``, ``L2_name``. The ``fsf_name`` column contains the desired name of a L2 fsf file, the ``feat_folders`` column contains the paths to the feat folders that are used in the L2 FSF files (in order), and the ``L2_name`` column contains which ``ModelName`` corresponds to a given image. For an example, see the ``l2_sublist.csv`` file generated when you run the ``project_setup`` function.
+
+
+``glm_setup`` Command:
+======================
+
+.. code-block:: console
+
+    Usage: glm_setup [OPTIONS] [SUBJECTS]...
+
+    Options:
+      -config_file PATH      Use a given configuration file.  [required]
+      -glm_config_file PATH  Use a given GLM configuration file.  [required]
+      -drop_tps PATH         Drop timepoints csv sheet
+      -submit                Flag to submit commands to the HPC.
+      -batch / -single       Submit to batch, or run in current session. Mainly
+                         used internally.
+      -debug                 Print detailed processing information and traceback
+                         for errors.
+      --help                 Show this message and exit.
+
+
+``glm_l1_preparefsf`` Command:
+==============================
+
+.. code-block:: console
+
+    Usage: glm_l1_preparefsf [OPTIONS]
+
+    Options:
+      -glm_config_file PATH  Use a given GLM configuration file.  [required]
+      -l1_name TEXT          Name for a given L1 model  [required]
+      -debug                 Flag to enable detailed error messages and traceback
+      --help                 Show this message and exit.
+
+``glm_l2_preparefsf`` Command:
+==============================
+
+.. code-block:: console
+
+    Usage: glm_l2_preparefsf [OPTIONS]
+
+    Options:
+      -glm_config_file PATH  Use a given GLM configuration file.  [required]
+      -l2_name TEXT          Name for a given L1 model  [required]
+      -debug                 Flag to enable detailed error messages and traceback
+      --help                 Show this message and exit.

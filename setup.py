@@ -33,7 +33,8 @@ setup(name='clpipe',
       fmri_postprocess=clpipe.fmri_postprocess:fmri_postprocess
       fmri_process_check=clpipe.fmri_process_check:fmri_process_check
       get_reports=clpipe.get_reports:get_reports
-      grab_config_file=clpipe.grab_config_file:get_config_file
+      get_config_file=clpipe.grab_config_file:get_config_file
+      get_glm_config_file=clpipe.grab_config_file:get_glm_config_file
       fmri_roi_extraction=clpipe.roi_extractor:fmri_roi_extraction
       convert2bids=clpipe.dcm2bids_wrapper:convert2bids
       project_setup=clpipe.project_setup:project_setup
@@ -45,6 +46,8 @@ setup(name='clpipe',
       test_func=clpipe.utils:test_func
       fmap_cleanup=clpipe.fmap_cleanup:fmap_cleanup
       glm_setup=clpipe.glm_setup:glm_setup
+      glm_l1_preparefsf=clpipe.glm_l1:glm_l1_preparefsf
+      glm_l2_preparefsf=clpipe.glm_l2:glm_l2_preparefsf
       ''',
       zip_safe=False
       )

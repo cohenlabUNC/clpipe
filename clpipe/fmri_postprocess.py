@@ -31,7 +31,7 @@ from scipy import signal
 @click.option('-processing_stream', help = 'Optional processing stream selector.')
 @click.option('-log_dir', type=click.Path(dir_okay=True, file_okay=False), help = 'Where to put HPC output files. If not specified, defaults to <outputDir>/batchOutput.')
 @click.option('-beta_series', is_flag = True, default = False, help = "Flag to activate beta-series correlation correlation. ADVANCED METHOD, refer to the documentation.")
-@click.option('-drop_tps', type=click.Path(dir_okay=True, file_okay=True))
+@click.option('-drop_tps', type=click.Path(dir_okay=True, file_okay=True), default = None)
 @click.option('-submit', is_flag = True, default=False, help = 'Flag to submit commands to the HPC.')
 @click.option('-batch/-single', default=True, help = 'Submit to batch, or run in current session. Mainly used internally.')
 @click.option('-debug', is_flag = True, default=False, help = 'Print detailed processing information and traceback for errors.')
@@ -473,6 +473,7 @@ def _find_json(config, filepath):
         scan_level_json = [json for json in jsons if "_".join(components[0:5]) + "_bold.json" in json]
         if len(scan_level_json) is not 0:
             target_json = scan_level_json[0]
+
 
     logging.debug(target_json)
     return target_json
