@@ -173,7 +173,7 @@ def _glm_prep(glm_config, subject, task, drop_tps):
                         confounds_mat = pandas.concat([confounds_mat,confounds_quad_mat],axis=1, ignore_index=True)
                         logging.debug(str(confounds_mat.shape))
                     if len(glm_config.config["GLMSetupOptions"]['ConfoundsDerive']) > 0:
-                        cons_re = [re.compile(regex_wildcard(co)) for co in glm_config.config["GLMSetupOptions"]['ConfoundsLagged']]
+                        cons_re = [re.compile(regex_wildcard(co)) for co in glm_config.config["GLMSetupOptions"]['ConfoundsDerive']]
                         target_cols = []
                         for reg in cons_re:
                             target_cols.extend(
