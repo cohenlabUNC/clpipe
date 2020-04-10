@@ -105,3 +105,4 @@ def notch_filter(motion_params, band, tr):
     return filt_fd
 
 
+
