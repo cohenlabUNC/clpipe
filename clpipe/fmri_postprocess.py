@@ -419,8 +419,8 @@ def _regression_prep(config, confound_filepath):
         confounds_quad_mat = confounds_quad_mat ** 2
         confounds_mat = pandas.concat([confounds_mat, confounds_quad_mat], axis=1, ignore_index=True)
         logging.debug(str(confounds_mat.shape))
-    if len(config.config["PostProcessingOptions"]['ConfoundsDerive']) > 0:
-        cons_re = [re.compile(regex_wildcard(co)) for co in config.config["PostProcessingOptions"]['ConfoundsLagged']]
+    if len(config.config["PostProcessingOptions"]['ConfoundsDeriv']) > 0:
+        cons_re = [re.compile(regex_wildcard(co)) for co in config.config["PostProcessingOptions"]['ConfoundsDeriv']]
         target_cols = []
         for reg in cons_re:
             target_cols.extend(
@@ -432,9 +432,9 @@ def _regression_prep(config, confound_filepath):
         confounds_mat = pandas.concat([confounds_mat, confounds_lagged_mat], axis=1, ignore_index=True)
         logging.debug(str(confounds_mat.shape))
         logging.debug(str(confounds_mat.head(5)))
-    if len(config.config["PostProcessingOptions"]['ConfoundsQuadDerive']) > 0:
+    if len(config.config["PostProcessingOptions"]['ConfoundsQuadDeriv']) > 0:
         cons_re = [re.compile(regex_wildcard(co)) for co in
-                   config.config["PostProcessingOptions"]['ConfoundsQuadDerive']]
+                   config.config["PostProcessingOptions"]['ConfoundsQuadDeriv']]
         target_cols = []
         for reg in cons_re:
             target_cols.extend(
