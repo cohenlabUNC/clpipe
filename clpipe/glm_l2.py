@@ -14,7 +14,7 @@ import shutil
 @click.option('-glm_config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True), default=None, required = True,
               help='Use a given GLM configuration file.')
 @click.option('-l2_name',  default=None, required = True,
-              help='Name for a given L1 model')
+              help='Name for a given L2 model')
 @click.option('-debug', is_flag=True, help='Flag to enable detailed error messages and traceback')
 def glm_l2_preparefsf(glm_config_file, l2_name, debug):
     if not debug:

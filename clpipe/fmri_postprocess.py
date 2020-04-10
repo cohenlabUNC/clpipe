@@ -17,7 +17,7 @@ import psutil
 import sys
 from .error_handler import exception_handler
 import nipy.modalities.fmri.hrf
-from scipy import signal
+import re
 
 @click.command()
 @click.argument('subjects', nargs=-1, required=False, default=None)
@@ -31,13 +31,12 @@ from scipy import signal
 @click.option('-processing_stream', help = 'Optional processing stream selector.')
 @click.option('-log_dir', type=click.Path(dir_okay=True, file_okay=False), help = 'Where to put HPC output files. If not specified, defaults to <outputDir>/batchOutput.')
 @click.option('-beta_series', is_flag = True, default = False, help = "Flag to activate beta-series correlation correlation. ADVANCED METHOD, refer to the documentation.")
-@click.option('-drop_tps', type=click.Path(dir_okay=True, file_okay=True), default = None)
 @click.option('-submit', is_flag = True, default=False, help = 'Flag to submit commands to the HPC.')
 @click.option('-batch/-single', default=True, help = 'Submit to batch, or run in current session. Mainly used internally.')
 @click.option('-debug', is_flag = True, default=False, help = 'Print detailed processing information and traceback for errors.')
 def fmri_postprocess(config_file=None, subjects=None, target_dir=None, target_suffix=None, output_dir=None,
                      output_suffix=None, log_dir=None,
-                     submit=False, batch=True, task=None, tr=None, processing_stream = None, debug = False, beta_series = False,                       drop_tps = None):
+                     submit=False, batch=True, task=None, tr=None, processing_stream = None, debug = False, beta_series = False):
     """This command runs an fMRIprep'ed dataset through additional processing, as defined in the configuration file. To run specific subjects, specify their IDs. If no IDs are specified, all subjects are ran."""
     if not debug:
         sys.excepthook = exception_handler
@@ -93,13 +92,10 @@ def fmri_postprocess(config_file=None, subjects=None, target_dir=None, target_su
         sublist = subjects
 
     submission_string = '''fmri_postprocess -config_file={config} -target_dir={targetDir} -target_suffix={targetSuffix} ''' \
-                        '''-output_dir={outputDir} -output_suffix={outputSuffix} {procstream} -log_dir={logOutputDir} {drop_tps} {taskString} {trString} {beta_series} -single {sub}'''
-    drop_tps_string = ""
+                        '''-output_dir={outputDir} -output_suffix={outputSuffix} {procstream} -log_dir={logOutputDir} {taskString} {trString} {beta_series} -single {sub}'''
     task_string = ""
     tr_string = ""
     beta_series_string = ""
-    if drop_tps is not None:
-        drop_tps_string  = '-drop_tps ' + drop_tps
     if task is not None:
         task_string = '-task='+task
     if tr is not None:
@@ -129,7 +125,6 @@ def fmri_postprocess(config_file=None, subjects=None, target_dir=None, target_su
                 trString = tr_string,
                 logOutputDir=config.config[output_type]['LogDirectory'],
                 beta_series = beta_series_string,
-                drop_tps = drop_tps_string,
                 sub=sub
             )
             if debug:
@@ -148,10 +143,10 @@ def fmri_postprocess(config_file=None, subjects=None, target_dir=None, target_su
         for sub in subjects:
             logging.debug(beta_series)
             logging.info('Running Subject ' + sub)
-            _fmri_postprocess_subject(config, sub, task, tr, beta_series, drop_tps)
+            _fmri_postprocess_subject(config, sub, task, tr, beta_series)
 
 
-def _fmri_postprocess_subject(config, subject, task, tr=None, beta_series = False, drop_tps = None):
+def _fmri_postprocess_subject(config, subject, task, tr=None, beta_series = False):
     if beta_series:
           output_type = 'BetaSeriesOptions'
     else:
@@ -161,8 +156,8 @@ def _fmri_postprocess_subject(config, subject, task, tr=None, beta_series = Fals
                      "*" + config.config[output_type]['TargetSuffix']))
 
     subject_files = glob.glob(search_string, recursive=True)
-    if drop_tps is not None:
-        drop_tps = pandas.read_csv(drop_tps)
+    if config.config['PostProcessingOptions']["DropCSV"] is not "":
+        drop_tps = pandas.read_csv(config.config['PostProcessingOptions']["DropCSV"])
 
     logging.info('Finding Image Files')
     for image in subject_files:
@@ -171,7 +166,7 @@ def _fmri_postprocess_subject(config, subject, task, tr=None, beta_series = Fals
             try:
                 tps_drop = None
                 temp = None
-                if drop_tps is not None:
+                if config.config['PostProcessingOptions']["DropCSV"] is not "":
                     temp = drop_tps[drop_tps['file_name'].str.match(os.path.basename(image))]['TR_round']
                     if len(temp) is 1:
                         tps_drop = int(temp)
@@ -401,44 +396,60 @@ def _beta_series_calc(data, filt_ev_mat, filt_confound_mat):
     return betas
 
 
-def _regression_prep(config, confound_filepath, beta_series_toggle = False):
+def _regression_prep(config, confound_filepath):
     confounds = pandas.read_table(confound_filepath, dtype="float", na_values="n/a")
     confounds = confounds.fillna(0)
-    reg_labels = config.config['PostProcessingOptions']['RegressionParameters']
-    stream_toggle = 'PostProcessingOptions'
-    if beta_series_toggle:
-        stream_toggle = 'BetaSeriesOptions'
-        logging.info("Using beta series regression options.")
-        logging.debug(stream_toggle)
-    regression_type = json.load(resource_stream(__name__, 'data/RegressionOptions.json'))
-    target_label = next((item for item in regression_type['RegressionOptions'] if
-                         item["Name"] == config.config[stream_toggle]['NuisanceRegression']), False)
-    if not target_label:
-        raise ValueError
-    fd = confounds[reg_labels['FDLabel']]
-    confound_labels = []
-    confound_labels.extend(reg_labels["MotionParams"])
+    if len(config.config["PostProcessingOptions"]['Confounds']) > 0:
+        cons_re = [re.compile(regex_wildcard(co)) for co in config.config["PostProcessingOptions"]['Confounds']]
+        target_cols = []
+        for reg in cons_re:
+            logging.debug(str([reg.match(col).group() for col in confounds.columns if reg.match(col) is not None]))
+            target_cols.extend([reg.match(col).group() for col in confounds.columns if reg.match(col) is not None])
+        logging.debug("Confound Columns " + str(target_cols))
+        confounds_mat = confounds[target_cols]
+    if len(config.config["PostProcessingOptions"]['ConfoundsQuad']) > 0:
+        cons_re = [re.compile(regex_wildcard(co)) for co in config.config["PostProcessingOptions"]['ConfoundsQuad']]
+        target_cols = []
+        for reg in cons_re:
+            target_cols.extend(
+                [reg.match(col).group() for col in confounds.columns if reg.match(col) is not None])
+        logging.debug("Quad Columns " + str(target_cols))
+        confounds_quad_mat = confounds[target_cols]
+        confounds_quad_mat.rename(columns=lambda x: x + "_quad", inplace=True)
+        confounds_quad_mat = confounds_quad_mat ** 2
+        confounds_mat = pandas.concat([confounds_mat, confounds_quad_mat], axis=1, ignore_index=True)
+        logging.debug(str(confounds_mat.shape))
+    if len(config.config["PostProcessingOptions"]['ConfoundsDerive']) > 0:
+        cons_re = [re.compile(regex_wildcard(co)) for co in config.config["PostProcessingOptions"]['ConfoundsLagged']]
+        target_cols = []
+        for reg in cons_re:
+            target_cols.extend(
+                [reg.match(col).group() for col in confounds.columns if reg.match(col) is not None])
+        logging.debug("Lagged Columns " + str(target_cols))
+        confounds_lagged_mat = confounds[target_cols]
+        confounds_lagged_mat.rename(columns=lambda x: x + "_lagged", inplace=True)
+        confounds_lagged_mat = confounds_lagged_mat.diff()
+        confounds_mat = pandas.concat([confounds_mat, confounds_lagged_mat], axis=1, ignore_index=True)
+        logging.debug(str(confounds_mat.shape))
+        logging.debug(str(confounds_mat.head(5)))
+    if len(config.config["PostProcessingOptions"]['ConfoundsQuadDerive']) > 0:
+        cons_re = [re.compile(regex_wildcard(co)) for co in
+                   config.config["PostProcessingOptions"]['ConfoundsQuadDerive']]
+        target_cols = []
+        for reg in cons_re:
+            target_cols.extend(
+                [reg.match(col).group() for col in confounds.columns if reg.match(col) is not None])
+        logging.debug("Quadlagged Columns " + str(target_cols))
+        confounds_qlagged_mat = confounds[target_cols]
+        confounds_qlagged_mat = confounds_qlagged_mat.diff()
+        confounds_qlagged_mat = confounds_qlagged_mat ** 2
+        confounds_qlagged_mat.rename(columns=lambda x: x + "_qlagged", inplace=True)
+        confounds_mat = pandas.concat([confounds_mat, confounds_qlagged_mat], axis=1, ignore_index=True)
+        logging.debug(str(confounds_mat.shape))
 
-    if config.config[stream_toggle]['WhiteMatter']:
-        confound_labels.extend([reg_labels["WhiteMatter"]])
-    if config.config[stream_toggle]['CSF']:
-        confound_labels.extend([reg_labels["CSF"]])
-    if config.config[stream_toggle]['GlobalSignalRegression']:
-        confound_labels.extend([reg_labels["GlobalSignal"]])
+    fd = confounds[config.config["PostProcessingOptions"]["ScrubVar"]]
 
-    confounds = confounds[confound_labels]
-
-    if target_label['Lagged']:
-        confound_temp = confounds.diff()
-        confound_temp = confound_temp.fillna(0)
-        confounds = pandas.concat([confounds, confound_temp], axis=1, ignore_index=True)
-
-    if target_label['Quadratic']:
-        confound_temp = confounds.pow(2)
-        confound_temp = confound_temp.fillna(0)
-        confounds = pandas.concat([confounds, confound_temp], axis=1, ignore_index=True)
-
-    return confounds, fd
+    return confounds_mat, fd
 
 
 # Rewrite find json function, use task information to be very specific.
@@ -532,3 +543,6 @@ def _notch_filter_fd(config, confounds_filepath, tr, drop_tps = None):
     band = config.config['PostProcessingOptions']['RespNotchFilterBand']
     filt_fd = clpipe.postprocutils.utils.notch_filter(confounds, band, tr)
     return filt_fd
+
+def regex_wildcard(string):
+    return '^'+re.sub("\*", ".*", string)+'$'
