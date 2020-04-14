@@ -35,6 +35,7 @@
 		"OutputDirectory": "",
 		"OutputSuffix": "",
 		"ConfoundSuffix": "desc-confounds_regressors.tsv",
+		"DropCSV": "",
 		"Regress": true,
 	    "Confounds": ["trans_x", "trans_y", "trans_z", "rot_x", "rot_y", "rot_z",
    		 "csf", "white_matter", "global_signal", "a_comp_cor.*"],
