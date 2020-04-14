@@ -262,6 +262,8 @@ def _fmri_postprocess_image(config, file, task = None, tr=None, beta_series = Fa
             data = clpipe.postprocutils.utils.apply_filter(filt, data)
         if regress_toggle:
             logging.info('Regressing Data Now')
+            logging.debug(str(confounds.shape))
+            logging.debug(str(data.shape))
             data = clpipe.postprocutils.utils.regress(confounds, data)
         if scrub_toggle:
             logging.info('Scrubbing data Now')

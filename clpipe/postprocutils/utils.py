@@ -76,7 +76,9 @@ def apply_filter(sos, arr):
 
 
 def regress(pred, target):
+
     A = numpy.linalg.pinv(pred)
+    logging.info(str(A.shape))
     beta = (numpy.matmul(A, target))
     predVal = numpy.matmul(pred, beta)
     toReturn = target - predVal
