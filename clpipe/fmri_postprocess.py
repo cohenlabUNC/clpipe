@@ -255,6 +255,8 @@ def _fmri_postprocess_image(config, file, task = None, tr=None, beta_series = Fa
 
         logging.debug('Memory Usage After Spectral Interpolation GC:' +str(psutil.virtual_memory().total >> 30) +' GB')
 
+
+
         if filter_toggle:
             logging.info('Filtering Data Now')
             data = clpipe.postprocutils.utils.apply_filter(filt, data)
@@ -448,7 +450,7 @@ def _regression_prep(config, confound_filepath):
         logging.debug(str(confounds_mat.shape))
 
     fd = confounds[config.config["PostProcessingOptions"]["ScrubVar"]]
-
+    confounds_mat = confounds_mat.fillna(0)
     return confounds_mat, fd
 
 
