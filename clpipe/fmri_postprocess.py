@@ -547,7 +547,7 @@ def _notch_filter_fd(config, confounds_filepath, tr, drop_tps = None):
     confounds = confounds.fillna(0)
     if drop_tps is not None:
         confounds = confounds.iloc[:(confounds.shape[0]-drop_tps)]
-    confounds = numpy.array(confounds[config.config["PostProcessingOptions"]["ScrubVar"]])
+    confounds = numpy.array(confounds[config.config["PostProcessingOptions"]["MotionVars"]])
     band = config.config['PostProcessingOptions']['RespNotchFilterBand']
     filt_fd = clpipe.postprocutils.utils.notch_filter(confounds, band, tr)
     return filt_fd

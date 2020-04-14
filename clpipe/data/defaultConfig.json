@@ -57,6 +57,7 @@
 		"ScrubBehind": 1,
 		"ScrubContig": 2,
 		"RespNotchFilter": true,
+		"MotionVars": ["trans_x", "trans_y", "trans_z", "rot_x", "rot_y", "rot_z"],
 		"RespNotchFilterBand":[0.31,0.43],
 		"PostProcessingMemoryUsage": "20000",
 		"PostProcessingTimeUsage": "8:0:0",
