@@ -453,6 +453,7 @@ def _regression_prep(config, confound_filepath):
 
     fd = confounds[config.config["PostProcessingOptions"]["ScrubVar"]]
     confounds_mat = confounds_mat.fillna(0)
+    confounds_mat = numpy.asarray(confounds_mat)
     return confounds_mat, fd
 
 
