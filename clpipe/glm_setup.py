@@ -277,7 +277,7 @@ def _mask_finder_glm(image, glm_config):
 
 def _find_confounds(glm_config, filepath):
     file_name = os.path.basename(filepath)
-    file_name = file_name.replace(glm_config.config['GLMSetupOptions']['OutputSuffix'],glm_config.config['GLMSetupOptions']['ConfoundSuffix'])
+    file_name = file_name.replace(glm_config.config['GLMSetupOptions']['TargetSuffix'],glm_config.config['GLMSetupOptions']['ConfoundSuffix'])
     return os.path.join(os.path.dirname(filepath), file_name)
 
 def regex_wildcard(string):
