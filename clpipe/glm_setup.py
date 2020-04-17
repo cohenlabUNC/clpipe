@@ -238,7 +238,7 @@ def _glm_prep(glm_config, subject, task, drop_tps):
                         logging.debug(str(confounds_mat.shape))
                     if glm_config.config["GLMSetupOptions"]["DummyScans"] is not 0:
                         confounds_mat = confounds_mat.iloc[glm_config.config["GLMSetupOptions"]["DummyScans"]:]
-                    confounds_out = glm_setup.inputs.input.out_file.replace(glm_config.config["GLMSetupOptions"]["OutputSuffix"],"_confounds.tsv")
+                    confounds_out = glm_setup.inputs.input.out_file.replace(glm_config.config["GLMSetupOptions"]["OutputSuffix"],"confounds.tsv")
                     logging.debug(str(confounds_mat.columns))
                     confounds_mat.fillna(0, inplace = True)
                     confounds_mat.to_csv(confounds_out,sep='\t',index=False,header=False)
@@ -258,9 +258,7 @@ def _build_output_directory_structure(config, filepath):
     logging.debug(target_directory)
     os.makedirs(target_directory, exist_ok=True)
     file_name = os.path.basename(filepath)
-    sans_ext = os.path.splitext(os.path.splitext(file_name)[0])[0]
-    logging.debug(config.config["GLMSetupOptions"]['OutputSuffix'])
-    file_name = sans_ext + '_' + config.config["GLMSetupOptions"]['OutputSuffix']
+    file_name = file_name.replace(config.config["GLMSetupOptions"]['TargetSuffix'],config.config["GLMSetupOptions"]['OutputSuffix'])
     logging.debug(file_name)
     return os.path.abspath(os.path.join(target_directory, file_name))
 
@@ -279,10 +277,8 @@ def _mask_finder_glm(image, glm_config):
 
 def _find_confounds(glm_config, filepath):
     file_name = os.path.basename(filepath)
-    file_name = file_name.replace(glm_config.config['GLMSetupOptions']['OutputSuffix'])
-    sans_ext = os.path.splitext(os.path.splitext(file_name)[0])[0]
-    root_file = sans_ext[:sans_ext.index('space')]
-    return os.path.join(os.path.dirname(filepath), root_file + glm_config.config["GLMSetupOptions"]['ConfoundSuffix'])
+    file_name = file_name.replace(glm_config.config['GLMSetupOptions']['OutputSuffix'],glm_config.config['GLMSetupOptions']['ConfoundSuffix'])
+    return os.path.join(os.path.dirname(filepath), file_name)
 
 def regex_wildcard(string):
     return '^'+re.sub("\*", ".*", string)+'$'

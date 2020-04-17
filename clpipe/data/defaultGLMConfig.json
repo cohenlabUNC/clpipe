@@ -47,12 +47,12 @@
       "FSFDir": "./fsf_test",
       "EVDirectory": "./EV_test",
       "ConfoundDirectory": "./confound_test",
-      "EVFileSuffices": ["_gohit.txt",
-                         "_goomission.txt",
-                         "_comission.txt",
-                         "_correct.txt"
+      "EVFileSuffices": ["gohit.txt",
+                         "goomission.txt",
+                         "comission.txt",
+                         "correct.txt"
       ],
-      "ConfoundSuffix": "_confounds.tsv",
+      "ConfoundSuffix": "confounds.tsv",
       "OutputDir": "./test_l1feat"
     }
   ],
