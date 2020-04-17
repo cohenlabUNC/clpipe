@@ -255,11 +255,15 @@ def _fmri_postprocess_image(config, file, task = None, tr=None, beta_series = Fa
 
         logging.debug('Memory Usage After Spectral Interpolation GC:' +str(psutil.virtual_memory().total >> 30) +' GB')
 
+
+
         if filter_toggle:
             logging.info('Filtering Data Now')
             data = clpipe.postprocutils.utils.apply_filter(filt, data)
         if regress_toggle:
             logging.info('Regressing Data Now')
+            logging.debug(str(confounds.shape))
+            logging.debug(str(data.shape))
             data = clpipe.postprocutils.utils.regress(confounds, data)
         if scrub_toggle:
             logging.info('Scrubbing data Now')
@@ -448,7 +452,8 @@ def _regression_prep(config, confound_filepath):
         logging.debug(str(confounds_mat.shape))
 
     fd = confounds[config.config["PostProcessingOptions"]["ScrubVar"]]
-
+    confounds_mat = confounds_mat.fillna(0)
+    confounds_mat = numpy.asarray(confounds_mat)
     return confounds_mat, fd
 
 
@@ -547,8 +552,7 @@ def _notch_filter_fd(config, confounds_filepath, tr, drop_tps = None):
     confounds = confounds.fillna(0)
     if drop_tps is not None:
         confounds = confounds.iloc[:(confounds.shape[0]-drop_tps)]
-    reg_labels = config.config['PostProcessingOptions']['RegressionParameters']
-    confounds = numpy.array(confounds[reg_labels["MotionParams"]])
+    confounds = numpy.array(confounds[config.config["PostProcessingOptions"]["MotionVars"]])
     band = config.config['PostProcessingOptions']['RespNotchFilterBand']
     filt_fd = clpipe.postprocutils.utils.notch_filter(confounds, band, tr)
     return filt_fd

@@ -36,27 +36,38 @@ def create_json_codebook(config_file = None, file_path = None, debug = False):
             raise(FileNotFoundError("Did not find a participants.tsv file in the BIDS directory."))
 
 
-    data = pd.read_csv(file_path, delimiter="\t")
+    data = pd.read_csv(file_path, delimiter=",")
 
-    possible_cat = [np.int64, np.object]
+    possible_cat = [np.int64, np.object, np.float64]
     data_dict = {}
     for column in data.columns:
 
         if data.dtypes[column] in possible_cat:
             if(len(data[column].unique()) <= 12):
-                levels_dict = dict(zip(data[column].unique().astype(str), ["FILL IN"]*len(data[column].unique())))
+                levels_dict = dict(zip(sorted(data[column].unique().astype(str)), ["FILL IN"]*len(data[column].unique())))
                 print(levels_dict)
 
                 item_dict = {"LongName": "FILL IN",
                              "Description": "FILL IN",
                              "Levels": levels_dict,
                              "TermURL": "FILL IN"}
-        else:
+            else:
                 item_dict = {"LongName": "FILL IN",
                              "Description": "FILL IN",
                              "Units": "FILL IN",
                              "TermURL": "FILL IN"}
+        else:
+            item_dict = {"LongName": "FILL IN",
+                         "Description": "FILL IN",
+                         "Units": "FILL IN",
+                         "TermURL": "FILL IN"}
+
+        if "Levels" in item_dict.keys():
+            if "nan" in item_dict['Levels'].keys():
+                del item_dict['Levels']["nan"]
         data_dict[column] = item_dict
+
+
 
     ext = os.path.splitext(file_path)[1]
     output_file = file_path.replace(ext, ".json")
