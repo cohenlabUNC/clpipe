@@ -41,7 +41,7 @@ def _glm_l1_propagate(l1_block, glm_setup_options):
     output_ind = [i for i,e in enumerate(fsf_file_template) if "set fmri(outputdir)" in e]
     image_files_ind = [i for i,e in enumerate(fsf_file_template) if "set feat_files" in e]
     ev_file_inds = [i for i,e in enumerate(fsf_file_template) if "set fmri(custom" in e]
-    confound_file_ind = [i for i,e in enumerate(fsf_file_template) if "set fmri(confoundevs)" in e]
+    confound_file_ind = [i for i,e in enumerate(fsf_file_template) if "set confoundev_files(1)" in e]
     regstandard_ind = [i for i, e in enumerate(fsf_file_template) if "set fmri(regstandard)" in e]
     tps_inds = [i for i, e in enumerate(fsf_file_template) if "set fmri(npts)" in e]
     if l1_block['ImageIncludeList'] is not "" and l1_block['ImageExcludeList'] is not "":
@@ -84,7 +84,7 @@ def _glm_l1_propagate(l1_block, glm_setup_options):
             if glm_setup_options['ReferenceImage'] is not "":
                 new_fsf[regstandard_ind[0]] = "set fmri(regstandard) \"" + os.path.abspath(glm_setup_options['ReferenceImage']) + "\"\n"
             if l1_block['ConfoundSuffix'] is not "":
-                new_fsf[confound_file_ind[0]] = "set fmri(confoundevs) \"" + os.path.abspath(ev_conf['Confounds'][0]) + "\"\n"
+                new_fsf[confound_file_ind[0]] = "set confoundev_files(1) \"" + os.path.abspath(ev_conf['Confounds'][0]) + "\"\n"
 
             for i, e in enumerate(ev_conf['EVs']):
                 new_fsf[ev_file_inds[i]] = "set fmri(custom" + str(i +1) + ") \"" + os.path.abspath(e) + "\"\n"
