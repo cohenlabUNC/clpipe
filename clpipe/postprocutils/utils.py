@@ -1,8 +1,8 @@
-import numpy
 import pkg_resources
 import sys
 import getpass
 sys.path.insert(0,"/nas/longleaf/home/"+getpass.getuser()+"/.local/lib/python3.6/site-packages")
+import numpy
 from scipy.signal import butter, sosfilt, iirnotch, filtfilt
 import logging
 
