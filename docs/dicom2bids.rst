@@ -129,7 +129,7 @@ This configuration file looks for all scans that have "_srt" anywhere in the Ser
 
 Note that for fieldmaps, one can use the "intendedFor" option to specify which BOLD images a fieldmap should be used for. There are two important points here. The first is that the "intendedFor" field is 0-indexed, in that 0 corresponds to the first entry in the converstion config, 1 corresponds to the second entry, etc, etc. In the example above, the fieldmap is intended for the resting state scan and the GNG regular scan. Additionally, the intended for field is not sensitive to multiple runs. For example, if there are 2 resting state scans, and therefore the file names look like "sub-9999_task-rest_run-01_bold.nii.gz" and "sub-9999_task-rest_run-02_bold.nii.gz" after conversion, the IntendedFor field in the fieldmap's JSON will list "sub-9999_task-rest_bold.nii.gz" This is due to an issue with the dcm2bids package, and will result in the fieldmaps not being used. The workaround is to list each run explicitly in your conversion configuration, or to modify each fieldmap JSON after it is generated.
 
-Finally, there are several varieties of fieldmaps allowable in the BIDS format, each needing a different set of conversion config entries. For a detailed look at these types, please see `the BIDS Specification<https://bids-specification.readthedocs.io/en/stable/04-modality-specific-files/01-magnetic-resonance-imaging-data.html#fieldmap-data>`_.
+Finally, there are several varieties of fieldmaps allowable in the BIDS format, each needing a different set of conversion config entries. For a detailed look at these types, please see `the BIDS Specification <https://bids-specification.readthedocs.io/en/stable/04-modality-specific-files/01-magnetic-resonance-imaging-data.html#fieldmap-data>`_.
 
 
 Conversion Commands
@@ -149,7 +149,7 @@ To obtain the information from the header, dcm2bids has a handy helper function:
 
             Documentation at https://github.com/cbedetti/Dcm2Bids
 
-This command will create convert an entire folder's data, and create a temporary directory containing all the converted files, and more importantly the sidecar jsons. These jsons contain the information needed to update the conversion configuration file.
+This command will create convert an entire folder's data, and create a temporary directory containing all the converted files, and more importantly the sidecar JSONs. These JSONs contain the information needed to update the conversion configuration file.
 
 Once you have updated your conversion configuration file, you can convert your entire dataset with:
 
