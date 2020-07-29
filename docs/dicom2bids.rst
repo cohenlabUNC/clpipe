@@ -113,14 +113,14 @@ The other important ingredient in converting your DICOMs to BIDS format is the c
 				"SeriesDescription": "*p2_AP"
 			}
 		},
-        {
-            "dataType": "fmap",
-            "modalityLabel": "epi",
-            "criteria":{
-                "SeriesDescription": "*_resting_PA*"
-            }
-            "intendedFor": [2,3]
-        }
+        	{
+            		"dataType": "fmap",
+            		"modalityLabel": "epi",
+            		"criteria":{
+                		"SeriesDescription": "*_resting_PA*"
+            	},
+            		"intendedFor": [2,3]
+        	}
 		
 		]
 	}
