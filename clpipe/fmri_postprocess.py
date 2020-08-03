@@ -2,9 +2,7 @@ import os
 import glob
 import click
 import pandas
-from nipy import load_image
-from nipy.core.image.image import Image
-from nipy import save_image
+import nibabel as nib
 from .batch_manager import BatchManager, Job
 from .config_json_parser import ClpipeConfigParser
 import json
@@ -204,10 +202,10 @@ def _fmri_postprocess_image(config, file, task = None, tr=None, beta_series = Fa
                 image_json = json.load(json_path)
             tr = float(image_json['RepetitionTime'])
         logging.info('TR found: ' + str(tr))
-        image = load_image(file)
-        data = image.get_data()
+        image = nib.load(file)
+        data = image.get_fdata()
         orgImageShape = data.shape
-        coordMap = image.coordmap
+        coordMap = image.affine
         data = data.reshape((numpy.prod(numpy.shape(data)[:-1]), data.shape[-1]))
         data = numpy.transpose(data)
         if drop_tps is not None:
@@ -274,11 +272,11 @@ def _fmri_postprocess_image(config, file, task = None, tr=None, beta_series = Fa
         data = numpy.transpose(data)
         data = data.reshape(orgImageShape)
         data32 = numpy.float32(data)
-        out_image = Image(data32, coordMap)
+        out_image = nib.Nifti1Image(data32, coordMap)
 
         output_file_path = _build_output_directory_structure(config, file)
         logging.info('Saving post processed data to ' + output_file_path)
-        save_image(out_image, output_file_path)
+        nib.save(out_image, output_file_path)
 
         if scrub_toggle:
             file_name = os.path.basename(file)
@@ -325,10 +323,10 @@ def _fmri_postprocess_image(config, file, task = None, tr=None, beta_series = Fa
                 confounds = clpipe.postprocutils.utils.apply_filter(filt, confounds)
             filt_ev_array, valid_events = _ev_mat_prep(events_file, filt, tr, ntp, beta_series_options)
 
-            image = load_image(file)
-            data = image.get_data()
+            image = nib.load(file)
+            data = image.get_fdata()
             orgImageShape = data.shape
-            coordMap = image.coordmap
+            coordMap = image.affine
             data = data.reshape((numpy.prod(numpy.shape(data)[:-1]), data.shape[-1]))
             data = numpy.transpose(data)
             data = (data - data.mean(axis=0))
@@ -337,10 +335,10 @@ def _fmri_postprocess_image(config, file, task = None, tr=None, beta_series = Fa
             beta_series_dims = orgImageShape[:-1]
             beta_series_dims =  beta_series_dims + (len(valid_events),)
             beta_3d = beta_image_2d.transpose().reshape(beta_series_dims)
-            beta_image = Image(beta_3d, coordMap)
+            beta_image = nib.Nifti1Image(beta_3d, coordMap)
             output_file_path = _build_output_directory_structure(config, file, beta_series)
             events_output = os.path.splitext(os.path.splitext(output_file_path)[0])[0] + "_usedevents.tsv"
-            save_image(beta_image, output_file_path)
+            nib.save(beta_image, output_file_path)
             valid_events.to_csv(events_output, sep = ' ')
         else:
             logging.info("Did not find an events file for " + file)
