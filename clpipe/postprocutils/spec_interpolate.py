@@ -1,7 +1,7 @@
 import numpy
 import math
 import logging
-def spec_inter(arr, tr, ofreq, scrub_mask, hifreq, binSize=5000):
+def spec_inter(arr, tr, ofreq, scrub_mask, hifreq, binSize):
     scrub_mask = numpy.asarray(scrub_mask)
     goodtpindex = numpy.asarray([[i for i, e in enumerate(scrub_mask) if e == 0]])
     badtpindex = numpy.asarray([[i for i, e in enumerate(scrub_mask) if e == 1]])
