@@ -205,6 +205,7 @@ def _fmri_postprocess_image(config, file, task = None, tr=None, beta_series = Fa
         logging.info('TR found: ' + str(tr))
         image = nib.load(file)
         data = image.get_fdata()
+        data = data.astype(numpy.float32)
         orgImageShape = data.shape
         coordMap = image.affine
         data = data.reshape((numpy.prod(numpy.shape(data)[:-1]), data.shape[-1]))
@@ -326,6 +327,7 @@ def _fmri_postprocess_image(config, file, task = None, tr=None, beta_series = Fa
 
             image = nib.load(file)
             data = image.get_fdata()
+            data = data.astype(numpy.float32)
             orgImageShape = data.shape
             coordMap = image.affine
             data = data.reshape((numpy.prod(numpy.shape(data)[:-1]), data.shape[-1]))
