@@ -14,7 +14,7 @@ import gc
 import psutil
 import sys
 from .error_handler import exception_handler
-import nipy.modalities.fmri.hrf
+#import nipy.modalities.fmri.hrf
 import re
 
 @click.command()
@@ -51,6 +51,7 @@ def fmri_postprocess(config_file=None, subjects=None, target_dir=None, target_su
                           log_dir)
     config.validate_config()
     if beta_series:
+          raise ValueError("At this time, the beta series functionality is no longer working due to incompatibilities between packages.")
           output_type = 'BetaSeriesOptions'
     else:
           output_type = 'PostProcessingOptions'
@@ -363,7 +364,7 @@ def _ev_mat_prep(event_file, filt, TR, ntp, config_block):
     timeCourse = numpy.arange(0, 32 + TR / 16.0, (TR / 16.0))
     time_up = numpy.arange(0, TR * ntp, TR / 16.0)
     n_up = len(time_up)
-    hrf = nipy.modalities.fmri.hrf.spm_hrf_compat(timeCourse)
+    hrf = 0
     indexSample = numpy.arange(0, TR * ntp / (TR / 16.0), TR / (TR / 16.0))
     indexSample = indexSample.astype("int")
     eventArray = numpy.zeros((ntp, len(valid_trials)))
