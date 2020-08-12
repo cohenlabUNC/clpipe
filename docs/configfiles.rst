@@ -13,8 +13,10 @@ This command will create a default configuration file with whatever name you spe
 .. code-block :: json
 
    {
-	"ConfigTitle": "Default Configuration File",
+	"ProjectTitle": "A Neuroimaging Project",
+	"Authors/Contributors": "",
 	"ProjectDirectory": "",
+	"EmailAddress": "",
 	"DICOMToBIDSOptions": {
 		"DICOMDirectory": "",
 		"BIDSDirectory": "",
@@ -29,42 +31,48 @@ This command will create a default configuration file with whatever name you spe
 		"BIDSDirectory": "",
 		"WorkingDirectory": "",
 		"OutputDirectory": "",
-		"FMRIPrepPath": "/proj/hng/singularity_imgs/fmriprep_1.3.2.simg",
+		"FMRIPrepPath": "/proj/hng/singularity_imgs/fmriprep_1.5.3.sif",
 		"FreesurferLicensePath": "/proj/hng/singularity_imgs/license.txt",
 		"CommandLineOpts": "",
+		"TemplateFlowToggle": true,
+		"TemplateFlowPath": "",
+		"TemplateFlowTemplates": ["MNI152NLin2009cAsym", "MNI152NLin6Asym", "OASIS30ANTs", "MNIPediatricAsym", "MNIInfant"],
+		"FMapCleanupROIs": 3,
 		"FMRIPrepMemoryUsage": "20000",
 		"FMRIPrepTimeUsage": "16:0:0",
+		"NThreads": "8",
         "LogDirectory": ""
 	},
 	"PostProcessingOptions": {
 		"TargetDirectory": "",
-		"TargetSuffix": "preproc_bold.nii.gz",
+		"TargetSuffix": "space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz",
 		"OutputDirectory": "",
 		"OutputSuffix": "",
 		"ConfoundSuffix": "desc-confounds_regressors.tsv",
+		"DropCSV": "",
 		"Regress": true,
-		"RegressionParameters": {
-			  "MotionParams": ["trans_x","trans_y" ,"trans_z","rot_x","rot_z","rot_y"],
-			  "WhiteMatter": "white_matter",
-			  "CSF": "csf",
-  			  "FDLabel": "framewise_displacement",
-			  "GlobalSignal": "global_signal"
-		},
-		"NuisanceRegression": "QuadLagged",
-		"WhiteMatter": true,
-		"CSF": true,
-		"GlobalSignalRegression": true,
+	    "Confounds": ["trans_x", "trans_y", "trans_z", "rot_x", "rot_y", "rot_z",
+   		 "csf", "white_matter", "global_signal", "a_comp_cor.*"],
+		"ConfoundsQuad": ["trans_x", "trans_y", "trans_z", "rot_x", "rot_y", "rot_z",
+    	 "csf", "white_matter", "global_signal"],
+		"ConfoundsDerive": ["trans_x", "trans_y", "trans_z", "rot_x", "rot_y", "rot_z",
+    	 "csf", "white_matter", "global_signal"],
+		"ConfoundsQuadDerive": ["trans_x", "trans_y", "trans_z", "rot_x", "rot_y", "rot_z",
+    	 "csf", "white_matter", "global_signal"],
 		"FilteringHighPass": 0.008,
 		"FilteringLowPass": -1,
 		"FilteringOrder": 2,
 		"OversamplingFreq": 4,
 		"PercentFreqSample": 1,
 		"Scrubbing": true,
+		"ScrubVar": "framewise_displacement",
 		"ScrubFDThreshold": 0.3,
-		"ScrubAhead": 2,
-		"ScrubBehind": 2,
-		"ScrubContig": 4,
-		"SpatialSmoothing": "SUSAN",
+		"ScrubAhead": 1,
+		"ScrubBehind": 1,
+		"ScrubContig": 2,
+		"RespNotchFilter": true,
+		"MotionVars": ["trans_x", "trans_y", "trans_z", "rot_x", "rot_y", "rot_z"],
+		"RespNotchFilterBand":[0.31,0.43],
 		"PostProcessingMemoryUsage": "20000",
 		"PostProcessingTimeUsage": "8:0:0",
 		"NThreads": "1",
@@ -82,10 +90,10 @@ This command will create a default configuration file with whatever name you spe
 		"NuisanceRegression": "QuadLagged",
 		"WhiteMatter": true,
 		"CSF": true,
-		"GlobalSignalRegression": false,
+		"GlobalSignalRegression": true,
 		"FilteringHighPass": 0.008,
-		"FilteringLowPass": 0.1,
-		"FilteringOrder": 12,
+		"FilteringLowPass": -1,
+		"FilteringOrder": 2,
 		"TaskSpecificOptions": [
 			{
 				"Task": "",
@@ -94,7 +102,8 @@ This command will create a default configuration file with whatever name you spe
 			}
 		],
       "LogDirectory": ""
-    },"SUSANOptions": {
+    },
+	"SUSANOptions": {
 		"TargetDirectory": "",
 		"TargetSuffix": "preproc_bold.nii.gz",
 		"OutputDirectory": "",
@@ -144,6 +153,8 @@ This command will create a default configuration file with whatever name you spe
 		"TargetSuffix": "",
 		"OutputDirectory": "",
 		"Atlases": ["power"],
+		"RequireMask": true,
+		"PropVoxels": 0.5,
         "MemoryUsage":"3000",
         "TimeUsage": "2:0:0",
         "NThreads": "1",
@@ -151,7 +162,7 @@ This command will create a default configuration file with whatever name you spe
 	},
 	"RunLog": [],
 	"BatchConfig": "slurmUNCConfig.json"
-    }
+}
 
 All of these fields are required and have what the designers of clpipe consider to be reasonable defaults for processing. Additionally, users at UNC-CH on the Longleaf cluster with access to the HNG group should be able to use the default options with no change. Other users will have to modify several fields. We describe the various sections of the config now.
 
@@ -174,6 +185,10 @@ FMRIPrep Options
     * ``WorkingDirectory`` Where you want your working files to go. Use absolute paths. For Longleaf users, use /pine/scr/<o>/<n>/<onyen>, where <onyen> is your onyen, and <o> <n> are the first and second letters of your onyen respectively.
     * ``FMRIPrepPath:`` Where the fMRIprep Singularity image is.
     * ``FreesurferLicensePath:`` Where your Freesurfer license .txt file is.
+    * ``TemplateFlowToggle:`` This flag activates the use of templateflow, which is used in later versions of FMRIPREP,
+    * ``TemplateFlowPath``: Where the templateflow template folder is located,
+    * ``TemplateFlowTemplates``: Which templates (standard spaces) should clpipe download for use in templateflow?
+    * ``FMapCleanupROIs``: How many timepoints should the fmap_cleanup function extract from blip-up/blip-down field maps, set to -1 to disable.
     * ``CommandLineOpts:`` Additional arguments to pass to FMRIprep
     * ``FMRIPrepMemoryUsage:`` How much memory in RAM each subject's preprocessing will use, in Mbs. Default is 20000Mb or 20Gb.
     * ``FMRIPrepTimeUsage:`` How much time on the cluster FMRIPrep is allowed to use. Defaults to 16 hours.
