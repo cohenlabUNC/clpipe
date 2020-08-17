@@ -6,9 +6,12 @@ from .config_json_parser import ClpipeConfigParser, GLMConfigParser
 import logging
 import sys
 from .error_handler import exception_handler
-import pkg_resources
-pkg_resources.require("numpy==1.18.5")
-pkg_resources.require("scipy==1.2.2")
+import site
+path1 = sys.path
+path1.insert(0, site.USER_SITE)
+sys.path = path1
+import nibabel
+sys.path = path1[1:]
 import numpy
 import nipype.interfaces.fsl as fsl  # fsl
 import nipype.pipeline.engine as pe  # pypeline engine
