@@ -4,7 +4,6 @@ import json
 import os
 import collections
 import click
-from jsonschema import validate
 from pkg_resources import resource_stream, resource_filename
 import shutil
 
