@@ -6,7 +6,7 @@ Most command line functions in clpipe can take a configuration file in the '-con
 
 .. code-block:: console
 
-    grab_config_file -outputFile <adirectory/yourfilename>.json
+    get_config_file -outputFile <adirectory/yourfilename>.json
 
 This command will create a default configuration file with whatever name you specified. The default configuration file looks like this
 
