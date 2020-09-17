@@ -465,7 +465,7 @@ def _find_json(config, filepath):
     components = sans_ext.split('_')
 
     jsons = glob.glob(os.path.join(config.config['FMRIPrepOptions']['BIDSDirectory'], '**', '*.json'), recursive=True)
-
+    logging.debug(jsons)
     task = [task_name for task_name in components if "task-" in task_name][0]
 
     top_level_json = [json for json in jsons if task + "_bold.json" in json]
