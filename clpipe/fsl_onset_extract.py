@@ -33,7 +33,7 @@ def fsl_onset_extract(config_file=None, glm_config_file = None, debug = None):
 
     search_string = os.path.abspath(
         os.path.join(config.config["FMRIPrepOptions"]['BIDSDirectory'], "**",
-                     "*" +"task-"+ glm_config.config["GLMSetupOptions"]['TaskName'] +"*"+ glm_config.config["Level1Onsets"]['EventFileSuffix']))
+                     "*" +"task-"+ glm_config.config["GLMSetupOptions"]['TaskName']+"*"+ glm_config.config["Level1Onsets"]['EventFileSuffix']))
 
     files = glob.glob(search_string, recursive=True)
 
@@ -47,7 +47,7 @@ def fsl_onset_extract(config_file=None, glm_config_file = None, debug = None):
 
             onsets = temp['onset']/glm_config.config["Level1Onsets"]["TimeConversionFactor"]
             duration = temp['duration']/glm_config.config["Level1Onsets"]["TimeConversionFactor"]
-            p_response  = numpy.repeat(np.array[1], len(onsets))
+            p_response  = numpy.repeat(np.array([1]), len(onsets))
             if glm_config.config["Level1Onsets"]["ParametricResponseVariable"] != "":
                 p_response = temp[glm_config.config["Level1Onsets"]["ParametricResponseVariable"]]
 
