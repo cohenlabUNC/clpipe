@@ -49,6 +49,7 @@ setup(name='clpipe',
       glm_setup=clpipe.glm_setup:glm_setup
       glm_l1_preparefsf=clpipe.glm_l1:glm_l1_preparefsf
       glm_l2_preparefsf=clpipe.glm_l2:glm_l2_preparefsf
+      fsl_onset_extract=clpipe.fsl_onset_extract:fsl_onset_extract
       ''',
       zip_safe=False
       )

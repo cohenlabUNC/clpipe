@@ -37,6 +37,14 @@
     "NThreads": "1",
     "LogDirectory": ""
   },
+  "Level1Onsets": {
+    "EventFileSuffix": "events.tsv",
+    "TrialTypeVariable": "trial_type",
+    "TrialTypeToExtract": [],
+    "TimeConversionFactor": 1000,
+    "ParametricResponseVariable": "",
+    "EVDirectory": ""
+  },
   "Level1Setups": [
     { "ModelName": "example_L1",
       "TargetDirectory": "./data_BIDS",
