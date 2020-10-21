@@ -32,7 +32,7 @@ def fsl_onset_extract(config_file=None, glm_config_file = None, debug = None):
     glm_config = GLMConfigParser(glm_config_file)
 
     search_string = os.path.abspath(
-        os.path.join(glm_config.config["FMRIPrepOptions"]['BIDSDirectory'], "**",
+        os.path.join(config.config["FMRIPrepOptions"]['BIDSDirectory'], "**",
                      "*" +"task-"+ glm_config.config["GLMSetupOptions"]['TaskName'] +"*"+ glm_config.config["Level1Onsets"]['EventFileSuffix']))
 
     files = glob.glob(search_string, recursive=True)
