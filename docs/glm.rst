@@ -8,8 +8,9 @@ clpipe includes functions to help you set up and run general linear models (GLM)
 Currently, clpipe includes the following commands:
 
 1. :code:`glm_setup` This function serves to resample your fmriprepped data into a standard resolution and image size, apply a brain mask (calculated by FMRIprep), optionally perform SUSAN smoothing, and drop timepoints from the beginning and ending of the images. Note: The resampling is not registration and this :code:`glm_setup` function requires that you have already preprocessed your data using FMRIprep.
-2. :code:`glm_l1_preparefsfs` This function takes an fsf file that you have generated as a prototype, and copies/modifies it for use with the images in your dataset. Multiple different L1 fsfs can be used, and images can be excluded or explicitly included in a given L1. See below for details on the glm configuration file.
-3. :code:`glm_l2_preparefsfs` This function takes an fsf file, and a csv sheet that contains information about which image goes with which subject, and copies/modifies the fsf file for use with your dataset. Similarly to L1, multiple L2 fsf files can be specified. See below for details on how to do this.
+2. :code:`fsl_onset_extract` This function will extract task trial onset, duration and an optional parametric variable from the BIDS formatted events files, and constructs a set of FSL 3-column EV files.
+3. :code:`glm_l1_preparefsfs` This function takes an fsf file that you have generated as a prototype, and copies/modifies it for use with the images in your dataset. Multiple different L1 fsfs can be used, and images can be excluded or explicitly included in a given L1. See below for details on the glm configuration file.
+4. :code:`glm_l2_preparefsfs` This function takes an fsf file, and a csv sheet that contains information about which image goes with which subject, and copies/modifies the fsf file for use with your dataset. Similarly to L1, multiple L2 fsf files can be specified. See below for details on how to do this.
 
 
 ==================================
@@ -60,6 +61,18 @@ Preamble
     * ``TimeUsage``: Time usage, defaults to 1 hour
     * ``NThreads``: Number of processing threads, defaults to 1
     * ``LogDirectory``: Log directory, defaults to ``glm_setup_logs`` in the project logs directory.
+
+Level 1 Onsets
+==============
+
+The entry ``Level1Onsets`` contains the specification for extracting the onset timing files and transforming them into FSL three column format EV files.
+
+* ``EventFileSuffix``: Suffix for the BIDS format event file. Unless your data is not in BIDS format, this likely shouldn't be changed.
+* ``TrialTypeVariable``: The name of the variable that contains information as to the trial type. Defaults to trial_type, which is a BIDS standard header for the events files, but can be changed to use any variable.
+* ``TrialTypeToExtract``: The values of the trial type variable to extract. A warning will be thrown if there are no trials with a given trial type (which might indicate a misspelling or a mistake in this field)
+* ``TimeConversionFactor``: The factor the onset/duration values need to be divided by to put them into units of seconds. For example, if your onsets are in milliseconds, this factor would be 1000. If in seconds, the factor is 1.
+* ``ParametricResponseVariable``: The name of the variable in the events file that corresponds to the third column of the FSL 3 column format EV file. If left empty (""), this defaults to 1
+* ``EVDirectory``: What directory to output the EV files to.
 
 Level 1 Setups
 ==============
@@ -121,6 +134,22 @@ The L2 subject file maps each image onto a specific L2 model setup entry and ont
       -debug                 Print detailed processing information and traceback
                          for errors.
       --help                 Show this message and exit.
+
+
+``fsl_onset_extract`` Command:
+==============================
+
+.. code-block:: console
+
+ fsl_onset_extract [OPTIONS]
+
+ Options:
+   -config_file FILE      Use a given configuration file.  [required]
+   -glm_config_file FILE  Use a given GLM configuration file.  [required]
+   -debug                 Print detailed processing information and traceback
+                          for errors.
+
+   --help                 Show this message and exit.
 
 
 ``glm_l1_preparefsf`` Command:
