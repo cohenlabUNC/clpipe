@@ -45,7 +45,7 @@ def fsl_onset_extract(config_file=None, glm_config_file = None, debug = None):
         for trial_type in target_trials:
             temp = data.loc[data[glm_config.config["Level1Onsets"]["TrialTypeVariable"]] == trial_type]
             if len(temp) == 0:
-                logging.warning("Trial Type: ",trial_type, ", has no entries. If this is unexpected, check your GLM config file for misspellings/incorrect entries in the ['Level1Onsets']['TrialTypeToExtract']")
+                logging.warning("Trial Type: "+ trial_type + ", has no entries. If this is unexpected, check your GLM config file for misspellings/incorrect entries in the ['Level1Onsets']['TrialTypeToExtract']")
             onsets = temp['onset']/glm_config.config["Level1Onsets"]["TimeConversionFactor"]
             duration = temp['duration']/glm_config.config["Level1Onsets"]["TimeConversionFactor"]
             p_response  = numpy.repeat(np.array([1]), len(onsets))
