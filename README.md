@@ -1,11 +1,12 @@
 # clpipe 
 [![DOI](https://zenodo.org/badge/165096390.svg)](https://zenodo.org/badge/latestdoi/165096390)
 
-Python pipeline for neuroimaging data. Draft documentation at https://clpipe.readthedocs.io/en/latest/index.html
+Python pipeline for neuroimaging data. Documentation at https://clpipe.readthedocs.io/en/latest/index.html
 
 
-This pipeline is under development, and should not be used quite yet. If you are interested in contributing, please get in contact with Teague Henry (trhenry@email.unc.edu)
+This pipeline is now in an initial release. If you run into issues, find bugs, or have feature requests, please create an issue in this repository. If you have longer questions about the pipeline, or specific questions about the design choices, please get in contact with the creator of this pipeline, Teague Henry (henrytr3@upmc.edu)
 
+If you use clpipe to process data for a publication, please cite the Zenodo repository linked above. A manuscript describing clpipe is being prepared, and once published, will be the citation for the pipeline.
 
 ## Installation Guide for UNC-CH
 
