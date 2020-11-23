@@ -17,7 +17,7 @@
 		"BIDSDirectory": "",
 		"WorkingDirectory": "",
 		"OutputDirectory": "",
-		"FMRIPrepPath": "/proj/hng/singularity_imgs/fmriprep_1.5.3.sif",
+		"FMRIPrepPath": "/proj/hng/singularity_imgs/fmriprep-20.2.1.simg",
 		"FreesurferLicensePath": "/proj/hng/singularity_imgs/license.txt",
 		"CommandLineOpts": "",
 		"TemplateFlowToggle": true,
