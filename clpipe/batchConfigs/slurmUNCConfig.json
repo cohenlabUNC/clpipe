@@ -1,5 +1,5 @@
 {
-  "SubmissionHead": "sbatch -p snp -q snp_access",
+  "SubmissionHead": "sbatch",
   "SubmissionOptions": [{
     "command": "-n",
     "args": "1"
