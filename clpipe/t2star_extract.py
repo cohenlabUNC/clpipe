@@ -17,7 +17,7 @@ from nipype import MapNode ,Node, Workflow
 @click.option('-onlymean', is_flag = True, default = False, help = 'Return the average of all extracted T2* images per subject only. Not including this flag returns individual T2* images per scan.')
 @click.option('-submit', is_flag = True, default=False, help = 'Flag to submit commands to the HPC.')
 @click.option('-debug', is_flag = True, default=False, help = 'Print detailed  traceback for errors.')
-def t2star_extract(config_file = None, subjects = None, task = None, submit = None, debug = None):
+def t2star_extract(config_file = None, subjects = None, task = None,onlymean = None, submit = None, debug = None):
     if not debug:
         sys.excepthook = exception_handler
         logging.basicConfig(level=logging.INFO)

@@ -157,6 +157,16 @@
 		"Neighborhood": "vertices",
 		"LogDirectory": ""
 	},
+	"T2StarExtraction": {
+		"TargetDirectory": "",
+		"TargetSuffix": "",
+		"MaskDirectory": "",
+		"MaskSuffix":  "space-MNI152NLin2009cAsym_desc-brain_mask.nii.gz",
+		"MaskFileOverride": "",
+		"OutputDirectory": "",
+		"OutputSuffix": "",
+		"LogDirectory": ""
+	},
 	"RunLog": [],
 	"BatchConfig": "slurmUNCConfig.json"
 }
