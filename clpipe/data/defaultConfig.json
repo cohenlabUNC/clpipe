@@ -148,11 +148,12 @@
 	},
 	"ReHoExtraction": {
 		"TargetDirectory": "",
-		"TargetSuffix": "space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz",
+		"TargetSuffix": "",
+		"MaskDirectory": "",
 		"MaskSuffix":  "space-MNI152NLin2009cAsym_desc-brain_mask.nii.gz",
 		"MaskFileOverride": "",
 		"OutputDirectory": "",
-		"OutputSuffix": "space-MNI152NLin2009cAsym_desc-ReHo.nii.gz",
+		"OutputSuffix": "",
 		"Neighborhood": "vertices",
 		"LogDirectory": ""
 	},
