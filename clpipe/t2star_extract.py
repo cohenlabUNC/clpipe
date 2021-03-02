@@ -55,26 +55,26 @@ def t2star_extract(config_file = None, subjects = None, task = None,onlymean = N
 
 
 
-        mean_node = MapNode(afni.ROIStats, iterfield=['in_file', 'mask_file'])
+        mean_node = MapNode(afni.ROIStats, name = "Mean Calc", iterfield=['in_file', 'mask_file'])
         mean_node.inputs.stat = "mean"
         mean_node.inputs.in_file = subject_files
         mean_node.inputs.mask_file = subject_masks
         mean_node.inputs.format1D = True
 
-        sd_node = MapNode(afni.ROIStats, iterfield=['in_file', 'mask_file'])
+        sd_node = MapNode(afni.ROIStats, name = "SD Calc",  iterfield=['in_file', 'mask_file'])
         sd_node.inputs.stat = "sigma"
         sd_node.inputs.in_file = subject_files
         sd_node.inputs.mask_file = subject_masks
         sd_node.inputs.format1D = True
 
-        zscore_node = MapNode(afni.Calc, iterfield=['in_file_a', 'in_file_b', 'in_file_c'])
+        zscore_node = MapNode(afni.Calc,name = "Z-Score Transform", iterfield=['in_file_a', 'in_file_b', 'in_file_c'])
         zscore_node.inputs.expr = "(a-b)/c"
         zscore_node.inputs.in_file_a = subject_files
 
-        merge_node = Node(fsl.utils.Merge)
+        merge_node = Node(fsl.utils.Merge, name = "Merge Images")
         merge_node.inputs.dimension = "t"
 
-        average_node = Node(afni.TStat)
+        average_node = Node(afni.TStat, name = "Average Across Images")
         average_node.inputs.args = "-nzmean"
         average_node.inputs.outputtype = "NIFTI_GZ"
 
