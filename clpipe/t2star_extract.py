@@ -71,7 +71,7 @@ def t2star_extract(config_file = None, subjects = None, task = None,onlymean = N
         zscore_node.inputs.in_file_a = subject_files
         zscore_node.inputs.outputtype = "NIFTI_GZ"
         merge_node = Node(afni.TCat(), name = "Merge_Images")
-
+        merge_node.inputs.outputtype = "NIFTI_GZ"
         average_node = Node(afni.TStat(), name = "Average_Across_Images")
         average_node.inputs.args = "-nzmean"
         average_node.inputs.outputtype = "NIFTI_GZ"
