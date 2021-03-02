@@ -32,7 +32,7 @@ def reho_extract(config_file = None, subjects = None, task = None, submit = None
     else:
         subjectstring = " , ".join(subjects)
         sublist = subjects
-
+    logging.debug(sublist)
     batch_manager = BatchManager(config.config['BatchConfig'], config.config["ReHoExtraction"]['LogDirectory'])
     for sub in sublist:
         search_string = os.path.abspath(
@@ -41,7 +41,7 @@ def reho_extract(config_file = None, subjects = None, task = None, submit = None
         subject_files = glob.glob(search_string, recursive=True)
         if task is not None:
             subject_files = [x for x in subject_files if "task-"+task in x]
-            logging.debug(subject_files)
+        logging.debug(subject_files)
         for file in subject_files:
             reho.inputs.in_file = file
             out_file = os.path.basename(file).replace(config.config["ReHoExtraction"]["TargetSuffix"],config.config["ReHoExtraction"]["OutputSuffix"])
