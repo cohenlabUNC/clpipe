@@ -51,6 +51,7 @@ setup(name='clpipe',
       glm_l2_preparefsf=clpipe.glm_l2:glm_l2_preparefsf
       fsl_onset_extract=clpipe.fsl_onset_extract:fsl_onset_extract
       reho_extract=clpipe.reho_extract:reho_extract
+      t2star_extract=clpipe.t2star_extract:t2star_extract
       ''',
       zip_safe=False
       )
