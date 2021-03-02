@@ -53,6 +53,7 @@ def reho_extract(config_file = None, subjects = None, task = None, submit = None
                 reho.inputs.mask_file = config.config["ReHoExtraction"]["MaskFileOverride"]
             else:
                 mask_file = file.replace(config.config["ReHoExtraction"]["TargetSuffix"],config.config["ReHoExtraction"]["MaskSuffix"])
+                mask_file =mask_file.replace(config.config["ReHoExtraction"]["TargetDirectory"],config.config["ReHoExtraction"]["MaskDirectory"])
                 reho.inputs.mask_file = mask_file
 
             if config.config["ReHoExtraction"]["Neighborhood"] not in ["faces", "edges", "vertices"]:
