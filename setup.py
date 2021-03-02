@@ -50,6 +50,7 @@ setup(name='clpipe',
       glm_l1_preparefsf=clpipe.glm_l1:glm_l1_preparefsf
       glm_l2_preparefsf=clpipe.glm_l2:glm_l2_preparefsf
       fsl_onset_extract=clpipe.fsl_onset_extract:fsl_onset_extract
+      reho_extract=clpipe.reho_extract:reho_extract
       ''',
       zip_safe=False
       )
