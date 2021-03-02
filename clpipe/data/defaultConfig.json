@@ -146,6 +146,15 @@
         "NThreads": "1",
         "LogDirectory": ""
 	},
+	"ReHoExtraction": {
+		"TargetDirectory": "",
+		"TargetSuffix": "space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz",
+		"MaskSuffix":  "space-MNI152NLin2009cAsym_desc-brain_mask.nii.gz",
+		"MaskFileOverride": "",
+		"OutputDirectory": "",
+		"OutputSuffix": "space-MNI152NLin2009cAsym_desc-ReHo.nii.gz",
+		"Neighborhood": "vertices"
+	},
 	"RunLog": [],
 	"BatchConfig": "slurmUNCConfig.json"
 }
