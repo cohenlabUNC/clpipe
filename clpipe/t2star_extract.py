@@ -28,18 +28,18 @@ def t2star_extract(config_file = None, subjects = None, task = None,onlymean = N
 
     if not subjects:
         subjectstring = "ALL"
-        sublist = [o.replace('sub-', '') for o in os.listdir(config.config["ReHoExtraction"]['TargetDirectory'])
-        if os.path.isdir(os.path.join(config.config["ReHoExtraction"]['TargetDirectory'], o)) and 'sub-' in o]
+        sublist = [o.replace('sub-', '') for o in os.listdir(config.config["T2StarExtraction"]['TargetDirectory'])
+        if os.path.isdir(os.path.join(config.config["T2StarExtraction"]['TargetDirectory'], o)) and 'sub-' in o]
     else:
         subjectstring = " , ".join(subjects)
         sublist = subjects
     logging.debug(sublist)
-    batch_manager = BatchManager(config.config['BatchConfig'], config.config["ReHoExtraction"]['LogDirectory'])
+    batch_manager = BatchManager(config.config['BatchConfig'], config.config["T2StarExtraction"]['LogDirectory'])
     for sub in sublist:
         sub_string = "sub-"+sub
         search_string = os.path.abspath(
-            os.path.join(config.config["ReHoExtraction"]['TargetDirectory'], "sub-" + sub, "**",
-                         "*" + config.config["ReHoExtraction"]['TargetSuffix']))
+            os.path.join(config.config["T2StarExtraction"]['TargetDirectory'], "sub-" + sub, "**",
+                         "*" + config.config["T2StarExtraction"]['TargetSuffix']))
         logging.debug(search_string)
         subject_files = glob.glob(search_string, recursive=True)
         if task is not None:
