@@ -60,7 +60,7 @@ def reho_extract(config_file = None, subjects = None, task = None, submit = None
                 raise ValueError("The 'Neighborhood' field must be one of 'faces', 'edges', or 'vertices'")
             reho.inputs.neighborhood = config.config["ReHoExtraction"]["Neighborhood"]
 
-            cmd = reho.cmdline()
+            cmd = reho.cmdline
             logging.debug(cmd)
             batch_manager.addjob(Job("ReHoExtraction_"+ os.path.basename(file), cmd))
     if submit:
