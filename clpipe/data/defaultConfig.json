@@ -3,6 +3,7 @@
 	"Authors/Contributors": "",
 	"ProjectDirectory": "",
 	"EmailAddress": "",
+	"TempDirectory": "",
 	"DICOMToBIDSOptions": {
 		"DICOMDirectory": "",
 		"BIDSDirectory": "",

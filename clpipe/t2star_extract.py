@@ -83,7 +83,7 @@ def t2star_extract(config_file = None, subjects = None, task = None,onlymean = N
         wf.connect(sd_node, "out_file", zscore_node, "in_file_c")
 
         wf.connect(zscore_node, "out_file", merge_node, "in_files")
-        wf.connect(merge_node, "out_file", average_node, "in_file")
+        wf.connect(merge_node, "merged_file", average_node, "in_file")
 
         wf.run()
 
