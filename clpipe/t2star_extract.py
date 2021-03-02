@@ -1,5 +1,6 @@
 from nipype.interfaces import afni as afni
 from nipype.interfaces import fsl as fsl
+from pathlib import Path
 import os
 import glob
 import click
@@ -76,7 +77,7 @@ def t2star_extract(config_file = None, subjects = None, task = None,onlymean = N
         average_node.inputs.args = "-nzmean"
         average_node.inputs.outputtype = "NIFTI_GZ"
 
-        out_file = os.path.join(config.config["T2StarExtraction"]["OutputDirectory"],sub_string+"_"+config.config["T2StarExtraction"]["OutputSuffix"])
+        out_file = Path(os.path.join(config.config["T2StarExtraction"]["OutputDirectory"], sub_string+"_"+config.config["T2StarExtraction"]["OutputSuffix"]))
         average_node.outputs.out_file = out_file
         wf.connect(mean_node, "out_file", zscore_node, "in_file_b")
         wf.connect(sd_node, "out_file", zscore_node, "in_file_c")
