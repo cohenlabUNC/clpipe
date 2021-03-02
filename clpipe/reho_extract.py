@@ -41,6 +41,7 @@ def reho_extract(config_file = None, subjects = None, task = None, submit = None
         subject_files = glob.glob(search_string, recursive=True)
         if task is not None:
             subject_files = [x for x in subject_files if "task-"+task in x]
+            logging.debug(subject_files)
         for file in subject_files:
             reho.inputs.in_file = file
             out_file = os.path.basename(file).replace(config.config["ReHoExtraction"]["TargetSuffix"],config.config["ReHoExtraction"]["OutputSuffix"])
@@ -58,6 +59,7 @@ def reho_extract(config_file = None, subjects = None, task = None, submit = None
             reho.inputs.neighborhood = config.config["ReHoExtraction"]["Neighborhood"]
 
             cmd = reho.cmdline()
+            logging.debug(cmd)
             batch_manager.addjob(Job("ReHoExtraction_"+ os.path.basename(file), cmd))
     if submit:
         batch_manager.createsubmissionhead()
@@ -67,3 +69,4 @@ def reho_extract(config_file = None, subjects = None, task = None, submit = None
         batch_manager.createsubmissionhead()
         batch_manager.compilejobstrings()
         click.echo(batch_manager.print_jobs())
+
