@@ -69,7 +69,7 @@ def t2star_extract(config_file = None, subjects = None, task = None,onlymean = N
         zscore_node = MapNode(afni.Calc(),name = "ZScore_Transform", iterfield=['in_file_a', 'in_file_b', 'in_file_c'])
         zscore_node.inputs.expr = "(a-b)/c"
         zscore_node.inputs.in_file_a = subject_files
-
+        zscore_node.inputs.outputtype = "NIFTI_GZ"
         merge_node = Node(fsl.utils.Merge(), name = "Merge_Images")
         merge_node.inputs.dimension = "t"
 
