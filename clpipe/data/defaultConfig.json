@@ -153,7 +153,8 @@
 		"MaskFileOverride": "",
 		"OutputDirectory": "",
 		"OutputSuffix": "space-MNI152NLin2009cAsym_desc-ReHo.nii.gz",
-		"Neighborhood": "vertices"
+		"Neighborhood": "vertices",
+		"LogDirectory": ""
 	},
 	"RunLog": [],
 	"BatchConfig": "slurmUNCConfig.json"
