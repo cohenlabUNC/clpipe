@@ -53,26 +53,26 @@ def t2star_extract(config_file = None, subjects = None, task = None,onlymean = N
         subject_masks = [file.replace(config.config["T2StarExtraction"]["TargetSuffix"],config.config["T2StarExtraction"]["MaskSuffix"]) for file in subject_files]
         subject_masks = [file.replace(config.config["T2StarExtraction"]["TargetDirectory"], config.config["T2StarExtraction"]["MaskDirectory"]) for file in subject_masks]
 
-        mean_node = MapNode(afni.ROIStats(), name = "Mean Calc", iterfield=['in_file', 'mask_file'])
+        mean_node = MapNode(afni.ROIStats(), name = "Mean_Calc", iterfield=['in_file', 'mask_file'])
         mean_node.inputs.stat = "mean"
         mean_node.inputs.in_file = subject_files
         mean_node.inputs.mask_file = subject_masks
         mean_node.inputs.format1D = True
 
-        sd_node = MapNode(afni.ROIStats(), name = "SD Calc",  iterfield=['in_file', 'mask_file'])
+        sd_node = MapNode(afni.ROIStats(), name = "SD_Calc",  iterfield=['in_file', 'mask_file'])
         sd_node.inputs.stat = "sigma"
         sd_node.inputs.in_file = subject_files
         sd_node.inputs.mask_file = subject_masks
         sd_node.inputs.format1D = True
 
-        zscore_node = MapNode(afni.Calc(),name = "Z-Score Transform", iterfield=['in_file_a', 'in_file_b', 'in_file_c'])
+        zscore_node = MapNode(afni.Calc(),name = "ZScore_Transform", iterfield=['in_file_a', 'in_file_b', 'in_file_c'])
         zscore_node.inputs.expr = "(a-b)/c"
         zscore_node.inputs.in_file_a = subject_files
 
-        merge_node = Node(fsl.utils.Merge(), name = "Merge Images")
+        merge_node = Node(fsl.utils.Merge(), name = "Merge_Images")
         merge_node.inputs.dimension = "t"
 
-        average_node = Node(afni.TStat(), name = "Average Across Images")
+        average_node = Node(afni.TStat(), name = "Average_Across_Images")
         average_node.inputs.args = "-nzmean"
         average_node.inputs.outputtype = "NIFTI_GZ"
 
