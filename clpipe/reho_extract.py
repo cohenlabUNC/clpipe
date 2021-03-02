@@ -24,8 +24,6 @@ def reho_extract(config_file = None, subjects = None, task = None, submit = None
     config.config_updater(config_file)
 
     reho = afni.ReHo()
-    reho.inputs.in_file = 'functional.nii'
-    reho.inputs.out_file = 'reho.nii.gz'
 
     if not subjects:
         subjectstring = "ALL"
