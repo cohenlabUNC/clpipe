@@ -53,8 +53,6 @@ def t2star_extract(config_file = None, subjects = None, task = None,onlymean = N
         subject_masks = [file.replace(config.config["T2StarExtraction"]["TargetSuffix"],config.config["T2StarExtraction"]["MaskSuffix"]) for file in subject_files]
         subject_masks = [file.replace(config.config["T2StarExtraction"]["TargetDirectory"], config.config["T2StarExtraction"]["MaskDirectory"]) for file in subject_masks]
 
-
-        afni.ROI
         mean_node = MapNode(afni.ROIStats(), name = "Mean Calc", iterfield=['in_file', 'mask_file'])
         mean_node.inputs.stat = "mean"
         mean_node.inputs.in_file = subject_files
