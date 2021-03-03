@@ -4,7 +4,7 @@
   "SubOptionsEqual": [],
   "NThreadsCommand": "--cpus-per-task={nthreads}",
   "NThreads": "1",
-  "MemoryCommand": "{mem}",
+  "MemoryCommand": "",
   "MemoryDefault": "",
   "TimeCommand": "--time={time}",
   "TimeDefault": "1:0:0",
