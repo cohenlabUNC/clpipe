@@ -1,5 +1,5 @@
 import click
-from .config_json_parser import ConfigParser
+from .config_json_parser import ClpipeConfigParser
 import os
 import glob
 import shutil
@@ -26,7 +26,7 @@ def get_reports(config_file, output_name, debug):
     if config_file is None:
         raise ValueError('Please specify a configuration file.')
 
-    config = ConfigParser()
+    config = ClpipeConfigParser()
     config.config_updater(config_file)
 
     fmriprepdir = config.config['FMRIPrepOptions']['OutputDirectory']
@@ -38,7 +38,12 @@ def get_reports(config_file, output_name, debug):
         copy_tree(os.path.join(sub, 'figures'),
                   os.path.join(config.config['FMRIPrepOptions']['WorkingDirectory'], 'reports_temp',
                                os.path.basename(sub), 'figures'))
-
+        ses_dirs = [f.path for f in os.scandir(sub) if f.is_dir()]
+        for ses in [x for x in ses_dirs if 'ses-' in x]:
+            if os.path.isdir(os.path.join(ses, 'figures')):
+                   copy_tree(os.path.join(ses, 'figures'),
+                        os.path.join(config.config['FMRIPrepOptions']['WorkingDirectory'], 'reports_temp',
+                                   os.path.basename(sub),os.path.basename(ses), 'figures'))
     images = glob.glob(os.path.join(fmriprepdir, 'fmriprep', '*.html'))
 
     for report in images:

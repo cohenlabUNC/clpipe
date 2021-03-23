@@ -3,8 +3,26 @@ import getpass
 import json
 import os
 import collections
-from jsonschema import validate
-from pkg_resources import resource_stream
+import click
+from pkg_resources import resource_stream, resource_filename
+import shutil
+
+@click.command()
+@click.option('-config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True), default=None, required = True,
+              help='Configuration file to update.')
+def update_config_file(config_file=None):
+    '''Updates an existing configuration file with any new fields. Does not modify existing fields.'''
+    new_config = config_json_parser(config_file)
+    temp = config_json_parser(config_file)
+    with resource_stream(__name__, 'data/defaultConfig.json') as def_config:
+            config_default = json.load(def_config)
+    new_config = update(new_config, config_default)
+    new_config = update(new_config, temp)
+    with open(config_file, 'w') as fp:
+        json.dump(new_config, fp, indent="\t")
+
+
+
 
 
 <<<<<<< Updated upstream
@@ -35,7 +53,7 @@ def config_json_parser(json_path):
     return config
 
 
-class ConfigParser:
+class ClpipeConfigParser:
 
     def __init__(self):
         with resource_stream(__name__, 'data/defaultConfig.json') as def_config:
@@ -102,8 +120,36 @@ class ConfigParser:
                 self.update_processing_stream(stream,
                                               output_dir= os.path.join(self.config['ProjectDirectory'], 'data_postproc', 'betaseries_'+stream),
                                               output_suffix='betaseries_'+stream+".nii.gz", beta_series=True)
+        self.setup_glm(self.config['ProjectDirectory'])
 
+    def setup_glm(self, project_path):
+        glm_config = GLMConfigParser()
 
+        glm_config.config['GLMSetupOptions']['ParentClpipeConfig'] = os.path.join(project_path, "clpipe_config.json")
+        glm_config.config['GLMSetupOptions']['TargetDirectory'] = os.path.join(project_path, "data_fmriprep", "fmriprep")
+        glm_config.config['GLMSetupOptions']['MaskFolderRoot'] = glm_config.config['GLMSetupOptions']['TargetDirectory']
+        glm_config.config['GLMSetupOptions']['PreppedDataDirectory'] =  os.path.join(project_path, "data_GLMPrep")
+        os.mkdir(os.path.join(project_path, "data_GLMPrep"))
+
+        glm_config.config['Level1Setups'][0]['TargetDirectory'] = os.path.join(project_path, "data_GLMPrep")
+        glm_config.config['Level1Setups'][0]['FSFDir'] = os.path.join(project_path, "l1_fsfs")
+        glm_config.config['Level1Setups'][0]['EVDirectory'] = os.path.join(project_path, "data_onsets")
+        glm_config.config['Level1Setups'][0]['ConfoundDirectory'] = os.path.join(project_path, "data_GLMPrep")
+        os.mkdir(os.path.join(project_path, "l1_fsfs"))
+        os.mkdir(os.path.join(project_path, "data_onsets"))
+        glm_config.config['Level1Setups'][0]['OutputDir'] = os.path.join(project_path, "l1_feat_folders")
+
+        os.mkdir(os.path.join(project_path, "l1_feat_folders"))
+        glm_config.config['Level2Setups'][0]['OutputDir'] = os.path.join(project_path, "l2_gfeat_folders")
+        glm_config.config['Level2Setups'][0]['OutputDir'] = os.path.join(project_path, "l2_fsfs")
+
+        os.mkdir(os.path.join(project_path, "l2_fsfs"))
+        os.mkdir(os.path.join(project_path, "l2_gfeat_folders"))
+
+        glm_config.config_json_dump(project_path, "glm_config.json")
+        shutil.copy(resource_filename('clpipe', 'data/l2_sublist.csv'), os.path.join(project_path, "l2_sublist.csv"))
+        glm_config.config['GLMSetupOptions']['LogDirectory'] = os.path.join(project_path, "logs", "glm_setup_logs")
+        os.mkdir(os.path.join(project_path, "logs", "glm_setup_logs"))
 
     def setup_fmriprep_directories(self, bidsDir, workingDir, outputDir, log_dir = None):
         if bidsDir is not None:
@@ -237,6 +283,23 @@ class ConfigParser:
                   "WhoRan": getpass.getuser()}
         self.config['RunLog'].append(newLog)
 
+class GLMConfigParser:
+    def __init__(self, glm_config_file = None):
+        if glm_config_file is None:
+            with resource_stream(__name__, 'data/defaultGLMConfig.json') as def_config:
+                self.config = json.load(def_config)
+        else:
+            self.config = config_json_parser(glm_config_file)
+
+    def config_json_dump(self, outputdir, filepath):
+        if filepath is None:
+            filepath = "defaultGLMConfig.json"
+        outpath = os.path.join(os.path.abspath(outputdir), filepath)
+        with open(outpath, 'w') as fp:
+            json.dump(self.config, fp, indent="\t")
+        return(outpath)
+
+
 def file_folder_generator(basename, modality, target_suffix = None):
     if target_suffix is not None:
         basename = basename.replace(target_suffix, "")
@@ -248,8 +311,13 @@ def file_folder_generator(basename, modality, target_suffix = None):
     ses = comps[1]
     front_matter = '_'.join(comps[0:-2])
     type = comps[-1]
-    path = os.path.join(sub, ses, modality, front_matter)
-    return [sub, ses, modality, front_matter, type, path]
+    if 'ses-' in ses:
+        path = os.path.join(sub, ses, modality, front_matter)
+        return [sub, ses, modality, front_matter, type, path]
+    else:
+        ses = ''
+        path = os.path.join(sub, modality, front_matter)
+        return [sub, ses, modality, front_matter, type, path]
 
 def update(d, u):
     for k, v in u.items():

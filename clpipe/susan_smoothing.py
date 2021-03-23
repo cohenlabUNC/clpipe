@@ -2,7 +2,7 @@ import os
 import glob
 import click
 from .batch_manager import BatchManager, Job
-from .config_json_parser import ConfigParser
+from .config_json_parser import ClpipeConfigParser
 import logging
 import sys
 from .error_handler import exception_handler
@@ -38,7 +38,7 @@ def susan_smoothing(config_file=None, subjects=None, target_dir=None, target_suf
     else:
         logging.basicConfig(level=logging.DEBUG)
 
-    config = ConfigParser()
+    config = ClpipeConfigParser()
     config.config_updater(config_file)
     config.setup_susan(target_dir, target_suffix, output_dir, output_suffix,
                           log_dir)
@@ -131,7 +131,7 @@ def _susan_subject(config, subject, task):
             try:
                 sus.inputs.in_file = image
                 sus.inputs.out_file = _build_output_directory_structure(config, image)
-                logging.info('Running ' + sus.cmdline())
+                logging.info('Running ' + sus.cmdline)
                 result = sus.run()
                 logging.debug(result)
             except Exception as err:

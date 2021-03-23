@@ -4,7 +4,7 @@ import click
 import logging
 from .error_handler import exception_handler
 from .batch_manager import BatchManager, Job
-from .config_json_parser import ConfigParser
+from .config_json_parser import ClpipeConfigParser
 
 
 @click.command()
@@ -18,7 +18,7 @@ def bids_validate(bids_dir=None, config_file=None, interactive=False, submit=Tru
     """Runs the BIDS-Validator program on a dataset. If a configuration file has a BIDSDirectory specified, you do not need to provide a BIDS directory in the command."""
     if not debug:
         sys.excepthook = exception_handler
-    config = ConfigParser()
+    config = ClpipeConfigParser()
     config.config_updater(config_file)
     config.setup_fmriprep_directories(bids_dir, None, None)
 

@@ -11,7 +11,7 @@ import click
 import sys
 import logging
 from .batch_manager import BatchManager, Job
-from .config_json_parser import ConfigParser, file_folder_generator
+from .config_json_parser import ClpipeConfigParser, file_folder_generator
 from .error_handler import exception_handler
 import json
 from pkg_resources import resource_stream, resource_filename
@@ -54,7 +54,7 @@ def fmri_roi_extraction(subjects=None,config_file=None, target_dir=None, target_
     else:
         logging.basicConfig(level=logging.DEBUG)
 
-    config = ConfigParser()
+    config = ClpipeConfigParser()
     config.config_updater(config_file)
     if config_file is None:
         config_file = 'defaultConfig.json'
@@ -290,5 +290,7 @@ def _mask_finder(data, config):
 
     file_struct = file_folder_generator(os.path.basename(data), "func", target_suffix=config.config['ROIExtractionOptions']['TargetSuffix'])
     target_mask = os.path.join(config.config['FMRIPrepOptions']['OutputDirectory'], 'fmriprep', os.path.join(file_struct[-1])+'_desc-brain_mask.nii.gz')
+    if not os.path.exists(target_mask):
+        target_mask =os.path.join(config.config['FMRIPrepOptions']['OutputDirectory'], 'fmriprep', os.path.join(file_struct[-1])+'_desc-brain_mask.nii')
     return(target_mask)
 
