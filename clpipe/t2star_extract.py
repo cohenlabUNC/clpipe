@@ -1,6 +1,7 @@
 from nipype.interfaces import afni as afni
 from nipype.interfaces import fsl as fsl
 from pathlib import Path
+import pandas as pd
 import os
 import glob
 import click
@@ -27,6 +28,9 @@ def t2star_extract(config_file = None, subjects = None, task = None, onlymean = 
     config = ClpipeConfigParser()
     config.config_updater(config_file)
 
+    if config.config['T2StarExtraction']['ExclusionFile'] is not "":
+        exclusion_file = pd.read_csv(config.config['T2StarExtraction']['ExclusionFile'])
+
     if not subjects:
         subjectstring = "ALL"
         sublist = [o.replace('sub-', '') for o in os.listdir(config.config["T2StarExtraction"]['TargetDirectory'])
@@ -46,6 +50,8 @@ def t2star_extract(config_file = None, subjects = None, task = None, onlymean = 
         if task is not None:
             sub_string = sub_string+"_task-"+task
             subject_files = [x for x in subject_files if "task-"+task in x]
+        if config.config['T2StarExtraction']['ExclusionFile'] is not "":
+            subject_files = [x for x in subject_files if os.path.basename(x) not in exclusion_file['filename'].to_list()]
         logging.debug(subject_files)
         wf = Workflow(name = "t2star_timeaverage",
                       base_dir=config.config['ProjectDirectory'])
