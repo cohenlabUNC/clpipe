@@ -51,6 +51,9 @@ def t2star_extract(config_file = None, subjects = None, task = None, onlymean = 
             sub_string = sub_string+"_task-"+task
             subject_files = [x for x in subject_files if "task-"+task in x]
         if config.config['T2StarExtraction']['ExclusionFile'] is not "":
+            logging.debug("Exclusion active")
+            logging.debug([os.path.basename(x) for x in subject_files])
+            logging.debug(exclusion_file['filename'].to_list())
             subject_files = [x for x in subject_files if os.path.basename(x) not in exclusion_file['filename'].to_list()]
         logging.debug(subject_files)
         wf = Workflow(name = "t2star_timeaverage",
