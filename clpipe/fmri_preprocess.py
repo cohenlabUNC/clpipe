@@ -38,8 +38,15 @@ def fmriprep_process(bids_dir=None, working_dir=None, output_dir=None, config_fi
                 config.config['FMRIPrepOptions']['LogDirectory']]):
         raise ValueError(
             'Please make sure the BIDS, working and output directories are specified in either the configfile or in the command. At least one is not specified.')
-    singularity_string = '''unset PYTHONPATH; {templateflow1} singularity run -B {templateflow2}{bindPaths} {batchcommands} {fmriprepInstance} {bidsDir} {outputDir} participant ''' \
-                         '''--participant-label {participantLabels} -w {workingdir} --fs-license-file {fslicense} {threads} {otheropts}'''
+    singularity_string = '''unset PYTHONPATH; {templateflow1} singularity run -B {templateflow2}{bindPaths} {batchcommands} {fmriprepInstance} {bids_dir} {output_dir} participant ''' \
+                         '''--participant-label {participantLabels} -w {working_dir} --fs-license-file {fslicense} {threads} {otheropts}'''
+
+    docker_string =  '''docker run --rm -e '''\
+                     '''-v {fslicense}:/opt/freesurfer/license.txt:ro '''\
+                     '''-v {bids_dir}:/data:ro -v {output_dir}:/out ''' \
+                     '''-v {working_dir}:/work ''' \
+                     '''{docker_fmriprep} /data /out participant -w /work {threads} {otheropts} --participant-label {participantsLabels}'''
+
 
     if config.config['FMRIPrepOptions']['TemplateFlowToggle']:
         template1 = "export SINGULARITYENV_TEMPLATEFLOW_HOME={templateflowpath};".format(templateflowpath=config.config["FMRIPrepOptions"]["TemplateFlowPath"])
@@ -68,20 +75,32 @@ def fmriprep_process(bids_dir=None, working_dir=None, output_dir=None, config_fi
         threads = ''
 
     for sub in sublist:
-        batch_manager.addjob(Job("sub-" + sub + "fmriprep", singularity_string.format(
-            templateflow1 = template1,
-            templateflow2 = template2,
-            fmriprepInstance=config.config['FMRIPrepOptions']['FMRIPrepPath'],
-            bidsDir=config.config['FMRIPrepOptions']['BIDSDirectory'],
-            outputDir=config.config['FMRIPrepOptions']['OutputDirectory'],
-            workingdir=config.config['FMRIPrepOptions']['WorkingDirectory'],
-            batchcommands=batch_manager.config["FMRIPrepBatchCommands"],
-            participantLabels=sub,
-            fslicense=config.config['FMRIPrepOptions']['FreesurferLicensePath'],
-            threads= threads,
-            bindPaths=batch_manager.config['SingularityBindPaths'],
-            otheropts=config.config['FMRIPrepOptions']['CommandLineOpts']
-        )))
+        if config.config['FMRIPrepOptions']['DockerToggle']:
+            batch_manager.addjob(Job("sub-" + sub + "fmriprep", docker_string.format(
+                docker_fmriprep=config.config['FMRIPrepOptions']['DockerFMRIPrepVersion'],
+                bids_dir=config.config['FMRIPrepOptions']['BIDSDirectory'],
+                output_dir=config.config['FMRIPrepOptions']['OutputDirectory'],
+                working_dir=config.config['FMRIPrepOptions']['WorkingDirectory'],
+                participantLabels=sub,
+                fslicense=config.config['FMRIPrepOptions']['FreesurferLicensePath'],
+                threads= threads,
+                otheropts=config.config['FMRIPrepOptions']['CommandLineOpts']
+            )))
+        else:
+            batch_manager.addjob(Job("sub-" + sub + "fmriprep", singularity_string.format(
+                templateflow1 = template1,
+                templateflow2 = template2,
+                fmriprepInstance=config.config['FMRIPrepOptions']['FMRIPrepPath'],
+                bids_dir=config.config['FMRIPrepOptions']['BIDSDirectory'],
+                output_dir=config.config['FMRIPrepOptions']['OutputDirectory'],
+                working_dir=config.config['FMRIPrepOptions']['WorkingDirectory'],
+                batchcommands=batch_manager.config["FMRIPrepBatchCommands"],
+                participantLabels=sub,
+                fslicense=config.config['FMRIPrepOptions']['FreesurferLicensePath'],
+                threads= threads,
+                bindPaths=batch_manager.config['SingularityBindPaths'],
+                otheropts=config.config['FMRIPrepOptions']['CommandLineOpts']
+            )))
 
     batch_manager.compilejobstrings()
     if submit:

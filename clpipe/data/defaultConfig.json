@@ -28,7 +28,9 @@
 		"FMRIPrepMemoryUsage": "20000",
 		"FMRIPrepTimeUsage": "16:0:0",
 		"NThreads": "8",
-        "LogDirectory": ""
+        "LogDirectory": "",
+		"DockerToggle": false,
+		"DockerFMRIPrepVersion": ""
 	},
 	"PostProcessingOptions": {
 		"TargetDirectory": "",
