@@ -45,7 +45,7 @@ def fmriprep_process(bids_dir=None, working_dir=None, output_dir=None, config_fi
                      '''-v {fslicense}:/opt/freesurfer/license.txt:ro '''\
                      '''-v {bids_dir}:/data:ro -v {output_dir}:/out ''' \
                      '''-v {working_dir}:/work ''' \
-                     '''{docker_fmriprep} /data /out participant -w /work {threads} {otheropts} --participant-label {participantsLabels}'''
+                     '''{docker_fmriprep} /data /out participant -w /work {threads} {otheropts} --participant-label {participantLabels}'''
 
 
     if config.config['FMRIPrepOptions']['TemplateFlowToggle']:
@@ -76,7 +76,7 @@ def fmriprep_process(bids_dir=None, working_dir=None, output_dir=None, config_fi
 
     for sub in sublist:
         if config.config['FMRIPrepOptions']['DockerToggle']:
-            batch_manager.addjob(Job("sub-" + sub + "fmriprep", docker_string.format(
+            batch_manager.addjob(Job("sub-" + sub + "_fmriprep", docker_string.format(
                 docker_fmriprep=config.config['FMRIPrepOptions']['DockerFMRIPrepVersion'],
                 bids_dir=config.config['FMRIPrepOptions']['BIDSDirectory'],
                 output_dir=config.config['FMRIPrepOptions']['OutputDirectory'],
@@ -87,7 +87,7 @@ def fmriprep_process(bids_dir=None, working_dir=None, output_dir=None, config_fi
                 otheropts=config.config['FMRIPrepOptions']['CommandLineOpts']
             )))
         else:
-            batch_manager.addjob(Job("sub-" + sub + "fmriprep", singularity_string.format(
+            batch_manager.addjob(Job("sub-" + sub + "_fmriprep", singularity_string.format(
                 templateflow1 = template1,
                 templateflow2 = template2,
                 fmriprepInstance=config.config['FMRIPrepOptions']['FMRIPrepPath'],
