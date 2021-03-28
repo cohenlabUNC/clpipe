@@ -50,14 +50,22 @@ def t2star_extract(config_file = None, subjects = None, task = None, submit = No
                              "*" + config.config["T2StarExtraction"]['TargetSuffix']))
             logging.debug(search_string)
             subject_files = glob.glob(search_string, recursive=True)
+            if len(subject_files) < 1:
+                raise FileNotFoundError("No imaging files were found. Do you have the correct input suffix specified?")
             if task is not None:
                 sub_string = sub_string+"_task-"+task
                 subject_files = [x for x in subject_files if "task-"+task in x]
+
+
+
             if config.config['T2StarExtraction']['ExclusionFile'] is not "":
                 logging.debug("Exclusion active")
                 logging.debug([os.path.basename(x) for x in subject_files])
                 logging.debug(exclusion_file['filename'].to_list())
                 subject_files = [x for x in subject_files if os.path.basename(x) not in exclusion_file['filename'].to_list()]
+                if len(subject_files) < 1:
+                    raise FileNotFoundError("After checking excluded files, this subject had no viable scans! Verify if this is correct")
+
             logging.debug(subject_files)
             with nipype.utils.tmpdirs.TemporaryDirectory(suffix = "t2star-"+sub, prefix = "tmp_", dir = config.config['T2StarExtraction']['WorkingDirectory']) as tmpdir:
 
