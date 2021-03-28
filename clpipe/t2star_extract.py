@@ -1,4 +1,5 @@
 from nipype.interfaces import afni as afni
+import nipype.utils
 from nipype.interfaces import fsl as fsl
 from pathlib import Path
 import pandas as pd
@@ -59,44 +60,46 @@ def t2star_extract(config_file = None, subjects = None, task = None, submit = No
                 subject_files = [x for x in subject_files if os.path.basename(x) not in exclusion_file['filename'].to_list()]
             logging.debug(subject_files)
             os.mkdir(os.path.join(config.config['T2StarExtraction']['WorkingDirectory'], sub))
-            wf = Workflow(name = "t2star_timeaverage",
-                          base_dir=os.path.join(config.config['T2StarExtraction']['WorkingDirectory'], sub))
+            with nipype.utils.tmpdirs.TemporaryDirectory(suffix = "t2star-"+sub, prefix = "tmp_", dir = config.config['T2StarExtraction']['WorkingDirectory']) as tmpdir:
+    
+                wf = Workflow(name = "t2star_timeaverage",
+                              base_dir=tmpdir)
 
 
-            subject_masks = [file.replace(config.config["T2StarExtraction"]["TargetSuffix"],config.config["T2StarExtraction"]["MaskSuffix"]) for file in subject_files]
-            subject_masks = [file.replace(config.config["T2StarExtraction"]["TargetDirectory"], config.config["T2StarExtraction"]["MaskDirectory"]) for file in subject_masks]
+                subject_masks = [file.replace(config.config["T2StarExtraction"]["TargetSuffix"],config.config["T2StarExtraction"]["MaskSuffix"]) for file in subject_files]
+                subject_masks = [file.replace(config.config["T2StarExtraction"]["TargetDirectory"], config.config["T2StarExtraction"]["MaskDirectory"]) for file in subject_masks]
 
-            mean_node = MapNode(afni.ROIStats(), name = "Mean_Calc", iterfield=['in_file', 'mask_file'])
-            mean_node.inputs.stat = "mean"
-            mean_node.inputs.in_file = subject_files
-            mean_node.inputs.mask_file = subject_masks
-            mean_node.inputs.format1D = True
+                mean_node = MapNode(afni.ROIStats(), name = "Mean_Calc", iterfield=['in_file', 'mask_file'])
+                mean_node.inputs.stat = "mean"
+                mean_node.inputs.in_file = subject_files
+                mean_node.inputs.mask_file = subject_masks
+                mean_node.inputs.format1D = True
 
-            sd_node = MapNode(afni.ROIStats(), name = "SD_Calc",  iterfield=['in_file', 'mask_file'])
-            sd_node.inputs.stat = "sigma"
-            sd_node.inputs.in_file = subject_files
-            sd_node.inputs.mask_file = subject_masks
-            sd_node.inputs.format1D = True
+                sd_node = MapNode(afni.ROIStats(), name = "SD_Calc",  iterfield=['in_file', 'mask_file'])
+                sd_node.inputs.stat = "sigma"
+                sd_node.inputs.in_file = subject_files
+                sd_node.inputs.mask_file = subject_masks
+                sd_node.inputs.format1D = True
 
-            zscore_node = MapNode(afni.Calc(),name = "ZScore_Transform", iterfield=['in_file_a', 'in_file_b', 'in_file_c'])
-            zscore_node.inputs.expr = "(a-b)/c"
-            zscore_node.inputs.in_file_a = subject_files
-            zscore_node.inputs.outputtype = "NIFTI_GZ"
-            merge_node = Node(afni.TCat(), name = "Merge_Images")
-            merge_node.inputs.outputtype = "NIFTI_GZ"
-            average_node = Node(afni.TStat(), name = "Average_Across_Images")
-            average_node.inputs.args = "-nzmean"
-            average_node.inputs.outputtype = "NIFTI_GZ"
+                zscore_node = MapNode(afni.Calc(),name = "ZScore_Transform", iterfield=['in_file_a', 'in_file_b', 'in_file_c'])
+                zscore_node.inputs.expr = "(a-b)/c"
+                zscore_node.inputs.in_file_a = subject_files
+                zscore_node.inputs.outputtype = "NIFTI_GZ"
+                merge_node = Node(afni.TCat(), name = "Merge_Images")
+                merge_node.inputs.outputtype = "NIFTI_GZ"
+                average_node = Node(afni.TStat(), name = "Average_Across_Images")
+                average_node.inputs.args = "-nzmean"
+                average_node.inputs.outputtype = "NIFTI_GZ"
 
-            out_file = os.path.join(config.config["T2StarExtraction"]["OutputDirectory"], sub_string+"_"+config.config["T2StarExtraction"]["OutputSuffix"])
-            average_node.inputs.out_file = out_file
-            wf.connect(mean_node, "out_file", zscore_node, "in_file_b")
-            wf.connect(sd_node, "out_file", zscore_node, "in_file_c")
+                out_file = os.path.join(config.config["T2StarExtraction"]["OutputDirectory"], sub_string+"_"+config.config["T2StarExtraction"]["OutputSuffix"])
+                average_node.inputs.out_file = out_file
+                wf.connect(mean_node, "out_file", zscore_node, "in_file_b")
+                wf.connect(sd_node, "out_file", zscore_node, "in_file_c")
 
-            wf.connect(zscore_node, "out_file", merge_node, "in_files")
-            wf.connect(merge_node, "out_file", average_node, "in_file")
+                wf.connect(zscore_node, "out_file", merge_node, "in_files")
+                wf.connect(merge_node, "out_file", average_node, "in_file")
 
-            wf.run()
+                wf.run()
     else:
         logging.debug("Compiling Job Strings")
         job_string = '''t2star_extract -config_file {config_file} {task} {debug} -single {subject}'''
