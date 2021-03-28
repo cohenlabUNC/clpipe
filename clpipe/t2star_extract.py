@@ -98,7 +98,7 @@ def t2star_extract(config_file = None, subjects = None, task = None, submit = No
             wf.run()
     else:
         logging.debug("Compiling Job Strings")
-        job_string = '''t2star_extract -config_file {config_file} {task} {debug} {subject}'''
+        job_string = '''t2star_extract -config_file {config_file} {task} {debug} -single {subject}'''
         task_string = ""
         debug_string = ""
         if task is not None:
