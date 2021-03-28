@@ -97,6 +97,7 @@ def t2star_extract(config_file = None, subjects = None, task = None, submit = No
 
             wf.run()
         else:
+            logging.debug("Compiling Job Strings")
             job_string = '''t2star_extract -config_file {config_file} {task} {debug} {subject}'''
             task_string = ""
             debug_string = ""
@@ -114,8 +115,10 @@ def t2star_extract(config_file = None, subjects = None, task = None, submit = No
                 batch_manager.addjob(Job("t2starextract-" + sub, job_str))
 
             if submit:
+                batch_manager.createsubmissionhead()
                 batch_manager.compilejobstrings()
                 batch_manager.submit_jobs()
             else:
+                batch_manager.createsubmissionhead()
                 batch_manager.compilejobstrings()
                 click.echo(batch_manager.print_jobs())
