@@ -16,10 +16,10 @@ from nipype import MapNode, Node, Workflow
 @click.argument('subjects', nargs=-1, required=False, default=None)
 @click.option('-config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True), default=None, help = 'Use a given configuration file.')
 @click.option('-task', help = 'Which task to extract T2* from. If left blank, defaults to all tasks.')
-@click.option('-onlymean', is_flag = True, default = False, help = 'Return the average of all extracted T2* images per subject only. Not including this flag returns individual T2* images per scan.')
 @click.option('-submit', is_flag = True, default=False, help = 'Flag to submit commands to the HPC.')
-@click.option('-debug', is_flag = True, default=False, help = 'Print detailed  traceback for errors.')
-def t2star_extract(config_file = None, subjects = None, task = None, onlymean = None, submit = None, debug = None):
+@click.option('-single', is_flag = True, default=False, help = 'Submit to batch, or run in current session. Mainly used internally.')
+@click.option('-debug', is_flag = True, default=False, help = 'Print detailed traceback for errors.')
+def t2star_extract(config_file = None, subjects = None, task = None, submit = None, debug = None, single = None):
     if not debug:
         sys.excepthook = exception_handler
         logging.basicConfig(level=logging.INFO)
@@ -40,59 +40,82 @@ def t2star_extract(config_file = None, subjects = None, task = None, onlymean = 
         sublist = subjects
     logging.debug(sublist)
     batch_manager = BatchManager(config.config['BatchConfig'], config.config["T2StarExtraction"]['LogDirectory'])
-    for sub in sublist:
-        sub_string = "sub-"+sub
-        search_string = os.path.abspath(
-            os.path.join(config.config["T2StarExtraction"]['TargetDirectory'], "sub-" + sub, "**",
-                         "*" + config.config["T2StarExtraction"]['TargetSuffix']))
-        logging.debug(search_string)
-        subject_files = glob.glob(search_string, recursive=True)
-        if task is not None:
-            sub_string = sub_string+"_task-"+task
-            subject_files = [x for x in subject_files if "task-"+task in x]
-        if config.config['T2StarExtraction']['ExclusionFile'] is not "":
-            logging.debug("Exclusion active")
-            logging.debug([os.path.basename(x) for x in subject_files])
-            logging.debug(exclusion_file['filename'].to_list())
-            subject_files = [x for x in subject_files if os.path.basename(x) not in exclusion_file['filename'].to_list()]
-        logging.debug(subject_files)
-        wf = Workflow(name = "t2star_timeaverage",
-                      base_dir=config.config['ProjectDirectory'])
+
+    if single:
+        for sub in sublist:
+            sub_string = "sub-"+sub
+            search_string = os.path.abspath(
+                os.path.join(config.config["T2StarExtraction"]['TargetDirectory'], "sub-" + sub, "**",
+                             "*" + config.config["T2StarExtraction"]['TargetSuffix']))
+            logging.debug(search_string)
+            subject_files = glob.glob(search_string, recursive=True)
+            if task is not None:
+                sub_string = sub_string+"_task-"+task
+                subject_files = [x for x in subject_files if "task-"+task in x]
+            if config.config['T2StarExtraction']['ExclusionFile'] is not "":
+                logging.debug("Exclusion active")
+                logging.debug([os.path.basename(x) for x in subject_files])
+                logging.debug(exclusion_file['filename'].to_list())
+                subject_files = [x for x in subject_files if os.path.basename(x) not in exclusion_file['filename'].to_list()]
+            logging.debug(subject_files)
+            wf = Workflow(name = "t2star_timeaverage",
+                          base_dir=config.config['ProjectDirectory'])
 
 
-        subject_masks = [file.replace(config.config["T2StarExtraction"]["TargetSuffix"],config.config["T2StarExtraction"]["MaskSuffix"]) for file in subject_files]
-        subject_masks = [file.replace(config.config["T2StarExtraction"]["TargetDirectory"], config.config["T2StarExtraction"]["MaskDirectory"]) for file in subject_masks]
+            subject_masks = [file.replace(config.config["T2StarExtraction"]["TargetSuffix"],config.config["T2StarExtraction"]["MaskSuffix"]) for file in subject_files]
+            subject_masks = [file.replace(config.config["T2StarExtraction"]["TargetDirectory"], config.config["T2StarExtraction"]["MaskDirectory"]) for file in subject_masks]
 
-        mean_node = MapNode(afni.ROIStats(), name = "Mean_Calc", iterfield=['in_file', 'mask_file'])
-        mean_node.inputs.stat = "mean"
-        mean_node.inputs.in_file = subject_files
-        mean_node.inputs.mask_file = subject_masks
-        mean_node.inputs.format1D = True
+            mean_node = MapNode(afni.ROIStats(), name = "Mean_Calc", iterfield=['in_file', 'mask_file'])
+            mean_node.inputs.stat = "mean"
+            mean_node.inputs.in_file = subject_files
+            mean_node.inputs.mask_file = subject_masks
+            mean_node.inputs.format1D = True
 
-        sd_node = MapNode(afni.ROIStats(), name = "SD_Calc",  iterfield=['in_file', 'mask_file'])
-        sd_node.inputs.stat = "sigma"
-        sd_node.inputs.in_file = subject_files
-        sd_node.inputs.mask_file = subject_masks
-        sd_node.inputs.format1D = True
+            sd_node = MapNode(afni.ROIStats(), name = "SD_Calc",  iterfield=['in_file', 'mask_file'])
+            sd_node.inputs.stat = "sigma"
+            sd_node.inputs.in_file = subject_files
+            sd_node.inputs.mask_file = subject_masks
+            sd_node.inputs.format1D = True
 
-        zscore_node = MapNode(afni.Calc(),name = "ZScore_Transform", iterfield=['in_file_a', 'in_file_b', 'in_file_c'])
-        zscore_node.inputs.expr = "(a-b)/c"
-        zscore_node.inputs.in_file_a = subject_files
-        zscore_node.inputs.outputtype = "NIFTI_GZ"
-        merge_node = Node(afni.TCat(), name = "Merge_Images")
-        merge_node.inputs.outputtype = "NIFTI_GZ"
-        average_node = Node(afni.TStat(), name = "Average_Across_Images")
-        average_node.inputs.args = "-nzmean"
-        average_node.inputs.outputtype = "NIFTI_GZ"
+            zscore_node = MapNode(afni.Calc(),name = "ZScore_Transform", iterfield=['in_file_a', 'in_file_b', 'in_file_c'])
+            zscore_node.inputs.expr = "(a-b)/c"
+            zscore_node.inputs.in_file_a = subject_files
+            zscore_node.inputs.outputtype = "NIFTI_GZ"
+            merge_node = Node(afni.TCat(), name = "Merge_Images")
+            merge_node.inputs.outputtype = "NIFTI_GZ"
+            average_node = Node(afni.TStat(), name = "Average_Across_Images")
+            average_node.inputs.args = "-nzmean"
+            average_node.inputs.outputtype = "NIFTI_GZ"
 
-        out_file = os.path.join(config.config["T2StarExtraction"]["OutputDirectory"], sub_string+"_"+config.config["T2StarExtraction"]["OutputSuffix"])
-        average_node.inputs.out_file = out_file
-        wf.connect(mean_node, "out_file", zscore_node, "in_file_b")
-        wf.connect(sd_node, "out_file", zscore_node, "in_file_c")
+            out_file = os.path.join(config.config["T2StarExtraction"]["OutputDirectory"], sub_string+"_"+config.config["T2StarExtraction"]["OutputSuffix"])
+            average_node.inputs.out_file = out_file
+            wf.connect(mean_node, "out_file", zscore_node, "in_file_b")
+            wf.connect(sd_node, "out_file", zscore_node, "in_file_c")
 
-        wf.connect(zscore_node, "out_file", merge_node, "in_files")
-        wf.connect(merge_node, "out_file", average_node, "in_file")
+            wf.connect(zscore_node, "out_file", merge_node, "in_files")
+            wf.connect(merge_node, "out_file", average_node, "in_file")
 
-        wf.run()
+            wf.run()
+        else:
+            job_string = '''t2star_extract -config_file {config_file} {task} {debug} {subject}'''
+            task_string = ""
+            debug_string = ""
 
+            if task is not None:
+                task_string = "-task " + task
+            if debug:
+                debug_string = "-debug"
+            for sub in sublist:
 
+                job_str = job_string.format(config_file = config_file,
+                                            task = task_string,
+                                            debug = debug_string,
+                                            subject = sub)
+                batch_manager.addjob(Job("t2starextract-" + sub, job_str))
+
+            if submit:
+                batch_manager.compilejobstrings()
+                batch_manager.submit_jobs()
+            else:
+                batch_manager.compilejobstrings()
+                batch_manager.print_jobs()
