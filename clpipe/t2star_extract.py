@@ -118,4 +118,4 @@ def t2star_extract(config_file = None, subjects = None, task = None, submit = No
                 batch_manager.submit_jobs()
             else:
                 batch_manager.compilejobstrings()
-                batch_manager.print_jobs()
+                click.echo(batch_manager.print_jobs())
