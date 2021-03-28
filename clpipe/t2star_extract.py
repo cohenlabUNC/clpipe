@@ -58,8 +58,9 @@ def t2star_extract(config_file = None, subjects = None, task = None, submit = No
                 logging.debug(exclusion_file['filename'].to_list())
                 subject_files = [x for x in subject_files if os.path.basename(x) not in exclusion_file['filename'].to_list()]
             logging.debug(subject_files)
+            os.mkdir(os.path.join(config.config['T2StarExtraction']['WorkingDirectory'], sub))
             wf = Workflow(name = "t2star_timeaverage",
-                          base_dir=config.config['ProjectDirectory'])
+                          base_dir=os.path.join(config.config['T2StarExtraction']['WorkingDirectory'], sub))
 
 
             subject_masks = [file.replace(config.config["T2StarExtraction"]["TargetSuffix"],config.config["T2StarExtraction"]["MaskSuffix"]) for file in subject_files]
