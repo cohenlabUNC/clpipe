@@ -13,6 +13,19 @@ import sys
 from .error_handler import exception_handler
 from nipype import MapNode, Node, Workflow
 
+def rm_nan(in_file):
+    import nibabel
+    import numpy
+
+    img = nibabel.load(in_file)
+    img_dat = img.get_fdata()
+
+    nan_vec = numpy.sum(numpy.isnan(img_dat), axis=(0,1,2))
+    it = numpy.nditer(nan_vec,flags=['f_index'] )
+    good_inds = [it.index for x in it if x == 0]
+    img_trimdat = img_dat[good_inds]
+    rm_file = nibabel.Nifti1Image(img_trimdat, img.affine, nibabel.Nifti1Header())
+
 @click.command()
 @click.argument('subjects', nargs=-1, required=False, default=None)
 @click.option('-config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True), default=None, help = 'Use a given configuration file.')
