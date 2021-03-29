@@ -50,9 +50,9 @@ def reho_extract(config_file = None, subjects = None, task = None, submit = None
             subject_files = glob.glob(search_string, recursive=True)
             if len(subject_files) < 1:
                 raise FileNotFoundError("No imaging files were found. Do you have the correct input suffix specified?")
-            sub_string = sub
+            sub_string = "sub-" + sub
             if task is not None:
-                sub_string = sub + "_task-" + task
+                sub_string = sub_string + "_task-" + task
                 subject_files = [x for x in subject_files if "task-" + task in x]
             if config.config['ReHoExtraction']['ExclusionFile'] is not "":
                 logging.debug("Exclusion active")
