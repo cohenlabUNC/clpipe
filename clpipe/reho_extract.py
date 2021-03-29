@@ -100,7 +100,7 @@ def reho_extract(config_file = None, subjects = None, task = None, submit = None
                 else:
                     out_files = [os.path.basename(x).replace(config.config["ReHoExtraction"]["TargetSuffix"],config.config["ReHoExtraction"]["OutputSuffix"]) for x in subject_files ]
                     out_files = [os.path.join(os.path.abspath(config.config["ReHoExtraction"]["OutputDirectory"]), x) for x in out_files]
-                    reho_node.outputs.out_file = out_files
+                    reho_node.inputs.out_file = out_files
                     wf.connect(nanomit_node, "out_file", reho_node, "in_file")
 
                 wf.run()
