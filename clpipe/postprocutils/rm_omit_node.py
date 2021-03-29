@@ -37,7 +37,7 @@ class NANOmit(BaseInterface):
 
     def _list_outputs(self):
         outputs = self._outputs().get()
-        fname = self.inputs.volume
+        fname = self.inputs.in_file
         _, base, _ = split_filename(fname)
         outputs["out_file"] = os.path.abspath(base + '_naomit.nii.gz')
         return outputs

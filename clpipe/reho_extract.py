@@ -83,7 +83,7 @@ def reho_extract(config_file = None, subjects = None, task = None, submit = None
                 reho_node.inputs.neighborhood = 'vertices'
                 reho_node.inputs.in_file = subject_files
                 reho_node.inputs.mask_file = subject_masks
-                
+
 
                 if sub_average:
                     merge_node = Node(afni.TCat(), name="Merge_Images")
