@@ -103,31 +103,31 @@ def reho_extract(config_file = None, subjects = None, task = None, submit = None
                     wf.connect(nanomit_node, "out_file", reho_node, "in_file")
 
                 wf.run()
+    else:
+        logging.debug("Compiling Job Strings")
+        job_string = '''reho_extract -config_file {config_file} {task} {sub_average} {debug} -single {subject}'''
+        task_string = ""
+        debug_string = ""
+        subaverage_string = ""
+        if task is not None:
+            task_string = "-task " + task
+        if debug:
+            debug_string = "-debug"
+        if sub_average:
+            subaverage_string = "-sub_average"
+        for sub in sublist:
+            job_str = job_string.format(config_file=config_file,
+                                        task=task_string,
+                                        debug=debug_string,
+                                        sub_average = subaverage_string,
+                                        subject=sub)
+            batch_manager.addjob(Job("rehoextract-" + sub, job_str))
+        if submit:
+            batch_manager.createsubmissionhead()
+            batch_manager.compilejobstrings()
+            batch_manager.submit_jobs()
         else:
-            logging.debug("Compiling Job Strings")
-            job_string = '''reho_extract -config_file {config_file} {task} {sub_average} {debug} -single {subject}'''
-            task_string = ""
-            debug_string = ""
-            subaverage_string = ""
-            if task is not None:
-                task_string = "-task " + task
-            if debug:
-                debug_string = "-debug"
-            if sub_average:
-                subaverage_string = "-sub_average"
-            for sub in sublist:
-                job_str = job_string.format(config_file=config_file,
-                                            task=task_string,
-                                            debug=debug_string,
-                                            sub_average = subaverage_string,
-                                            subject=sub)
-                batch_manager.addjob(Job("rehoextract-" + sub, job_str))
-            if submit:
-                batch_manager.createsubmissionhead()
-                batch_manager.compilejobstrings()
-                batch_manager.submit_jobs()
-            else:
-                batch_manager.createsubmissionhead()
-                batch_manager.compilejobstrings()
-                click.echo(batch_manager.print_jobs())
+            batch_manager.createsubmissionhead()
+            batch_manager.compilejobstrings()
+            click.echo(batch_manager.print_jobs())
 
