@@ -86,6 +86,12 @@ def reho_extract(config_file = None, subjects = None, task = None, submit = None
 
 
                 if sub_average:
+                    reho_node = MapNode(afni.ReHo(), name="Mean_Calc", iterfield=['in_file', 'mask_file'])
+                    reho_node.inputs.neighborhood = 'vertices'
+                    reho_node.inputs.in_file = subject_files
+                    reho_node.inputs.mask_file = subject_masks
+
+
                     merge_node = Node(afni.TCat(), name="Merge_Images")
                     merge_node.inputs.outputtype = "NIFTI_GZ"
                     average_node = Node(afni.TStat(), name="Average_Across_Images")
@@ -98,6 +104,10 @@ def reho_extract(config_file = None, subjects = None, task = None, submit = None
                     wf.connect(reho_node, "out_file", merge_node, "in_files")
                     wf.connect(merge_node, "out_file", average_node, "in_file")
                 else:
+                    reho_node = MapNode(afni.ReHo(), name="Mean_Calc", iterfield=['in_file', 'mask_file', 'out_file'])
+                    reho_node.inputs.neighborhood = 'vertices'
+                    reho_node.inputs.in_file = subject_files
+                    reho_node.inputs.mask_file = subject_masks
                     out_files = [os.path.basename(x).replace(config.config["ReHoExtraction"]["TargetSuffix"],config.config["ReHoExtraction"]["OutputSuffix"]) for x in subject_files ]
                     out_files = [os.path.join(os.path.abspath(config.config["ReHoExtraction"]["OutputDirectory"]), x) for x in out_files]
                     reho_node.inputs.out_file = out_files
