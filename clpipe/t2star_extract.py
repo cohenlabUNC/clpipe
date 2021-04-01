@@ -12,6 +12,7 @@ import logging
 import sys
 from .error_handler import exception_handler
 from nipype import MapNode, Node, Workflow
+import clpipe.postprocutils.rm_omit_node as rm_omit_node
 
 def rm_nan(in_file):
     import nibabel
@@ -89,15 +90,16 @@ def t2star_extract(config_file = None, subjects = None, task = None, submit = No
                 subject_masks = [file.replace(config.config["T2StarExtraction"]["TargetSuffix"],config.config["T2StarExtraction"]["MaskSuffix"]) for file in subject_files]
                 subject_masks = [file.replace(config.config["T2StarExtraction"]["TargetDirectory"], config.config["T2StarExtraction"]["MaskDirectory"]) for file in subject_masks]
 
+                nanomit_node = MapNode(rm_omit_node.NANOmit(), name="NAN_Removal", iterfield=['in_file'])
+                nanomit_node.inputs.in_file = subject_files
+
                 mean_node = MapNode(afni.ROIStats(), name = "Mean_Calc", iterfield=['in_file', 'mask_file'])
                 mean_node.inputs.stat = "mean"
-                mean_node.inputs.in_file = subject_files
                 mean_node.inputs.mask_file = subject_masks
                 mean_node.inputs.format1D = True
 
                 sd_node = MapNode(afni.ROIStats(), name = "SD_Calc",  iterfield=['in_file', 'mask_file'])
                 sd_node.inputs.stat = "sigma"
-                sd_node.inputs.in_file = subject_files
                 sd_node.inputs.mask_file = subject_masks
                 sd_node.inputs.format1D = True
 
@@ -113,6 +115,8 @@ def t2star_extract(config_file = None, subjects = None, task = None, submit = No
 
                 out_file = os.path.join(config.config["T2StarExtraction"]["OutputDirectory"], sub_string+"_"+config.config["T2StarExtraction"]["OutputSuffix"])
                 average_node.inputs.out_file = out_file
+                wf.connect(nanomit_node, "out_file", mean_node, "in_file")
+                wf.connect(nanomit_node, "out_file", sd_node, "in_file")
                 wf.connect(mean_node, "out_file", zscore_node, "in_file_b")
                 wf.connect(sd_node, "out_file", zscore_node, "in_file_c")
 
