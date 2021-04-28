@@ -50,7 +50,9 @@ def convert2bids(dicom_dir=None, dicom_dir_format=None, bids_dir = None, conv_co
         session_toggle = True
 
     formatStr = formatStr.replace("{session}", "*")
+    click.echo(formatStr)
     pstring = os.path.join(dicom_dir, dicom_dir_format+'/')
+    click.echo(pstring)
     folders = glob.glob(os.path.join(dicom_dir, formatStr+'/'))
     sub_sess_list = [parse.parse(pstring, x) for x in folders]
     sub_inds = [ind for ind, x in enumerate(sub_sess_list)]
