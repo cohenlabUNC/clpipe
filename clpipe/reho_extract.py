@@ -80,16 +80,9 @@ def reho_extract(config_file = None, subjects = None, task = None, submit = None
                 nanomit_node.inputs.in_file = subject_files
 
 
-                reho_node = MapNode(afni.ReHo(), name="Mean_Calc", iterfield=['in_file', 'mask_file'])
-                reho_node.inputs.neighborhood = 'vertices'
-                reho_node.inputs.in_file = subject_files
-                reho_node.inputs.mask_file = subject_masks
-
-
                 if sub_average:
                     reho_node = MapNode(afni.ReHo(), name="Mean_Calc", iterfield=['in_file', 'mask_file'])
                     reho_node.inputs.neighborhood = 'vertices'
-                    reho_node.inputs.in_file = subject_files
                     reho_node.inputs.mask_file = subject_masks
 
 
@@ -107,7 +100,6 @@ def reho_extract(config_file = None, subjects = None, task = None, submit = None
                 else:
                     reho_node = MapNode(afni.ReHo(), name="Mean_Calc", iterfield=['in_file', 'mask_file', 'out_file'])
                     reho_node.inputs.neighborhood = 'vertices'
-                    reho_node.inputs.in_file = subject_files
                     reho_node.inputs.mask_file = subject_masks
                     out_files = [os.path.basename(x).replace(config.config["ReHoExtraction"]["TargetSuffix"],config.config["ReHoExtraction"]["OutputSuffix"]) for x in subject_files ]
                     out_files = [os.path.join(os.path.abspath(config.config["ReHoExtraction"]["OutputDirectory"]), x) for x in out_files]
