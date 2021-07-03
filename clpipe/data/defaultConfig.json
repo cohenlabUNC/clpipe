@@ -25,9 +25,9 @@
 		"TemplateFlowPath": "",
 		"TemplateFlowTemplates": ["MNI152NLin2009cAsym", "MNI152NLin6Asym", "OASIS30ANTs", "MNIPediatricAsym", "MNIInfant"],
 		"FMapCleanupROIs": 3,
-		"FMRIPrepMemoryUsage": "20000",
+		"FMRIPrepMemoryUsage": "50000",
 		"FMRIPrepTimeUsage": "16:0:0",
-		"NThreads": "8",
+		"NThreads": "12",
         "LogDirectory": "",
 		"DockerToggle": false,
 		"DockerFMRIPrepVersion": ""
