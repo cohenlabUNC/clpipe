@@ -2,7 +2,7 @@
 DICOM to BIDs conversion
 ========================
 
-clpipe has several commands to facilitate the conversion of DICOM files into NiFTI files all in BIDS format. We use `dcm2bids <https://https://github.com/cbedetti/Dcm2Bids>`_, which is a flexible system for converting DICOM files. It does require the creation of a configuration file, a JSON that directs the conversion. Below we have an example of what this might look like.
+clpipe has several commands to facilitate the conversion of DICOM files into NiFTI files all in BIDS format. We use `dcm2bids <https://github.com/UNFmontreal/Dcm2Bids>`_, which is a flexible system for converting DICOM files. It does require the creation of a configuration file, a JSON that directs the conversion. Below we have an example of what this might look like.
 
 One important thing to note about using the main command is the need for a specifically formatted `dicom_dir_format` option. This is to appropriately map your dicom directories to subject/sessions. All subject session folders should be named the same way. A dicom_dir_format must contain at least {session} and can contain a {subject} formatting option.  Two examples of a dicom_dir_format option are `{subject}_{session}/`, which corresponds to the following structure:
 
