@@ -6,6 +6,7 @@
 .idea/
 venv/
 build/
+dist/
 clpipe.egg-info/
 Test_BIDS/
 # if you remove the above rule, at least ignore the following:
@@ -58,3 +59,7 @@ crashlytics-build.properties
 staticfiles
 .env
 TestFiles/dicom_info_13002.tsv
+
+#vscode
+.vscode
+*.code-workspace
