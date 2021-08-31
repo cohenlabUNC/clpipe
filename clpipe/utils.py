@@ -15,3 +15,12 @@ def command_log(config):
     ctx = click.get_current_context()
     print(ctx.info_name)
     print(os.getlogin())
+
+def parse_cli_subjects(directory_path: str, subjects:list=None):
+    if not subjects:
+        sublist = [o.replace('sub-', '') for o in os.listdir(directory_path)
+                   if os.path.isdir(os.path.join(directory_path, o)) and 'sub-' in o]
+    else:
+        sublist = subjects
+
+    return sublist

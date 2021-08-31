@@ -6,6 +6,7 @@ from .config_json_parser import ClpipeConfigParser
 import logging
 import sys
 from .error_handler import exception_handler
+from .utils import parse_cli_subjects
 
 @click.command()
 @click.argument('subjects', nargs=-1, required=False, default=None)
@@ -27,14 +28,14 @@ from .error_handler import exception_handler
               help='Submit to batch, or run in current session. Mainly used internally.')
 @click.option('-debug', is_flag=True, default=False,
               help='Print detailed processing information and traceback for errors.')
-def intensity_normalization_cli(config_file=None, fmri_derivatives=None, output_dir=None,
+def intensity_normalization_cli(subjects=None, config_file=None, target_dir=None, output_dir=None,
                      output_suffix=None, log_dir=None,
                      submit=False, batch=True, task=None, debug = None):
-    intensity_normalization(config_file=config_file, fmri_derivatives=fmri_derivatives, output_dir=output_dir,
+    intensity_normalization(subjects=subjects, config_file=config_file, target_dir=target_dir, output_dir=output_dir,
         output_suffix=output_suffix, log_dir=log_dir, submit=submit, batch=batch, debug=debug)
     
 
-def intensity_normalization(config_file=None, fmri_derivatives=None, output_dir=None,
+def intensity_normalization(subjects=None, config_file=None, target_dir=None, output_dir=None,
                         output_suffix=None, log_dir=None,
                         submit=False, batch=True, debug = None):
     if not debug:
@@ -42,12 +43,15 @@ def intensity_normalization(config_file=None, fmri_derivatives=None, output_dir=
         logging.basicConfig(level=logging.INFO)
     else:
         logging.basicConfig(level=logging.DEBUG)
-    logging.debug(build_arg_string(config_file=config_file, fmri_derivatives=fmri_derivatives, output_dir=output_dir,
-        output_suffix=output_suffix, log_dir=log_dir, submit=submit, batch=batch, debug=debug))
+        logging.debug(build_arg_string(subjects=subjects, config_file=config_file, target_dir=target_dir, output_dir=output_dir,
+            output_suffix=output_suffix, log_dir=log_dir, submit=submit, batch=batch, debug=debug))
 
     config = ClpipeConfigParser()
     config.config_updater(config_file)
     config.validate_config()
+
+    subjects = parse_cli_subjects(target_dir)
+    logging.info(f"Processing subjects: {subjects}")
 
 def build_arg_string(**kwargs):
     out = " Submitted Args:\n"
