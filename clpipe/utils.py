@@ -24,3 +24,10 @@ def parse_cli_subjects(directory_path: str, subjects:list=None):
         sublist = subjects
 
     return sublist
+
+def build_arg_string(**kwargs):
+    out = " Submitted Args:\n"
+    for arg in kwargs:
+        out += f"\t{arg}: {str(kwargs[arg])}\n"
+
+    return(out)
