@@ -1,3 +1,6 @@
+import sys
+sys.path.append('../clpipe')
+
 import tempfile
 import os
 from pathlib import Path
@@ -8,7 +11,8 @@ from clpipe.project_setup import project_setup
 NUM_SUBJECTS = 8
 PROJECT_TITLE = "test_project"
 
-def setup_test_directory(temporary=True, show=True, num_subjects=NUM_SUBJECTS, project_title=PROJECT_TITLE):
+def setup_test_directory(temporary=True, show=True, populate_bids=True, populate_fmriprep=False,
+ num_subjects=NUM_SUBJECTS, project_title=PROJECT_TITLE):
     """
     Sets up a test directory for running against clpipe.
 
@@ -17,8 +21,11 @@ def setup_test_directory(temporary=True, show=True, num_subjects=NUM_SUBJECTS, p
             under TestFiles/[PROJECT_TITLE], which is not idempotent and will fail if a given project
             already exists. Defaults to True.
         show (bool, optional): Prints the generated filesystem. Defaults to True.
+        populate_bids (bool, optional): include bids subject folders
+        populate_fmriprep (bool, optional): include fmriprep output folders
         num_subjects (int, optional): Number of subjects to place in data_BIDS. Defaults to NUM_SUBJECTS.
         project_title (str, optional): Name of test directory folder and clpipe project. Defaults to PROJECT_TITLE.
+        
 
     Raises:
         Exception: Any errors from clpipe project_setup command are raised
@@ -58,9 +65,16 @@ def setup_test_directory(temporary=True, show=True, num_subjects=NUM_SUBJECTS, p
         raise Exception(result.exception)
 
     # Populate the BIDS directory
-    for sub_num in range(num_subjects):
-        subject_folder = base_dir / "data_BIDS" / f"sub-{sub_num}"
-        subject_folder.mkdir(parents=True, exist_ok=True)
+    if populate_bids:
+        for sub_num in range(num_subjects):
+            subject_folder = base_dir / "data_BIDS" / f"sub-{sub_num}"
+            subject_folder.mkdir(parents=True, exist_ok=True)
+
+    # Populate the data_fmriprep directory
+    if populate_fmriprep:
+        for sub_num in range(num_subjects):
+            subject_folder = base_dir / "data_fmriprep" / f"sub-{sub_num}"
+            subject_folder.mkdir(parents=True, exist_ok=True)
 
     if show:
         print(f"[{project_title}]")
@@ -69,10 +83,13 @@ def setup_test_directory(temporary=True, show=True, num_subjects=NUM_SUBJECTS, p
             if clpipe_file.name == 'data_BIDS':
                 for bids_file in os.scandir(base_dir / clpipe_file.name):
                     print(f"----- {bids_file.name}")
+            if populate_fmriprep and clpipe_file.name == 'data_fmriprep':
+                for fmriprep_file in os.scandir(base_dir / "data_fmriprep"):
+                    print(f"----- {fmriprep_file.name}")
     
     return base_dir
 
 
 if __name__ == "__main__":
-    setup_test_directory()
+    setup_test_directory(populate_fmriprep=True)
 
