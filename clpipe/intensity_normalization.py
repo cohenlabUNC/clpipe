@@ -6,7 +6,7 @@ from .config_json_parser import ClpipeConfigParser
 import logging
 import sys
 from .error_handler import exception_handler
-from .utils import parse_cli_subjects
+from .utils import parse_dir_subjects, build_arg_string
 
 @click.command()
 @click.argument('subjects', nargs=-1, required=False, default=None)
@@ -50,15 +50,9 @@ def intensity_normalization(subjects=None, config_file=None, target_dir=None, ou
     config.config_updater(config_file)
     config.validate_config()
 
-    subjects = parse_cli_subjects(target_dir)
+    if subjects is None:
+        subjects = parse_dir_subjects(target_dir)
     logging.info(f"Processing subjects: {subjects}")
-
-def build_arg_string(**kwargs):
-    out = " Submitted Args:\n"
-    for arg in kwargs:
-        out += f"\t{arg}: {str(kwargs[arg])}\n"
-
-    return(out)
         
     
 

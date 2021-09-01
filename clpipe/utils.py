@@ -32,6 +32,8 @@ def parse_dir_subjects(directory_path: str, prefix='sub-'):
     return sublist
 
 def build_arg_string(**kwargs):
+    """Builds a string based on keyword arguments for debug display.
+    """
     out = " Submitted Args:\n"
     for arg in kwargs:
         out += f"\t{arg}: {str(kwargs[arg])}\n"
