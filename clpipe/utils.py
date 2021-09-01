@@ -16,12 +16,18 @@ def command_log(config):
     print(ctx.info_name)
     print(os.getlogin())
 
-def parse_cli_subjects(directory_path: str, subjects:list=None):
-    if not subjects:
-        sublist = [o.replace('sub-', '') for o in os.listdir(directory_path)
-                   if os.path.isdir(os.path.join(directory_path, o)) and 'sub-' in o]
-    else:
-        sublist = subjects
+def parse_dir_subjects(directory_path: str, prefix='sub-'):
+    """Generates a list of subjects based on the folder names of a given directory.
+
+    Args:
+        directory_path (str): [description]
+        subjects (list, optional): [description]. Defaults to None.
+
+    Returns:
+        list: list of subject ids
+    """
+    sublist = [o.replace(prefix, '') for o in os.listdir(directory_path)
+                if os.path.isdir(os.path.join(directory_path, o)) and prefix in o]
 
     return sublist
 
