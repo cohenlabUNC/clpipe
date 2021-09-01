@@ -1,31 +1,104 @@
 import sys
 sys.path.append('../clpipe')
 
-from clpipe.intensity_normalization import intensity_normalization
-from testing_tools import setup_test_directory
+from click.testing import CliRunner
 from pathlib import Path
 
+from clpipe.intensity_normalization import *
+from testing_tools import setup_test_directory, PROJECT_TITLE
 
-def test_intensity_normalization(tmpdir: Path):
-    intensity_normalization(config_file=tmpdir / "clpipe_config.json",
-                            target_dir=tmpdir / "data_fmriprep",
-                            output_dir=tmpdir / "data_postproc/intensity_normalized",
-                            output_suffix=tmpdir / "normalized",
-                            log_dir=tmpdir / "logs/intensity_normaliztion",
-                            submit=False,
-                            batch=False,
-                            debug=True)
+tmpdir = setup_test_directory(temporary=True, populate_fmriprep=True)
+
+CONFIG_FILE_PATH = str(tmpdir / "clpipe_config.json")
+TARGET_DIR_PATH = str(tmpdir / "data_fmriprep")
+OUTPUT_DIR_PATH = str(tmpdir / "data_postproc" / "postproc_normalize")
+OUTPUT_SUFFIX = "_normalized"
+LOG_DIR_PATH = str(tmpdir / "logs")
+
+logging.basicConfig(level=logging.INFO)
+
+def test_intensity_normalization_cli_10000_global_median():
+    runner = CliRunner()
+    result = runner.invoke(
+    intensity_normalization_cli, 
+    [
+        '-rescaling_method', RESCALING_10000_GLOBALMEDIAN, 
+        '-config_file', CONFIG_FILE_PATH,
+        '-target_dir', TARGET_DIR_PATH,
+        '-output_dir', OUTPUT_DIR_PATH, 
+        '-output_suffix', OUTPUT_SUFFIX, 
+        '-log_dir', LOG_DIR_PATH,
+        '-submit', True, 
+        '-batch', False, 
+        '-debug', True, 
+    ])
+
+    if result.exit_code != 0:
+        raise Exception(result.exception)
+
+def test_intensity_normalization_cli_100_voxel_mean():
+    runner = CliRunner()
+    result = runner.invoke(
+    intensity_normalization_cli, 
+    [
+        '-rescaling_method', RESCALING_100_VOXELMEAN, 
+        '-config_file', CONFIG_FILE_PATH,
+        '-target_dir', TARGET_DIR_PATH,
+        '-output_dir', OUTPUT_DIR_PATH, 
+        '-output_suffix', OUTPUT_SUFFIX, 
+        '-log_dir', LOG_DIR_PATH,
+        '-submit', True, 
+        '-batch', False, 
+        '-debug', True, 
+    ])
+
+    if result.exit_code != 0:
+        raise Exception(result.exception)
 
 def test_intensity_normalization_None():
-    intensity_normalization(config_file=None,
-                            target_dir=None,
-                            output_dir=None,
-                            output_suffix=None,
-                            log_dir=None,
-                            submit=False,
-                            batch=False,
-                            debug=True)
+    runner = CliRunner()
+    result = runner.invoke(
+    intensity_normalization_cli, 
+    [
+        '-rescaling_method', "", 
+        '-config_file', "",
+        '-target_dir', "",
+        '-output_dir', "", 
+        '-output_suffix', "", 
+        '-log_dir', "",
+        '-submit', False, 
+        '-batch', False, 
+        '-debug', True, 
+    ])
+
+    if result.exit_code != 0:
+        raise Exception(result.exception)
+
+def test_intensity_normalization_10000_global_median():
+    image_path = ""
+    output_path = ""
+    intensity_normalization(image_path, output_path,
+                            rescaling_method=RESCALING_10000_GLOBALMEDIAN,
+                            median_intensity=None,
+                            rescaling_factor=None,
+                            smoothing_suffix="_normalized")
+
+def test_intensity_normalization_100_voxel_mean():
+    image_path = ""
+    output_path = ""
+    intensity_normalization(image_path, output_path,
+                            rescaling_method=RESCALING_100_VOXELMEAN,
+                            median_intensity=None,
+                            rescaling_factor=None,
+                            smoothing_suffix="_normalized")
+
+def test_calculate_10000_global_median():
+    image = None
+    calculate_10000_global_median(image)
+
+def test_calculate_100_voxel_mean():
+    image = None
+    calculate_100_voxel_mean(image)
 
 if __name__ == "__main__":
-    tmpdir = setup_test_directory(populate_fmriprep=True)
-    test_intensity_normalization(tmpdir)
+    test_intensity_normalization_cli_100_voxel_mean()
