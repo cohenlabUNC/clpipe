@@ -8,7 +8,7 @@ from pathlib import Path
 
 def test_intensity_normalization(tmpdir: Path):
     intensity_normalization(config_file=tmpdir / "clpipe_config.json",
-                            target_dir=tmpdir / "data_postproc",
+                            target_dir=tmpdir / "data_fmriprep",
                             output_dir=tmpdir / "data_postproc/intensity_normalized",
                             output_suffix=tmpdir / "normalized",
                             log_dir=tmpdir / "logs/intensity_normaliztion",
@@ -27,5 +27,5 @@ def test_intensity_normalization_None():
                             debug=True)
 
 if __name__ == "__main__":
-    tmpdir = setup_test_directory()
+    tmpdir = setup_test_directory(populate_fmriprep=True)
     test_intensity_normalization(tmpdir)
