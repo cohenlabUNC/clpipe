@@ -75,22 +75,20 @@ def test_intensity_normalization_None():
         raise Exception(result.exception)
 
 def test_intensity_normalization_10000_global_median():
-    image_path = ""
-    output_path = ""
-    intensity_normalization(image_path, output_path,
-                            rescaling_method=RESCALING_10000_GLOBALMEDIAN,
+    intensity_normalization(rescaling_method=RESCALING_10000_GLOBALMEDIAN,
+                            target_dir=TARGET_DIR_PATH,
                             median_intensity=None,
                             rescaling_factor=None,
-                            smoothing_suffix="_normalized")
+                            output_dir=OUTPUT_DIR_PATH,
+                            )
 
 def test_intensity_normalization_100_voxel_mean():
-    image_path = ""
-    output_path = ""
-    intensity_normalization(image_path, output_path,
-                            rescaling_method=RESCALING_100_VOXELMEAN,
+    intensity_normalization(rescaling_method=RESCALING_100_VOXELMEAN,
+                            target_dir=TARGET_DIR_PATH,
                             median_intensity=None,
                             rescaling_factor=None,
-                            smoothing_suffix="_normalized")
+                            output_dir=OUTPUT_DIR_PATH,
+                            )
 
 def test_calculate_10000_global_median():
     image = None
@@ -101,4 +99,4 @@ def test_calculate_100_voxel_mean():
     calculate_100_voxel_mean(image)
 
 if __name__ == "__main__":
-    test_intensity_normalization_cli_100_voxel_mean()
+    test_intensity_normalization_100_voxel_mean()
