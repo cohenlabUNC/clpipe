@@ -8,6 +8,9 @@ import sys
 from .error_handler import exception_handler
 from .utils import parse_dir_subjects, build_arg_string
 
+from nipype.interfaces.fsl.maths import MeanImage, BinaryMaths
+import nipype.pipeline.engine as pe 
+
 RESCALING_10000_GLOBALMEDIAN = "10000_globalmedian"
 RESCALING_100_VOXELMEAN = "100_voxelmean"
 RESCALING_METHODS = (RESCALING_10000_GLOBALMEDIAN, RESCALING_100_VOXELMEAN)
@@ -98,6 +101,7 @@ def intensity_normalization(subjects:list=None, config_file:str=None, rescaling_
         subjects = parse_dir_subjects(target_dir)
     LOG.info(f"Processing subjects: {subjects}")
 
+    # TODO: Process as nipype workflows
     # TODO: Process these as batch jobs
     # TODO: Path parsing logic
     for subject in subjects:
@@ -122,7 +126,22 @@ def calculate_10000_global_median(nii_image, median_intensity=None, rescaling_fa
     #TODO: implement
     pass
 
-def calculate_100_voxel_mean(nii_image):
+def calculate_100_voxel_mean(in_path: str, out_path: str):
+    """Perform intensity normalization using the 100 voxel mean method.
+
+    Args:
+        in_path (str): A path to an input .nii to normalize.
+        out_path (str): A path to save the normalized image.
+    """
     LOG.info(f"Calculating {RESCALING_100_VOXELMEAN}")
-    #TODO: implement
-    pass
+    mean_node = pe.Node(MeanImage(in_file=in_path), name='mean')
+    mul100_node = pe.Node(BinaryMaths(operation='mul', operand_value=100, in_file=in_path),
+        name="mul100")
+    div_mean_node = pe.Node(BinaryMaths(operation='div', out_file=out_path), name="div_mean") #operand_file=mean_path
+
+    workflow = pe.Workflow(name='100_voxel_mean')
+    workflow.base_dir = '.'
+
+    workflow.connect(mul100_node, "out_file", div_mean_node, "in_file")
+    workflow.connect(mean_node, "out_file",  div_mean_node, "operand_file")
+    workflow.run()
