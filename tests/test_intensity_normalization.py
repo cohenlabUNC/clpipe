@@ -1,4 +1,5 @@
 import sys
+import pytest
 sys.path.append('../clpipe')
 
 from click.testing import CliRunner
@@ -7,16 +8,44 @@ from pathlib import Path
 from clpipe.intensity_normalization import *
 from testing_tools import setup_test_directory, PROJECT_TITLE
 
-tmpdir = setup_test_directory(temporary=True, populate_fmriprep=True)
+#tmpdir = setup_test_directory(temporary=True, populate_fmriprep=True)
 
-CONFIG_FILE_PATH = str(tmpdir / "clpipe_config.json")
-TARGET_DIR_PATH = str(tmpdir / "data_fmriprep")
-OUTPUT_DIR_PATH = str(tmpdir / "data_postproc" / "postproc_normalize")
+CONFIG_FILE_PATH = "clpipe_config.json"
+TARGET_DIR_PATH = "data_fmriprep"
+OUTPUT_DIR_PATH = "data_postproc/postproc_normalize"
 OUTPUT_SUFFIX = "_normalized"
-LOG_DIR_PATH = str(tmpdir / "logs")
+LOG_DIR_PATH = "logs"
 
 logging.basicConfig(level=logging.INFO)
 
+PROJECT_TITLE = "test_project"
+from click.testing import CliRunner
+from clpipe.project_setup import project_setup
+
+@pytest.fixture
+def clpipe_dir(tmpdir):
+    raw_data = Path(tmpdir / "data_DICOMs")
+    raw_data.mkdir(parents=True, exist_ok=True)
+
+    # Use the clpipe CLI to setup project
+    runner = CliRunner()
+    result = runner.invoke(
+        project_setup, 
+        [
+            '-project_title', PROJECT_TITLE, 
+            '-project_dir', str(tmpdir),
+            '-source_data', str(raw_data), 
+        ]
+    )
+
+    # Raise any exceptions from the CLI
+    if result.exit_code != 0:
+        raise Exception(result.exception)
+
+    return tmpdir
+
+
+@pytest.mark.skip(reason="Not yet implemented")
 def test_intensity_normalization_cli_10000_global_median():
     runner = CliRunner()
     result = runner.invoke(
@@ -36,6 +65,7 @@ def test_intensity_normalization_cli_10000_global_median():
     if result.exit_code != 0:
         raise Exception(result.exception)
 
+@pytest.mark.skip(reason="Not yet implemented")
 def test_intensity_normalization_cli_100_voxel_mean():
     runner = CliRunner()
     result = runner.invoke(
@@ -55,6 +85,7 @@ def test_intensity_normalization_cli_100_voxel_mean():
     if result.exit_code != 0:
         raise Exception(result.exception)
 
+@pytest.mark.skip(reason="Not yet implemented")
 def test_intensity_normalization_None():
     runner = CliRunner()
     result = runner.invoke(
@@ -74,6 +105,7 @@ def test_intensity_normalization_None():
     if result.exit_code != 0:
         raise Exception(result.exception)
 
+@pytest.mark.skip(reason="Not yet implemented")
 def test_intensity_normalization_10000_global_median():
     intensity_normalization(rescaling_method=RESCALING_10000_GLOBALMEDIAN,
                             target_dir=TARGET_DIR_PATH,
@@ -82,6 +114,7 @@ def test_intensity_normalization_10000_global_median():
                             output_dir=OUTPUT_DIR_PATH,
                             )
 
+@pytest.mark.skip(reason="Not yet implemented")
 def test_intensity_normalization_100_voxel_mean():
     intensity_normalization(rescaling_method=RESCALING_100_VOXELMEAN,
                             target_dir=TARGET_DIR_PATH,
@@ -90,13 +123,14 @@ def test_intensity_normalization_100_voxel_mean():
                             output_dir=OUTPUT_DIR_PATH,
                             )
 
+@pytest.mark.skip(reason="Not yet implemented")
 def test_calculate_10000_global_median():
     image = None
     calculate_10000_global_median(image)
 
-def test_calculate_100_voxel_mean():
+def test_calculate_100_voxel_mean(clpipe_dir):
     image = None
-    calculate_100_voxel_mean(image)
+    calculate_100_voxel_mean(str(clpipe_dir), str(clpipe_dir))
 
 if __name__ == "__main__":
-    test_intensity_normalization_100_voxel_mean()
+    test_calculate_100_voxel_mean()
