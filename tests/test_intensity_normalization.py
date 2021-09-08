@@ -22,10 +22,10 @@ DEFAULT_RANDOM_NII_DIMS = (3, 3, 3, 12)
 logging.basicConfig(level=logging.INFO)
 
 @pytest.fixture(scope="session")
-def clpipe_dir(tmpdir_factory):
+def clpipe_dir(tmp_path_factory):
     #TODO: abstract this out for use in future test modules
     """Fixture which provides a temporary clpipe project folder."""
-    proj_path = tmpdir_factory.mktemp(PROJECT_TITLE)
+    proj_path = tmp_path_factory.mktemp(PROJECT_TITLE)
     
     raw_data = Path(proj_path / "data_DICOMs")
     raw_data.mkdir(parents=True, exist_ok=True)
@@ -178,10 +178,24 @@ def test_intensity_normalization_100_voxel_mean():
                             output_dir=OUTPUT_DIR_PATH,
                             )
 
-@pytest.mark.skip(reason="Not yet implemented")
-def test_calculate_10000_global_median():
-    image = None
-    calculate_10000_global_median(image)
+def test_calculate_10000_global_median(tmp_path, random_nii):
+    out_path = tmp_path / "normalized.nii.gz"
+    calculate_10000_global_median(random_nii, out_path, base_dir=tmp_path)
+
+
+    random_nii_data = nib.load(random_nii).get_fdata()
+    normalized_data = nib.load(out_path).get_fdata()
+
+    # Ensure the shape is 4d
+    assert len(normalized_data.shape) == 4
+
+    median = np.median(random_nii_data, axis=3)
+    rescale_factor = 10000 / median
+    mul_rescale = random_nii_data * rescale_factor
+
+    # Ensure the calculation for a single voxel matches a voxel from the image dataset
+    assert round(mul_rescale[0][0], 2) == round(normalized_data[0][0][0][0], 2)
+
 
 def test_calculate_100_voxel_mean(tmp_path, random_nii):
     out_path = tmp_path / "normalized.nii.gz"
@@ -190,11 +204,12 @@ def test_calculate_100_voxel_mean(tmp_path, random_nii):
     random_nii_data = nib.load(random_nii).get_fdata()
     normalized_data = nib.load(out_path).get_fdata()
 
+    # Ensure the shape is 4d
+    assert len(normalized_data.shape) == 4
+
     mean = np.average(random_nii_data, axis=3)[0]
     mul100 = random_nii_data[0][0][0][0] * 100
     div_mean = mul100 / mean
 
-    # Ensure the shape is 4d
-    assert len(normalized_data.shape) == 4
     # Ensure the calculation for a single voxel matches a voxel from the image dataset
     assert round(div_mean[0][0], 2) == round(normalized_data[0][0][0][0], 2)

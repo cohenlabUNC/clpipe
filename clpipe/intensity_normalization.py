@@ -121,7 +121,7 @@ def intensity_normalization(subjects:list=None, config_file:str=None, rescaling_
         #TODO: Save image
         LOG.info(f"Rescaling complete and saved to: {output_dir}")
 
-def calculate_10000_global_median(nii_image, median_intensity=None, rescaling_factor=None):
+def calculate_10000_global_median(in_path: os.PathLike, out_path:os.PathLike, base_dir: os.PathLike):
     LOG.info(f"Calculating {RESCALING_10000_GLOBALMEDIAN}")
     #TODO: implement
     pass
