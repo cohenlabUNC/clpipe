@@ -6,7 +6,6 @@ from click.testing import CliRunner
 from pathlib import Path
 
 from clpipe.intensity_normalization import *
-from testing_tools import setup_test_directory, PROJECT_TITLE
 
 #tmpdir = setup_test_directory(temporary=True, populate_fmriprep=True)
 
@@ -24,6 +23,8 @@ from clpipe.project_setup import project_setup
 
 @pytest.fixture
 def clpipe_dir(tmpdir):
+    #TODO: abstract this out for use in future test modules
+    """Fixture which provides a temporary clpipe project folder."""
     raw_data = Path(tmpdir / "data_DICOMs")
     raw_data.mkdir(parents=True, exist_ok=True)
 
