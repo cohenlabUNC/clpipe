@@ -126,7 +126,7 @@ def calculate_10000_global_median(nii_image, median_intensity=None, rescaling_fa
     #TODO: implement
     pass
 
-def calculate_100_voxel_mean(in_path: str, out_path: str):
+def calculate_100_voxel_mean(in_path: os.PathLike, out_path: os.PathLike, base_dir: os.PathLike=None):
     """Perform intensity normalization using the 100 voxel mean method.
 
     Args:
@@ -139,8 +139,7 @@ def calculate_100_voxel_mean(in_path: str, out_path: str):
         name="mul100")
     div_mean_node = pe.Node(BinaryMaths(operation='div', out_file=out_path), name="div_mean") #operand_file=mean_path
 
-    workflow = pe.Workflow(name='100_voxel_mean')
-    workflow.base_dir = '.'
+    workflow = pe.Workflow(name='100_voxel_mean', base_dir=base_dir)
 
     workflow.connect(mul100_node, "out_file", div_mean_node, "in_file")
     workflow.connect(mean_node, "out_file",  div_mean_node, "operand_file")

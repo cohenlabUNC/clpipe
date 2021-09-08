@@ -63,3 +63,6 @@ TestFiles/
 #vscode
 .vscode
 *.code-workspace
+
+#pytest
+.pytest_cache

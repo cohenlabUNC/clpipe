@@ -3,6 +3,8 @@ import pytest
 from pathlib import Path
 
 from click.testing import CliRunner
+import numpy as np
+import nibabel as nib
 
 sys.path.append('../clpipe')
 from clpipe.intensity_normalization import *
@@ -15,6 +17,7 @@ OUTPUT_SUFFIX = "_normalized"
 LOG_DIR_PATH = "logs"
 PROJECT_TITLE = "test_project"
 NUM_SUBJECTS = 8
+DEFAULT_RANDOM_NII_DIMS = (3, 3, 3, 12)
 
 logging.basicConfig(level=logging.INFO)
 
@@ -62,6 +65,40 @@ def clpipe_fmriprep_dir(clpipe_dir):
         subject_folder.mkdir()
     
     return clpipe_dir
+
+def generate_random_nii(dims: tuple=DEFAULT_RANDOM_NII_DIMS, low: int=0, high: int=10) -> nib.Nifti1Image:
+    """Creates a simple nii image with the given dimensions.
+
+    Args:
+        dims (tuple): A 3d or 4d tuple representing dimensions of the nii.
+        low (int): The floor generated voxel intensity.
+        high (int): The ceiling generated voxel intensity.
+
+    Returns:
+        nib.Nifti1Image: A random nii image.
+    """
+    size = 1
+    for x in dims:
+        size *= x
+
+    affine = np.diag([1 for x in dims])
+
+    array_data = np.random.randint(low, high=high, size=size, dtype=np.int16).reshape(dims)
+    image = nib.Nifti1Image(array_data, affine)
+
+    return image
+
+@pytest.fixture
+def random_nii(tmp_path):
+    """Provide a random, temporary nii file."""
+    
+    nii = generate_random_nii()
+    nii_path = tmp_path / "random.nii"
+    nib.save(nii, nii_path)
+
+    return nii_path
+
+    
 
 @pytest.mark.skip(reason="Not yet implemented")
 def test_intensity_normalization_cli_10000_global_median():
@@ -146,9 +183,18 @@ def test_calculate_10000_global_median():
     image = None
     calculate_10000_global_median(image)
 
-def test_calculate_100_voxel_mean(clpipe_fmriprep_dir):
-    image = None
-    calculate_100_voxel_mean(str(clpipe_fmriprep_dir), str(clpipe_fmriprep_dir))
+def test_calculate_100_voxel_mean(tmp_path, random_nii):
+    out_path = tmp_path / "normalized.nii.gz"
+    calculate_100_voxel_mean(random_nii, out_path, base_dir=tmp_path)
+    
+    random_nii_data = nib.load(random_nii).get_fdata()
+    normalized_data = nib.load(out_path).get_fdata()
 
-if __name__ == "__main__":
-    test_calculate_100_voxel_mean()
+    mean = np.average(random_nii_data, axis=3)[0]
+    mul100 = random_nii_data[0][0][0][0] * 100
+    div_mean = mul100 / mean
+
+    # Ensure the shape is 4d
+    assert len(normalized_data.shape) == 4
+    # Ensure the calculation for a single voxel matches a voxel from the image dataset
+    assert round(div_mean[0][0], 2) == round(normalized_data[0][0][0][0], 2)
