@@ -189,7 +189,7 @@ def test_calculate_10000_global_median(tmp_path, random_nii):
     # Ensure the shape is 4d
     assert len(normalized_data.shape) == 4
 
-    median = np.median(random_nii_data, axis=3)
+    median = np.median(random_nii_data)
     rescale_factor = 10000 / median
     mul_rescale = random_nii_data * rescale_factor
 
