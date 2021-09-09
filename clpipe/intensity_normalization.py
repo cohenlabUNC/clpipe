@@ -8,7 +8,8 @@ import sys
 from .error_handler import exception_handler
 from .utils import parse_dir_subjects, build_arg_string
 
-from nipype.interfaces.fsl.maths import MeanImage, BinaryMaths
+from nipype.interfaces.fsl.maths import MeanImage, BinaryMaths, MedianImage
+from nipype.interfaces.fsl.utils import ImageStats
 import nipype.pipeline.engine as pe 
 
 RESCALING_10000_GLOBALMEDIAN = "10000_globalmedian"
@@ -121,10 +122,24 @@ def intensity_normalization(subjects:list=None, config_file:str=None, rescaling_
         #TODO: Save image
         LOG.info(f"Rescaling complete and saved to: {output_dir}")
 
-def calculate_10000_global_median(in_path: os.PathLike, out_path:os.PathLike, base_dir: os.PathLike):
+def calculate_10000_global_median(in_path: os.PathLike, out_path:os.PathLike, base_dir: os.PathLike=None):
+    """Perform intensity normalization using the 10,000 global median method.
+
+    Args:
+        in_path (os.PathLike): A path to an input .nii to normalize.
+        out_path (os.PathLike): A path to save the normalized image.
+        base_dir (os.PathLike, optional): A path to the base directory for the workflow.
+    """
     LOG.info(f"Calculating {RESCALING_10000_GLOBALMEDIAN}")
-    #TODO: implement
-    pass
+
+    median_node = pe.Node(ImageStats(in_file=in_path, op_string="-p 50"), name='global_median')
+    mul_10000_node = pe.Node(BinaryMaths(in_file=in_path, operation="mul", operand_value=10000), name="mul_10000")
+    div_median_node = pe.Node(BinaryMaths(operation="div", out_file=out_path), name="div_median")
+
+    workflow = pe.Workflow(name='10000_global_median', base_dir=base_dir)
+    workflow.connect(mul_10000_node, "out_file", div_median_node, "in_file")
+    workflow.connect(median_node, "out_stat", div_median_node, "operand_value")
+    workflow.run()
 
 def calculate_100_voxel_mean(in_path: os.PathLike, out_path: os.PathLike, base_dir: os.PathLike=None):
     """Perform intensity normalization using the 100 voxel mean method.

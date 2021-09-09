@@ -182,7 +182,6 @@ def test_calculate_10000_global_median(tmp_path, random_nii):
     out_path = tmp_path / "normalized.nii.gz"
     calculate_10000_global_median(random_nii, out_path, base_dir=tmp_path)
 
-
     random_nii_data = nib.load(random_nii).get_fdata()
     normalized_data = nib.load(out_path).get_fdata()
 
@@ -194,7 +193,7 @@ def test_calculate_10000_global_median(tmp_path, random_nii):
     mul_rescale = random_nii_data * rescale_factor
 
     # Ensure the calculation for a single voxel matches a voxel from the image dataset
-    assert round(mul_rescale[0][0], 2) == round(normalized_data[0][0][0][0], 2)
+    assert round(mul_rescale[0][0][0][0], 2) == round(normalized_data[0][0][0][0], 2)
 
 
 def test_calculate_100_voxel_mean(tmp_path, random_nii):
