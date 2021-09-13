@@ -20,7 +20,7 @@ RESCALING_DEFAULT = RESCALING_10000_GLOBALMEDIAN
 
 #TODO - should be replaced by configuration parser
 DEFAULT_TARGET_DIR = Path("data_fmriprep")
-DEFAULT_OUTPUT_DIR = Path("data_postproc" / "postproc_normalize")
+DEFAULT_OUTPUT_DIR = Path("data_postproc") /  Path("postproc_normalize")
 DEFAULT_NORMALIZATION_SUFFIX = "_normalized"
 
 LOG = logging.getLogger(__name__)
