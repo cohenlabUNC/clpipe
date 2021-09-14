@@ -164,6 +164,21 @@ class ClpipeConfigParser:
             self.config[target_output]['LogDirectory'] = os.path.join(self.config['ProjectDirectory'], 'logs', log_target)
         os.makedirs(self.config[target_output]['LogDirectory'], exist_ok=True)
 
+    def setup_intensity_normalization(self, target_dir, target_suffix, output_dir, output_suffix, method):
+        target_output = 'IntensityNormalizationOptions'
+        
+        if target_dir is not None:
+            self.config[target_output]['TargetDirectory'] = os.path.abspath(target_dir)
+        if output_dir is not None:
+            self.config[target_output]['OutputDirectory'] = os.path.abspath(output_dir)
+            os.makedirs(self.config[target_output]['OutputDirectory'], exist_ok=True)
+        if target_suffix is not None:
+            self.config[target_output]['TargetSuffix'] = target_suffix
+        if output_suffix is not None:
+            self.config[target_output]['OutputSuffix'] = output_suffix
+        if method is not None:
+            self.config[target_output]['Method'] = method
+
     def setup_heudiconv(self, dicom_directory, heuristic_file, output_directory):
         if dicom_directory is not None:
             self.config['DICOMToBIDSOptions']['DICOMDirectory'] = os.path.abspath(dicom_directory)

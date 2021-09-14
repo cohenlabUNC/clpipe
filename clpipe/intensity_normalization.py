@@ -16,12 +16,6 @@ import nipype.pipeline.engine as pe
 RESCALING_10000_GLOBALMEDIAN = "10000_globalmedian"
 RESCALING_100_VOXELMEAN = "100_voxelmean"
 RESCALING_METHODS = (RESCALING_10000_GLOBALMEDIAN, RESCALING_100_VOXELMEAN)
-RESCALING_DEFAULT = RESCALING_10000_GLOBALMEDIAN
-
-#TODO - should be replaced by configuration parser
-DEFAULT_TARGET_DIR = Path("data_fmriprep")
-DEFAULT_OUTPUT_DIR = Path("data_postproc") /  Path("postproc_normalize")
-DEFAULT_NORMALIZATION_SUFFIX = "_normalized"
 
 LOG = logging.getLogger(__name__)
 
@@ -57,9 +51,9 @@ def intensity_normalization_cli(subjects=None, config_file=None, rescaling_metho
         log_dir=log_dir, submit=submit, batch=batch, debug=debug)
     
 
-def intensity_normalization(subjects:list=None, config_file:str=None, rescaling_method:str=RESCALING_DEFAULT,
-                            target_dir:str=DEFAULT_TARGET_DIR, target_suffix=None,
-                            output_dir:str=DEFAULT_OUTPUT_DIR, output_suffix=None, log_dir=None, submit=False,
+def intensity_normalization(subjects:list=None, config_file:str=None, rescaling_method:str=None,
+                            target_dir:str=None, target_suffix=None,
+                            output_dir:str=None, output_suffix=None, log_dir=None, submit=False,
                             batch=True, debug=False):
     """The controller for intensity normalization - handles configuration, input scrubbing, file I/O and method selection.
 
@@ -80,20 +74,29 @@ def intensity_normalization(subjects:list=None, config_file:str=None, rescaling_
         ValueError: Thrown if provided a non-valid normalization method
     """
 
+    #TODO: logging and config setup is probably generalizable
     if debug: LOG.setLevel(logging.DEBUG)
     
     LOG.debug(build_arg_string(subjects=subjects, config_file=config_file, 
         rescaling_method=rescaling_method, target_dir=target_dir,
         target_suffix=target_suffix, output_dir=output_dir, output_suffix=output_suffix,
         log_dir=log_dir, submit=submit, batch=batch, debug=debug))
-    
+
+    # Pull in current configuration
+    config = ClpipeConfigParser()
+    # If provided, override project config with parameter config
+    config.config_updater(config_file)
+    # For those provided, replace intensity normalization config values with parameter values
+    config.setup_intensity_normalization(target_dir, target_suffix, output_dir, output_suffix)
+    # Finally, overwrite parameter vars with config values
+    target_dir = config.config["IntensityNormalizationOptions"]["TargetDirectory"]
+    target_suffix = config.config["IntensityNormalizationOptions"]["TargetSuffix"]
+    output_dir = Path(config.config["IntensityNormalizationOptions"]["OutputDirectory"])
+    output_suffix = config.config["IntensityNormalizationOptions"]["OutputSuffix"]
+
+    # Validate the provided rescaling method
     if rescaling_method not in RESCALING_METHODS: 
         raise ValueError(f"Invalid rescaling method: {rescaling_method}")
-
-    #TODO: build configuration file options
-    config = ClpipeConfigParser()
-    config.config_updater(config_file)
-    config.validate_config()
 
     if subjects is None:
         subjects = parse_dir_subjects(target_dir)

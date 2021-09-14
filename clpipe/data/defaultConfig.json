@@ -69,6 +69,13 @@
 		"BIDSValidatorImage": "/proj/hng/singularity_imgs/validator.simg",
         "LogDirectory": ""
 	},
+	"IntensityNormalizationOptions": {
+		"TargetDirectory": "",
+		"TargetSuffix": "space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz",
+		"OutputDirectory": "",
+		"OutputSuffix": "",
+		"Method": "10000_globalmedian"
+	},
 	"BetaSeriesOptions": {
 		"TargetDirectory": "",
 		"TargetSuffix": "preproc_bold.nii.gz",
