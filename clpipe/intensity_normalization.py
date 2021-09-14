@@ -22,7 +22,7 @@ LOG = logging.getLogger(__name__)
 @click.command()
 @click.argument('subjects', nargs=-1, required=False, default=None)
 #TODO: Flesh out the help messages for new args
-@click.option('-rescaling_method', default=RESCALING_DEFAULT)
+@click.option('-rescaling_method', default=None)
 @click.option('-config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True), default=None,
               help='Use a given configuration file. If left blank, uses the default config file, requiring definition of BIDS, working and output directories.')
 @click.option('-target_dir', type=click.Path(exists=True, dir_okay=True, file_okay=False),

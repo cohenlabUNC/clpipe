@@ -77,7 +77,7 @@ def test_intensity_normalization_None():
 
 @pytest.mark.skip(reason="Not yet implemented")
 def test_intensity_normalization_10000_global_median():
-    intensity_normalization(rescaling_method=RESCALING_10000_GLOBALMEDIAN,
+    intensity_normalization(
                             target_dir=TARGET_DIR_PATH,
                             output_dir=OUTPUT_DIR_PATH,
                             )
