@@ -93,7 +93,7 @@ def test_intensity_normalization_100_voxel_mean(clpipe_fmriprep_dir):
     output_suffix = config.config["IntensityNormalizationOptions"]["OutputSuffix"]
     
     intensity_normalization(subjects=[1],
-                            rescaling_method=RESCALING_100_VOXELMEAN
+                            method="100_voxelmean"
                             )
 
     expected_path = output_path / "sub-1_task-rest_run-1_" + target_suffix + output_suffix

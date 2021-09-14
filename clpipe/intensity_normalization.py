@@ -15,14 +15,14 @@ import nipype.pipeline.engine as pe
 
 RESCALING_10000_GLOBALMEDIAN = "10000_globalmedian"
 RESCALING_100_VOXELMEAN = "100_voxelmean"
-RESCALING_METHODS = (RESCALING_10000_GLOBALMEDIAN, RESCALING_100_VOXELMEAN)
+METHODS = (RESCALING_10000_GLOBALMEDIAN, RESCALING_100_VOXELMEAN)
 
 LOG = logging.getLogger(__name__)
 
 @click.command()
 @click.argument('subjects', nargs=-1, required=False, default=None)
 #TODO: Flesh out the help messages for new args
-@click.option('-rescaling_method', default=None)
+@click.option('-method', default=None)
 @click.option('-config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True), default=None,
               help='Use a given configuration file. If left blank, uses the default config file, requiring definition of BIDS, working and output directories.')
 @click.option('-target_dir', type=click.Path(exists=True, dir_okay=True, file_okay=False),
@@ -51,7 +51,7 @@ def intensity_normalization_cli(subjects=None, config_file=None, rescaling_metho
         log_dir=log_dir, submit=submit, batch=batch, debug=debug)
     
 
-def intensity_normalization(subjects:list=None, config_file:str=None, rescaling_method:str=None,
+def intensity_normalization(subjects:list=None, config_file:str=None, method:str=None,
                             target_dir:str=None, target_suffix=None,
                             output_dir:str=None, output_suffix=None, log_dir=None, submit=False,
                             batch=True, debug=False):
@@ -78,7 +78,7 @@ def intensity_normalization(subjects:list=None, config_file:str=None, rescaling_
     if debug: LOG.setLevel(logging.DEBUG)
     
     LOG.debug(build_arg_string(subjects=subjects, config_file=config_file, 
-        rescaling_method=rescaling_method, target_dir=target_dir,
+        rescaling_method=method, target_dir=target_dir,
         target_suffix=target_suffix, output_dir=output_dir, output_suffix=output_suffix,
         log_dir=log_dir, submit=submit, batch=batch, debug=debug))
 
@@ -87,7 +87,7 @@ def intensity_normalization(subjects:list=None, config_file:str=None, rescaling_
     # If provided, override project config with parameter config
     config.config_updater(config_file)
     # For those provided, replace intensity normalization config values with parameter values
-    config.setup_intensity_normalization(target_dir, target_suffix, output_dir, output_suffix)
+    config.setup_intensity_normalization(target_dir, target_suffix, output_dir, output_suffix, method)
     # Finally, overwrite parameter vars with config values
     target_dir = config.config["IntensityNormalizationOptions"]["TargetDirectory"]
     target_suffix = config.config["IntensityNormalizationOptions"]["TargetSuffix"]
@@ -95,8 +95,8 @@ def intensity_normalization(subjects:list=None, config_file:str=None, rescaling_
     output_suffix = config.config["IntensityNormalizationOptions"]["OutputSuffix"]
 
     # Validate the provided rescaling method
-    if rescaling_method not in RESCALING_METHODS: 
-        raise ValueError(f"Invalid rescaling method: {rescaling_method}")
+    if method not in METHODS: 
+        raise ValueError(f"Invalid rescaling method: {method}")
 
     if subjects is None:
         subjects = parse_dir_subjects(target_dir)
@@ -107,14 +107,14 @@ def intensity_normalization(subjects:list=None, config_file:str=None, rescaling_
     # TODO: Path parsing logic
     for subject in subjects:
         LOG.info(f"Rescaling target: {target_dir}")
-        LOG.info(f"Rescaling method: {rescaling_method}")
+        LOG.info(f"Rescaling method: {method}")
 
-        if rescaling_method == RESCALING_10000_GLOBALMEDIAN:
+        if method == RESCALING_10000_GLOBALMEDIAN:
             calculate_10000_global_median(target_dir, output_dir)
-        elif rescaling_method == RESCALING_100_VOXELMEAN:
+        elif method == RESCALING_100_VOXELMEAN:
             calculate_100_voxel_mean(target_dir, output_dir)
         else:
-            raise ValueError(f"Invalid rescaling method: {rescaling_method}")
+            raise ValueError(f"Invalid rescaling method: {method}")
 
         #TODO: Save image
         LOG.info(f"Rescaling complete and saved to: {output_dir}")
