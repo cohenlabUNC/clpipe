@@ -86,7 +86,7 @@ class ClpipeConfigParser:
                             output_dir=os.path.join(self.config['ProjectDirectory'], 'data_postproc',
                                                     'postproc_default'),
                             output_suffix='postproc_default.nii.gz')
-        self.setup_intensity_normalization(os.path.join(self.config['FMRIPrepOptions']['OutputDirectory']),
+        self.setup_intensity_normalization(os.path.join(self.config['FMRIPrepOptions']['OutputDirectory'], "fmriprep"),
                                             None,
                                             os.path.join(self.config['ProjectDirectory'], 'data_postproc', 'normalized'),
                                             None,
