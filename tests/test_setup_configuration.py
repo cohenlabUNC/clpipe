@@ -29,7 +29,7 @@ def test_setup_project_extra(clpipe_dir, project_paths):
 
 @pytest.fixture()
 def project_paths():
-    """List of expected relative project paths"""
+    """List of expected relative project paths. Path is used over strings for os abstraction."""
     return [
         Path("analyses"),
         Path("data_DICOMs"),
