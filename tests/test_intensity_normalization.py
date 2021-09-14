@@ -7,6 +7,7 @@ import nibabel as nib
 
 sys.path.append('../clpipe')
 from clpipe.intensity_normalization import *
+from clpipe.config_json_parser import ClpipeConfigParser
 
 CONFIG_FILE_PATH = "clpipe_config.json"
 FMRI_PREPPED_SUFFIX = "_boldref"
@@ -81,17 +82,23 @@ def test_intensity_normalization_10000_global_median():
                             output_dir=OUTPUT_DIR_PATH,
                             )
 
-@pytest.mark.skip(reason="Not yet implemented")
 def test_intensity_normalization_100_voxel_mean(clpipe_fmriprep_dir):
-    normalization_path = clpipe_fmriprep_dir / OUTPUT_DIR_PATH
+    """Asserts that intensity_normalization() creates a normalized image using the 100 voxel mean method
+    and saves the output using the configurations provided in clpipe_config.json """
+
+    config = ClpipeConfigParser()
+    
+    target_suffix = config.config["IntensityNormalizationOptions"]["TargetSuffix"]
+    output_path = Path(config.config["IntensityNormalizationOptions"]["OutputDirectory"])
+    output_suffix = config.config["IntensityNormalizationOptions"]["OutputSuffix"]
     
     intensity_normalization(subjects=[1],
-                            rescaling_method=RESCALING_100_VOXELMEAN,
-                            target_dir=clpipe_fmriprep_dir,
-                            output_dir=normalization_path,
+                            rescaling_method=RESCALING_100_VOXELMEAN
                             )
 
-    sample_path = normalization_path / "sub-1"
+    expected_path = output_path / "sub-1_task-rest_run-1_" + target_suffix + output_suffix
+    
+    assert expected_path.exists()
 
 def test_calculate_10000_global_median(tmp_path, random_nii):
     out_path = tmp_path / "normalized.nii.gz"
