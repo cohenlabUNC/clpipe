@@ -106,8 +106,8 @@ def intensity_normalization(subjects:list=None, config_file:str=None, method:str
     # TODO: Process these as batch jobs
     # TODO: Path parsing logic
     for subject in subjects:
-        LOG.info(f"Rescaling target: {target_dir}")
-        LOG.info(f"Rescaling method: {method}")
+        LOG.info(f"Normalization target: {target_dir}")
+        LOG.info(f"Normalization method: {method}")
 
         if method == RESCALING_10000_GLOBALMEDIAN:
             calculate_10000_global_median(target_dir, output_dir)
