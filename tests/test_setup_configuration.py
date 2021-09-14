@@ -52,6 +52,7 @@ def project_paths():
         Path("data_postproc", "postproc_default"),
         Path("data_postproc", "postproc_noGSR"),
         Path("data_postproc", "postproc_noScrub"),
+        Path("data_postproc", "normalized"),
         Path("data_ROI_ts"),
         Path('data_ROI_ts/postproc_default'),
         Path("l1_feat_folders"),
