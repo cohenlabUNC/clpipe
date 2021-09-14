@@ -5,6 +5,7 @@ from pathlib import Path
 from click.testing import CliRunner
 
 from clpipe.project_setup import project_setup
+from clpipe.config_json_parser import ClpipeConfigParser
 
 PROJECT_TITLE = "test_project"
 NUM_SUBJECTS = 8
@@ -12,7 +13,6 @@ DEFAULT_RANDOM_NII_DIMS = (3, 3, 3, 12)
 
 @pytest.fixture(scope="session")
 def clpipe_dir(tmp_path_factory):
-    #TODO: abstract this out for use in future test modules
     """Fixture which provides a temporary clpipe project folder."""
     proj_path = tmp_path_factory.mktemp(PROJECT_TITLE)
     
@@ -48,15 +48,17 @@ def clpipe_bids_dir(clpipe_dir):
 
 @pytest.fixture
 def clpipe_fmriprep_dir(clpipe_dir):
-    """Fixture which adds fmriprep subject folders and data to data_fmriprep."""
-    fmriprep_postfix = "_boldref"
+    """Fixture which adds fmriprep subject folders and mock fmriprep output data to data_fmriprep directory."""
+
+    config = ClpipeConfigParser()
+    target_fmriprep_suffix = config.config["PostProcessingOptions"]["TargetSuffix"]
 
     for sub_num in range(NUM_SUBJECTS):
-        subject_folder = clpipe_dir / "data_fmriprep" / f"sub-{sub_num}"
-        subject_folder.mkdir()
+        subject_folder = clpipe_dir / "data_fmriprep" / "fmriprep" / f"sub-{sub_num}" / "func"
+        subject_folder.mkdir(parents=True)
 
         nii = generate_random_nii()
-        nib.save(nii, subject_folder / f"sub-{sub_num}_{fmriprep_postfix}.nii")
+        nib.save(nii, subject_folder / f"sub-{sub_num}_task-rest_run-1_{target_fmriprep_suffix}")
     
     return clpipe_dir
 
