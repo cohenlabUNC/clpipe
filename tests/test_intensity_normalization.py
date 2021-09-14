@@ -98,7 +98,7 @@ def test_intensity_normalization_100_voxel_mean(clpipe_fmriprep_dir):
 
     expected_path = output_path / "sub-1_task-rest_run-1_" + target_suffix + output_suffix
     
-    assert expected_path.exists()
+    assert expected_path.exists(), f"Expected path {expected_path} not found."
 
 def test_calculate_10000_global_median(tmp_path, random_nii):
     out_path = tmp_path / "normalized.nii.gz"
