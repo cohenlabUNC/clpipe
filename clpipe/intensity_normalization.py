@@ -102,22 +102,22 @@ def intensity_normalization(subjects:list=None, config_file:str=None, method:str
         subjects = parse_dir_subjects(target_dir)
     LOG.info(f"Processing subjects: {subjects}")
 
-    # TODO: Process as nipype workflows
+    target_path = Path(target_dir)
+
     # TODO: Process these as batch jobs
-    # TODO: Path parsing logic
-    for subject in subjects:
-        LOG.info(f"Normalization target: {target_dir}")
-        LOG.info(f"Normalization method: {method}")
+    for subject_path in target_path.glob(f'sub-{subjects}'):
+        for image_path in subject_path.glob(f'**/*{target_suffix}'):
+            LOG.info(f"Normalization target: {str(target_suffix)}")
+            LOG.info(f"Normalization method: {method}")
 
-        if method == RESCALING_10000_GLOBALMEDIAN:
-            calculate_10000_global_median(target_dir, output_dir)
-        elif method == RESCALING_100_VOXELMEAN:
-            calculate_100_voxel_mean(target_dir, output_dir)
-        else:
-            raise ValueError(f"Invalid rescaling method: {method}")
+            if method == RESCALING_10000_GLOBALMEDIAN:
+                calculate_10000_global_median(image_path, output_dir)
+            elif method == RESCALING_100_VOXELMEAN:
+                calculate_100_voxel_mean(image_path, output_dir)
+            else:
+                raise ValueError(f"Invalid rescaling method: {method}")
 
-        #TODO: Save image
-        LOG.info(f"Rescaling complete and saved to: {output_dir}")
+            LOG.info(f"Rescaling complete and saved to: {output_dir}")
 
 def calculate_10000_global_median(in_path: os.PathLike, out_path:os.PathLike, base_dir: os.PathLike=None):
     """Perform intensity normalization using the 10,000 global median method.
