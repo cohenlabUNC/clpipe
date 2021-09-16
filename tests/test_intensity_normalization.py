@@ -108,9 +108,6 @@ def test_calculate_10000_global_median(tmp_path, random_nii):
     random_nii_data = nib.load(random_nii).get_fdata()
     normalized_data = nib.load(out_path).get_fdata()
 
-    # Ensure the shape is 4d
-    assert len(normalized_data.shape) == 4
-
     median = np.median(random_nii_data)
     rescale_factor = 10000 / median
     mul_rescale = random_nii_data * rescale_factor
