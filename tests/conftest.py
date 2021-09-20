@@ -62,6 +62,7 @@ def clpipe_fmriprep_dir(clpipe_dir):
     
     return clpipe_dir
 
+
 def generate_random_nii(dims: tuple=DEFAULT_RANDOM_NII_DIMS, low: int=0, high: int=10) -> nib.Nifti1Image:
     """Creates a simple nii image with the given dimensions.
 
@@ -84,12 +85,43 @@ def generate_random_nii(dims: tuple=DEFAULT_RANDOM_NII_DIMS, low: int=0, high: i
 
     return image
 
+# TODO: generalize the nii create based on arbitrary array input
+#def generate_nii(data: np.array) -> nib.Nifti1Image:
+
+def generate_random_nii_mask(dims: tuple=DEFAULT_RANDOM_NII_DIMS) -> nib.Nifti1Image:
+    mask_base = np.ones(dims, dtype=np.int16)
+    
+    # Zero the edges of our mask
+    mask_base[0] = 0
+    mask_base[-1] = 0
+    for x in mask_base:
+        x[0] = 0
+        x[-1] = 0
+        for y in x:
+            y[0] = 0
+            y[-1] = 0
+
+    affine = np.diag([1 for x in dims])
+    image = nib.Nifti1Image(mask_base, affine)
+
+    return image
+
 @pytest.fixture
-def random_nii(tmp_path):
-    """Provide a random, temporary nii file."""
+def random_nii(tmp_path) -> Path:
+    """Save a random, temporary nii file and provide the path."""
     
     nii = generate_random_nii()
     nii_path = tmp_path / "random.nii"
+  
     nib.save(nii, nii_path)
+    return nii_path
 
+@pytest.fixture
+def random_nii_mask(tmp_path) -> Path:
+    """Save a random, temporary nii mask file and provide the path."""
+
+    nii = generate_random_nii_mask()
+    nii_path = tmp_path / "random_mask.nii"
+
+    nib.save(nii, nii_path)
     return nii_path
