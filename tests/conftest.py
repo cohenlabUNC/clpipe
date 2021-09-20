@@ -50,15 +50,15 @@ def clpipe_bids_dir(clpipe_dir):
 def clpipe_fmriprep_dir(clpipe_dir):
     """Fixture which adds fmriprep subject folders and mock fmriprep output data to data_fmriprep directory."""
 
-    config = ClpipeConfigParser()
-    target_fmriprep_suffix = config.config["PostProcessingOptions"]["TargetSuffix"]
+    image_space = "space-MNI152NLin2009cAsym_desc"
+    fmriprep_suffix = "desc-preproc_bold.nii.gz"
 
     for sub_num in range(NUM_SUBJECTS):
         subject_folder = clpipe_dir / "data_fmriprep" / "fmriprep" / f"sub-{sub_num}" / "func"
         subject_folder.mkdir(parents=True)
 
         nii = generate_random_nii()
-        nib.save(nii, subject_folder / f"sub-{sub_num}_task-rest_run-1_{target_fmriprep_suffix}")
+        nib.save(nii, subject_folder / f"sub-{sub_num}_task-rest_run-1_{image_space}_{fmriprep_suffix}")
     
     return clpipe_dir
 
