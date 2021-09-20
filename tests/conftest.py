@@ -9,7 +9,7 @@ from clpipe.config_json_parser import ClpipeConfigParser
 
 PROJECT_TITLE = "test_project"
 NUM_SUBJECTS = 8
-DEFAULT_RANDOM_NII_DIMS = (3, 3, 3, 12)
+DEFAULT_RANDOM_NII_DIMS = (12, 12, 12, 36)
 
 @pytest.fixture(scope="module")
 def clpipe_dir(tmp_path_factory):
@@ -50,20 +50,24 @@ def clpipe_bids_dir(clpipe_dir):
 def clpipe_fmriprep_dir(clpipe_dir):
     """Fixture which adds fmriprep subject folders and mock fmriprep output data to data_fmriprep directory."""
 
-    image_space = "space-MNI152NLin2009cAsym_desc"
-    fmriprep_suffix = "desc-preproc_bold.nii.gz"
+    task_info = "task-rest_run-1"
+    image_space = "space-MNI152NLin2009cAsym"
+    bold_suffix = "desc-preproc_bold.nii.gz"
+    mask_suffix = "desc-brain_mask.nii.gz"
 
     for sub_num in range(NUM_SUBJECTS):
         subject_folder = clpipe_dir / "data_fmriprep" / "fmriprep" / f"sub-{sub_num}" / "func"
         subject_folder.mkdir(parents=True)
 
-        nii = generate_random_nii()
-        nib.save(nii, subject_folder / f"sub-{sub_num}_task-rest_run-1_{image_space}_{fmriprep_suffix}")
+        bold_image = generate_random_nii()
+        mask_image = generate_random_nii_mask()
+        nib.save(bold_image, subject_folder / f"sub-{sub_num}_{task_info}_{image_space}_{bold_suffix}")
+        nib.save(mask_image, subject_folder / f"sub-{sub_num}_{task_info}_{image_space}_{mask_suffix}")
     
     return clpipe_dir
 
 
-def generate_random_nii(dims: tuple=DEFAULT_RANDOM_NII_DIMS, low: int=0, high: int=10) -> nib.Nifti1Image:
+def generate_random_nii(dims: tuple=DEFAULT_RANDOM_NII_DIMS, low: int=0, high: int=1000) -> nib.Nifti1Image:
     """Creates a simple nii image with the given dimensions.
 
     Args:
