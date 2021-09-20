@@ -105,6 +105,7 @@ def test_calculate_10000_global_median(tmp_path, random_nii):
     out_path = tmp_path / "normalized.nii.gz"
     calculate_10000_global_median(random_nii, out_path, base_dir=tmp_path)
 
+    # Load random nii data and a mask
     random_nii_data = nib.load(random_nii).get_fdata()
     normalized_data = nib.load(out_path).get_fdata()
 
@@ -115,6 +116,20 @@ def test_calculate_10000_global_median(tmp_path, random_nii):
     # Ensure the calculation for a single voxel matches a voxel from the image dataset
     assert round(mul_rescale[0][0][0][0], 2) == round(normalized_data[0][0][0][0], 2)
 
+def test_calculate_10000_global_median_masked(tmp_path, random_nii, random_nii_mask):
+    out_path = tmp_path / "normalized.nii.gz"
+    calculate_10000_global_median(random_nii, out_path, mask_path=random_nii_mask, base_dir=tmp_path)
+
+    # Load random nii data and a mask
+    random_nii_data = nib.load(random_nii).get_fdata()
+    normalized_data = nib.load(out_path).get_fdata()
+
+    median = np.median(random_nii_data)
+    rescale_factor = 10000 / median
+    mul_rescale = random_nii_data * rescale_factor
+
+    # Prove the mask is included in median calculation
+    assert round(mul_rescale[0][0][0][0], 2) != round(normalized_data[0][0][0][0], 2)
 
 def test_calculate_100_voxel_mean(tmp_path, random_nii):
     out_path = tmp_path / "normalized.nii.gz"
