@@ -134,7 +134,7 @@ def calculate_10000_global_median(in_path: os.PathLike, out_path:os.PathLike,
     LOG.info(f"Calculating {RESCALING_10000_GLOBALMEDIAN}")
 
     if mask_path:
-        median_node = pe.Node(ImageStats(in_file=in_path, op_string="-p 50", mask_file=mask_path), name='global_median')
+        median_node = pe.Node(ImageStats(in_file=in_path, op_string="-k %s -p 50", mask_file=mask_path), name='global_median')
     else:
         median_node = pe.Node(ImageStats(in_file=in_path, op_string="-p 50"), name='global_median')
 
