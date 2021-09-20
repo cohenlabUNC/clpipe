@@ -110,26 +110,34 @@ def intensity_normalization(subjects:list=None, config_file:str=None, method:str
             LOG.info(f"Normalization target: {str(target_suffix)}")
             LOG.info(f"Normalization method: {method}")
 
+            output_path = output_dir / image_path.stem
+
             if method == RESCALING_10000_GLOBALMEDIAN:
-                calculate_10000_global_median(image_path, output_dir)
+                calculate_10000_global_median(image_path, outputdir)
             elif method == RESCALING_100_VOXELMEAN:
                 calculate_100_voxel_mean(image_path, output_dir)
             else:
                 raise ValueError(f"Invalid rescaling method: {method}")
 
-            LOG.info(f"Rescaling complete and saved to: {output_dir}")
+            LOG.info(f"Rescaling complete and saved to: {output_path}")
 
-def calculate_10000_global_median(in_path: os.PathLike, out_path:os.PathLike, base_dir: os.PathLike=None):
+def calculate_10000_global_median(in_path: os.PathLike, out_path:os.PathLike,
+        mask_path: os.PathLike=None, base_dir: os.PathLike=None):
     """Perform intensity normalization using the 10,000 global median method.
 
     Args:
         in_path (os.PathLike): A path to an input .nii to normalize.
         out_path (os.PathLike): A path to save the normalized image.
+        mask_path (os.PathLike, optional): A path a mask to apply during the median calculation.
         base_dir (os.PathLike, optional): A path to the base directory for the workflow.
     """
     LOG.info(f"Calculating {RESCALING_10000_GLOBALMEDIAN}")
 
-    median_node = pe.Node(ImageStats(in_file=in_path, op_string="-p 50"), name='global_median')
+    if mask_path:
+        median_node = pe.Node(ImageStats(in_file=in_path, op_string="-p 50", mask_file=mask_path), name='global_median')
+    else:
+        median_node = pe.Node(ImageStats(in_file=in_path, op_string="-p 50"), name='global_median')
+
     mul_10000_node = pe.Node(BinaryMaths(in_file=in_path, operation="mul", operand_value=10000), name="mul_10000")
     div_median_node = pe.Node(BinaryMaths(operation="div", out_file=out_path), name="div_median")
 
