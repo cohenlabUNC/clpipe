@@ -106,20 +106,39 @@ def intensity_normalization(subjects:list=None, config_file:str=None, method:str
 
     # TODO: Process these as batch jobs
     for subject_path in target_path.glob(f'sub-{subjects}'):
-        for image_path in subject_path.glob(f'**/*{target_suffix}'):
-            LOG.info(f"Normalization target: {str(target_suffix)}")
-            LOG.info(f"Normalization method: {method}")
+        normalize_subject(subject_path, method, target_suffix, output_dir)
 
-            output_path = output_dir / image_path.stem
+def normalize_subject(subject_dir: Path, output_dir: Path,
+    method: str = RESCALING_10000_GLOBALMEDIAN,
+    target_suffix: str = "preproc_bold", mask_suffix: str ="brain_mask"):
+    
+    for image_path in subject_dir.glob(f'**/*{target_suffix}'):
+        LOG.info(f"Normalization target: {str(target_suffix)}")
+        LOG.info(f"Normalization method: {method}")
 
-            if method == RESCALING_10000_GLOBALMEDIAN:
-                calculate_10000_global_median(image_path, outputdir)
-            elif method == RESCALING_100_VOXELMEAN:
-                calculate_100_voxel_mean(image_path, output_dir)
-            else:
-                raise ValueError(f"Invalid rescaling method: {method}")
+        # Retrieve just the filename
+        # .stem won't cut it here due to multiple suffixes being likely
+        # TODO: Look into a utility function here
+        if image_path.suffix == '.gz':
+            pass
+            
+        filename = str(image_path)
+        for suffix in image_path.suffixes:
+            filename = filename.replace(suffix, '')
 
-            LOG.info(f"Rescaling complete and saved to: {output_path}")
+        output_path = output_dir / Path(image_path.stem).stem 
+
+        for suffix in image_path.suffixes:
+            output_path = output_path + suffix
+
+        if method == RESCALING_10000_GLOBALMEDIAN:
+            calculate_10000_global_median(image_path, output_path)
+        elif method == RESCALING_100_VOXELMEAN:
+            calculate_100_voxel_mean(image_path, output_path)
+        else:
+            raise ValueError(f"Invalid rescaling method: {method}")
+
+        LOG.info(f"Rescaling complete and saved to: {output_path}")
 
 def calculate_10000_global_median(in_path: os.PathLike, out_path:os.PathLike,
         mask_path: os.PathLike=None, base_dir: os.PathLike=None):
