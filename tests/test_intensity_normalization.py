@@ -1,5 +1,7 @@
+import pathlib
 import sys
 import pytest
+import typing
 
 from click.testing import CliRunner
 import numpy as np
@@ -87,11 +89,11 @@ def test_normalize_subject_100_voxel_mean(clpipe_fmriprep_dir):
     """Asserts that intensity_normalization() creates a normalized image using the 100 voxel mean method
     and saves the output using the configurations provided in clpipe_config.json """
     
-    subject_path: Path = clpipe_fmriprep_dir / "data_fmriprep" / "sub-0"
+    subject_path: Path = clpipe_fmriprep_dir / "data_fmriprep" / "fmriprep" / "sub-0"
     output_dir: Path = clpipe_fmriprep_dir / "data_postproc" / "normalized"
 
     normalize_subject(subject_path, output_dir,
-                        method="100_voxelmean")
+                        method=calculate_100_voxel_mean)
 
     expected_path = clpipe_fmriprep_dir \
         / "data_postproc" / "normalized" \

@@ -1,5 +1,6 @@
 import os
 import glob
+import pathlib
 import click
 from .batch_manager import BatchManager, Job
 from .config_json_parser import ClpipeConfigParser
@@ -8,6 +9,7 @@ import sys
 from .error_handler import exception_handler
 from .utils import parse_dir_subjects, build_arg_string
 from pathlib import Path
+from collections.abc import Callable
 
 from nipype.interfaces.fsl.maths import MeanImage, BinaryMaths, MedianImage
 from nipype.interfaces.fsl.utils import ImageStats
@@ -108,38 +110,6 @@ def intensity_normalization(subjects:list=None, config_file:str=None, method:str
     for subject_path in target_path.glob(f'sub-{subjects}'):
         normalize_subject(subject_path, method, target_suffix, output_dir)
 
-def normalize_subject(subject_dir: Path, output_dir: Path,
-    method: str = RESCALING_10000_GLOBALMEDIAN,
-    target_suffix: str = "preproc_bold", mask_suffix: str ="brain_mask"):
-    
-    for image_path in subject_dir.glob(f'**/*{target_suffix}'):
-        LOG.info(f"Normalization target: {str(target_suffix)}")
-        LOG.info(f"Normalization method: {method}")
-
-        # Retrieve just the filename
-        # .stem won't cut it here due to multiple suffixes being likely
-        # TODO: Look into a utility function here
-        if image_path.suffix == '.gz':
-            pass
-            
-        filename = str(image_path)
-        for suffix in image_path.suffixes:
-            filename = filename.replace(suffix, '')
-
-        output_path = output_dir / Path(image_path.stem).stem 
-
-        for suffix in image_path.suffixes:
-            output_path = output_path + suffix
-
-        if method == RESCALING_10000_GLOBALMEDIAN:
-            calculate_10000_global_median(image_path, output_path)
-        elif method == RESCALING_100_VOXELMEAN:
-            calculate_100_voxel_mean(image_path, output_path)
-        else:
-            raise ValueError(f"Invalid rescaling method: {method}")
-
-        LOG.info(f"Rescaling complete and saved to: {output_path}")
-
 def calculate_10000_global_median(in_path: os.PathLike, out_path:os.PathLike,
         mask_path: os.PathLike=None, base_dir: os.PathLike=None):
     """Perform intensity normalization using the 10,000 global median method.
@@ -183,3 +153,31 @@ def calculate_100_voxel_mean(in_path: os.PathLike, out_path: os.PathLike, base_d
     workflow.connect(mul100_node, "out_file", div_mean_node, "in_file")
     workflow.connect(mean_node, "out_file",  div_mean_node, "operand_file")
     workflow.run()
+
+def normalize_subject(subject_dir: Path, output_dir: Path,
+    method: Callable = calculate_10000_global_median,
+    target_suffix: str = "preproc_bold.nii.gz", mask_suffix: str ="brain_mask.nii.gz"):
+    
+    for image_path in subject_dir.glob(f'**/*{target_suffix}'):
+        LOG.info(f"Normalization target: {target_suffix}")
+        LOG.info(f"Normalization method: {method.__name__}")
+
+        # Retrieve just the filename
+        # .stem won't cut it here due to multiple suffixes being likely
+        # TODO: Look into a utility function here
+        if image_path.suffix == '.gz':
+            pass
+            
+        filename = str(image_path)
+        for suffix in image_path.suffixes:
+            filename = filename.replace(suffix, '')
+
+        output_path = output_dir / Path(Path(image_path.stem).stem) 
+
+        for suffix in image_path.suffixes:
+            output_path = output_path.with_suffix(suffix)
+
+        method(image_path, output_path)
+
+        LOG.info(f"Rescaling complete and saved to: {output_path}")
+
