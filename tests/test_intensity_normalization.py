@@ -141,7 +141,7 @@ def test_calculate_10000_global_median_masked(tmp_path, random_nii, random_nii_m
     mul_rescale = random_nii_data * rescale_factor
 
     # Prove that the mask is included in median calculation
-    assert round(mul_rescale[0][0][0][0], 2) != round(normalized_data[0][0][0][0], 2)
+    assert round(mul_rescale[0][0][0][0], 4) != round(normalized_data[0][0][0][0], 4)
 
 def test_calculate_100_voxel_mean(tmp_path, random_nii):
     out_path = tmp_path / "normalized.nii.gz"
