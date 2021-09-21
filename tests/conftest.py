@@ -36,7 +36,7 @@ def clpipe_dir(tmp_path_factory):
 
     return proj_path
 
-@pytest.fixture()
+@pytest.fixture(scope="module")
 def clpipe_bids_dir(clpipe_dir):
     """Fixture which adds some subject folders to data_BIDS."""
 
@@ -46,7 +46,7 @@ def clpipe_bids_dir(clpipe_dir):
 
     return clpipe_dir
 
-@pytest.fixture()
+@pytest.fixture(scope="module")
 def clpipe_fmriprep_dir(clpipe_dir):
     """Fixture which adds fmriprep subject folders and mock fmriprep output data to data_fmriprep directory."""
 
@@ -66,6 +66,9 @@ def clpipe_fmriprep_dir(clpipe_dir):
     
     return clpipe_dir
 
+@pytest.fixture(scope="module")
+def clpipe_config_default():
+    return ClpipeConfigParser()
 
 def generate_random_nii(dims: tuple=DEFAULT_RANDOM_NII_DIMS, low: int=0, high: int=1000) -> nib.Nifti1Image:
     """Creates a simple nii image with the given dimensions.

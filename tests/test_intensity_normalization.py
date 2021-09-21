@@ -18,17 +18,28 @@ LOG_DIR_PATH = "logs"
 
 logging.basicConfig(level=logging.INFO)
 
-@pytest.fixture()
+@pytest.fixture(scope="module")
 def clpipe_normalized_dir(clpipe_fmriprep_dir):
-    """Fixture which adds normalization output folders"""
+    """Fixture which adds a normalization output folder"""
 
-    for sub_num in range(NUM_SUBJECTS):
-        voxel_mean_folder = clpipe_fmriprep_dir / "data_normalized" / "100_voxel_mean" / f"sub-{sub_num}"
-        voxel_mean_folder.mkdir(parents=True)
-        global_median_folder = clpipe_fmriprep_dir / "data_normalized" / "10000_global_median" / f"sub-{sub_num}"
-        global_median_folder.mkdir(parents=True)
+    normalized_folder = clpipe_fmriprep_dir / "data_normalized"
+    normalized_folder.mkdir()
     
     return clpipe_fmriprep_dir
+
+@pytest.fixture(scope="module")
+def normalization_config(clpipe_config_default, clpipe_normalized_dir):
+    """Fixture which sets up an intensity normalization enabled configuration object."""
+    target_dir: Path = clpipe_normalized_dir / "data_fmriprep" / "fmriprep"
+    output_dir: Path = clpipe_normalized_dir / "data_normalized"
+
+    clpipe_config_default.config['IntensityNormalizationOptions']['TargetDirectory'] = str(target_dir)
+    clpipe_config_default.config['IntensityNormalizationOptions']['OutputDirectory'] = str(output_dir)
+    clpipe_config_default.config['IntensityNormalizationOptions']['TargetSuffix'] = "preproc_bold.nii.gz"
+    clpipe_config_default.config['IntensityNormalizationOptions']['OutputSuffix'] = "normalized.nii.gz"
+    clpipe_config_default.config['IntensityNormalizationOptions']['Method'] = "10000_globalmedian"
+
+    return clpipe_config_default
 
 @pytest.mark.skip(reason="Not yet implemented")
 def test_intensity_normalization_cli_10000_global_median():
@@ -98,17 +109,30 @@ def test_intensity_normalization_10000_global_median():
                             config_file=clpipe_fmriprep_dir / "clpipe_config.json"
                             )
 
-def test_normalize_subject_100_voxel_mean(clpipe_normalized_dir):
+def test_normalize_subject_10000_global_median(normalization_config):
+    """Asserts that intensity_normalization() creates a normalized image using the 10000 global median method
+    and saves the output using the configurations provided in the configuration object. """
+    normalize_subject(normalization_config, 'sub-0')
+
+    expected_path = Path(normalization_config.config['IntensityNormalizationOptions']['TargetDirectory']) \
+        / "10000_globalmedian" \
+        / "sub-0" \
+        / "sub-0_task-rest_run-1_space-MNI152NLin2009cAsym_desc-preproc_bold_normalized.nii.gz"
+
+    assert expected_path.exists(), f"Expected path {expected_path} not found."
+
+def test_normalize_subject_100_voxel_mean(normalization_config):
     """Asserts that intensity_normalization() creates a normalized image using the 100 voxel mean method
-    and saves the output using the configurations provided in clpipe_config.json """
-    
-    subject_path: Path = clpipe_normalized_dir / "data_fmriprep" / "fmriprep" / "sub-0" / "func"
-    output_dir: Path = clpipe_normalized_dir / "data_normalized" / "100_voxel_mean" / "sub-0"
+    and saves the output using the configurations provided in the configuration object. """
 
-    normalize_subject(subject_path, output_dir,
-                        method=calculate_100_voxel_mean)
+    # Override the default method '10000 global median'
+    normalization_config.config['IntensityNormalizationOptions']['Method'] = "100_voxelmean"
 
-    expected_path = output_dir \
+    normalize_subject(normalization_config, 'sub-0')
+
+    expected_path = Path(normalization_config.config['IntensityNormalizationOptions']['TargetDirectory']) \
+        / "100_voxelmean" \
+        / "sub-0" \
         / "sub-0_task-rest_run-1_space-MNI152NLin2009cAsym_desc-preproc_bold_normalized.nii.gz"
 
     assert expected_path.exists(), f"Expected path {expected_path} not found."
