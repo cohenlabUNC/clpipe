@@ -163,31 +163,46 @@ def calculate_100_voxel_mean(in_path: os.PathLike, out_path: os.PathLike, base_d
     workflow.connect(mean_node, "out_file",  div_mean_node, "operand_file")
     workflow.run()
 
-def normalize_subject(subject_dir: Path, output_dir: Path,
-    method: Callable = calculate_10000_global_median,
-    target_suffix: str = "preproc_bold.nii.gz",
-    output_suffix: str = "normalized.nii.gz", 
-    mask_suffix: str ="brain_mask.nii.gz"):
+def _get_method(method_str: str) -> Callable:
+    if method_str == RESCALING_10000_GLOBALMEDIAN:
+        return calculate_10000_global_median
+    elif method_str == RESCALING_100_VOXELMEAN:
+        return calculate_100_voxel_mean
+    else:
+        raise ValueError(f"Invalid rescaling method: {method}")
+
+def append_suffix(base_path: Path, suffix: str) -> Path:
+    filename = base_path.name
+    for extension in base_path.suffixes:
+        filename = filename.replace(extension, '')
+
+    return f"{filename}_{suffix}"
+
+def normalize_subject(config: ClpipeConfigParser, subject: str):
+
+    config = config.config['IntensityNormalizationOptions']
+    target_dir = Path(config['TargetDirectory'])
+    output_dir = Path(config['OutputDirectory'])
+    target_suffix = config['TargetSuffix']
+    output_suffix = config['OutputSuffix']
+    method_str = config['Method']
+
+    method: Callable = _get_method(method_str)
+
+    output_dir = output_dir / method_str / subject
 
     if not output_dir.exists():
-        raise FileNotFoundError(f'No directory found: {str(output_dir)}')
+        LOG.info(f"Creating directory: f{str(output_dir)}")
+        output_dir.mkdir(parents=True, exist_ok=True)
 
-    for image_path in subject_dir.glob(f'*{target_suffix}*'):
+    for image_path in target_dir.glob(f'{subject}/**/*{target_suffix}*'):
         LOG.info(f"Normalization target: {target_suffix}")
         LOG.info(f"Normalization method: {method.__name__}")
+        
+        output_path = output_dir / append_suffix(image_path, output_suffix)
 
-        # TODO: Look into a utility function here
-        # Strip the file exstensions
-        filename = image_path.name
-        for suffix in image_path.suffixes:
-            filename = filename.replace(suffix, '')
-
-        filename = f"{filename}_{output_suffix}"
-
-        output_path = output_dir / filename
-
-        for suffix in image_path.suffixes:
-            output_path = output_path.with_suffix(suffix)
+        # for suffix in image_path.suffixes:
+        #     output_path = output_path.with_suffix(suffix)
 
         method(image_path, output_path)
 

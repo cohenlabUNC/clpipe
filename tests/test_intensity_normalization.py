@@ -114,7 +114,7 @@ def test_normalize_subject_10000_global_median(normalization_config):
     and saves the output using the configurations provided in the configuration object. """
     normalize_subject(normalization_config, 'sub-0')
 
-    expected_path = Path(normalization_config.config['IntensityNormalizationOptions']['TargetDirectory']) \
+    expected_path = Path(normalization_config.config['IntensityNormalizationOptions']['OutputDirectory']) \
         / "10000_globalmedian" \
         / "sub-0" \
         / "sub-0_task-rest_run-1_space-MNI152NLin2009cAsym_desc-preproc_bold_normalized.nii.gz"
@@ -130,7 +130,7 @@ def test_normalize_subject_100_voxel_mean(normalization_config):
 
     normalize_subject(normalization_config, 'sub-0')
 
-    expected_path = Path(normalization_config.config['IntensityNormalizationOptions']['TargetDirectory']) \
+    expected_path = Path(normalization_config.config['IntensityNormalizationOptions']['OutputDirectory']) \
         / "100_voxelmean" \
         / "sub-0" \
         / "sub-0_task-rest_run-1_space-MNI152NLin2009cAsym_desc-preproc_bold_normalized.nii.gz"
