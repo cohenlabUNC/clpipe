@@ -80,25 +80,23 @@ def test_intensity_normalization_10000_global_median():
     intensity_normalization(
                             target_dir=TARGET_DIR_PATH,
                             output_dir=OUTPUT_DIR_PATH,
-                            )
-
-def test_intensity_normalization_100_voxel_mean(clpipe_fmriprep_dir):
-    """Asserts that intensity_normalization() creates a normalized image using the 100 voxel mean method
-    and saves the output using the configurations provided in clpipe_config.json """
-
-    config = ClpipeConfigParser()
-    
-    target_suffix = config.config["IntensityNormalizationOptions"]["TargetSuffix"]
-    output_path = Path(config.config["IntensityNormalizationOptions"]["OutputDirectory"])
-    output_suffix = config.config["IntensityNormalizationOptions"]["OutputSuffix"]
-    
-    intensity_normalization(subjects=[1],
-                            method="100_voxelmean",
                             config_file=clpipe_fmriprep_dir / "clpipe_config.json"
                             )
 
-    expected_path = output_path / "sub-1_task-rest_run-1_" + target_suffix + output_suffix
+def test_normalize_subject_100_voxel_mean(clpipe_fmriprep_dir):
+    """Asserts that intensity_normalization() creates a normalized image using the 100 voxel mean method
+    and saves the output using the configurations provided in clpipe_config.json """
     
+    subject_path: Path = clpipe_fmriprep_dir / "data_fmriprep" / "sub-0"
+    output_dir: Path = clpipe_fmriprep_dir / "data_postproc" / "normalized"
+
+    normalize_subject(subject_path, output_dir,
+                        method="100_voxelmean")
+
+    expected_path = clpipe_fmriprep_dir \
+        / "data_postproc" / "normalized" \
+        / "sub-0" / "sub-0_task-rest_run-1_space-MNI152NLin2009cAsym_desc-preproc_bold_normalized"
+
     assert expected_path.exists(), f"Expected path {expected_path} not found."
 
 def test_calculate_10000_global_median(tmp_path, random_nii):
@@ -128,7 +126,7 @@ def test_calculate_10000_global_median_masked(tmp_path, random_nii, random_nii_m
     rescale_factor = 10000 / median
     mul_rescale = random_nii_data * rescale_factor
 
-    # Prove the mask is included in median calculation
+    # Prove that the mask is included in median calculation
     assert round(mul_rescale[0][0][0][0], 2) != round(normalized_data[0][0][0][0], 2)
 
 def test_calculate_100_voxel_mean(tmp_path, random_nii):
