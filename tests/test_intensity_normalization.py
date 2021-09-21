@@ -102,7 +102,7 @@ def test_normalize_subject_100_voxel_mean(clpipe_normalized_dir):
     """Asserts that intensity_normalization() creates a normalized image using the 100 voxel mean method
     and saves the output using the configurations provided in clpipe_config.json """
     
-    subject_path: Path = clpipe_normalized_dir / "data_fmriprep" / "fmriprep" / "sub-0"
+    subject_path: Path = clpipe_normalized_dir / "data_fmriprep" / "fmriprep" / "sub-0" / "func"
     output_dir: Path = clpipe_normalized_dir / "data_normalized" / "100_voxel_mean" / "sub-0"
 
     normalize_subject(subject_path, output_dir,

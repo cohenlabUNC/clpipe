@@ -110,6 +110,15 @@ def intensity_normalization(subjects:list=None, config_file:str=None, method:str
     for subject_path in target_path.glob(f'sub-{subjects}'):
         normalize_subject(subject_path, method, target_suffix, output_dir)
 
+        """method_dir:Path = output_dir / method.__name__
+        if not method_dir.exists():
+            method_dir.mkdir()
+
+        subject_dir:Path = method_dir / 
+        method_name = method.__name__.replace('calculate_', '')
+
+        """
+
 def calculate_10000_global_median(in_path: os.PathLike, out_path:os.PathLike,
         mask_path: os.PathLike=None, base_dir: os.PathLike=None):
     """Perform intensity normalization using the 10,000 global median method.
@@ -156,23 +165,26 @@ def calculate_100_voxel_mean(in_path: os.PathLike, out_path: os.PathLike, base_d
 
 def normalize_subject(subject_dir: Path, output_dir: Path,
     method: Callable = calculate_10000_global_median,
-    target_suffix: str = "preproc_bold.nii.gz", mask_suffix: str ="brain_mask.nii.gz"):
-    
-    for image_path in subject_dir.glob(f'**/*{target_suffix}'):
+    target_suffix: str = "preproc_bold.nii.gz",
+    output_suffix: str = "normalized.nii.gz", 
+    mask_suffix: str ="brain_mask.nii.gz"):
+
+    if not output_dir.exists():
+        raise FileNotFoundError(f'No directory found: {str(output_dir)}')
+
+    for image_path in subject_dir.glob(f'*{target_suffix}*'):
         LOG.info(f"Normalization target: {target_suffix}")
         LOG.info(f"Normalization method: {method.__name__}")
 
-        # Retrieve just the filename
-        # .stem won't cut it here due to multiple suffixes being likely
         # TODO: Look into a utility function here
-        if image_path.suffix == '.gz':
-            pass
-            
-        filename = str(image_path)
+        # Strip the file exstensions
+        filename = image_path.name
         for suffix in image_path.suffixes:
             filename = filename.replace(suffix, '')
 
-        output_path = output_dir / Path(Path(image_path.stem).stem) 
+        filename = f"{filename}_{output_suffix}"
+
+        output_path = output_dir / filename
 
         for suffix in image_path.suffixes:
             output_path = output_path.with_suffix(suffix)
