@@ -90,34 +90,21 @@ def intensity_normalization(subjects:list=None, config_file:str=None, method:str
     config.config_updater(config_file)
     # For those provided, replace intensity normalization config values with parameter values
     config.setup_intensity_normalization(target_dir, target_suffix, output_dir, output_suffix, method)
-    # Finally, overwrite parameter vars with config values
-    target_dir = config.config["IntensityNormalizationOptions"]["TargetDirectory"]
+    
+    target_dir = Path(config.config["IntensityNormalizationOptions"]["TargetDirectory"])
     target_suffix = config.config["IntensityNormalizationOptions"]["TargetSuffix"]
-    output_dir = Path(config.config["IntensityNormalizationOptions"]["OutputDirectory"])
-    output_suffix = config.config["IntensityNormalizationOptions"]["OutputSuffix"]
 
     # Validate the provided rescaling method
     if method not in METHODS: 
         raise ValueError(f"Invalid rescaling method: {method}")
 
     if subjects is None:
-        subjects = parse_dir_subjects(target_dir)
+        subjects = parse_dir_subjects(str(target_dir))
     LOG.info(f"Processing subjects: {subjects}")
 
-    target_path = Path(target_dir)
-
     # TODO: Process these as batch jobs
-    for subject_path in target_path.glob(f'sub-{subjects}'):
-        normalize_subject(subject_path, method, target_suffix, output_dir)
-
-        """method_dir:Path = output_dir / method.__name__
-        if not method_dir.exists():
-            method_dir.mkdir()
-
-        subject_dir:Path = method_dir / 
-        method_name = method.__name__.replace('calculate_', '')
-
-        """
+    for subject in subjects:
+        normalize_subject(config, f'sub-{subject}')
 
 def calculate_10000_global_median(in_path: os.PathLike, out_path:os.PathLike,
         mask_path: os.PathLike=None, base_dir: os.PathLike=None):
