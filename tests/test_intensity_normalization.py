@@ -104,14 +104,15 @@ def test_intensity_normalization_cli_None():
 def test_intensity_normalization_10000_global_median(normalization_config, clpipe_fmriprep_dir):
     """Must create data_normalization folder."""
     intensity_normalization(
-                            subjects=[range(0, 7)]
+                            subjects=list(range(0, 8)),
                             target_dir=normalization_config.config['IntensityNormalizationOptions']['TargetDirectory'],
                             output_dir=normalization_config.config['IntensityNormalizationOptions']['OutputDirectory'],
+                            output_suffix=normalization_config.config['IntensityNormalizationOptions']['OutputSuffix'],
                             config_file=clpipe_fmriprep_dir / "clpipe_config.json"
                             )
 
     count = 0
-    for subject in normalization_config.config['IntensityNormalizationOptions']['OutputDirectory'] / "10000_globalmedian"
+    for subject in (Path(normalization_config.config['IntensityNormalizationOptions']['OutputDirectory']) / "10000_globalmedian").iterdir():
         count += 1
 
     assert count == 8
