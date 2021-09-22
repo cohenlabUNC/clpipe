@@ -93,6 +93,7 @@ def intensity_normalization(subjects:list=None, config_file:str=None, method:str
     
     target_dir = Path(config.config["IntensityNormalizationOptions"]["TargetDirectory"])
     target_suffix = config.config["IntensityNormalizationOptions"]["TargetSuffix"]
+    method = config.config["IntensityNormalizationOptions"]["Method"]
 
     # Validate the provided rescaling method
     if method not in METHODS: 
