@@ -82,7 +82,7 @@ def test_intensity_normalization_cli_100_voxel_mean():
         raise Exception(result.exception)
 
 @pytest.mark.skip(reason="Not yet implemented")
-def test_intensity_normalization_None():
+def test_intensity_normalization_cli_None():
     runner = CliRunner()
     result = runner.invoke(
     intensity_normalization_cli, 
@@ -101,13 +101,20 @@ def test_intensity_normalization_None():
     if result.exit_code != 0:
         raise Exception(result.exception)
 
-@pytest.mark.skip(reason="Not yet implemented")
-def test_intensity_normalization_10000_global_median():
+def test_intensity_normalization_10000_global_median(normalization_config, clpipe_fmriprep_dir):
+    """Must create data_normalization folder."""
     intensity_normalization(
-                            target_dir=TARGET_DIR_PATH,
-                            output_dir=OUTPUT_DIR_PATH,
+                            subjects=[range(0, 7)]
+                            target_dir=normalization_config.config['IntensityNormalizationOptions']['TargetDirectory'],
+                            output_dir=normalization_config.config['IntensityNormalizationOptions']['OutputDirectory'],
                             config_file=clpipe_fmriprep_dir / "clpipe_config.json"
                             )
+
+    count = 0
+    for subject in normalization_config.config['IntensityNormalizationOptions']['OutputDirectory'] / "10000_globalmedian"
+        count += 1
+
+    assert count == 8
 
 def test_normalize_subject_10000_global_median(normalization_config):
     """Asserts that intensity_normalization() creates a normalized image using the 10000 global median method
