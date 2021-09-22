@@ -126,7 +126,7 @@ def calculate_10000_global_median(in_path: os.PathLike, out_path:os.PathLike,
     mul_10000_node = pe.Node(BinaryMaths(in_file=in_path, operation="mul", operand_value=10000), name="mul_10000")
     div_median_node = pe.Node(BinaryMaths(operation="div", out_file=out_path), name="div_median")
 
-    workflow = pe.Workflow(name='10000_global_median', base_dir=base_dir)
+    workflow = pe.Workflow(name=RESCALING_10000_GLOBALMEDIAN, base_dir=base_dir)
     if crashdump_dir is not None:
         workflow.config['execution']['crashdump_dir'] = crashdump_dir
 
@@ -148,7 +148,7 @@ def calculate_100_voxel_mean(in_path: os.PathLike, out_path: os.PathLike, base_d
         name="mul100")
     div_mean_node = pe.Node(BinaryMaths(operation='div', out_file=out_path), name="div_mean") #operand_file=mean_path
 
-    workflow = pe.Workflow(name='100_voxel_mean', base_dir=base_dir)
+    workflow = pe.Workflow(name=RESCALING_100_VOXELMEAN, base_dir=base_dir)
     if crashdump_dir is not None:
         workflow.config['execution']['crashdump_dir'] = crashdump_dir
 
@@ -179,25 +179,26 @@ def normalize_subject(config: ClpipeConfigParser, subject: str):
     target_suffix = config['TargetSuffix']
     output_suffix = config['OutputSuffix']
     method_str = config['Method']
+    log_dir = Path(config['LogDirectory'])
 
     method: Callable = _get_method(method_str)
 
-    output_dir = output_dir / method_str / subject
+    sub_output_dir = output_dir / method_str / subject
 
-    if not output_dir.exists():
-        LOG.info(f"Creating directory: f{str(output_dir)}")
-        output_dir.mkdir(parents=True, exist_ok=True)
+    if not sub_output_dir.exists():
+        LOG.info(f"Creating directory: f{str(sub_output_dir)}")
+        sub_output_dir.mkdir(parents=True, exist_ok=True)
 
     for image_path in target_dir.glob(f'{subject}/**/*{target_suffix}*'):
         LOG.info(f"Normalization target: {target_suffix}")
         LOG.info(f"Normalization method: {method.__name__}")
         
-        output_path = output_dir / append_suffix(image_path, output_suffix)
+        output_path = sub_output_dir / append_suffix(image_path, output_suffix)
 
         # for suffix in image_path.suffixes:
         #     output_path = output_path.with_suffix(suffix)
 
-        method(image_path, output_path)
+        method(image_path, output_path, base_dir=log_dir, crashdump_dir=log_dir)
 
         LOG.info(f"Rescaling complete and saved to: {output_path}")
 

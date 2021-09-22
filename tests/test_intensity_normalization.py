@@ -38,6 +38,8 @@ def normalization_config(clpipe_config_default, clpipe_normalized_dir):
     clpipe_config_default.config['IntensityNormalizationOptions']['TargetSuffix'] = "preproc_bold.nii.gz"
     clpipe_config_default.config['IntensityNormalizationOptions']['OutputSuffix'] = "normalized.nii.gz"
     clpipe_config_default.config['IntensityNormalizationOptions']['Method'] = "10000_globalmedian"
+    clpipe_config_default.config['IntensityNormalizationOptions']['LogDirectory'] = \
+        clpipe_normalized_dir / "logs" / "intensity_normalization_logs"
 
     return clpipe_config_default
 
