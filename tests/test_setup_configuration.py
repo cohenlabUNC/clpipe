@@ -65,6 +65,7 @@ def project_paths():
         Path("logs", "glm_setup_logs"),
         Path("logs", "postproc_logs"),
         Path("logs", "ROI_extraction_logs"),
+        Path("logs", "intensity_normalization_logs"),
         Path("logs", "SUSAN_logs"),
         Path("scripts"),
         Path("clpipe_config.json"),
