@@ -41,47 +41,42 @@ def normalization_config(clpipe_config_default, clpipe_normalized_dir):
 
     return clpipe_config_default
 
-@pytest.mark.skip(reason="Not yet implemented")
-def test_intensity_normalization_cli_10000_global_median():
+def test_intensity_normalization_cli_10000_global_median(normalization_config, clpipe_fmriprep_dir):
     runner = CliRunner()
     result = runner.invoke(
     intensity_normalization_cli, 
     [
-        '-rescaling_method', RESCALING_10000_GLOBALMEDIAN, 
-        '-config_file', CONFIG_FILE_PATH,
-        '-target_dir', TARGET_DIR_PATH,
-        '-output_dir', OUTPUT_DIR_PATH, 
-        '-output_suffix', OUTPUT_SUFFIX, 
+        '-rescaling_method', "10000_globalmedian", 
+        '-config_file', clpipe_fmriprep_dir / "clpipe_config.json",
+        '-target_dir', normalization_config.config['IntensityNormalizationOptions']['TargetDirectory'],
+        '-output_dir', normalization_config.config['IntensityNormalizationOptions']['OutputDirectory'], 
+        '-output_suffix', normalization_config.config['IntensityNormalizationOptions']['OutputSuffix'], 
         '-log_dir', LOG_DIR_PATH,
         '-submit', True, 
         '-batch', False, 
         '-debug', True, 
     ])
 
-    if result.exit_code != 0:
-        raise Exception(result.exception)
+    assert result.exit_code == 0
 
-@pytest.mark.skip(reason="Not yet implemented")
-def test_intensity_normalization_cli_100_voxel_mean():
+def test_intensity_normalization_cli_100_voxel_mean(normalization_config, clpipe_fmriprep_dir):
     runner = CliRunner()
     result = runner.invoke(
     intensity_normalization_cli, 
     [
-        '-rescaling_method', RESCALING_100_VOXELMEAN, 
-        '-config_file', CONFIG_FILE_PATH,
-        '-target_dir', TARGET_DIR_PATH,
-        '-output_dir', OUTPUT_DIR_PATH, 
-        '-output_suffix', OUTPUT_SUFFIX, 
+        '-rescaling_method', "100_voxelmean", 
+        '-config_file', clpipe_fmriprep_dir / "clpipe_config.json",
+        '-target_dir', normalization_config.config['IntensityNormalizationOptions']['TargetDirectory'],
+        '-output_dir', normalization_config.config['IntensityNormalizationOptions']['OutputDirectory'], 
+        '-output_suffix', normalization_config.config['IntensityNormalizationOptions']['OutputSuffix'], 
         '-log_dir', LOG_DIR_PATH,
         '-submit', True, 
         '-batch', False, 
         '-debug', True, 
     ])
 
-    if result.exit_code != 0:
-        raise Exception(result.exception)
+    assert result.exit_code == 0
 
-@pytest.mark.skip(reason="Not yet implemented")
 def test_intensity_normalization_cli_None():
     runner = CliRunner()
     result = runner.invoke(
@@ -98,8 +93,25 @@ def test_intensity_normalization_cli_None():
         '-debug', True, 
     ])
 
-    if result.exit_code != 0:
-        raise Exception(result.exception)
+    assert result.exit_code != 0
+
+
+def test_intensity_normalization_100_voxel_mean(normalization_config, clpipe_fmriprep_dir):
+    """Must create data_normalization folder."""
+    intensity_normalization(
+                            subjects=list(range(0, 8)),
+                            target_dir=normalization_config.config['IntensityNormalizationOptions']['TargetDirectory'],
+                            output_dir=normalization_config.config['IntensityNormalizationOptions']['OutputDirectory'],
+                            output_suffix=normalization_config.config['IntensityNormalizationOptions']['OutputSuffix'],
+                            config_file=clpipe_fmriprep_dir / "clpipe_config.json",
+                            method="100_voxelmean"
+                            )
+
+    count = 0
+    for subject in (Path(normalization_config.config['IntensityNormalizationOptions']['OutputDirectory']) / "100_voxelmean").iterdir():
+        count += 1
+
+    assert count == 8
 
 def test_intensity_normalization_10000_global_median(normalization_config, clpipe_fmriprep_dir):
     """Must create data_normalization folder."""
