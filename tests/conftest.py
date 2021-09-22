@@ -1,9 +1,11 @@
 import pytest
 import numpy as np
+import sys
 import nibabel as nib
 from pathlib import Path
 from click.testing import CliRunner
 
+sys.path.append('../clpipe')
 from clpipe.project_setup import project_setup
 from clpipe.config_json_parser import ClpipeConfigParser
 

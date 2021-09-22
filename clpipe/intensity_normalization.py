@@ -88,7 +88,7 @@ def intensity_normalization(subjects:list=None, config_file:str=None, method:str
     # If provided, override project config with parameter config
     config.config_updater(config_file)
     # For those provided, replace intensity normalization config values with parameter values
-    config.setup_intensity_normalization(target_dir, target_suffix, output_dir, output_suffix, method)
+    config.setup_intensity_normalization(target_dir, target_suffix, output_dir, output_suffix, method, log_dir)
     
     target_dir = Path(config.config["IntensityNormalizationOptions"]["TargetDirectory"])
     target_suffix = config.config["IntensityNormalizationOptions"]["TargetSuffix"]
@@ -107,7 +107,7 @@ def intensity_normalization(subjects:list=None, config_file:str=None, method:str
         normalize_subject(config, f'sub-{subject}')
 
 def calculate_10000_global_median(in_path: os.PathLike, out_path:os.PathLike,
-        mask_path: os.PathLike=None, base_dir: os.PathLike=None):
+        mask_path: os.PathLike=None, base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None):
     """Perform intensity normalization using the 10,000 global median method.
 
     Args:
@@ -127,11 +127,15 @@ def calculate_10000_global_median(in_path: os.PathLike, out_path:os.PathLike,
     div_median_node = pe.Node(BinaryMaths(operation="div", out_file=out_path), name="div_median")
 
     workflow = pe.Workflow(name='10000_global_median', base_dir=base_dir)
+    if crashdump_dir is not None:
+        workflow.config['execution']['crashdump_dir'] = crashdump_dir
+
     workflow.connect(mul_10000_node, "out_file", div_median_node, "in_file")
     workflow.connect(median_node, "out_stat", div_median_node, "operand_value")
     workflow.run()
 
-def calculate_100_voxel_mean(in_path: os.PathLike, out_path: os.PathLike, base_dir: os.PathLike=None):
+def calculate_100_voxel_mean(in_path: os.PathLike, out_path: os.PathLike, base_dir: os.PathLike=None,
+    crashdump_dir: os.PathLike=None):
     """Perform intensity normalization using the 100 voxel mean method.
 
     Args:
@@ -145,6 +149,8 @@ def calculate_100_voxel_mean(in_path: os.PathLike, out_path: os.PathLike, base_d
     div_mean_node = pe.Node(BinaryMaths(operation='div', out_file=out_path), name="div_mean") #operand_file=mean_path
 
     workflow = pe.Workflow(name='100_voxel_mean', base_dir=base_dir)
+    if crashdump_dir is not None:
+        workflow.config['execution']['crashdump_dir'] = crashdump_dir
 
     workflow.connect(mul100_node, "out_file", div_mean_node, "in_file")
     workflow.connect(mean_node, "out_file",  div_mean_node, "operand_file")

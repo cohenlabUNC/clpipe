@@ -174,7 +174,8 @@ def test_calculate_10000_global_median(tmp_path, random_nii):
 
 def test_calculate_10000_global_median_masked(tmp_path, random_nii, random_nii_mask):
     out_path = tmp_path / "normalized.nii.gz"
-    calculate_10000_global_median(random_nii, out_path, mask_path=random_nii_mask, base_dir=tmp_path)
+    calculate_10000_global_median(random_nii, out_path, mask_path=random_nii_mask, base_dir=tmp_path,
+        crashdump_dir=tmp_path)
 
     # Load random nii data and a mask
     random_nii_data = nib.load(random_nii).get_fdata()
@@ -189,7 +190,7 @@ def test_calculate_10000_global_median_masked(tmp_path, random_nii, random_nii_m
 
 def test_calculate_100_voxel_mean(tmp_path, random_nii):
     out_path = tmp_path / "normalized.nii.gz"
-    calculate_100_voxel_mean(random_nii, out_path, base_dir=tmp_path)
+    calculate_100_voxel_mean(random_nii, out_path, base_dir=tmp_path, crashdump_dir=tmp_path)
     
     random_nii_data = nib.load(random_nii).get_fdata()
     normalized_data = nib.load(out_path).get_fdata()
