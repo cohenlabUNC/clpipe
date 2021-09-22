@@ -46,7 +46,7 @@ def test_intensity_normalization_cli_10000_global_median(normalization_config, c
     result = runner.invoke(
     intensity_normalization_cli, 
     [
-        '-rescaling_method', "10000_globalmedian", 
+        '-method', "10000_globalmedian", 
         '-config_file', clpipe_fmriprep_dir / "clpipe_config.json",
         '-target_dir', normalization_config.config['IntensityNormalizationOptions']['TargetDirectory'],
         '-output_dir', normalization_config.config['IntensityNormalizationOptions']['OutputDirectory'], 
@@ -64,7 +64,7 @@ def test_intensity_normalization_cli_100_voxel_mean(normalization_config, clpipe
     result = runner.invoke(
     intensity_normalization_cli, 
     [
-        '-rescaling_method', "100_voxelmean", 
+        '-method', "100_voxelmean", 
         '-config_file', clpipe_fmriprep_dir / "clpipe_config.json",
         '-target_dir', normalization_config.config['IntensityNormalizationOptions']['TargetDirectory'],
         '-output_dir', normalization_config.config['IntensityNormalizationOptions']['OutputDirectory'], 
@@ -82,7 +82,7 @@ def test_intensity_normalization_cli_None():
     result = runner.invoke(
     intensity_normalization_cli, 
     [
-        '-rescaling_method', "", 
+        '-method', "", 
         '-config_file', "",
         '-target_dir', "",
         '-output_dir', "", 

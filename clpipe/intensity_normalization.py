@@ -35,7 +35,6 @@ LOG = logging.getLogger(__name__)
               help='Where to put the normalized data. If a configuration file is provided with a output directory, this argument is not necessary.')
 @click.option('-output_suffix',
               help='What suffix to append to the normalized files. If a configuration file is provided with a output suffix, this argument is not necessary.')
-@click.option('-processing_stream', help = 'Optional processing stream selector.')
 @click.option('-log_dir', type=click.Path(dir_okay=True, file_okay=False),
               help='Where to put HPC output files. If not specified, defaults to <outputDir>/batchOutput.')
 @click.option('-submit', is_flag=True, default=False, help='Flag to submit commands to the HPC.')
