@@ -157,6 +157,15 @@ def calculate_100_voxel_mean(in_path: os.PathLike, out_path: os.PathLike, base_d
     
     return workflow
 
+def temporal_filter(in_file: os.PathLike, out_file: os.PathLike):
+    """Perform temporal filtering.
+
+    Args:
+        in_file (os.PathLike): A path to an input .nii to filter.
+        out_file (os.PathLike): A path to save the filtered image.
+    """
+    LOG.info(f"Applying temporal filter")
+
 def _get_normalization_method(method_str: str) -> Callable:
     if method_str == RESCALING_10000_GLOBALMEDIAN:
         return calculate_10000_global_median
