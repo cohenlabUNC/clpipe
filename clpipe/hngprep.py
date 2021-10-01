@@ -166,6 +166,10 @@ def temporal_filter(in_file: os.PathLike, out_file: os.PathLike):
     """
     LOG.info(f"Applying temporal filter")
 
+    workflow = pe.Workflow(name="temporal_filter")
+
+    return workflow
+
 def _get_normalization_method(method_str: str) -> Callable:
     if method_str == RESCALING_10000_GLOBALMEDIAN:
         return calculate_10000_global_median

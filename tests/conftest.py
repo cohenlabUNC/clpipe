@@ -2,6 +2,7 @@ import pytest
 import numpy as np
 import sys
 import nibabel as nib
+import nipype.pipeline.engine as pe
 from pathlib import Path
 from click.testing import CliRunner
 
@@ -134,3 +135,8 @@ def random_nii_mask(tmp_path) -> Path:
 
     nib.save(nii, nii_path)
     return nii_path
+
+
+@pytest.fixture(scope="module")
+def workflow_base():
+    return pe.Workflow(name="Test Workflow")
