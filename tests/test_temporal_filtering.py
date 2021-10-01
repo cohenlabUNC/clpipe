@@ -10,8 +10,13 @@ from clpipe.hngprep import temporal_filter
 
 logging.basicConfig(level=logging.INFO)
 
+
 def test_temporal_filter(tmp_path, random_nii):
-    pass
+    filtered_path = tmp_path / "filtered.nii"
+    temporal_workflow = temporal_filter(random_nii, filtered_path)
+    temporal_workflow.run()
+    
+    assert True
 
 @pytest.mark.skip(reason="Not implemented")
 def test_temporal_filter_low_pass(tmp_path):
