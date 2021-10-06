@@ -41,6 +41,7 @@ def hngprep_config(clpipe_config_default, clpipe_hngout_dir):
 
     return clpipe_config_default
 
+@pytest.mark.skip(reason="Not yet needed")
 def test_hngprep_cli(hngprep_config, clpipe_fmriprep_dir):
     runner = CliRunner()
     result = runner.invoke(
@@ -59,6 +60,7 @@ def test_hngprep_cli(hngprep_config, clpipe_fmriprep_dir):
 
     assert result.exit_code == 0
 
+@pytest.mark.skip(reason="Not yet needed")
 def test_hngprep_cli_None():
     runner = CliRunner()
     result = runner.invoke(
@@ -77,6 +79,7 @@ def test_hngprep_cli_None():
 
     assert result.exit_code != 0
 
+@pytest.mark.skip(reason="Not yet needed")
 def test_hngprep(hngprep_config, clpipe_fmriprep_dir):
     """Must create data_normalization folder."""
     hngprep(subjects=list(range(0, 8)),
@@ -91,15 +94,3 @@ def test_hngprep(hngprep_config, clpipe_fmriprep_dir):
         count += 1
 
     assert count == 8
-
-def test_hngprep_subject(hngprep_config):
-    """Asserts that intensity_normalization() creates a normalized image using the 10000 global median method
-    and saves the output using the configurations provided in the configuration object. """
-    hngprep_subject(hngprep_config, 'sub-0')
-
-    expected_path = Path(hngprep_config.config['HNGPrepOptions']['OutputDirectory']) \
-        / "TBD" \
-        / "sub-0" \
-        / "sub-0_task-rest_run-1_space-MNI152NLin2009cAsym_desc-hngprep_bold.nii.gz"
-
-    assert expected_path.exists(), f"Expected path {expected_path} not found."
