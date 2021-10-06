@@ -2,6 +2,8 @@ import os
 import glob
 import pathlib
 import click
+
+from clpipe.postprocutils.utils import apply_filter
 from .batch_manager import BatchManager, Job
 from .config_json_parser import ClpipeConfigParser
 import logging
@@ -13,7 +15,10 @@ from collections.abc import Callable
 
 from nipype.interfaces.fsl.maths import MeanImage, BinaryMaths, MedianImage
 from nipype.interfaces.fsl.utils import ImageStats
-import nipype.pipeline.engine as pe 
+import nipype.pipeline.engine as pe
+import nibabel as nib
+
+from postprocutils.utils import calc_filter, apply_filter
 
 RESCALING_10000_GLOBALMEDIAN = "10000_globalmedian"
 RESCALING_100_VOXELMEAN = "100_voxelmean"
@@ -105,70 +110,6 @@ def hngprep(subjects:list=None, config_file:str=None, normalization_method:str=N
     for subject in subjects:
         hngprep_subject(hngprep_config, f'sub-{subject}')
 
-def calculate_10000_global_median(in_path: os.PathLike, out_path:os.PathLike,
-        mask_path: os.PathLike=None, base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None):
-    """Perform intensity normalization using the 10,000 global median method.
-
-    Args:
-        in_path (os.PathLike): A path to an input .nii to normalize.
-        out_path (os.PathLike): A path to save the normalized image.
-        mask_path (os.PathLike, optional): A path a mask to apply during the median calculation.
-        base_dir (os.PathLike, optional): A path to the base directory for the workflow.
-    """
-    LOG.info(f"Calculating {RESCALING_10000_GLOBALMEDIAN}")
-
-    if mask_path:
-        median_node = pe.Node(ImageStats(in_file=in_path, op_string="-k %s -p 50", mask_file=mask_path), name='global_median')
-    else:
-        median_node = pe.Node(ImageStats(in_file=in_path, op_string="-p 50"), name='global_median')
-
-    mul_10000_node = pe.Node(BinaryMaths(in_file=in_path, operation="mul", operand_value=10000), name="mul_10000")
-    div_median_node = pe.Node(BinaryMaths(operation="div", out_file=out_path), name="div_median")
-
-    workflow = pe.Workflow(name=RESCALING_10000_GLOBALMEDIAN, base_dir=base_dir)
-    if crashdump_dir is not None:
-        workflow.config['execution']['crashdump_dir'] = crashdump_dir
-
-    workflow.connect(mul_10000_node, "out_file", div_median_node, "in_file")
-    workflow.connect(median_node, "out_stat", div_median_node, "operand_value")
-    
-    return workflow
-
-def calculate_100_voxel_mean(in_path: os.PathLike, out_path: os.PathLike, base_dir: os.PathLike=None,
-    crashdump_dir: os.PathLike=None):
-    """Perform intensity normalization using the 100 voxel mean method.
-
-    Args:
-        in_path (str): A path to an input .nii to normalize.
-        out_path (str): A path to save the normalized image.
-    """
-    LOG.info(f"Calculating {RESCALING_100_VOXELMEAN}")
-    mean_node = pe.Node(MeanImage(in_file=in_path), name='mean')
-    mul100_node = pe.Node(BinaryMaths(operation='mul', operand_value=100, in_file=in_path),
-        name="mul100")
-    div_mean_node = pe.Node(BinaryMaths(operation='div', out_file=out_path), name="div_mean") #operand_file=mean_path
-
-    workflow = pe.Workflow(name=RESCALING_100_VOXELMEAN, base_dir=base_dir)
-    if crashdump_dir is not None:
-        workflow.config['execution']['crashdump_dir'] = crashdump_dir
-
-    workflow.connect(mul100_node, "out_file", div_mean_node, "in_file")
-    workflow.connect(mean_node, "out_file",  div_mean_node, "operand_file")
-    
-    return workflow
-
-def temporal_filter(in_file: os.PathLike, out_file: os.PathLike):
-    """Perform temporal filtering.
-
-    Args:
-        in_file (os.PathLike): A path to an input .nii to filter.
-        out_file (os.PathLike): A path to save the filtered image.
-    """
-    LOG.info(f"Applying temporal filter")
-
-    workflow = pe.Workflow(name="temporal_filter")
-
-    return workflow
 
 def _get_normalization_method(method_str: str) -> Callable:
     if method_str == RESCALING_10000_GLOBALMEDIAN:
@@ -196,6 +137,7 @@ def hngprep_subject(config: ClpipeConfigParser, subject: str):
     log_dir = Path(config['LogDirectory'])
 
     normalization_method: Callable = _get_normalization_method(normalization_method_str)
+    temporal_filtering_method: Callable = None
 
     sub_output_dir = output_dir / subject
 
