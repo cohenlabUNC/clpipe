@@ -5,7 +5,7 @@ import numpy as np
 import nibabel as nib
 
 sys.path.append('../clpipe')
-from clpipe.hngprep import calculate_10000_global_median, calculate_100_voxel_mean
+from clpipe.postprocutils.workflows import build_10000_global_median_workflow, build_100_voxel_mean_workflow
 
 logging.basicConfig(level=logging.INFO)
 
@@ -42,8 +42,10 @@ def test_calculate_10000_global_median_masked(tmp_path, random_nii, random_nii_m
 
 def test_calculate_100_voxel_mean(tmp_path, random_nii):
     out_path = tmp_path / "normalized.nii.gz"
-    calculate_100_voxel_mean(random_nii, out_path, base_dir=tmp_path, crashdump_dir=tmp_path)
-    
+    wf = build_100_voxel_mean_workflow(in_file=random_nii, out_file=out_path, base_dir=tmp_path, crashdump_dir=tmp_path)
+    wf.run()
+    wf.write_graph(dotfilename = tmp_path / "calc100voxelMeanFlow", graph2use='flat')
+
     random_nii_data = nib.load(random_nii).get_fdata()
     normalized_data = nib.load(out_path).get_fdata()
 
