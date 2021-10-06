@@ -1,6 +1,7 @@
 import pytest
 import numpy as np
 import sys
+import os
 import nibabel as nib
 import nipype.pipeline.engine as pe
 from pathlib import Path
@@ -137,6 +138,20 @@ def random_nii_mask(tmp_path) -> Path:
     return nii_path
 
 
-@pytest.fixture(scope="module")
-def workflow_base():
-    return pe.Workflow(name="Test Workflow")
+@pytest.fixture(scope="function")
+def workflow_base(tmp_path):
+    wf =  pe.Workflow(name="Test_Workflow", base_dir=tmp_path)
+    wf.config['execution']['crashdump_dir'] = "nypipe_crashdumps"
+    return wf
+
+@pytest.fixture(scope="package")
+def sample_raw_image() -> Path:
+    """
+    This is image is from the OpenNeuro dataset:
+    'Interoception during aging: The heartbeat detection task'
+    Located at https://openneuro.org/datasets/ds003763/versions/1.0.0
+
+    The image consists of slices 100-110 of sub-09113/func/sub-09113_task-heart_bold.nii.gz
+    """
+    
+    return Path("data/sample_raw.nii.gz").resolve()
