@@ -13,11 +13,11 @@ import nipype.pipeline.engine as pe
 logging.basicConfig(level=logging.INFO)
 
 
-def test_temporal_filter(tmp_path, sample_raw_image, workflow_base):
-    filtered_path = tmp_path / "filtered.nii"
+def test_butterworth_filter(tmp_path, sample_raw_image, workflow_base):
+    filtered_path = tmp_path / "Test_Workflow" / "Butterworth_Filter" / "sample_raw_filtered.nii"
     
     butterworth_node = pe.Node(ButterworthFilter(in_file=sample_raw_image,
-                                hp=.008,lp=-1,order=2,tr=2,out_file=filtered_path), name="Butterworth_Filter")
+                                hp=.008,lp=-1,order=2,tr=2), name="Butterworth_Filter")
     workflow_base.add_nodes([butterworth_node])
     workflow_base.run()
     workflow_base.write_graph(dotfilename = tmp_path / "filteredflow", graph2use='flat')
