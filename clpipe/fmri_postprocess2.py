@@ -1,4 +1,5 @@
 import os
+import logging
 
 import nipype.pipeline.engine as pe
 import click
@@ -8,14 +9,19 @@ from .batch_manager import BatchManager, Job
 #from .postprocutils.nodes import ButterworthFilter
 #from .postprocutils.workflows import build_10000_global_median_workflow, build_100_voxel_mean_workflow
 
+logging.basicConfig()
+LOG = logging.getLogger(__name__)
+
 @click.command()
 @click.option('-submit', is_flag = True, default=False, help = 'Flag to submit commands to the HPC.')
 def fmri_postprocess2_cli(submit=False):
     fmri_postprocess2(submit=submit)
 
 
-def fmri_postprocess2(submit=False):
+def fmri_postprocess2(submit=False, debug=False):
     
+    if debug: LOG.setLevel(logging.DEBUG)
+    LOG.debug("Starting postprocessing job")
     config = ClpipeConfigParser()
     batch_manager = BatchManager(config.config['BatchConfig'], ".")
     
