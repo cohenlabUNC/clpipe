@@ -14,8 +14,9 @@ LOG = logging.getLogger(__name__)
 
 @click.command()
 @click.option('-submit', is_flag = True, default=False, help = 'Flag to submit commands to the HPC.')
-def fmri_postprocess2_cli(submit=False):
-    fmri_postprocess2(submit=submit)
+@click.option('-debug', is_flag = True, default=False, help = 'Print detailed processing information and traceback for errors.')
+def fmri_postprocess2_cli(submit=False, debug=False):
+    fmri_postprocess2(submit=submit, debug=debug)
 
 
 def fmri_postprocess2(submit=False, debug=False):
