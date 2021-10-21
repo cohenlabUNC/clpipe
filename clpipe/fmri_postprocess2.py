@@ -9,9 +9,11 @@ from bids import BIDSLayout, layout, config as bids_config
 from .config_json_parser import ClpipeConfigParser
 from .batch_manager import BatchManager, Job
 from .utils import parse_dir_subjects
+from nipype.utils.filemanip import split_filename
 #from .postprocutils.nodes import ButterworthFilter
 #from .postprocutils.workflows import build_10000_global_median_workflow, build_100_voxel_mean_workflow
 
+# This hides a pybids warning
 bids_config.set_option('extension_initial_dot', True)
 
 logging.basicConfig()
@@ -26,78 +28,61 @@ EXIT_MSG = "Exiting postprocess2"
     Note, must point to the ``fmriprep`` directory, not its parent directory.""")
 @click.option('-output_dir', type=click.Path(dir_okay=True, file_okay=False), help = """Where to put the postprocessed data. 
     If a configuration file is provided with a output directory, this argument is not necessary.""")
-@click.option('-submit/-local', is_flag = True, default=True, help = 'Flag to submit commands to the HPC.')
+@click.option('-batch', is_flag = True, default=True, help = 'Flag to create batch jobs without prompt.')
+@click.option('-submit', is_flag = True, default=True, help = 'Flag to submit commands to the HPC without prompt.')
 @click.option('-debug', is_flag = True, default=False, help = 'Print detailed processing information and traceback for errors.')
-def fmri_postprocess2_cli(subjects, target_dir, output_dir, submit, debug):
-    postprocess_fmriprep_dir(subjects=subjects, fmriprep_dir=target_dir, output_dir=output_dir, submit=submit, debug=debug)
+def fmri_postprocess2_cli(subjects, target_dir, output_dir, batch, submit, debug):
+    postprocess_fmriprep_dir(subjects=subjects, fmriprep_dir=target_dir, output_dir=output_dir, batch=batch, submit=submit, debug=debug)
 
+@click.command()
 @click.argument('target_image', type=click.Path(dir_okay=False, file_okay=True))
-def postprocess_image_cli(target_image):
-    postprocess_image(target_image)
+@click.argument('output_path', type=click.Path(dir_okay=False, file_okay=True))
+@click.argument('log_dir', type=click.Path(dir_okay=True, file_okay=False))
+def postprocess_image_cli(target_image, output_path, log_dir):
+    postprocess_image(target_image, output_path, log_dir)
 
-def postprocess_image(target_image):
-    LOG.info(f"Processing image: {target_image}")
+def postprocess_image(target_image, output_path, log_dir):
+    click.echo(f"Processing image: {target_image}")
 
-def postprocess_fmriprep_dir(subjects=None, fmriprep_dir=None, output_dir=None, submit=False, debug=False):
+    job = PostProcessSubjectJob(target_image, output_path, log_dir)
+    job.run()
+
+def postprocess_fmriprep_dir(subjects=None, fmriprep_dir=None, output_dir=None, batch=False, submit=False, debug=False):
     
+    output_dir = "/nas/longleaf/home/willasc/repos/clpipe/tests/postproc"
+    log_dir = "/nas/longleaf/home/willasc/repos/clpipe/tests/postproc-logs"
+
+    # Setup Logging
     if debug: LOG.setLevel(logging.DEBUG)
     LOG.debug(f"Starting postprocessing job targeting: {fmriprep_dir}")
     
     # Handle configuration
     config = ClpipeConfigParser()
 
-    # Get the fmriprep_dir as a BIDSLayout object
-    #db_path = "tests/fmriprep_dir"
-    fmriprep_dir:BIDSLayout = setup_fmriprep_dir(fmriprep_dir)
-
-    # Choose the subjects to process
-    subjects = get_subjects(fmriprep_dir, subjects)
-
-    # Choose the images to process
-    images_to_process = fmriprep_dir.get(subject=subjects, return_type="filename", extension="nii.gz", datatype="func", suffix="bold")
+    # Create jobs based on subjects given for processing
+    jobs_to_run = PostProcessSubjectJobs(fmriprep_dir, output_dir, subjects, log_dir)
 
     # Setup batch jobs if indicated
-    if submit:
-        batch_manager = setup_batch_jobs(config, images_to_process)
-        
-        click.echo(batch_manager.print_jobs())
+    if batch or click.confirm('Would you to process these subjects on the HPC? (Choose "N" for local)'):
+        batch_manager = setup_batch_manager(config)
+        jobs_to_run.set_batch_manager(batch_manager)
+        click.echo(jobs_to_run.batch_manager.print_jobs())
 
-        if click.confirm('Submit these jobs to the HPC?'):
-            batch_manager.submit_jobs()
-    # Process the iamges locally
+        if submit or click.confirm('Submit these jobs to the HPC?'):
+            jobs_to_run.run()
+    # Otherwise, process the images locally
     else:
-        setup_jobs()
+        click.echo(str(jobs_to_run))
 
-def setup_fmriprep_dir(fmriprep_dir: str):
-    #if not os.path.exists(db_path):
-    #    click.echo("Indexing fMRIPrep directory...")
-    click.echo("Indexing fMRIPrep directory...")
-    fmriprep_dir = BIDSLayout(fmriprep_dir, validate=False)
+        if submit or click.confirm('Run these jobs locally?'):
+            jobs_to_run.run()
 
-    return fmriprep_dir
-
-def setup_jobs():
-    pass
-
-    #postProcessSubjectsJob.run()
-    #postProcessSubjectsJob = PostProcessSubjectsJob(target_dir, output_dir, subject_ids=subjects)
-
-def setup_batch_jobs(config, images_to_process):
-    submission_string = """postprocess_image {image_path}"""
-    
+def setup_batch_manager(config):
     batch_manager = BatchManager(config.config['BatchConfig'], "/nas/longleaf/home/willasc/repos/clpipe/tests/Output-PostProcessing")
-
-    for image_path in images_to_process:
-        sub_string_temp = submission_string.format(image_path=image_path)
-        image_stem = Path(image_path).stem
-
-        batch_manager.addjob(Job("PostProcessing_" + image_stem, sub_string_temp))
-
-    batch_manager.createsubmissionhead()
-    batch_manager.compilejobstrings()
 
     return batch_manager
 
+# TODO: throw exceptions here instead of exiting
 def get_subjects(fmriprep_dir: BIDSLayout, subjects):   
     # If no subjects were provided, use all subjects in the fmriprep directory
     if subjects is None:
@@ -105,40 +90,41 @@ def get_subjects(fmriprep_dir: BIDSLayout, subjects):
             subjects = fmriprep_dir.get_subjects()
             if len(subjects) == 0:
                 no_subjects_found_str = f"No subjects found to parse at: {fmriprep_dir.root}"
-                click.echo(no_subjects_found_str)
+                print(no_subjects_found_str)
                 LOG.error(no_subjects_found_str)
-                click.echo(EXIT_MSG)
+                print(EXIT_MSG)
                 exit()
         except FileNotFoundError as fne:
-            click.echo(f"Invalid path provided: {fmriprep_dir.root}")
+            print(f"Invalid path provided: {fmriprep_dir.root}")
             LOG.debug(fne)
-            click.echo(EXIT_MSG)
+            print(EXIT_MSG)
             exit()
     # If subjects were provided, return those subjects
     if len(subjects) == 1:
         processing_msg = f"Processing subject: {subjects[0]}"
         LOG.info(processing_msg)
-        click.echo(processing_msg)
+        print(processing_msg)
     else:
         processing_msg = f"Processing subjects: {subjects}"
         LOG.info(processing_msg)
-        click.echo(processing_msg)
+        print(processing_msg)
 
     return subjects
 
-class PostProcessSubjectJob():
+class CLPipeJob():
+    pass
+
+class PostProcessSubjectJob(CLPipeJob):
     #wf: pe.Workflow = None
-    config: dict = None
     
-    def __init__(self, out_dir: os.PathLike, crashdump_dir: str=None):
-        #self.ppconfig = config["PostProcessingOptions"]
-        #self.subject_id=subject.subject_id
-        # get from new fmriprepoutput function
-        self.in_file=None
-        # derive from out_dir and in_file
-        self.out_file=None
+    # TODO: add class logger
+    def __init__(self, in_file: os.PathLike, out_file: os.PathLike, log_dir: os.PathLike=None):
+        self.in_file=in_file
+        self.out_file=out_file
+        self.log_dir=log_dir
+        
         # self.wf = pe.Workflow(name=PostProcessSubjectJob.__class__.__name__ + subject_id)
-        # if crashdump_dir is not None:
+        # if log_dir is not None:
         #     self.wf.config['execution']['crashdump_dir'] = crashdump_dir
         # self._compose_workflow()
 
@@ -153,32 +139,78 @@ class PostProcessSubjectJob():
         #                                        ("out_file","mul100.in_file")])
         # ])
 
+
+    def __str__(self):
+        return f"Postprocessing Job: {self.in_file}"
+
     def run(self):
-        print(f"Running job for {self.subject_id}")
+        print(f"Postprocessing image at path {self.in_file}")
         #self.wf.run()
 
-class PostProcessSubjectJobs():
-    post_process_jobs: PostProcessSubjectJob = {}
-    
-    def __init__(self, target_dir, output_dir, subject_ids=None, ):
+class PostProcessSubjectJobs(CLPipeJob):
+    post_process_jobs = []
 
-        pass
+    # TODO: Add class logger
+    def __init__(self, fmriprep_dir:BIDSLayout, output_dir: os.PathLike, subjects_to_process=None, log_dir: os.PathLike=None):
+        self.log_dir = log_dir
+        self.output_dir = output_dir
+        self.slurm = False
         
-        
-        #self.fMRIprep_dir = FMRIPrepOutputDir(target_dir)
+        # Get the fmriprep_dir as a BIDSLayout object
+        # Currently cannot get index persistance below to work due to dependency issues
+        # db_path = "tests/fmriprep_dir"
+        print("Indexing fMRIPrep directory...")
+        self.fmriprep_dir:BIDSLayout = BIDSLayout(fmriprep_dir, validate=False)
 
-        # if subject_ids == None:
-        #     for sub_id in self.fMRIprep_dir.fmriprep_outputs.keys():
-        #         in_file = None
-        #         self.post_process_jobs[sub_id] = PostProcessSubjectJob(self.fMRIprep_dir.fmriprep_outputs[sub_id], output_dir)
-        # else:
-        #     for sub_id in subject_ids:
-        #         fmri_output = self.fMRIprep_dir.fmriprep_outputs[sub_id]
-        #         in_file = None
-        #         self.post_process_jobs[sub_id] = PostProcessSubjectJob(fmri_output, output_dir)
+        # Choose the subjects to process
+        self.subjects_to_process = get_subjects(self.fmriprep_dir, subjects_to_process)
+        
+        # Create the jobs
+        self.create_jobs()
+
+    def create_jobs(self):
+        # Gather all image paths to be processed with pybids query
+        images_to_process = self.fmriprep_dir.get(
+            subject=self.subjects_to_process, return_type="filename", 
+            extension="nii.gz", datatype="func", suffix="bold")
+
+        for in_file in images_to_process:   
+            # Calculate the output file name for a given image to process
+            _, base, _ = split_filename(in_file)
+            out_stem = base + '_filtered.nii'
+            out_file = os.path.abspath(os.path.join(self.output_dir, out_stem))
+
+            # Create a new job and add to list of jobs to be run
+            job_to_add = PostProcessSubjectJob(in_file, out_file, log_dir=self.log_dir)
+            self.post_process_jobs.append(job_to_add)
+
+    def set_batch_manager(self, batch_manager: BatchManager):
+        self.slurm=True
+        self.batch_manager = batch_manager
+
+        submission_string = """postprocess_image {image_path} {out_file} {log_dir}"""
+        for job in self.post_process_jobs:
+            sub_string_temp = submission_string.format(image_path=job.in_file,
+                                                        out_file=job.out_file,
+                                                        log_dir=job.log_dir)
+            image_stem = Path(job.in_file).stem
+
+            self.batch_manager.addjob(Job("PostProcessing_" + image_stem, sub_string_temp))
+
+        self.batch_manager.createsubmissionhead()
+        self.batch_manager.compilejobstrings()
+
+    def __str__(self):
+        out = ""
+        for job in self.post_process_jobs:
+            out += str(job) + '\n'
+        return out
 
     def run(self):
-        for job in self.post_process_jobs:
-            print(self.post_process_jobs[job].run())
+        if self.slurm:
+            self.batch_manager.submit_jobs()
+        else:
+            for job in self.post_process_jobs:
+                job.run()
 
         
