@@ -10,8 +10,8 @@ from .config_json_parser import ClpipeConfigParser
 from .batch_manager import BatchManager, Job
 from .utils import parse_dir_subjects
 from nipype.utils.filemanip import split_filename
-#from .postprocutils.nodes import ButterworthFilter
-#from .postprocutils.workflows import build_10000_global_median_workflow, build_100_voxel_mean_workflow
+# from .postprocutils.nodes import ButterworthFilter
+# from .postprocutils.workflows import build_10000_global_median_workflow, build_100_voxel_mean_workflow
 
 # This hides a pybids warning
 bids_config.set_option('extension_initial_dot', True)
@@ -30,6 +30,7 @@ EXIT_MSG = "Exiting postprocess2"
     If a configuration file is provided with a output directory, this argument is not necessary.""")
 @click.option('-batch', is_flag = True, default=True, help = 'Flag to create batch jobs without prompt.')
 @click.option('-submit', is_flag = True, default=True, help = 'Flag to submit commands to the HPC without prompt.')
+@click.option('-log_dir', is_flag = True, default=True, help = 'Path to the logging directory.')
 @click.option('-debug', is_flag = True, default=False, help = 'Print detailed processing information and traceback for errors.')
 def fmri_postprocess2_cli(subjects, target_dir, output_dir, batch, submit, debug):
     postprocess_fmriprep_dir(subjects=subjects, fmriprep_dir=target_dir, output_dir=output_dir, batch=batch, submit=submit, debug=debug)
@@ -47,10 +48,7 @@ def postprocess_image(target_image, output_path, log_dir):
     job = PostProcessSubjectJob(target_image, output_path, log_dir)
     job.run()
 
-def postprocess_fmriprep_dir(subjects=None, fmriprep_dir=None, output_dir=None, batch=False, submit=False, debug=False):
-    
-    output_dir = "/nas/longleaf/home/willasc/repos/clpipe/tests/postproc"
-    log_dir = "/nas/longleaf/home/willasc/repos/clpipe/tests/postproc-logs"
+def postprocess_fmriprep_dir(subjects=None, fmriprep_dir=None, output_dir=None, batch=False, submit=False, log_dir=None, debug=False):
 
     # Setup Logging
     if debug: LOG.setLevel(logging.DEBUG)
