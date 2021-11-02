@@ -4,9 +4,30 @@ from nipype.interfaces.fsl.maths import MeanImage, BinaryMaths, MedianImage
 from nipype.interfaces.fsl.utils import ImageStats
 import nipype.pipeline.engine as pe
 
+from .nodes import ButterworthFilter
+
 RESCALING_10000_GLOBALMEDIAN = "10000_globalmedian"
 RESCALING_100_VOXELMEAN = "100_voxelmean"
 NORMALIZATION_METHODS = (RESCALING_10000_GLOBALMEDIAN, RESCALING_100_VOXELMEAN)
+
+def build_postprocessing_workflow(name, in_path: os.PathLike, out_path:os.PathLike, 
+    base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None):
+    
+    wf = pe.Workflow(name=name, base_dir=base_dir)
+    
+    if crashdump_dir is not None:
+        wf.config['execution']['crashdump_dir'] = crashdump_dir
+    
+    voxel_mean_wf = build_100_voxel_mean_workflow(None, in_path, base_dir=wf.base_dir)
+    butterworth_node = pe.Node(ButterworthFilter(in_file=out_path,
+                            hp=.008,lp=-1,order=2,tr=2), name="butterworth_filter")
+
+    wf.connect([
+        (butterworth_node, voxel_mean_wf, [("out_file","mean.in_file"),
+                                            ("out_file","mul100.in_file")])
+    ])
+
+    return wf
 
 def build_10000_global_median_workflow(in_path: os.PathLike, out_path:os.PathLike,
         mask_path: os.PathLike=None, base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None):

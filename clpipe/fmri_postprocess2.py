@@ -8,10 +8,8 @@ from bids import BIDSLayout, layout, config as bids_config
 
 from .config_json_parser import ClpipeConfigParser
 from .batch_manager import BatchManager, Job
-from .utils import parse_dir_subjects
 from nipype.utils.filemanip import split_filename
-# from .postprocutils.nodes import ButterworthFilter
-# from .postprocutils.workflows import build_10000_global_median_workflow, build_100_voxel_mean_workflow
+# from .postprocutils.workflows import build_postprocessing_workflow
 
 # This hides a pybids warning
 bids_config.set_option('extension_initial_dot', True)
@@ -32,8 +30,9 @@ EXIT_MSG = "Exiting postprocess2"
 @click.option('-submit', is_flag = True, default=True, help = 'Flag to submit commands to the HPC without prompt.')
 @click.option('-log_dir', is_flag = True, default=True, help = 'Path to the logging directory.')
 @click.option('-debug', is_flag = True, default=False, help = 'Print detailed processing information and traceback for errors.')
-def fmri_postprocess2_cli(subjects, target_dir, output_dir, batch, submit, debug):
-    postprocess_fmriprep_dir(subjects=subjects, fmriprep_dir=target_dir, output_dir=output_dir, batch=batch, submit=submit, debug=debug)
+def fmri_postprocess2_cli(subjects, target_dir, output_dir, batch, submit, log_dir, debug):
+    postprocess_fmriprep_dir(subjects=subjects, fmriprep_dir=target_dir, output_dir=output_dir, 
+    batch=batch, submit=submit, log_dir=log_dir, debug=debug)
 
 @click.command()
 @click.argument('target_image', type=click.Path(dir_okay=False, file_okay=True))
@@ -121,22 +120,7 @@ class PostProcessSubjectJob(CLPipeJob):
         self.out_file=out_file
         self.log_dir=log_dir
         
-        # self.wf = pe.Workflow(name=PostProcessSubjectJob.__class__.__name__ + subject_id)
-        # if log_dir is not None:
-        #     self.wf.config['execution']['crashdump_dir'] = crashdump_dir
-        # self._compose_workflow()
-
-    def _compose_workflow(self):
-        pass
-        # voxel_mean_wf = build_100_voxel_mean_workflow(None, self.out_file, base_dir=self.wf.base_dir)
-        # butterworth_node = pe.Node(ButterworthFilter(in_file=self.in_file,
-        #                         hp=.008,lp=-1,order=2,tr=2), name="butterworth_filter")
-    
-        # self.wf.connect([
-        #     (butterworth_node, voxel_mean_wf, [("out_file","mean.in_file"),
-        #                                        ("out_file","mul100.in_file")])
-        # ])
-
+        # self.wf = build_postprocessing_workflow(name=PostProcessSubjectJob.__class__.__name__, log_dir)
 
     def __str__(self):
         return f"Postprocessing Job: {self.in_file}"
@@ -156,9 +140,9 @@ class PostProcessSubjectJobs(CLPipeJob):
         
         # Get the fmriprep_dir as a BIDSLayout object
         # Currently cannot get index persistance below to work due to dependency issues
-        # db_path = "tests/fmriprep_dir"
+        #db_path = "tests/fmriprep_dir"
         print("Indexing fMRIPrep directory...")
-        self.fmriprep_dir:BIDSLayout = BIDSLayout(fmriprep_dir, validate=False)
+        self.fmriprep_dir:BIDSLayout = BIDSLayout(fmriprep_dir, validate=False, database_path='tests/fmriprep_dir')
 
         # Choose the subjects to process
         self.subjects_to_process = get_subjects(self.fmriprep_dir, subjects_to_process)
