@@ -3,13 +3,12 @@ import logging
 from pathlib import Path
 
 import click
-import nipype.pipeline.engine as pe
-from bids import BIDSLayout, layout, config as bids_config
+from bids import BIDSLayout, config as bids_config
 
 from .config_json_parser import ClpipeConfigParser
 from .batch_manager import BatchManager, Job
 from nipype.utils.filemanip import split_filename
-# from .postprocutils.workflows import build_postprocessing_workflow
+from .postprocutils.workflows import build_postprocessing_workflow
 
 # This hides a pybids warning
 bids_config.set_option('extension_initial_dot', True)
@@ -18,6 +17,7 @@ logging.basicConfig()
 LOG = logging.getLogger(__name__)
 
 EXIT_MSG = "Exiting postprocess2"
+PYBIDS_DB_PATH = "TestFiles/fmriprep_dir"
 
 @click.command()
 @click.argument('subjects', nargs=-1, required=False, default=None)
@@ -57,7 +57,8 @@ def postprocess_fmriprep_dir(subjects=None, fmriprep_dir=None, output_dir=None, 
     config = ClpipeConfigParser()
 
     # Create jobs based on subjects given for processing
-    jobs_to_run = PostProcessSubjectJobs(fmriprep_dir, output_dir, subjects, log_dir)
+    # TODO: PYBIDS_DB_PATH should have config arg
+    jobs_to_run = PostProcessSubjectJobs(fmriprep_dir, output_dir, subjects, log_dir, PYBIDS_DB_PATH)
 
     # Setup batch jobs if indicated
     if batch or click.confirm('Would you to process these subjects on the HPC? (Choose "N" for local)'):
@@ -120,29 +121,31 @@ class PostProcessSubjectJob(CLPipeJob):
         self.out_file=out_file
         self.log_dir=log_dir
         
-        # self.wf = build_postprocessing_workflow(name=PostProcessSubjectJob.__class__.__name__, log_dir)
+        self.wf = build_postprocessing_workflow(PostProcessSubjectJob.__class__.__name__,
+            in_file, out_file, base_dir=log_dir, crashdump_dir=log_dir)
 
     def __str__(self):
         return f"Postprocessing Job: {self.in_file}"
 
     def run(self):
         print(f"Postprocessing image at path {self.in_file}")
-        #self.wf.run()
+        self.wf.run()
 
 class PostProcessSubjectJobs(CLPipeJob):
     post_process_jobs = []
 
     # TODO: Add class logger
-    def __init__(self, fmriprep_dir:BIDSLayout, output_dir: os.PathLike, subjects_to_process=None, log_dir: os.PathLike=None):
+    def __init__(self, fmriprep_dir:BIDSLayout, output_dir: os.PathLike, subjects_to_process=None, 
+        log_dir: os.PathLike=None, pybids_db_path: os.PathLike=None):
         self.log_dir = log_dir
         self.output_dir = output_dir
         self.slurm = False
+        self.pybids_db_path = pybids_db_path
         
         # Get the fmriprep_dir as a BIDSLayout object
-        # Currently cannot get index persistance below to work due to dependency issues
-        #db_path = "tests/fmriprep_dir"
-        print("Indexing fMRIPrep directory...")
-        self.fmriprep_dir:BIDSLayout = BIDSLayout(fmriprep_dir, validate=False, database_path='tests/fmriprep_dir')
+        if not os.path.exists(pybids_db_path):
+            print("Indexing fMRIPrep directory...")
+        self.fmriprep_dir:BIDSLayout = BIDSLayout(fmriprep_dir, validate=False, database_path=self.pybids_db_path)
 
         # Choose the subjects to process
         self.subjects_to_process = get_subjects(self.fmriprep_dir, subjects_to_process)
