@@ -6,7 +6,6 @@ from pathlib import Path
 from click.testing import CliRunner
 
 sys.path.append('../clpipe')
-from clpipe.hngprep import hngprep, hngprep_cli, hngprep_subject
 from clpipe.config_json_parser import ClpipeConfigParser
 from conftest import NUM_SUBJECTS
 
