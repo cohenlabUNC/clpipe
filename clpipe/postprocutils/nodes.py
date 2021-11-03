@@ -20,7 +20,7 @@ class ButterworthFilterInputSpec(BaseInterfaceInputSpec):
 
 
 class ButterworthFilterOutputSpec(TraitedSpec):
-    out_file = File(exists=True, desc="Filtered image")
+    out_file = File(exists=False, desc="Filtered image")
 
 class ButterworthFilter(BaseInterface):
     input_spec = ButterworthFilterInputSpec
