@@ -1,0 +1,28 @@
+{
+  "SubmissionHead": "sbatch --no-requeue",
+  "SubmissionOptions": [{
+    "command": "-n",
+    "args": "1"
+  }],
+  "SubOptionsEqual": [],
+  "NThreadsCommand": "--cpus-per-task={nthreads}",
+  "NThreads": "1",
+  "MemoryCommand": "--mem={mem}",
+  "MemoryDefault": "1000",
+  "TimeCommand": "--time={time}",
+  "TimeDefault": "1:0:0",
+  "JobIDCommand": "--job-name=\"{jobid}\"",
+  "OutputCommand": "--output={output}",
+  "CommandWrapper": "--wrap=\"{cmdwrap}\"",
+  "EmailAddress": "",
+  "EmailCommand": "--mail-user {email} --mail-type=FAIL",
+  "FMRIPrepBatchCommands": "-e --no-home",
+  "NoQuotes": false,
+  "TimeCommandActive": true,
+  "ThreadCommandActive": true,
+  "JobIDCommandActive": true,
+  "OutputCommandActive": true,
+
+
+  "SingularityBindPaths": "/projects,/home,/scratch"
+}
