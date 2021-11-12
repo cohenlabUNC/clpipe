@@ -154,4 +154,4 @@ def sample_raw_image() -> Path:
     The image consists of slices 100-110 of sub-09113/func/sub-09113_task-heart_bold.nii.gz
     """
     
-    return Path("data/sample_raw.nii.gz").resolve()
+    return Path("tests/data/sample_raw.nii.gz").resolve()
