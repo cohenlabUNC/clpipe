@@ -15,10 +15,10 @@ def test_postprocess_subject(clpipe_config_default, tmp_path, sample_raw_image):
     assert True
 
 
-def test_spatial_smoothing_wf(tmp_path, random_nii, random_nii_mask):
+def test_spatial_smoothing_wf(tmp_path, sample_raw_image, sample_raw_image_mask):
     out_path = tmp_path / "smoothed.nii.gz"
-    wf = build_spatial_smoothing_workflow(in_file=random_nii, out_file=out_path, fwhm_mm=6, 
-        mask_path=random_nii_mask, base_dir=tmp_path, crashdump_dir=tmp_path)
+    wf = build_spatial_smoothing_workflow(in_file=sample_raw_image, out_file=out_path, fwhm_mm=6, 
+        mask_path=sample_raw_image_mask, base_dir=tmp_path, crashdump_dir=tmp_path)
     wf.run()
     wf.write_graph(dotfilename = tmp_path / "spatialSmoothFlow", graph2use='flat')
     
