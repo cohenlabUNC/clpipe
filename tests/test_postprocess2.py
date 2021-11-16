@@ -5,15 +5,22 @@ import nibabel as nib
 from nilearn import plotting
 from nilearn.image import load_img, index_img
 
-from clpipe.fmri_postprocess2 import PostProcessSubjectJob
-from clpipe.postprocutils.workflows import build_10000_global_median_workflow, build_100_voxel_mean_workflow, build_spatial_smoothing_workflow
+from clpipe.postprocutils.workflows import *
 from clpipe.postprocutils.nodes import ButterworthFilter
 
-@pytest.mark.skip(reason="Needs refactor")
-def test_postprocess_subject(clpipe_config_default, tmp_path, sample_raw_image):
-    postProcessSubjectJob = PostProcessSubjectJob(sample_raw_image, tmp_path / "postProcessed.nii.gz", tmp_path)
-    postProcessSubjectJob.wf.write_graph(dotfilename = tmp_path / "postProcessSubjectFlow", graph2use='flat')
-    postProcessSubjectJob.run()
+def test_postprocess_wf(clpipe_config_default, tmp_path, sample_raw_image, sample_raw_image_mask, plot_img):
+    out_path = tmp_path / "postProcessed.nii.gz"
+    
+    wf = build_postprocessing_workflow("postproc_test", sample_raw_image, out_path, 
+        base_dir=tmp_path, crashdump_dir=tmp_path)
+    wf.write_graph(dotfilename = tmp_path / "postProcessSubjectFlow", graph2use='flat')
+    wf.run()
+
+    if plot_img:
+        image = load_img(str(out_path))
+        image_slice = index_img(image, 1)
+        plotting.plot_img(image_slice, output_file= str(tmp_path / "postProcessed.png"))
+
     assert True
 
 
