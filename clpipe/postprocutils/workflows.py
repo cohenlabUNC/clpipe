@@ -31,10 +31,11 @@ def build_postprocessing_workflow(name, in_path: os.PathLike, out_path:os.PathLi
             hp=.008,lp=-1,order=2,tr=2), name="butterworth_filter")
         previous_step = butterworth_node
     if intensity_normalize:
-        voxel_mean_wf = build_100_voxel_mean_workflow(None, out_path, base_dir=wf.base_dir)
+        voxel_mean_wf = build_10000_global_median_workflow(None, out_path, base_dir=wf.base_dir,
+            crashdump_dir=wf.config['execution']['crashdump_dir'])
         wf.connect([
-            (previous_step, voxel_mean_wf, [("out_file","mean.in_file"),
-                                            ("out_file","mul100.in_file")])
+            (previous_step, voxel_mean_wf, [("out_file","global_median.in_file"),
+                                            ("out_file","mul_10000.in_file")])
         ])
     
     return wf
@@ -50,13 +51,20 @@ def build_10000_global_median_workflow(in_path: os.PathLike, out_path:os.PathLik
         base_dir (os.PathLike, optional): A path to the base directory for the workflow.
     """
 
-    if mask_path:
-        median_node = pe.Node(ImageStats(in_file=in_path, op_string="-k %s -p 50", mask_file=mask_path), name='global_median')
-    else:
-        median_node = pe.Node(ImageStats(in_file=in_path, op_string="-p 50"), name='global_median')
+    median_node = pe.Node(ImageStats(op_string="-k %s -p 50"), name='global_median')
+    mul_10000_node = pe.Node(BinaryMaths(operation="mul", operand_value=10000), name="mul_10000")
+    div_median_node = pe.Node(BinaryMaths(operation="div"), name="div_median")
 
-    mul_10000_node = pe.Node(BinaryMaths(in_file=in_path, operation="mul", operand_value=10000), name="mul_10000")
-    div_median_node = pe.Node(BinaryMaths(operation="div", out_file=out_path), name="div_median")
+    if in_path != None:
+        median_node.inputs.in_file = in_path
+        mul_10000_node.inputs.in_file = in_path
+
+    if out_path != None:
+        div_median_node.inputs.out_file = out_path
+
+    if mask_path != None:
+        median_node.inputs.mask_file = mask_path
+
 
     workflow = pe.Workflow(name=RESCALING_10000_GLOBALMEDIAN, base_dir=base_dir)
     if crashdump_dir is not None:
@@ -67,6 +75,7 @@ def build_10000_global_median_workflow(in_path: os.PathLike, out_path:os.PathLik
     
     return workflow
 
+#TODO: Rewrite to not use multiple instantiation variants
 def build_100_voxel_mean_workflow(in_file: os.PathLike=None, out_file: os.PathLike=None, base_dir: os.PathLike=None,
     crashdump_dir: os.PathLike=None):
     """Perform intensity normalization using the 100 voxel mean method.
@@ -101,6 +110,7 @@ def build_100_voxel_mean_workflow(in_file: os.PathLike=None, out_file: os.PathLi
 
     return workflow
 
+#TODO: Rewrite to not use multiple instantiation variants
 def build_spatial_smoothing_workflow(in_file: os.PathLike=None, mask_path: os.PathLike=None, fwhm_mm: int=6, out_file: os.PathLike=None, 
     base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None):
     
@@ -145,12 +155,3 @@ def build_spatial_smoothing_workflow(in_file: os.PathLike=None, mask_path: os.Pa
     
 def _calc_susan_threshold(median_intensity, p2_intensity):
     return (median_intensity - p2_intensity) * .75
- 
-    
-    
-    
-    
-    
-    
-    
-    pass
