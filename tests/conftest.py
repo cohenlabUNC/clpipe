@@ -15,6 +15,15 @@ PROJECT_TITLE = "test_project"
 NUM_SUBJECTS = 8
 DEFAULT_RANDOM_NII_DIMS = (12, 12, 12, 36)
 
+def pytest_addoption(parser):
+    parser.addoption(
+        "--plot_img", action="store_true", default=False, help="Save plot of image processing results as .png"
+    )
+
+@pytest.fixture
+def plot_img(request):
+    return request.config.getoption("--plot_img")
+
 @pytest.fixture(scope="module")
 def clpipe_dir(tmp_path_factory):
     """Fixture which provides a temporary clpipe project folder."""
