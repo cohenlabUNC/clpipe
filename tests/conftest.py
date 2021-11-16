@@ -155,3 +155,13 @@ def sample_raw_image() -> Path:
     """
     
     return Path("tests/data/sample_raw.nii.gz").resolve()
+
+@pytest.fixture(scope="package")
+def sample_raw_image_mask() -> Path:
+    """
+    This image is a mask of the sample_raw_image fixture.
+
+    The mask was calculated with nilearn's masking.compute_epi_mask function.
+    """
+    
+    return Path("tests/data/sample_raw_mask.nii.gz").resolve()
