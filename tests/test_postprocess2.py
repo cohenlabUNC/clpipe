@@ -31,10 +31,19 @@ def test_calculate_100_voxel_mean_wf(tmp_path, sample_raw_image):
     wf.write_graph(dotfilename = tmp_path / "calc100voxelMeanFlow", graph2use='flat')
 
     assert True
+
+def test_calculate_10000_global_median_wf(tmp_path, sample_raw_image, sample_raw_image_mask):
+    out_path = tmp_path / "normalized_10000gm.nii.gz"
+    
+    wf = build_10000_global_median_workflow(in_path=sample_raw_image, out_path=out_path, mask_path=sample_raw_image_mask, base_dir=tmp_path, crashdump_dir=tmp_path)
+    wf.run()
+    wf.write_graph(dotfilename = tmp_path / "calc10000globalMedianFlow", graph2use='flat')
+
+    assert True
     
 def test_butterworth_filter(tmp_path, sample_raw_image, workflow_base):
     filtered_path = tmp_path / "Test_Workflow" / "Butterworth_Filter" / "sample_raw_filtered.nii"
-    
+
     butterworth_node = pe.Node(ButterworthFilter(in_file=sample_raw_image,
                                 hp=.008,lp=-1,order=2,tr=2), name="Butterworth_Filter")
     workflow_base.add_nodes([butterworth_node])

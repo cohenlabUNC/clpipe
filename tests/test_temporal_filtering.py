@@ -12,7 +12,7 @@ import nipype.pipeline.engine as pe
 
 logging.basicConfig(level=logging.INFO)
 
-
+@pytest.mark.skip(reason="Moved to postproc2")
 def test_butterworth_filter(tmp_path, sample_raw_image, workflow_base):
     filtered_path = tmp_path / "Test_Workflow" / "Butterworth_Filter" / "sample_raw_filtered.nii"
     

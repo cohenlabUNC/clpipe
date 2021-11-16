@@ -43,6 +43,7 @@ def test_calculate_10000_global_median_masked(tmp_path, random_nii, random_nii_m
     # Prove that the mask is included in median calculation
     assert round(mul_rescale[0][0][0][0], 4) != round(normalized_data[0][0][0][0], 4)
 
+@pytest.mark.skip(reason="Moved to postproc2")
 def test_calculate_100_voxel_mean_wf(tmp_path, sample_raw_image):
     out_path = tmp_path / "normalized.nii.gz"
     wf = build_100_voxel_mean_workflow(in_file=sample_raw_image, out_file=out_path, base_dir=tmp_path, crashdump_dir=tmp_path)
@@ -51,6 +52,7 @@ def test_calculate_100_voxel_mean_wf(tmp_path, sample_raw_image):
 
     assert True
 
+@pytest.mark.skip(reason="Moved to postproc2")
 def test_calculate_100_voxel_mean(tmp_path, random_nii):
     out_path = tmp_path / "normalized.nii.gz"
     wf = build_100_voxel_mean_workflow(in_file=random_nii, out_file=out_path, base_dir=tmp_path, crashdump_dir=tmp_path)
