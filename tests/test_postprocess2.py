@@ -6,7 +6,6 @@ from nilearn import plotting
 from nilearn.image import load_img, index_img
 
 from clpipe.postprocutils.workflows import *
-from clpipe.postprocutils.nodes import ButterworthFilter
 
 def test_postprocess_wf(clpipe_config_default, tmp_path, sample_raw_image, sample_raw_image_mask, plot_img):
     out_path = tmp_path / "postProcessed.nii.gz"
@@ -65,14 +64,13 @@ def test_calculate_10000_global_median_wf(tmp_path, sample_raw_image, sample_raw
 
     assert True
     
-def test_butterworth_filter(tmp_path, sample_raw_image, workflow_base, plot_img):
-    filtered_path = tmp_path / "Test_Workflow" / "Butterworth_Filter" / "sample_raw_filtered.nii"
+def test_butterworth_filter_wf(tmp_path, sample_raw_image, plot_img):
+    filtered_path = tmp_path / "sample_raw_filtered.nii"
 
-    butterworth_node = pe.Node(ButterworthFilter(in_file=sample_raw_image,
-                                hp=.008,lp=-1,order=2,tr=2), name="Butterworth_Filter")
-    workflow_base.add_nodes([butterworth_node])
-    workflow_base.run()
-    workflow_base.write_graph(dotfilename = tmp_path / "filteredflow", graph2use='flat')
+    wf = build_butterworth_filter_workflow(hp=.008, lp=-1, tr=2, order=2, in_file=sample_raw_image, out_file=filtered_path, 
+        base_dir=tmp_path, crashdump_dir=tmp_path)
+    wf.run()
+    wf.write_graph(dotfilename = tmp_path / "filteredflow", graph2use='flat')
 
     if plot_img:
         image = load_img(str(filtered_path))
