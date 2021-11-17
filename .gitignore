@@ -59,6 +59,7 @@ crashlytics-build.properties
 staticfiles
 .env
 TestFiles/
+tests/artifacts
 
 #vscode
 .vscode
