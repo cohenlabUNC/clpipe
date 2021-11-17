@@ -7,22 +7,6 @@ from nilearn.image import load_img, index_img
 
 from clpipe.postprocutils.workflows import *
 
-def test_postprocess_wf(clpipe_config_default, tmp_path, sample_raw_image, sample_raw_image_mask, plot_img):
-    out_path = tmp_path / "postProcessed.nii.gz"
-    
-    wf = build_postprocessing_workflow("postproc_test", sample_raw_image, out_path, 
-        base_dir=tmp_path, crashdump_dir=tmp_path)
-    wf.write_graph(dotfilename = tmp_path / "postProcessSubjectFlow", graph2use='colored')
-    wf.run()
-
-    if plot_img:
-        image = load_img(str(out_path))
-        image_slice = index_img(image, 1)
-        plotting.plot_img(image_slice, output_file= str(tmp_path / "postProcessed.png"))
-
-    assert True
-
-
 def test_spatial_smoothing_wf(tmp_path, sample_raw_image, sample_raw_image_mask, plot_img):
     out_path = tmp_path / "smoothed.nii.gz"
     wf = build_spatial_smoothing_workflow(in_file=sample_raw_image, out_file=out_path, fwhm_mm=6, 

@@ -45,7 +45,7 @@ class ButterworthFilter(BaseInterface):
 
         new_img = nb.Nifti1Image(filtered_data, img.affine, img.header)
         
-        if not isdefined(self.inputs.in_file):
+        if not isdefined(self.inputs.out_file):
             _, base, _ = split_filename(fname)
             self.new_file = base + '_filtered.nii'
         else:

@@ -10,34 +10,52 @@ import nipype.pipeline.engine as pe
 
 from .nodes import build_input_node, build_output_node, ButterworthFilter
 
-RESCALING_10000_GLOBALMEDIAN = "10000_globalmedian"
-RESCALING_100_VOXELMEAN = "100_voxelmean"
+RESCALING_10000_GLOBALMEDIAN = "globalmedian_10000"
+RESCALING_100_VOXELMEAN = "voxelmean_100"
 NORMALIZATION_METHODS = (RESCALING_10000_GLOBALMEDIAN, RESCALING_100_VOXELMEAN)
 
-def build_postprocessing_workflow(name, in_path: os.PathLike, out_path:os.PathLike, 
-    mask_path: os.PathLike=None, temporal_filter=True, intensity_normalize=True, base_dir: os.PathLike=None, 
+def build_postprocessing_workflow(name, in_file: os.PathLike, out_file:os.PathLike, 
+    mask_file: os.PathLike=None, processing_steps=["temporal_filtering", "intensity_normalization", "spatial_smoothing"], base_dir: os.PathLike=None, 
     crashdump_dir: os.PathLike=None):
     
-    wf = pe.Workflow(name=name, base_dir=base_dir)
+    postproc_wf = pe.Workflow(name=name, base_dir=base_dir)
     
     if crashdump_dir is not None:
-        wf.config['execution']['crashdump_dir'] = crashdump_dir
+        postproc_wf.config['execution']['crashdump_dir'] = crashdump_dir
     
-    # The most recently added node or wf
-    previous_step = None
+    step_count = len(processing_steps)
+    if step_count < 2:
+        raise ValueError("The PostProcess workflow requires at least 2 processing steps. Steps given: {step_count}")
 
-    # Initialize WF Components
-    butterworth_wf = build_butterworth_filter_workflow(hp=.008,lp=-1, tr=2, order=2, base_dir=wf.base_dir, crashdump_dir=wf.config['execution']['crashdump_dir'])
-    normalize_10000_gm_wf = build_10000_global_median_workflow(base_dir=wf.base_dir, mask_file=mask_path, crashdump_dir=wf.config['execution']['crashdump_dir'])
-    smoothing_wf = build_spatial_smoothing_workflow(base_dir=wf.base_dir, mask_path=mask_path, crashdump_dir=wf.config['execution']['crashdump_dir'])
+    current_wf = None
+    prev_wf = None
 
-    butterworth_wf.inputs.inputnode.in_file = in_path
-    butterworth_wf.inputs.inputnode.out_file = out_path
+    for index, step in enumerate(processing_steps):
+        # Decide which wf to add next
+        if step == "temporal_filtering":
+            current_wf = build_butterworth_filter_workflow(hp=.008,lp=-1, tr=2, order=2, base_dir=postproc_wf.base_dir, crashdump_dir=postproc_wf.config['execution']['crashdump_dir'])
+        
+        elif step == "intensity_normalization":
+            current_wf = build_10000_global_median_workflow(base_dir=postproc_wf.base_dir, mask_file=mask_file, crashdump_dir=postproc_wf.config['execution']['crashdump_dir'])
+        
+        elif step == "spatial_smoothing":
+            current_wf = build_spatial_smoothing_workflow(base_dir=postproc_wf.base_dir, mask_path=mask_file, crashdump_dir=postproc_wf.config['execution']['crashdump_dir'])
 
-    wf.connect(butterworth_wf, "outputnode.out_file", normalize_10000_gm_wf, "inputnode.in_file")
-    wf.connect(normalize_10000_gm_wf, "outputnode.out_file", smoothing_wf, "inputnode.in_file")
+        # Set inputs instead of a connection for first workflow
+        if index == 0:
+            current_wf.inputs.inputnode.in_file = in_file
+        # Connect previous wf to current wf
+        else:
+            postproc_wf.connect(prev_wf, "outputnode.out_file", current_wf, "inputnode.in_file")
+            
+            # If we handling the last node, set its out_file
+            if index == step_count - 1:
+                current_wf.inputs.inputnode.out_file = out_file
+
+        # Keep a reference to current_wf as "prev_wf" for the next loop
+        prev_wf = current_wf
     
-    return wf
+    return postproc_wf
 
 def build_10000_global_median_workflow(in_file: os.PathLike=None, out_file:os.PathLike=None,
         mask_file: os.PathLike=None, base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None):
