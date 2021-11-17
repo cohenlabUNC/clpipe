@@ -27,20 +27,15 @@ def build_postprocessing_workflow(name, in_path: os.PathLike, out_path:os.PathLi
     previous_step = None
 
     # Initialize WF Components
-    #butterworth_wf = build_butterworth_filter_workflow(hp=.008,lp=-1, tr=2, order=2, base_dir=wf.base_dir, crashdump_dir=wf.config['execution']['crashdump_dir'])
+    butterworth_wf = build_butterworth_filter_workflow(hp=.008,lp=-1, tr=2, order=2, base_dir=wf.base_dir, crashdump_dir=wf.config['execution']['crashdump_dir'])
     normalize_10000_gm_wf = build_10000_global_median_workflow(base_dir=wf.base_dir, mask_file=mask_path, crashdump_dir=wf.config['execution']['crashdump_dir'])
     smoothing_wf = build_spatial_smoothing_workflow(base_dir=wf.base_dir, mask_path=mask_path, crashdump_dir=wf.config['execution']['crashdump_dir'])
 
-    #butterworth_wf.inputs.inputnode.in_file = in_path
-    #butterworth_wf.inputs.inputnode.out_file = out_path
+    butterworth_wf.inputs.inputnode.in_file = in_path
+    butterworth_wf.inputs.inputnode.out_file = out_path
 
-    normalize_10000_gm_wf.inputs.inputnode.in_file = in_path
-    normalize_10000_gm_wf.inputs.inputnode.out_file = out_path
-
-    #wf.connect(butterworth_wf, "outputnode.out_file", normalize_10000_gm_wf, "inputnode.in_file")
+    wf.connect(butterworth_wf, "outputnode.out_file", normalize_10000_gm_wf, "inputnode.in_file")
     wf.connect(normalize_10000_gm_wf, "outputnode.out_file", smoothing_wf, "inputnode.in_file")
-
-    #smoothing_wf.inputs.outputnode.out_file = out_path
     
     return wf
 
@@ -205,9 +200,10 @@ def build_butterworth_filter_workflow(hp: float, lp: float, tr: float, order: fl
     if in_file:
         input_node.inputs.in_file = in_file
     if out_file:
-        butterworth_node.inputs.out_file = out_file
+        input_node.inputs.out_file = out_file
 
     workflow.connect(input_node, "in_file", butterworth_node, "in_file")
+    workflow.connect(input_node, "out_file", butterworth_node, "out_file")
     workflow.connect(butterworth_node, "out_file", output_node, "out_file")
 
     return workflow
