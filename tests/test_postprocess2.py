@@ -12,7 +12,7 @@ def test_postprocess_wf(clpipe_config_default, tmp_path, sample_raw_image, sampl
     
     wf = build_postprocessing_workflow("postproc_test", sample_raw_image, out_path, 
         base_dir=tmp_path, crashdump_dir=tmp_path)
-    wf.write_graph(dotfilename = tmp_path / "postProcessSubjectFlow", graph2use='flat')
+    wf.write_graph(dotfilename = tmp_path / "postProcessSubjectFlow", graph2use='colored')
     wf.run()
 
     if plot_img:
@@ -53,7 +53,7 @@ def test_calculate_100_voxel_mean_wf(tmp_path, sample_raw_image, plot_img):
 def test_calculate_10000_global_median_wf(tmp_path, sample_raw_image, sample_raw_image_mask, plot_img):
     out_path = tmp_path / "normalized_10000gm.nii.gz"
     
-    wf = build_10000_global_median_workflow(in_path=sample_raw_image, out_path=out_path, mask_path=sample_raw_image_mask, base_dir=tmp_path, crashdump_dir=tmp_path)
+    wf = build_10000_global_median_workflow(in_file=sample_raw_image, out_file=out_path, mask_file=sample_raw_image_mask, base_dir=tmp_path, crashdump_dir=tmp_path)
     wf.run()
     wf.write_graph(dotfilename = tmp_path / "calc10000globalMedianFlow", graph2use='flat')
 

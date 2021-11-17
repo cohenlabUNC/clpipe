@@ -12,7 +12,7 @@ from nipype.interfaces.base.traits_extension import isdefined
 from clpipe.postprocutils.utils import apply_filter, calc_filter
 
 def build_input_node():
-    return pe.Node(IdentityInterface(fields=['in_file'], mandatory_inputs=True), name="inputnode")
+    return pe.Node(IdentityInterface(fields=['in_file', 'out_file'], mandatory_inputs=False), name="inputnode")
 
 def build_output_node():
     return pe.Node(IdentityInterface(fields=['out_file'], mandatory_inputs=True), name="outputnode")

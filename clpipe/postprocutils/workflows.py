@@ -27,28 +27,25 @@ def build_postprocessing_workflow(name, in_path: os.PathLike, out_path:os.PathLi
     previous_step = None
 
     # Initialize WF Components
-    #butterworth_node = pe.Node(ButterworthFilter(hp=.008,lp=-1,order=2,tr=2), name="butterworth_filter")
-    normalize_10000_gm_wf = build_10000_global_median_workflow(base_dir=wf.base_dir, mask_path=mask_path, crashdump_dir=wf.config['execution']['crashdump_dir'])
+    #butterworth_wf = build_butterworth_filter_workflow(hp=.008,lp=-1, tr=2, order=2, base_dir=wf.base_dir, crashdump_dir=wf.config['execution']['crashdump_dir'])
+    normalize_10000_gm_wf = build_10000_global_median_workflow(base_dir=wf.base_dir, mask_file=mask_path, crashdump_dir=wf.config['execution']['crashdump_dir'])
     smoothing_wf = build_spatial_smoothing_workflow(base_dir=wf.base_dir, mask_path=mask_path, crashdump_dir=wf.config['execution']['crashdump_dir'])
 
-    #butterworth_node.inputs.in_file = in_path
+    #butterworth_wf.inputs.inputnode.in_file = in_path
+    #butterworth_wf.inputs.inputnode.out_file = out_path
 
-    wf.connect([
-            (butterworth_node, normalize_10000_gm_wf, [("out_file","global_median.in_file"),
-                                                       ("out_file","mul_10000.in_file")])
-    ])
-    wf.connect([
-            (normalize_10000_gm_wf, smoothing_wf, [("div_median.out_file","p2.in_file"),
-                                                   ("div_median.out_file","median.in_file"),
-                                                   ("div_median.out_file", "SUSAN.in_file")])
-    ])
+    normalize_10000_gm_wf.inputs.inputnode.in_file = in_path
+    normalize_10000_gm_wf.inputs.inputnode.out_file = out_path
 
-    smoothing_wf.inputs.SUSAN.out_file = out_path
+    #wf.connect(butterworth_wf, "outputnode.out_file", normalize_10000_gm_wf, "inputnode.in_file")
+    wf.connect(normalize_10000_gm_wf, "outputnode.out_file", smoothing_wf, "inputnode.in_file")
+
+    #smoothing_wf.inputs.outputnode.out_file = out_path
     
     return wf
 
-def build_10000_global_median_workflow(in_path: os.PathLike=None, out_path:os.PathLike=None,
-        mask_path: os.PathLike=None, base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None):
+def build_10000_global_median_workflow(in_file: os.PathLike=None, out_file:os.PathLike=None,
+        mask_file: os.PathLike=None, base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None):
     """Perform intensity normalization using the 10,000 global median method.
 
     Args:
@@ -64,14 +61,15 @@ def build_10000_global_median_workflow(in_path: os.PathLike=None, out_path:os.Pa
     mul_10000_node = pe.Node(BinaryMaths(operation="mul", operand_value=10000), name="mul_10000")
     div_median_node = pe.Node(BinaryMaths(operation="div"), name="div_median")
 
-    if in_path:
-        input_node.inputs.in_file = in_path
+    # Set WF inputs and outputs
+    if in_file:
+        input_node.inputs.in_file = in_file
+        # mean_image_node.inputs.in_file = in_file
+    if out_file:
+        input_node.inputs.out_file = out_file
 
-    if out_path:
-        div_median_node.inputs.out_file = out_path
-
-    if mask_path:
-        median_node.inputs.mask_file = mask_path
+    if mask_file:
+        median_node.inputs.mask_file = mask_file
         median_node.inputs.op_string = "-k %s -p 50"
 
 
@@ -81,6 +79,8 @@ def build_10000_global_median_workflow(in_path: os.PathLike=None, out_path:os.Pa
 
     workflow.connect(input_node, "in_file", median_node, "in_file")
     workflow.connect(input_node, "in_file", mul_10000_node, "in_file")
+    workflow.connect(input_node, "out_file", div_median_node, "out_file")
+
     workflow.connect(mul_10000_node, "out_file", div_median_node, "in_file")
     workflow.connect(median_node, "out_stat", div_median_node, "operand_value")
     workflow.connect(div_median_node, "out_file", output_node, "out_file")
@@ -164,12 +164,13 @@ def build_spatial_smoothing_workflow(in_file: os.PathLike=None, mask_path: os.Pa
         input_node.inputs.in_file = in_file
         # mean_image_node.inputs.in_file = in_file
     if out_file:
-        susan_node.inputs.out_file = out_file
-
+        input_node.inputs.out_file = out_file
+        
     # Map the input node to the first steps of the susan threshold calculation
     workflow.connect(input_node, "in_file", p2_intensity_node, "in_file")
     workflow.connect(input_node, "in_file", median_intensity_node, "in_file")
     workflow.connect(input_node, "in_file", susan_node, "in_file")
+    workflow.connect(input_node, "out_file", susan_node, "out_file")
 
     # Setup calculations for susan threshold
     workflow.connect(median_intensity_node, "out_stat", susan_thresh_node, "median_intensity")
