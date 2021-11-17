@@ -7,6 +7,7 @@ from nipype.interfaces.base import BaseInterface, \
 from nipype.utils.filemanip import split_filename
 import nipype.pipeline.engine as pe
 from nipype.interfaces.utility import IdentityInterface
+from nipype.interfaces.base.traits_extension import isdefined
 
 from clpipe.postprocutils.utils import apply_filter, calc_filter
 
@@ -24,6 +25,7 @@ class ButterworthFilterInputSpec(BaseInterfaceInputSpec):
                              mandatory=True)
     tr = traits.Float(desc='Repetition time.', mandatory=True)
     order = traits.Float(desc='Order of the filter', mandatory=True)
+    out_file = File(mandatory=False)
 
 
 class ButterworthFilterOutputSpec(TraitedSpec):
@@ -42,8 +44,13 @@ class ButterworthFilter(BaseInterface):
         filtered_data = apply_filter(filter, data)
 
         new_img = nb.Nifti1Image(filtered_data, img.affine, img.header)
-        _, base, _ = split_filename(fname)
-        self.new_file = base + '_filtered.nii'
+        
+        if not isdefined(self.inputs.in_file):
+            _, base, _ = split_filename(fname)
+            self.new_file = base + '_filtered.nii'
+        else:
+            self.new_file = self.inputs.out_file
+
         nb.save(new_img, self.new_file)
 
         return runtime
@@ -51,4 +58,5 @@ class ButterworthFilter(BaseInterface):
     def _list_outputs(self):
         outputs = self._outputs().get()
         outputs['out_file'] = os.path.abspath(self.new_file)
+
         return outputs
