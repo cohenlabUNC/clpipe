@@ -27,11 +27,11 @@ def build_postprocessing_workflow(name, in_path: os.PathLike, out_path:os.PathLi
     previous_step = None
 
     # Initialize WF Components
-    butterworth_node = pe.Node(ButterworthFilter(hp=.008,lp=-1,order=2,tr=2), name="butterworth_filter")
+    #butterworth_node = pe.Node(ButterworthFilter(hp=.008,lp=-1,order=2,tr=2), name="butterworth_filter")
     normalize_10000_gm_wf = build_10000_global_median_workflow(base_dir=wf.base_dir, mask_path=mask_path, crashdump_dir=wf.config['execution']['crashdump_dir'])
     smoothing_wf = build_spatial_smoothing_workflow(base_dir=wf.base_dir, mask_path=mask_path, crashdump_dir=wf.config['execution']['crashdump_dir'])
 
-    butterworth_node.inputs.in_file = in_path
+    #butterworth_node.inputs.in_file = in_path
 
     wf.connect([
             (butterworth_node, normalize_10000_gm_wf, [("out_file","global_median.in_file"),
@@ -186,3 +186,27 @@ def build_spatial_smoothing_workflow(in_file: os.PathLike=None, mask_path: os.Pa
     
 def _calc_susan_threshold(median_intensity, p2_intensity):
     return (median_intensity - p2_intensity) * .75
+
+def build_butterworth_filter_workflow(hp: float, lp: float, tr: float, order: float, in_file: os.PathLike=None, 
+    out_file: os.PathLike=None, base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None):
+    
+    workflow = pe.Workflow(name="temporal_filtering", base_dir=base_dir)
+    if crashdump_dir is not None:
+        workflow.config['execution']['crashdump_dir'] = crashdump_dir
+
+    # Setup identity (pass through) input/output nodes
+    input_node = build_input_node()
+    output_node = build_output_node()
+
+    butterworth_node = pe.Node(ButterworthFilter(hp=hp,lp=lp,order=order,tr=tr), name="butterworth_filter")
+
+    # Set WF inputs and outputs
+    if in_file:
+        input_node.inputs.in_file = in_file
+    if out_file:
+        butterworth_node.inputs.out_file = out_file
+
+    workflow.connect(input_node, "in_file", butterworth_node, "in_file")
+    workflow.connect(butterworth_node, "out_file", output_node, "out_file")
+
+    return workflow
