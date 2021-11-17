@@ -5,9 +5,16 @@ import os
 from nipype.interfaces.base import BaseInterface, \
     BaseInterfaceInputSpec, traits, File, TraitedSpec
 from nipype.utils.filemanip import split_filename
+import nipype.pipeline.engine as pe
+from nipype.interfaces.utility import IdentityInterface
 
 from clpipe.postprocutils.utils import apply_filter, calc_filter
 
+def build_input_node():
+    return pe.Node(IdentityInterface(fields=['in_file'], mandatory_inputs=True), name="inputnode")
+
+def build_output_node():
+    return pe.Node(IdentityInterface(fields=['out_file'], mandatory_inputs=True), name="outputnode")
 
 class ButterworthFilterInputSpec(BaseInterfaceInputSpec):
     in_file = File(exists=True, desc='Image to be normalized', mandatory=False)

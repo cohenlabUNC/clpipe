@@ -8,7 +8,7 @@ from nipype.interfaces.fsl import SUSAN
 from nipype.interfaces.utility import Function
 import nipype.pipeline.engine as pe
 
-from .nodes import ButterworthFilter
+from .nodes import build_input_node, build_output_node, ButterworthFilter
 
 RESCALING_10000_GLOBALMEDIAN = "10000_globalmedian"
 RESCALING_100_VOXELMEAN = "100_voxelmean"
@@ -58,13 +58,14 @@ def build_10000_global_median_workflow(in_path: os.PathLike=None, out_path:os.Pa
         base_dir (os.PathLike, optional): A path to the base directory for the workflow.
     """
 
+    input_node = build_input_node()
+    output_node = build_output_node()
     median_node = pe.Node(ImageStats(op_string="-p 50"), name='global_median')
     mul_10000_node = pe.Node(BinaryMaths(operation="mul", operand_value=10000), name="mul_10000")
     div_median_node = pe.Node(BinaryMaths(operation="div"), name="div_median")
 
     if in_path:
-        median_node.inputs.in_file = in_path
-        mul_10000_node.inputs.in_file = in_path
+        input_node.inputs.in_file = in_path
 
     if out_path:
         div_median_node.inputs.out_file = out_path
@@ -78,8 +79,11 @@ def build_10000_global_median_workflow(in_path: os.PathLike=None, out_path:os.Pa
     if crashdump_dir is not None:
         workflow.config['execution']['crashdump_dir'] = crashdump_dir
 
+    workflow.connect(input_node, "in_file", median_node, "in_file")
+    workflow.connect(input_node, "in_file", mul_10000_node, "in_file")
     workflow.connect(mul_10000_node, "out_file", div_median_node, "in_file")
     workflow.connect(median_node, "out_stat", div_median_node, "operand_value")
+    workflow.connect(div_median_node, "out_file", output_node, "out_file")
     
     return workflow
 
