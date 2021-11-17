@@ -129,9 +129,14 @@ def build_spatial_smoothing_workflow(in_file: os.PathLike=None, mask_path: os.Pa
     if crashdump_dir is not None:
         workflow.config['execution']['crashdump_dir'] = crashdump_dir
     
+    # Calculate fwhm
     fwhm_to_sigma = sqrt(8 * log(2))
     sigma = fwhm_mm / fwhm_to_sigma
     print(f"fwhm_to_sigma: {fwhm_to_sigma}")
+
+    # Setup identity (pass through) input/output nodes
+    input_node = build_input_node()
+    output_node = build_output_node()
     
     # Setup nodes to calculate susan threshold inputs
     p2_intensity_node = pe.Node(ImageStats(op_string="-p 2"), name='p2')
@@ -145,14 +150,10 @@ def build_spatial_smoothing_workflow(in_file: os.PathLike=None, mask_path: os.Pa
         p2_intensity_node.inputs.op_string = "-k %s -p 2"
         median_intensity_node.inputs.op_string = "-k %s -p 50"
     
-    # Use an arbitrary function node to calculate the susan threshold from two scalars with helper function
+    # Setup an arbitrary function node to calculate the susan threshold from two scalars with helper function
     susan_thresh_node = pe.Node(Function(inputs_names=["median_intensity", "p2_intensity"], output_names=["susan_threshold"], function=_calc_susan_threshold), name="susan_threshold")
 
-    # Setup calculations for susan threshold
-    workflow.connect(median_intensity_node, "out_stat", susan_thresh_node, "median_intensity")
-    workflow.connect(p2_intensity_node, "out_stat", susan_thresh_node, "p2_intensity")
-
-    # Setup susan command
+    # Setup susan node
     #   Usage: susan <input> <bt> <dt> <dim> <use_median> <n_usans> [<usan1> <bt1> [<usan2> <bt2>]] <output>
     susan_node = pe.Node(SUSAN(fwhm=sigma, use_median=1, dimension=3), name="SUSAN")
     
@@ -160,14 +161,21 @@ def build_spatial_smoothing_workflow(in_file: os.PathLike=None, mask_path: os.Pa
 
     # Set WF inputs and outputs
     if in_file:
-        p2_intensity_node.inputs.in_file = in_file
-        median_intensity_node.inputs.in_file = in_file
-        susan_node.inputs.in_file = in_file
-        #mean_image_node.inputs.in_file = in_file
+        input_node.inputs.in_file = in_file
+        # mean_image_node.inputs.in_file = in_file
     if out_file:
         susan_node.inputs.out_file = out_file
 
+    # Map the input node to the first steps of the susan threshold calculation
+    workflow.connect(input_node, "in_file", p2_intensity_node, "in_file")
+    workflow.connect(input_node, "in_file", median_intensity_node, "in_file")
+    workflow.connect(input_node, "in_file", susan_node, "in_file")
+
+    # Setup calculations for susan threshold
+    workflow.connect(median_intensity_node, "out_stat", susan_thresh_node, "median_intensity")
+    workflow.connect(p2_intensity_node, "out_stat", susan_thresh_node, "p2_intensity")
     workflow.connect(susan_thresh_node, "susan_threshold", susan_node, "brightness_threshold")
+    workflow.connect(susan_node, "smoothed_file", output_node, "out_file")
     #workflow.connect(mean_image_node, "out_file", susan_node, "")
     
     if mask_path is not None:
