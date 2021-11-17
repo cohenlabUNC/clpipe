@@ -25,6 +25,22 @@ def test_spatial_smoothing_wf(artifact_dir, request, sample_raw_image, sample_ra
     
     assert True
 
+def test_spatial_smoothing_wf_no_mask(artifact_dir, request, sample_raw_image, plot_img, write_graph, helpers):
+    test_path = helpers.create_test_dir(artifact_dir, request.node.name)
+    
+    out_path = test_path / "smoothed.nii.gz"
+    wf = build_spatial_smoothing_workflow(in_file=sample_raw_image, out_file=out_path, fwhm_mm=6, 
+        base_dir=test_path, crashdump_dir=test_path)
+    wf.run()
+
+    if write_graph:
+        wf.write_graph(dotfilename = test_path / "filteredflow", graph2use=write_graph)
+
+    if plot_img:
+        helpers.plot_4D_img_slice(out_path, "smoothed.png")
+    
+    assert True
+
 def test_calculate_100_voxel_mean_wf(artifact_dir, sample_raw_image, plot_img, write_graph, request, helpers):
     test_path = helpers.create_test_dir(artifact_dir, request.node.name)
 

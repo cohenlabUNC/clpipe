@@ -2,7 +2,7 @@ import os
 
 from math import sqrt, log
 
-from nipype.interfaces.fsl.maths import MeanImage, BinaryMaths, MedianImage
+from nipype.interfaces.fsl.maths import MeanImage, BinaryMaths, MedianImage, ApplyMask
 from nipype.interfaces.fsl.utils import ImageStats
 from nipype.interfaces.fsl import SUSAN
 from nipype.interfaces.utility import Function, Merge
@@ -153,14 +153,6 @@ def build_spatial_smoothing_workflow(in_file: os.PathLike=None, mask_path: os.Pa
     p2_intensity_node = pe.Node(ImageStats(op_string="-p 2"), name='p2')
     median_intensity_node = pe.Node(ImageStats(op_string="-p 50"), name='median')
     
-    # Add mask to commands
-    if mask_path:
-        print(f"Using mask: {mask_path}")
-        p2_intensity_node.inputs.mask_file = mask_path
-        median_intensity_node.inputs.mask_file = mask_path
-        p2_intensity_node.inputs.op_string = "-k %s -p 2"
-        median_intensity_node.inputs.op_string = "-k %s -p 50"
-    
     # Setup an arbitrary function node to calculate the susan threshold from two scalars with helper function
     susan_thresh_node = pe.Node(Function(inputs_names=["median_intensity", "p2_intensity"], output_names=["susan_threshold"], function=_calc_susan_threshold), name="susan_threshold")
 
@@ -192,11 +184,25 @@ def build_spatial_smoothing_workflow(in_file: os.PathLike=None, mask_path: os.Pa
     workflow.connect(tmean_image_node, "out_file", setup_usans_node, "tmean_image")
     workflow.connect(susan_thresh_node, "susan_threshold", setup_usans_node, "susan_threshold")
     workflow.connect(setup_usans_node, "usans_input", susan_node, "usans")
-    workflow.connect(susan_node, "smoothed_file", output_node, "out_file")
     
+
+    # Apply Masking
     if mask_path:
-        # run_fsl_command(glue("fslmaths {out_file} -mas {brain_mask} {out_file} -odt float"), log_file = log_file)
-        pass
+        print(f"Using mask: {mask_path}")
+        
+        # Setup Masking Node to apply after smoothing
+        masker_node = pe.Node(ApplyMask(mask_file=mask_path, output_datatype="float"), name="apply_mask")
+        workflow.connect(susan_node, "smoothed_file", masker_node, "in_file")
+        workflow.connect(masker_node, "out_file", output_node, "out_file")
+
+        # Add mask to the inputs of the fslstats commands
+        p2_intensity_node.inputs.mask_file = mask_path
+        median_intensity_node.inputs.mask_file = mask_path
+        p2_intensity_node.inputs.op_string = "-k %s -p 2"
+        median_intensity_node.inputs.op_string = "-k %s -p 50"
+    # Tie the SUSAN output directly to output node if no mask is included
+    else:
+        workflow.connect(susan_node, "smoothed_file", output_node, "out_file")
         
     return workflow
     
