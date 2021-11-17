@@ -28,7 +28,7 @@ def test_spatial_smoothing_wf(tmp_path, sample_raw_image, sample_raw_image_mask,
     wf = build_spatial_smoothing_workflow(in_file=sample_raw_image, out_file=out_path, fwhm_mm=6, 
         mask_path=sample_raw_image_mask, base_dir=tmp_path, crashdump_dir=tmp_path)
     wf.run()
-    wf.write_graph(dotfilename = tmp_path / "spatialSmoothFlow", graph2use='flat')
+    wf.write_graph(dotfilename = tmp_path / "spatialSmoothFlow", graph2use='colored')
 
     if plot_img:
         image = load_img(str(out_path))
@@ -41,7 +41,7 @@ def test_calculate_100_voxel_mean_wf(tmp_path, sample_raw_image, plot_img):
     out_path = tmp_path / "normalized_100vm.nii.gz"
     wf = build_100_voxel_mean_workflow(in_file=sample_raw_image, out_file=out_path, base_dir=tmp_path, crashdump_dir=tmp_path)
     wf.run()
-    wf.write_graph(dotfilename = tmp_path / "calc100voxelMeanFlow", graph2use='flat')
+    wf.write_graph(dotfilename = tmp_path / "calc100voxelMeanFlow", graph2use='colored')
 
     if plot_img:
         image = load_img(str(out_path))
@@ -55,7 +55,7 @@ def test_calculate_10000_global_median_wf(tmp_path, sample_raw_image, sample_raw
     
     wf = build_10000_global_median_workflow(in_file=sample_raw_image, out_file=out_path, mask_file=sample_raw_image_mask, base_dir=tmp_path, crashdump_dir=tmp_path)
     wf.run()
-    wf.write_graph(dotfilename = tmp_path / "calc10000globalMedianFlow", graph2use='flat')
+    wf.write_graph(dotfilename = tmp_path / "calc10000globalMedianFlow", graph2use='colored')
 
     if plot_img:
         image = load_img(str(out_path))
@@ -70,7 +70,7 @@ def test_butterworth_filter_wf(tmp_path, sample_raw_image, plot_img):
     wf = build_butterworth_filter_workflow(hp=.008, lp=-1, tr=2, order=2, in_file=sample_raw_image, out_file=filtered_path, 
         base_dir=tmp_path, crashdump_dir=tmp_path)
     wf.run()
-    wf.write_graph(dotfilename = tmp_path / "filteredflow", graph2use='flat')
+    wf.write_graph(dotfilename = tmp_path / "filteredflow", graph2use='colored')
 
     if plot_img:
         image = load_img(str(filtered_path))
