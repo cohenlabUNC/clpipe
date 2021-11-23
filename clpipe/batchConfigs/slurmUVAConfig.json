@@ -4,7 +4,10 @@
     "command": "-n",
     "args": "1"
   }],
-  "SubOptionsEqual": [],
+  "SubOptionsEqual": [{
+    "command": "-partition",
+    "args": "standard"
+  }],
   "NThreadsCommand": "--cpus-per-task={nthreads}",
   "NThreads": "1",
   "MemoryCommand": "--mem={mem}",
