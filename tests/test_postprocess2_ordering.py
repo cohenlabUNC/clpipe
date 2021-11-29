@@ -11,7 +11,7 @@ def test_postprocess_wf_order_1(artifact_dir, request, sample_raw_image, sample_
     test_path = helpers.create_test_dir(artifact_dir, request.node.name)
     out_path = test_path / "postProcessed.nii.gz"
     
-    wf = build_postprocessing_workflow("postproc_test", sample_raw_image, out_path, 
+    wf = build_postprocessing_workflow(sample_raw_image, out_path, mask_file=sample_raw_image_mask,
         processing_steps=["temporal_filtering", "intensity_normalization", "spatial_smoothing"], base_dir=test_path, crashdump_dir=test_path)
     
     wf.run()
@@ -28,7 +28,7 @@ def test_postprocess_wf_order_2(artifact_dir, request, sample_raw_image, sample_
     test_path = helpers.create_test_dir(artifact_dir, request.node.name)
     out_path = test_path / "postProcessed.nii.gz"
     
-    wf = build_postprocessing_workflow("postproc_test", sample_raw_image, out_path, 
+    wf = build_postprocessing_workflow(sample_raw_image, out_path, mask_file=sample_raw_image_mask,
         processing_steps=["intensity_normalization", "temporal_filtering", "spatial_smoothing"], base_dir=test_path, crashdump_dir=test_path)
     
     wf.run()
@@ -45,7 +45,7 @@ def test_postprocess_wf_order_3(artifact_dir, request, sample_raw_image, sample_
     test_path = helpers.create_test_dir(artifact_dir, request.node.name)
     out_path = test_path / "postProcessed.nii.gz"
     
-    wf = build_postprocessing_workflow("postproc_test", sample_raw_image, out_path, 
+    wf = build_postprocessing_workflow(sample_raw_image, out_path, mask_file=sample_raw_image_mask,
         processing_steps=["spatial_smoothing", "temporal_filtering", "intensity_normalization"], base_dir=test_path, crashdump_dir=test_path)
     
     wf.run()
@@ -62,7 +62,7 @@ def test_postprocess_wf_order_4(artifact_dir, request, sample_raw_image, sample_
     test_path = helpers.create_test_dir(artifact_dir, request.node.name)
     out_path = test_path / "postProcessed.nii.gz"
     
-    wf = build_postprocessing_workflow("postproc_test", sample_raw_image, out_path, 
+    wf = build_postprocessing_workflow(sample_raw_image, out_path, mask_file=sample_raw_image_mask,
         processing_steps=["temporal_filtering", "intensity_normalization"], base_dir=test_path, crashdump_dir=test_path)
     
     wf.run()
@@ -79,7 +79,7 @@ def test_postprocess_wf_order_5(artifact_dir, request, sample_raw_image, sample_
     test_path = helpers.create_test_dir(artifact_dir, request.node.name)
     out_path = test_path / "postProcessed.nii.gz"
     
-    wf = build_postprocessing_workflow("postproc_test", sample_raw_image, out_path, 
+    wf = build_postprocessing_workflow(sample_raw_image, out_path, mask_file=sample_raw_image_mask,
         processing_steps=["intensity_normalization", "spatial_smoothing"], base_dir=test_path, crashdump_dir=test_path)
     
     wf.run()
@@ -96,7 +96,7 @@ def test_postprocess_wf_order_6(artifact_dir, request, sample_raw_image, sample_
     test_path = helpers.create_test_dir(artifact_dir, request.node.name)
     out_path = test_path / "postProcessed.nii.gz"
     
-    wf = build_postprocessing_workflow("postproc_test", sample_raw_image, out_path, 
+    wf = build_postprocessing_workflow(sample_raw_image, out_path, mask_file=sample_raw_image_mask,
         processing_steps=["temporal_filtering", "spatial_smoothing"], base_dir=test_path, crashdump_dir=test_path)
     
     wf.run()

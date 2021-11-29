@@ -14,7 +14,7 @@ RESCALING_10000_GLOBALMEDIAN = "globalmedian_10000"
 RESCALING_100_VOXELMEAN = "voxelmean_100"
 NORMALIZATION_METHODS = (RESCALING_10000_GLOBALMEDIAN, RESCALING_100_VOXELMEAN)
 
-def build_postprocessing_workflow(name, in_file: os.PathLike, out_file:os.PathLike, 
+def build_postprocessing_workflow(in_file: os.PathLike, out_file:os.PathLike, name:str = "Postprocessing_Pipeline", 
     mask_file: os.PathLike=None, processing_steps=["temporal_filtering", "intensity_normalization", "spatial_smoothing"], base_dir: os.PathLike=None, 
     crashdump_dir: os.PathLike=None):
     
@@ -85,7 +85,7 @@ def build_10000_global_median_workflow(in_file: os.PathLike=None, out_file:os.Pa
         median_node.inputs.op_string = "-k %s -p 50"
 
 
-    workflow = pe.Workflow(name=RESCALING_10000_GLOBALMEDIAN, base_dir=base_dir)
+    workflow = pe.Workflow(name="Intensity_Normalization", base_dir=base_dir)
     if crashdump_dir is not None:
         workflow.config['execution']['crashdump_dir'] = crashdump_dir
 
@@ -124,7 +124,7 @@ def build_100_voxel_mean_workflow(in_file: os.PathLike=None, out_file: os.PathLi
         div_math = BinaryMaths(operation='div')
     div_mean_node = pe.Node(div_math, name="div_mean") #operand_file=mean_path
 
-    workflow = pe.Workflow(name=RESCALING_100_VOXELMEAN, base_dir=base_dir)
+    workflow = pe.Workflow(name="Intensity_Normalization", base_dir=base_dir)
     if crashdump_dir is not None:
         workflow.config['execution']['crashdump_dir'] = crashdump_dir
 
@@ -136,7 +136,7 @@ def build_100_voxel_mean_workflow(in_file: os.PathLike=None, out_file: os.PathLi
 def build_spatial_smoothing_workflow(in_file: os.PathLike=None, mask_path: os.PathLike=None, fwhm_mm: int=6, out_file: os.PathLike=None, 
     base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None):
     
-    workflow = pe.Workflow(name="spatial_smoothing", base_dir=base_dir)
+    workflow = pe.Workflow(name="Spatial_Smoothing", base_dir=base_dir)
     if crashdump_dir is not None:
         workflow.config['execution']['crashdump_dir'] = crashdump_dir
     
@@ -215,7 +215,7 @@ def _setup_usans_input(tmean_image, susan_threshold):
 def build_butterworth_filter_workflow(hp: float, lp: float, tr: float, order: float, in_file: os.PathLike=None, 
     out_file: os.PathLike=None, base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None):
     
-    workflow = pe.Workflow(name="temporal_filtering", base_dir=base_dir)
+    workflow = pe.Workflow(name="Temporal_Filtering", base_dir=base_dir)
     if crashdump_dir is not None:
         workflow.config['execution']['crashdump_dir'] = crashdump_dir
 
@@ -236,3 +236,13 @@ def build_butterworth_filter_workflow(hp: float, lp: float, tr: float, order: fl
     workflow.connect(butterworth_node, "out_file", output_node, "out_file")
 
     return workflow
+
+def build_confound_regression_workflow(in_file: os.PathLike=None, mask_file: os.PathLike=None, base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None):
+    workflow = pe.Workflow(name="Confound_Regression", base_dir=base_dir)
+    if crashdump_dir is not None:
+        workflow.config['execution']['crashdump_dir'] = crashdump_dir
+
+def build_aroma_workflow(in_file: os.PathLike=None, mask_file: os.PathLike=None, base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None):
+    workflow = pe.Workflow(name="AROMA", base_dir=base_dir)
+    if crashdump_dir is not None:
+        workflow.config['execution']['crashdump_dir'] = crashdump_dir
