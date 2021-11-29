@@ -14,9 +14,8 @@ RESCALING_10000_GLOBALMEDIAN = "globalmedian_10000"
 RESCALING_100_VOXELMEAN = "voxelmean_100"
 NORMALIZATION_METHODS = (RESCALING_10000_GLOBALMEDIAN, RESCALING_100_VOXELMEAN)
 
-def build_postprocessing_workflow(in_file: os.PathLike, out_file:os.PathLike, postprocessing_config: dict,
+def build_postprocessing_workflow(postprocessing_config: dict, in_file: os.PathLike, out_file:os.PathLike, tr: int,
     name:str = "Postprocessing_Pipeline", mask_file: os.PathLike=None, 
-    processing_steps=["temporal_filtering", "intensity_normalization", "spatial_smoothing"], 
     base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None):
     
     postproc_wf = pe.Workflow(name=name, base_dir=base_dir)
@@ -24,6 +23,7 @@ def build_postprocessing_workflow(in_file: os.PathLike, out_file:os.PathLike, po
     if crashdump_dir is not None:
         postproc_wf.config['execution']['crashdump_dir'] = crashdump_dir
     
+    processing_steps = postprocessing_config["ProcessingSteps"]
     step_count = len(processing_steps)
     if step_count < 2:
         raise ValueError("The PostProcess workflow requires at least 2 processing steps. Steps given: {step_count}")
@@ -34,13 +34,20 @@ def build_postprocessing_workflow(in_file: os.PathLike, out_file:os.PathLike, po
     for index, step in enumerate(processing_steps):
         # Decide which wf to add next
         if step == "temporal_filtering":
-            current_wf = build_butterworth_filter_workflow(hp=.008,lp=-1, tr=2, order=2, base_dir=postproc_wf.base_dir, crashdump_dir=postproc_wf.config['execution']['crashdump_dir'])
+            hp = postprocessing_config["FilteringHighPass"]
+            lp = postprocessing_config["FilteringLowPass"]
+            order = postprocessing_config["FilteringOrder"]
+
+            current_wf = build_butterworth_filter_workflow(hp=hp,lp=lp, tr=tr, order=order, base_dir=postproc_wf.base_dir, crashdump_dir=postproc_wf.config['execution']['crashdump_dir'])
         
         elif step == "intensity_normalization":
             current_wf = build_10000_global_median_workflow(base_dir=postproc_wf.base_dir, mask_file=mask_file, crashdump_dir=postproc_wf.config['execution']['crashdump_dir'])
         
         elif step == "spatial_smoothing":
-            current_wf = build_spatial_smoothing_workflow(base_dir=postproc_wf.base_dir, mask_path=mask_file, crashdump_dir=postproc_wf.config['execution']['crashdump_dir'])
+            fwhm_mm= postprocessing_config["SUSANOptions"]["FWHM"]
+            brightness_threshold = postprocessing_config["SUSANOptions"]["BrightnessThreshold"]
+
+            current_wf = build_spatial_smoothing_workflow(base_dir=postproc_wf.base_dir, mask_path=mask_file, fwhm_mm=fwhm_mm, crashdump_dir=postproc_wf.config['execution']['crashdump_dir'])
 
         # Set inputs instead of a connection for first workflow
         if index == 0:

@@ -13,7 +13,7 @@ from click.testing import CliRunner
 
 sys.path.append('../clpipe')
 from clpipe.project_setup import project_setup
-from clpipe.config_json_parser import ClpipeConfigParser
+from clpipe.config_json_parser import ClpipeConfigParser, GLMConfigParser
 
 PROJECT_TITLE = "test_project"
 NUM_SUBJECTS = 8
@@ -139,6 +139,14 @@ def clpipe_fmriprep_dir(clpipe_dir):
 @pytest.fixture(scope="module")
 def clpipe_config_default():
     return ClpipeConfigParser()
+
+@pytest.fixture(scope="module")
+def glm_config_default():
+    return GLMConfigParser().config
+
+@pytest.fixture(scope="module")
+def postprocessing_config(glm_config_default):
+    return glm_config_default["GLMSetupOptions"]
 
 @pytest.fixture(scope="function")
 def workflow_base(tmp_path):
