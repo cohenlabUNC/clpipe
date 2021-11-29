@@ -5,7 +5,7 @@ from pathlib import Path
 import click
 from bids import BIDSLayout, config as bids_config
 
-from .config_json_parser import ClpipeConfigParser
+from .config_json_parser import ClpipeConfigParser, GLMConfigParser
 from .batch_manager import BatchManager, Job
 from nipype.utils.filemanip import split_filename
 from .postprocutils.workflows import build_postprocessing_workflow
@@ -21,6 +21,10 @@ PYBIDS_DB_PATH = "TestFiles/fmriprep_dir"
 
 @click.command()
 @click.argument('subjects', nargs=-1, required=False, default=None)
+@click.option('-config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True), default=None, required = True,
+              help='Use a given configuration file.')
+@click.option('-glm_config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True), default=None, required = True,
+              help='Use a given GLM configuration file.')
 @click.option('-target_dir', type=click.Path(exists=True, dir_okay=True, file_okay=False), help="""Which fmriprep directory to process. 
     If a configuration file is provided with a BIDS directory, this argument is not necessary. 
     Note, must point to the ``fmriprep`` directory, not its parent directory.""")
@@ -30,8 +34,8 @@ PYBIDS_DB_PATH = "TestFiles/fmriprep_dir"
 @click.option('-submit', is_flag = True, default=True, help = 'Flag to submit commands to the HPC without prompt.')
 @click.option('-log_dir', is_flag = True, default=True, help = 'Path to the logging directory.')
 @click.option('-debug', is_flag = True, default=False, help = 'Print detailed processing information and traceback for errors.')
-def fmri_postprocess2_cli(subjects, target_dir, output_dir, batch, submit, log_dir, debug):
-    postprocess_fmriprep_dir(subjects=subjects, fmriprep_dir=target_dir, output_dir=output_dir, 
+def fmri_postprocess2_cli(subjects, config_file, glm_config_file, target_dir, output_dir, batch, submit, log_dir, debug):
+    postprocess_fmriprep_dir(subjects=subjects, config_file=config_file, glm_config_file=glm_config_file, fmriprep_dir=target_dir, output_dir=output_dir, 
     batch=batch, submit=submit, log_dir=log_dir, debug=debug)
 
 @click.command()
@@ -47,7 +51,8 @@ def postprocess_image(target_image, output_path, log_dir):
     job = PostProcessSubjectJob(target_image, output_path, log_dir)
     job.run()
 
-def postprocess_fmriprep_dir(subjects=None, fmriprep_dir=None, output_dir=None, batch=False, submit=False, log_dir=None, debug=False):
+def postprocess_fmriprep_dir(subjects=None, config_file=config_file, glm_config_file=glm_config_file, fmriprep_dir=None, output_dir=None, 
+    batch=False, submit=False, log_dir=None, debug=False):
 
     # Setup Logging
     if debug: LOG.setLevel(logging.DEBUG)
@@ -55,10 +60,13 @@ def postprocess_fmriprep_dir(subjects=None, fmriprep_dir=None, output_dir=None, 
     
     # Handle configuration
     config = ClpipeConfigParser()
+    config.config_updater(config_file)
+    glm_config = GLMConfigParser(glm_config_file)
+    postprocessing_config = glm_config["GLMSetupOptions"]
 
     # Create jobs based on subjects given for processing
     # TODO: PYBIDS_DB_PATH should have config arg
-    jobs_to_run = PostProcessSubjectJobs(fmriprep_dir, output_dir, subjects, log_dir, PYBIDS_DB_PATH)
+    jobs_to_run = PostProcessSubjectJobs(fmriprep_dir, output_dir, subjects, postprocessing_config, log_dir, PYBIDS_DB_PATH)
 
     # Setup batch jobs if indicated
     if batch or click.confirm('Would you to process these subjects on the HPC? (Choose "N" for local)'):
@@ -135,10 +143,12 @@ class PostProcessSubjectJobs(CLPipeJob):
     post_process_jobs = []
 
     # TODO: Add class logger
-    def __init__(self, fmriprep_dir:BIDSLayout, output_dir: os.PathLike, subjects_to_process=None, 
-        log_dir: os.PathLike=None, pybids_db_path: os.PathLike=None):
+    def __init__(self, fmriprep_dir:BIDSLayout, output_dir: os.PathLike, postprocessing_config: dict, 
+        subjects_to_process=None, log_dir: os.PathLike=None, pybids_db_path: os.PathLike=None):
+        
         self.log_dir = log_dir
         self.output_dir = output_dir
+        self.postprocessing_config = postprocessing_config
         self.slurm = False
         self.pybids_db_path = pybids_db_path
         
@@ -166,7 +176,7 @@ class PostProcessSubjectJobs(CLPipeJob):
             out_file = os.path.abspath(os.path.join(self.output_dir, out_stem))
 
             # Create a new job and add to list of jobs to be run
-            job_to_add = PostProcessSubjectJob(in_file, out_file, log_dir=self.log_dir)
+            job_to_add = PostProcessSubjectJob(in_file, out_file, self.postprocessing_config, log_dir=self.log_dir)
             self.post_process_jobs.append(job_to_add)
 
     def set_batch_manager(self, batch_manager: BatchManager):

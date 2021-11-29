@@ -14,9 +14,10 @@ RESCALING_10000_GLOBALMEDIAN = "globalmedian_10000"
 RESCALING_100_VOXELMEAN = "voxelmean_100"
 NORMALIZATION_METHODS = (RESCALING_10000_GLOBALMEDIAN, RESCALING_100_VOXELMEAN)
 
-def build_postprocessing_workflow(in_file: os.PathLike, out_file:os.PathLike, name:str = "Postprocessing_Pipeline", 
-    mask_file: os.PathLike=None, processing_steps=["temporal_filtering", "intensity_normalization", "spatial_smoothing"], base_dir: os.PathLike=None, 
-    crashdump_dir: os.PathLike=None):
+def build_postprocessing_workflow(in_file: os.PathLike, out_file:os.PathLike, postprocessing_config: dict,
+    name:str = "Postprocessing_Pipeline", mask_file: os.PathLike=None, 
+    processing_steps=["temporal_filtering", "intensity_normalization", "spatial_smoothing"], 
+    base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None):
     
     postproc_wf = pe.Workflow(name=name, base_dir=base_dir)
     
