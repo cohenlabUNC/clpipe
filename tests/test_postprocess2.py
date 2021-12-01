@@ -8,6 +8,7 @@ from nilearn import plotting
 from nilearn.image import load_img, index_img
 
 from clpipe.postprocutils.workflows import *
+from clpipe.postprocutils.confounds import prepare_confounds
 from clpipe.fmri_postprocess2 import PostProcessSubjectJobs
 
 def test_postprocess2_wf(artifact_dir, postprocessing_config, request, sample_raw_image, sample_raw_image_mask, 
@@ -57,4 +58,12 @@ def test_postprocess2(clpipe_fmriprep_dir, postprocessing_config, artifact_dir, 
     jobs = PostProcessSubjectJobs(fmriprep_dir, postproc_dir, postprocessing_config,
         log_dir=working_dir)
     jobs.run()
+
+def test_prepare_confounds(sample_confounds_timeseries, postprocessing_config, artifact_dir, helpers, request):
+    test_path = helpers.create_test_dir(artifact_dir, request.node.name)
+    out_path = test_path / "new_confounds.tsv"
+
+    prepare_confounds(sample_confounds_timeseries, out_path, postprocessing_config)
+    
+    assert True
 

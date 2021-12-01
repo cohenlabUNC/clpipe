@@ -214,3 +214,7 @@ def random_nii_mask(tmp_path) -> Path:
 
     nib.save(nii, nii_path)
     return nii_path
+
+@pytest.fixture
+def sample_confounds_timeseries() -> Path:
+    return Path("tests/data/sample_confounds_timeseries.tsv").resolve()
