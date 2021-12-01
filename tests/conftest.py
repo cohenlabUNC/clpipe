@@ -43,19 +43,19 @@ def pytest_addoption(parser):
         "--write_graph", action="store", default=False, help="Save plot of image processing results as .png"
     )
 
-@pytest.fixture
+@pytest.fixture(scope="package")
 def helpers():
     return Helpers
 
-@pytest.fixture
+@pytest.fixture(scope="package")
 def plot_img(request):
     return request.config.getoption("--plot_img")
 
-@pytest.fixture
+@pytest.fixture(scope="package")
 def write_graph(request):
     return request.config.getoption("--write_graph")
 
-@pytest.fixture
+@pytest.fixture(scope="package")
 def artifact_dir():
     return Path("tests", "artifacts").resolve()
 
@@ -84,6 +84,7 @@ def sample_raw_image_mask() -> Path:
 @pytest.fixture(scope="module")
 def clpipe_dir(tmp_path_factory):
     """Fixture which provides a temporary clpipe project folder."""
+    
     proj_path = tmp_path_factory.mktemp(PROJECT_TITLE)
     
     raw_data = Path(proj_path / "data_DICOMs")
