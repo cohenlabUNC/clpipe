@@ -51,7 +51,7 @@ def postprocess_image(target_image, output_path, log_dir):
     job = PostProcessSubjectJob(target_image, output_path, log_dir)
     job.run()
 
-def postprocess_fmriprep_dir(subjects=None, config_file=config_file, glm_config_file=glm_config_file, fmriprep_dir=None, output_dir=None, 
+def postprocess_fmriprep_dir(subjects=None, config_file=None, glm_config_file=None, fmriprep_dir=None, output_dir=None, 
     batch=False, submit=False, log_dir=None, debug=False):
 
     # Setup Logging
@@ -124,13 +124,14 @@ class PostProcessSubjectJob(CLPipeJob):
     #wf: pe.Workflow = None
     
     # TODO: add class logger
-    def __init__(self, in_file: os.PathLike, out_file: os.PathLike, log_dir: os.PathLike=None):
+    def __init__(self, in_file: os.PathLike, out_file: os.PathLike, 
+        postprocessing_config: dict, log_dir: os.PathLike=None):
         self.in_file=in_file
         self.out_file=out_file
         self.log_dir=log_dir
         
-        self.wf = build_postprocessing_workflow(PostProcessSubjectJob.__class__.__name__,
-            in_file, out_file, base_dir=log_dir, crashdump_dir=log_dir)
+        self.wf = build_postprocessing_workflow(postprocessing_config, in_file, out_file, 2, 
+            name=PostProcessSubjectJob.__class__.__name__, base_dir=log_dir, crashdump_dir=log_dir)
 
     def __str__(self):
         return f"Postprocessing Job: {self.in_file}"
@@ -153,7 +154,7 @@ class PostProcessSubjectJobs(CLPipeJob):
         self.pybids_db_path = pybids_db_path
         
         # Get the fmriprep_dir as a BIDSLayout object
-        if not os.path.exists(pybids_db_path):
+        if pybids_db_path and not os.path.exists(pybids_db_path):
             print("Indexing fMRIPrep directory...")
         self.fmriprep_dir:BIDSLayout = BIDSLayout(fmriprep_dir, validate=False, database_path=self.pybids_db_path)
 
@@ -172,7 +173,7 @@ class PostProcessSubjectJobs(CLPipeJob):
         for in_file in images_to_process:   
             # Calculate the output file name for a given image to process
             _, base, _ = split_filename(in_file)
-            out_stem = base + '_filtered.nii'
+            out_stem = base + '_postproccessed.nii.gz'
             out_file = os.path.abspath(os.path.join(self.output_dir, out_stem))
 
             # Create a new job and add to list of jobs to be run
