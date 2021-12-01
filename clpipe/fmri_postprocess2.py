@@ -121,24 +121,53 @@ class CLPipeJob():
     pass
 
 class PostProcessSubjectJob(CLPipeJob):
-    #wf: pe.Workflow = None
-    
+
     # TODO: add class logger
-    def __init__(self, in_file: os.PathLike, out_file: os.PathLike, 
+    def __init__(self, subject_id: str, fmriprep_dir: BIDSLayout, out_dir: os.PathLike, 
         postprocessing_config: dict, log_dir: os.PathLike=None):
-        self.in_file=in_file
-        self.out_file=out_file
+        self.subject_id=subject_id
+        self.postprocessing_config=postprocessing_config
         self.log_dir=log_dir
-        
-        self.wf = build_postprocessing_workflow(postprocessing_config, in_file, out_file, 2, 
-            name=PostProcessSubjectJob.__class__.__name__, base_dir=log_dir, crashdump_dir=log_dir)
+
+        # Create a subject folder for this subject's postprocessing output, if one
+        # doesn't already exist
+        self.subject_out_dir = out_dir / ("sub-" + subject_id)
+        if not self.subject_out_dir.exists():
+            self.subject_out_dir.mkdir()
+
+        # Create a nipype working directory for this subject, if it doesn't exist
+        self.working_dir = self.subject_out_dir / "working"
+        if not self.working_dir.exists():
+            self.subject_out_dir.mkdir(exist_ok=True)
+
+        # Create a postprocessing logging directory for this subject, if it doesn't exist
+        self.log_dir = log_dir / ("sub-" + subject_id)
+        if not self.log_dir.exists():
+            self.log_dir.mkdir(exist_ok=True)
+
+        # Find the images to run post_proc on
+        self.images_to_process = fmriprep_dir.get(
+            subject=self.subject_id, return_type="filename", 
+            extension="nii.gz", datatype="func", suffix="bold")
+
+        # TODO: query for the subject's mask file here
+            
 
     def __str__(self):
-        return f"Postprocessing Job: {self.in_file}"
+        return f"Postprocessing Job: {self.subject_id}"
 
     def run(self):
-        print(f"Postprocessing image at path {self.in_file}")
-        self.wf.run()
+        for in_file in self.images_to_process:
+            # Calculate the output file name for a given image to process
+            _, base, _ = split_filename(in_file)
+            out_stem = base + '_postproccessed.nii.gz'
+            out_file = os.path.abspath(os.path.join(self.subject_out_dir, out_stem))
+
+            self.wf = build_postprocessing_workflow(self.postprocessing_config, in_file, out_file, 2, 
+                name=PostProcessSubjectJob.__class__.__name__, base_dir=self.working_dir, crashdump_dir=self.log_dir)
+
+            print(f"Postprocessing image at path {in_file}")
+            self.wf.run()
 
 class PostProcessSubjectJobs(CLPipeJob):
     post_process_jobs = []
@@ -147,12 +176,18 @@ class PostProcessSubjectJobs(CLPipeJob):
     def __init__(self, fmriprep_dir:BIDSLayout, output_dir: os.PathLike, postprocessing_config: dict, 
         subjects_to_process=None, log_dir: os.PathLike=None, pybids_db_path: os.PathLike=None):
         
+        # Create the root output directory for all subject postprocessing results, if it doesn't yet exist.
+        if not output_dir.exists():
+            self.output_dir.mkdir()
+
         self.log_dir = log_dir
         self.output_dir = output_dir
         self.postprocessing_config = postprocessing_config
         self.slurm = False
         self.pybids_db_path = pybids_db_path
         
+
+
         # Get the fmriprep_dir as a BIDSLayout object
         if pybids_db_path and not os.path.exists(pybids_db_path):
             print("Indexing fMRIPrep directory...")
@@ -165,21 +200,12 @@ class PostProcessSubjectJobs(CLPipeJob):
         self.create_jobs()
 
     def create_jobs(self):
-        # Gather all image paths to be processed with pybids query
-        images_to_process = self.fmriprep_dir.get(
-            subject=self.subjects_to_process, return_type="filename", 
-            extension="nii.gz", datatype="func", suffix="bold")
-
-        for in_file in images_to_process:   
-            # Calculate the output file name for a given image to process
-            _, base, _ = split_filename(in_file)
-            out_stem = base + '_postproccessed.nii.gz'
-            out_file = os.path.abspath(os.path.join(self.output_dir, out_stem))
-
+        for subject in self.subjects_to_process:
             # Create a new job and add to list of jobs to be run
-            job_to_add = PostProcessSubjectJob(in_file, out_file, self.postprocessing_config, log_dir=self.log_dir)
+            job_to_add = PostProcessSubjectJob(subject, self.fmriprep_dir,
+                self.output_dir, self.postprocessing_config, log_dir=self.log_dir)
             self.post_process_jobs.append(job_to_add)
-
+        
     def set_batch_manager(self, batch_manager: BatchManager):
         self.slurm=True
         self.batch_manager = batch_manager

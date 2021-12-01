@@ -52,11 +52,11 @@ def test_postprocess2(clpipe_fmriprep_dir, postprocessing_config, artifact_dir, 
     fmriprep_dir = clpipe_fmriprep_dir / "data_fmriprep" / "fmriprep"
     test_dir = helpers.create_test_dir(artifact_dir, request.node.name)
     postproc_dir = Path(test_dir / "data_postprocessed")
-    postproc_dir.mkdir(exist_ok=True)
-    working_dir = Path(test_dir / "postproc_working")
+    log_dir = Path(test_dir / "logs" / "postproc_logs")
+    log_dir.mkdir(parents=True, exist_ok=True)
 
     jobs = PostProcessSubjectJobs(fmriprep_dir, postproc_dir, postprocessing_config,
-        log_dir=working_dir)
+        log_dir=log_dir)
     jobs.run()
 
 def test_prepare_confounds(sample_confounds_timeseries, postprocessing_config, artifact_dir, helpers, request):
