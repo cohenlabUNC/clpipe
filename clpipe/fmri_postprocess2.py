@@ -196,12 +196,13 @@ class PostProcessSubjectJobs(CLPipeJob):
     def __init__(self, fmriprep_dir, output_dir: os.PathLike, glm_config: os.PathLike, 
         subjects_to_process=None, log_dir: os.PathLike=None, pybids_db_path: os.PathLike=None):
         
+        self.output_dir = output_dir
+
         # Create the root output directory for all subject postprocessing results, if it doesn't yet exist.
         if not output_dir.exists():
             self.output_dir.mkdir()
 
         self.log_dir = log_dir
-        self.output_dir = output_dir
         self.glm_config = glm_config
         self.slurm = False
         self.pybids_db_path = pybids_db_path
