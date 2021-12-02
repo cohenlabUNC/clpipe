@@ -9,6 +9,7 @@ from .config_json_parser import ClpipeConfigParser, GLMConfigParser
 from .batch_manager import BatchManager, Job
 from nipype.utils.filemanip import split_filename
 from .postprocutils.workflows import build_postprocessing_workflow
+from .postprocutils.confounds import prepare_confounds
 
 # This hides a pybids warning
 bids_config.set_option('extension_initial_dot', True)
@@ -128,6 +129,7 @@ class PostProcessSubjectJob(CLPipeJob):
         self.subject_id=subject_id
         self.postprocessing_config=postprocessing_config
         self.log_dir=log_dir
+        self.fmriprep_dir=fmriprep_dir
 
         # Create a subject folder for this subject's postprocessing output, if one
         # doesn't already exist
@@ -145,18 +147,31 @@ class PostProcessSubjectJob(CLPipeJob):
         if not self.log_dir.exists():
             self.log_dir.mkdir(exist_ok=True)
 
-        # Find the images to run post_proc on
-        self.images_to_process = fmriprep_dir.get(
-            subject=self.subject_id, return_type="filename", 
-            extension="nii.gz", datatype="func", suffix="bold")
-
-        # TODO: query for the subject's mask file here
-            
-
     def __str__(self):
         return f"Postprocessing Job: {self.subject_id}"
 
     def run(self):
+        # Find the subject's confounds file
+        # TODO: Need switch here from config to determine if confounds wanted
+        self.confounds = self.fmriprep_dir.get(
+            subject=self.subject_id, suffix="timeseries", extension=".tsv"
+        )[0]
+
+        # Process the subject's confounds
+        prepare_confounds(Path(self.confounds), self.subject_out_dir / "confounds.tsv",
+            self.postprocessing_config)
+
+        # Find the subject's images to run post_proc on
+        self.images_to_process = self.fmriprep_dir.get(
+            subject=self.subject_id, return_type="filename", 
+            extension="nii.gz", datatype="func", suffix="bold")
+
+        # Find the subject's mask file
+        # TODO: Need switch here from config to determine if mask file wanted
+        self.mask_image = self.fmriprep_dir.get(
+            subject=self.subject_id, suffix="mask", extension=".nii.gz"
+        )[0]
+
         for in_file in self.images_to_process:
             # Calculate the output file name for a given image to process
             _, base, _ = split_filename(in_file)
@@ -164,7 +179,8 @@ class PostProcessSubjectJob(CLPipeJob):
             out_file = os.path.abspath(os.path.join(self.subject_out_dir, out_stem))
 
             self.wf = build_postprocessing_workflow(self.postprocessing_config, in_file, out_file, 2, 
-                name=PostProcessSubjectJob.__class__.__name__, base_dir=self.working_dir, crashdump_dir=self.log_dir)
+                name=PostProcessSubjectJob.__class__.__name__, mask_file=self.mask_image,
+                base_dir=self.working_dir, crashdump_dir=self.log_dir)
 
             print(f"Postprocessing image at path {in_file}")
             self.wf.run()

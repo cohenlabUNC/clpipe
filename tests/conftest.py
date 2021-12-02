@@ -1,9 +1,10 @@
 import pytest
-import numpy as np
 import sys
 import os
+import shutil
 from pathlib import Path
 
+import numpy as np
 import nibabel as nib
 import nipype.pipeline.engine as pe
 from nilearn import plotting
@@ -118,13 +119,14 @@ def clpipe_bids_dir(clpipe_dir):
     return clpipe_dir
 
 @pytest.fixture(scope="module")
-def clpipe_fmriprep_dir(clpipe_dir):
+def clpipe_fmriprep_dir(clpipe_dir, sample_confounds_timeseries):
     """Fixture which adds fmriprep subject folders and mock fmriprep output data to data_fmriprep directory."""
 
     task_info = "task-rest_run-1"
     image_space = "space-MNI152NLin2009cAsym"
     bold_suffix = "desc-preproc_bold.nii.gz"
     mask_suffix = "desc-brain_mask.nii.gz"
+    confounds_suffix = "desc-confounds_timeseries.tsv"
 
     for sub_num in range(NUM_SUBJECTS):
         subject_folder = clpipe_dir / "data_fmriprep" / "fmriprep" / f"sub-{sub_num}" / "func"
@@ -132,8 +134,11 @@ def clpipe_fmriprep_dir(clpipe_dir):
 
         bold_image = generate_random_nii()
         mask_image = generate_random_nii_mask()
+
         nib.save(bold_image, subject_folder / f"sub-{sub_num}_{task_info}_{image_space}_{bold_suffix}")
         nib.save(mask_image, subject_folder / f"sub-{sub_num}_{task_info}_{image_space}_{mask_suffix}")
+
+        shutil.copy(sample_confounds_timeseries, subject_folder / f"sub-{sub_num}_{task_info}_{confounds_suffix}")
     
     return clpipe_dir
 
@@ -215,6 +220,6 @@ def random_nii_mask(tmp_path) -> Path:
     nib.save(nii, nii_path)
     return nii_path
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 def sample_confounds_timeseries() -> Path:
     return Path("tests/data/sample_confounds_timeseries.tsv").resolve()
