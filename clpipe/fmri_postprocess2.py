@@ -40,16 +40,18 @@ def fmri_postprocess2_cli(subjects, config_file, glm_config_file, target_dir, ou
     batch=batch, submit=submit, log_dir=log_dir, debug=debug)
 
 @click.command()
-@click.argument('target_image', type=click.Path(dir_okay=False, file_okay=True))
-@click.argument('output_path', type=click.Path(dir_okay=False, file_okay=True))
+@click.argument('subject_id', type=click.Path(dir_okay=False, file_okay=True))
+@click.argument('fmriprep_dir', type=click.Path(dir_okay=False, file_okay=True))
+@click.argument('output_dir', type=click.Path(dir_okay=False, file_okay=True))
+@click.argument('glm_config', type=click.Path(dir_okay=False, file_okay=True))
 @click.argument('log_dir', type=click.Path(dir_okay=True, file_okay=False))
-def postprocess_image_cli(target_image, output_path, log_dir):
-    postprocess_image(target_image, output_path, log_dir)
+def postprocess_subject_cli(subject_id, fmriprep_dir, output_dir, glm_config, log_dir):
+    postprocess_subject(subject_id, fmriprep_dir, output_dir, glm_config, log_dir)
 
-def postprocess_image(target_image, output_path, log_dir):
-    click.echo(f"Processing image: {target_image}")
+def postprocess_subject(subject_id, fmriprep_dir, output_dir, glm_config, log_dir):
+    click.echo(f"Processing subject: {subject_id}")
 
-    job = PostProcessSubjectJob(target_image, output_path, log_dir)
+    job = PostProcessSubjectJob(subject_id, fmriprep_dir, output_dir, glm_config, log_dir=log_dir)
     job.run()
 
 def postprocess_fmriprep_dir(subjects=None, config_file=None, glm_config_file=None, fmriprep_dir=None, output_dir=None, 
@@ -62,12 +64,10 @@ def postprocess_fmriprep_dir(subjects=None, config_file=None, glm_config_file=No
     # Handle configuration
     config = ClpipeConfigParser()
     config.config_updater(config_file)
-    glm_config = GLMConfigParser(glm_config_file)
-    postprocessing_config = glm_config["GLMSetupOptions"]
 
     # Create jobs based on subjects given for processing
     # TODO: PYBIDS_DB_PATH should have config arg
-    jobs_to_run = PostProcessSubjectJobs(fmriprep_dir, output_dir, subjects, postprocessing_config, log_dir, PYBIDS_DB_PATH)
+    jobs_to_run = PostProcessSubjectJobs(fmriprep_dir, output_dir, subjects, glm_config_file, log_dir, PYBIDS_DB_PATH)
 
     # Setup batch jobs if indicated
     if batch or click.confirm('Would you to process these subjects on the HPC? (Choose "N" for local)'):
@@ -124,18 +124,20 @@ class CLPipeJob():
 class PostProcessSubjectJob(CLPipeJob):
 
     # TODO: add class logger
-    def __init__(self, subject_id: str, fmriprep_dir: BIDSLayout, out_dir: os.PathLike, 
-        postprocessing_config: dict, log_dir: os.PathLike=None):
+    def __init__(self, subject_id: str, fmriprep_dir: os.PathLike, out_dir: os.PathLike, 
+        glm_config: os.PathLike, log_dir: os.PathLike=None):
         self.subject_id=subject_id
-        self.postprocessing_config=postprocessing_config
         self.log_dir=log_dir
         self.fmriprep_dir=fmriprep_dir
+        
+        glm_config = GLMConfigParser(glm_config).config
+        self.postprocessing_config = glm_config["GLMSetupOptions"]
 
         # Create a subject folder for this subject's postprocessing output, if one
         # doesn't already exist
-        self.subject_out_dir = out_dir / ("sub-" + subject_id)
+        self.subject_out_dir = out_dir / ("sub-" + subject_id) / "func"
         if not self.subject_out_dir.exists():
-            self.subject_out_dir.mkdir()
+            self.subject_out_dir.mkdir(exist_ok=True, parents=True)
 
         # Create a nipype working directory for this subject, if it doesn't exist
         self.working_dir = self.subject_out_dir / "working"
@@ -151,9 +153,11 @@ class PostProcessSubjectJob(CLPipeJob):
         return f"Postprocessing Job: {self.subject_id}"
 
     def run(self):
+        self.bids:BIDSLayout = BIDSLayout(self.fmriprep_dir, validate=False)
+        
         # Find the subject's confounds file
         # TODO: Need switch here from config to determine if confounds wanted
-        self.confounds = self.fmriprep_dir.get(
+        self.confounds = self.bids.get(
             subject=self.subject_id, suffix="timeseries", extension=".tsv"
         )[0]
 
@@ -162,13 +166,13 @@ class PostProcessSubjectJob(CLPipeJob):
             self.postprocessing_config)
 
         # Find the subject's images to run post_proc on
-        self.images_to_process = self.fmriprep_dir.get(
+        self.images_to_process = self.bids.get(
             subject=self.subject_id, return_type="filename", 
             extension="nii.gz", datatype="func", suffix="bold")
 
         # Find the subject's mask file
         # TODO: Need switch here from config to determine if mask file wanted
-        self.mask_image = self.fmriprep_dir.get(
+        self.mask_image = self.bids.get(
             subject=self.subject_id, suffix="mask", extension=".nii.gz"
         )[0]
 
@@ -189,7 +193,7 @@ class PostProcessSubjectJobs(CLPipeJob):
     post_process_jobs = []
 
     # TODO: Add class logger
-    def __init__(self, fmriprep_dir:BIDSLayout, output_dir: os.PathLike, postprocessing_config: dict, 
+    def __init__(self, fmriprep_dir, output_dir: os.PathLike, glm_config: os.PathLike, 
         subjects_to_process=None, log_dir: os.PathLike=None, pybids_db_path: os.PathLike=None):
         
         # Create the root output directory for all subject postprocessing results, if it doesn't yet exist.
@@ -198,19 +202,18 @@ class PostProcessSubjectJobs(CLPipeJob):
 
         self.log_dir = log_dir
         self.output_dir = output_dir
-        self.postprocessing_config = postprocessing_config
+        self.glm_config = glm_config
         self.slurm = False
         self.pybids_db_path = pybids_db_path
-        
-
+        self.fmriprep_dir = fmriprep_dir
 
         # Get the fmriprep_dir as a BIDSLayout object
         if pybids_db_path and not os.path.exists(pybids_db_path):
             print("Indexing fMRIPrep directory...")
-        self.fmriprep_dir:BIDSLayout = BIDSLayout(fmriprep_dir, validate=False, database_path=self.pybids_db_path)
+        self.bids:BIDSLayout = BIDSLayout(fmriprep_dir, validate=False, database_path=self.pybids_db_path)
 
         # Choose the subjects to process
-        self.subjects_to_process = get_subjects(self.fmriprep_dir, subjects_to_process)
+        self.subjects_to_process = get_subjects(self.bids, subjects_to_process)
         
         # Create the jobs
         self.create_jobs()
@@ -219,21 +222,23 @@ class PostProcessSubjectJobs(CLPipeJob):
         for subject in self.subjects_to_process:
             # Create a new job and add to list of jobs to be run
             job_to_add = PostProcessSubjectJob(subject, self.fmriprep_dir,
-                self.output_dir, self.postprocessing_config, log_dir=self.log_dir)
+                self.output_dir, self.glm_config, log_dir=self.log_dir)
             self.post_process_jobs.append(job_to_add)
         
     def set_batch_manager(self, batch_manager: BatchManager):
         self.slurm=True
         self.batch_manager = batch_manager
 
-        submission_string = """postprocess_image {image_path} {out_file} {log_dir}"""
+        submission_string = """postprocess_subject {subject_id} {fmriprep_dir} {output_dir} {glm_config} {log_dir}"""
         for job in self.post_process_jobs:
-            sub_string_temp = submission_string.format(image_path=job.in_file,
-                                                        out_file=job.out_file,
+            sub_string_temp = submission_string.format(subject_id=job.subject_id,
+                                                        fmriprep_dir=self.fmriprep_dir,
+                                                        glm_config=self.glm_config,
+                                                        output_dir=job.subject_out_dir,
                                                         log_dir=job.log_dir)
-            image_stem = Path(job.in_file).stem
+            subject_id = Path(job.subject_id).stem
 
-            self.batch_manager.addjob(Job("PostProcessing_" + image_stem, sub_string_temp))
+            self.batch_manager.addjob(Job("PostProcessing_" + subject_id, sub_string_temp))
 
         self.batch_manager.createsubmissionhead()
         self.batch_manager.compilejobstrings()
