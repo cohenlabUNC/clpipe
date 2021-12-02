@@ -9,7 +9,7 @@ from nilearn.image import load_img, index_img
 
 from clpipe.postprocutils.workflows import *
 from clpipe.postprocutils.confounds import prepare_confounds
-from clpipe.fmri_postprocess2 import PostProcessSubjectJobs
+from clpipe.fmri_postprocess2 import PostProcessSubjectJobs, PostProcessSubjectJob
 
 def test_postprocess2_wf(artifact_dir, postprocessing_config, request, sample_raw_image, sample_raw_image_mask, 
     plot_img, write_graph, helpers):
@@ -48,14 +48,15 @@ def test_postprocess2_wf_no_mask(artifact_dir, postprocessing_config, request, s
     assert True
 
 
-def test_postprocess2(clpipe_fmriprep_dir, postprocessing_config, artifact_dir, helpers, request):
+def test_postprocess2(clpipe_fmriprep_dir, artifact_dir, helpers, request):
     fmriprep_dir = clpipe_fmriprep_dir / "data_fmriprep" / "fmriprep"
+    glm_config = clpipe_fmriprep_dir / "glm_config.json"
     test_dir = helpers.create_test_dir(artifact_dir, request.node.name)
     postproc_dir = Path(test_dir / "data_postprocessed")
     log_dir = Path(test_dir / "logs" / "postproc_logs")
     log_dir.mkdir(parents=True, exist_ok=True)
 
-    jobs = PostProcessSubjectJobs(fmriprep_dir, postproc_dir, postprocessing_config,
+    jobs = PostProcessSubjectJobs(fmriprep_dir, postproc_dir, glm_config,
         log_dir=log_dir)
     jobs.run()
 
@@ -66,4 +67,16 @@ def test_prepare_confounds(sample_confounds_timeseries, postprocessing_config, a
     prepare_confounds(sample_confounds_timeseries, out_path, postprocessing_config)
     
     assert True
+
+def test_postprocess_subject(clpipe_fmriprep_dir, artifact_dir, helpers, request):
+    fmriprep_dir = clpipe_fmriprep_dir / "data_fmriprep" / "fmriprep"
+    glm_config = clpipe_fmriprep_dir / "glm_config.json"
+    test_dir = helpers.create_test_dir(artifact_dir, request.node.name)
+    postproc_dir = Path(test_dir / "data_postprocessed")
+    postproc_dir.mkdir(exist_ok=True)
+    log_dir = Path(test_dir / "logs" / "postproc_logs")
+    log_dir.mkdir(parents=True, exist_ok=True)
+
+    subject = PostProcessSubjectJob('1', clpipe_fmriprep_dir, postproc_dir, glm_config, log_dir=log_dir)
+    subject.run()
 
