@@ -61,9 +61,12 @@ staticfiles
 TestFiles/
 tests/artifacts
 
-#vscode
+# vscode
 .vscode
 *.code-workspace
 
-#pytest
+# pytest
 .pytest_cache
+
+# Mac os
+*.DS_Store
