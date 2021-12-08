@@ -14,6 +14,9 @@ RESCALING_10000_GLOBALMEDIAN = "globalmedian_10000"
 RESCALING_100_VOXELMEAN = "voxelmean_100"
 NORMALIZATION_METHODS = (RESCALING_10000_GLOBALMEDIAN, RESCALING_100_VOXELMEAN)
 
+class AlgorithmNotFoundError(ValueError):
+    pass
+
 def build_postprocessing_workflow(postprocessing_config: dict, in_file: os.PathLike, out_file:os.PathLike, tr: int,
     name:str = "Postprocessing_Pipeline", mask_file: os.PathLike=None, 
     base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None):
@@ -34,20 +37,30 @@ def build_postprocessing_workflow(postprocessing_config: dict, in_file: os.PathL
     for index, step in enumerate(processing_steps):
         # Decide which wf to add next
         if step == "TemporalFiltering":
-            hp = postprocessing_config["ProcessingStepOptions"]["TemporalFiltering"]["FilteringHighPass"]
-            lp = postprocessing_config["ProcessingStepOptions"]["TemporalFiltering"]["FilteringLowPass"]
-            order = postprocessing_config["ProcessingStepOptions"]["TemporalFiltering"]["FilteringOrder"]
+            hp = postprocessing_config["ProcessingStepOptions"][step]["FilteringHighPass"]
+            lp = postprocessing_config["ProcessingStepOptions"][step]["FilteringLowPass"]
+            order = postprocessing_config["ProcessingStepOptions"][step]["FilteringOrder"]
+            algorithm_name = postprocessing_config["ProcessingStepOptions"][step]["Algorithm"]
 
-            current_wf = build_butterworth_filter_workflow(hp=hp,lp=lp, tr=tr, order=order, base_dir=postproc_wf.base_dir, crashdump_dir=postproc_wf.config['execution']['crashdump_dir'])
+            temporal_filter_algorithm = _getTemporalFilterAlgorithm(algorithm_name)
+
+            current_wf = temporal_filter_algorithm(hp=hp,lp=lp, tr=tr, order=order, base_dir=postproc_wf.base_dir, crashdump_dir=postproc_wf.config['execution']['crashdump_dir'])
         
         elif step == "IntensityNormalization":
-            current_wf = build_10000_global_median_workflow(base_dir=postproc_wf.base_dir, mask_file=mask_file, crashdump_dir=postproc_wf.config['execution']['crashdump_dir'])
+            algorithm_name = postprocessing_config["ProcessingStepOptions"][step]["Algorithm"]
+
+            intensity_normalization_algorithm = _getIntensityNormalizationAlgorithm(algorithm_name)
+
+            current_wf = intensity_normalization_algorithm(base_dir=postproc_wf.base_dir, mask_file=mask_file, crashdump_dir=postproc_wf.config['execution']['crashdump_dir'])
         
         elif step == "SpatialSmoothing":
-            fwhm_mm= postprocessing_config["ProcessingStepOptions"]["SpatialSmoothing"]["FWHM"]
-            brightness_threshold = postprocessing_config["ProcessingStepOptions"]["SpatialSmoothing"]["BrightnessThreshold"]
+            fwhm_mm= postprocessing_config["ProcessingStepOptions"][step]["FWHM"]
+            brightness_threshold = postprocessing_config["ProcessingStepOptions"][step]["BrightnessThreshold"]
+            algorithm_name = postprocessing_config["ProcessingStepOptions"][step]["Algorithm"]
 
-            current_wf = build_spatial_smoothing_workflow(base_dir=postproc_wf.base_dir, mask_path=mask_file, fwhm_mm=fwhm_mm, crashdump_dir=postproc_wf.config['execution']['crashdump_dir'])
+            spatial_smoothing_algorithm = _getSpatialSmoothingAlgorithm(algorithm_name)
+
+            current_wf = spatial_smoothing_algorithm(base_dir=postproc_wf.base_dir, mask_path=mask_file, fwhm_mm=fwhm_mm, crashdump_dir=postproc_wf.config['execution']['crashdump_dir'])
 
         # Set inputs instead of a connection for first workflow
         if index == 0:
@@ -64,6 +77,24 @@ def build_postprocessing_workflow(postprocessing_config: dict, in_file: os.PathL
         prev_wf = current_wf
     
     return postproc_wf
+
+def _getTemporalFilterAlgorithm(algorithmName):
+    if algorithmName == "Butterworth":
+        return build_butterworth_filter_workflow
+    else:
+        raise AlgorithmNotFoundError(f"Temporal filtering algorithm not found: {algorithmName}")
+
+def _getIntensityNormalizationAlgorithm(algorithmName):
+    if algorithmName == "10000_GlobalMedian":
+        return build_10000_global_median_workflow
+    else:
+        raise AlgorithmNotFoundError(f"Intensity normalization algorithm not found: {algorithmName}")
+
+def _getSpatialSmoothingAlgorithm(algorithmName):
+    if algorithmName == "SUSAN":
+        return build_SUSAN_workflow
+    else:
+        raise AlgorithmNotFoundError(f"Spatial smoothing algorithm not found: {algorithmName}")
 
 def build_10000_global_median_workflow(in_file: os.PathLike=None, out_file:os.PathLike=None,
         mask_file: os.PathLike=None, base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None):
@@ -93,7 +124,7 @@ def build_10000_global_median_workflow(in_file: os.PathLike=None, out_file:os.Pa
         median_node.inputs.op_string = "-k %s -p 50"
 
 
-    workflow = pe.Workflow(name="Intensity_Normalization", base_dir=base_dir)
+    workflow = pe.Workflow(name="10000_Global_Median", base_dir=base_dir)
     if crashdump_dir is not None:
         workflow.config['execution']['crashdump_dir'] = crashdump_dir
 
@@ -132,7 +163,7 @@ def build_100_voxel_mean_workflow(in_file: os.PathLike=None, out_file: os.PathLi
         div_math = BinaryMaths(operation='div')
     div_mean_node = pe.Node(div_math, name="div_mean") #operand_file=mean_path
 
-    workflow = pe.Workflow(name="Intensity_Normalization", base_dir=base_dir)
+    workflow = pe.Workflow(name="100_Voxel_Mean", base_dir=base_dir)
     if crashdump_dir is not None:
         workflow.config['execution']['crashdump_dir'] = crashdump_dir
 
@@ -141,10 +172,10 @@ def build_100_voxel_mean_workflow(in_file: os.PathLike=None, out_file: os.PathLi
 
     return workflow
 
-def build_spatial_smoothing_workflow(in_file: os.PathLike=None, mask_path: os.PathLike=None, fwhm_mm: int=6, out_file: os.PathLike=None, 
+def build_SUSAN_workflow(in_file: os.PathLike=None, mask_path: os.PathLike=None, fwhm_mm: int=6, out_file: os.PathLike=None, 
     base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None):
     
-    workflow = pe.Workflow(name="Spatial_Smoothing", base_dir=base_dir)
+    workflow = pe.Workflow(name="SUSAN", base_dir=base_dir)
     if crashdump_dir is not None:
         workflow.config['execution']['crashdump_dir'] = crashdump_dir
     
@@ -223,7 +254,7 @@ def _setup_usans_input(tmean_image, susan_threshold):
 def build_butterworth_filter_workflow(hp: float, lp: float, tr: float, order: float, in_file: os.PathLike=None, 
     out_file: os.PathLike=None, base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None):
     
-    workflow = pe.Workflow(name="Temporal_Filtering", base_dir=base_dir)
+    workflow = pe.Workflow(name="Butterworth", base_dir=base_dir)
     if crashdump_dir is not None:
         workflow.config['execution']['crashdump_dir'] = crashdump_dir
 

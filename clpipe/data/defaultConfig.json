@@ -80,7 +80,7 @@
 				"FilteringOrder": 2
 			}, 
 			"IntensityNormalization": {
-				"Algorithm": "10000_VoxelMean"
+				"Algorithm": "10000_GlobalMedian"
 			}, 
 			"SpatialSmoothing": {
 				"Algorithm": "SUSAN",
