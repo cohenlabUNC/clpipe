@@ -4,7 +4,7 @@ import logging
 from pathlib import Path
 
 import click
-from bids import BIDSLayout, config as bids_config
+from bids import BIDSLayout, BIDSLayoutIndexer, config as bids_config
 
 from .config_json_parser import ClpipeConfigParser, GLMConfigParser
 from .batch_manager import BatchManager, Job
@@ -128,7 +128,8 @@ def _setup_batch_manager(config):
 
 def _get_bids_dir(fmriprep_dir, validate=False, database_path=None, index_metadata=False) -> BIDSLayout:
     try:
-        return BIDSLayout(fmriprep_dir, validate=validate, database_path=database_path, index_metadata=index_metadata)
+        indexer = BIDSLayoutIndexer(validate=validate, index_metadata=index_metadata)
+        return BIDSLayout(fmriprep_dir, validate=validate, indexer=indexer, database_path=database_path)
     except FileNotFoundError as fne:
         LOG.error(fne)
         raise fne
