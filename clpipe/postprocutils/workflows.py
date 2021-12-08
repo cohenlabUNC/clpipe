@@ -23,7 +23,7 @@ def build_postprocessing_workflow(postprocessing_config: dict, in_file: os.PathL
     if crashdump_dir is not None:
         postproc_wf.config['execution']['crashdump_dir'] = crashdump_dir
     
-    processing_steps = postprocessing_config["ProcessingSteps"]
+    processing_steps = postprocessing_config["ProcessingStepOptions"].keys()
     step_count = len(processing_steps)
     if step_count < 2:
         raise ValueError("The PostProcess workflow requires at least 2 processing steps. Steps given: {step_count}")
@@ -33,19 +33,19 @@ def build_postprocessing_workflow(postprocessing_config: dict, in_file: os.PathL
 
     for index, step in enumerate(processing_steps):
         # Decide which wf to add next
-        if step == "temporal_filtering":
-            hp = postprocessing_config["FilteringHighPass"]
-            lp = postprocessing_config["FilteringLowPass"]
-            order = postprocessing_config["FilteringOrder"]
+        if step == "TemporalFiltering":
+            hp = postprocessing_config["ProcessingStepOptions"]["TemporalFiltering"]["FilteringHighPass"]
+            lp = postprocessing_config["ProcessingStepOptions"]["TemporalFiltering"]["FilteringLowPass"]
+            order = postprocessing_config["ProcessingStepOptions"]["TemporalFiltering"]["FilteringOrder"]
 
             current_wf = build_butterworth_filter_workflow(hp=hp,lp=lp, tr=tr, order=order, base_dir=postproc_wf.base_dir, crashdump_dir=postproc_wf.config['execution']['crashdump_dir'])
         
-        elif step == "intensity_normalization":
+        elif step == "IntensityNormalization":
             current_wf = build_10000_global_median_workflow(base_dir=postproc_wf.base_dir, mask_file=mask_file, crashdump_dir=postproc_wf.config['execution']['crashdump_dir'])
         
-        elif step == "spatial_smoothing":
-            fwhm_mm= postprocessing_config["SUSANOptions"]["FWHM"]
-            brightness_threshold = postprocessing_config["SUSANOptions"]["BrightnessThreshold"]
+        elif step == "SpatialSmoothing":
+            fwhm_mm= postprocessing_config["ProcessingStepOptions"]["SpatialSmoothing"]["FWHM"]
+            brightness_threshold = postprocessing_config["ProcessingStepOptions"]["SpatialSmoothing"]["BrightnessThreshold"]
 
             current_wf = build_spatial_smoothing_workflow(base_dir=postproc_wf.base_dir, mask_path=mask_file, fwhm_mm=fwhm_mm, crashdump_dir=postproc_wf.config['execution']['crashdump_dir'])
 

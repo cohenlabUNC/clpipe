@@ -69,7 +69,8 @@ def test_postprocess_fmriprep_dir(clpipe_fmriprep_dir, artifact_dir, helpers, re
 def test_postprocess_fmriprep_dir_config_only(clpipe_fmriprep_dir, artifact_dir, helpers, request):
     config = clpipe_fmriprep_dir / "clpipe_config.json"
 
-    postprocess_fmriprep_dir(config_file=config, submit=True, batch=False)
+    with pytest.raises(SystemExit):
+        postprocess_fmriprep_dir(config_file=config, submit=True, batch=False)
 
 def test_postprocess_fmriprep_dir_invalid_subject(clpipe_fmriprep_dir, artifact_dir, helpers, request):
     fmriprep_dir = clpipe_fmriprep_dir / "data_fmriprep" / "fmriprep"

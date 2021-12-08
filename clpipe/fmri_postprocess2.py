@@ -235,16 +235,20 @@ class PostProcessSubjectJob():
         # Process the subject's images
         for in_file in self.images_to_process:
             # Calculate the output file name for a given image to process
-            _, base, _ = split_filename(in_file)
-            out_stem = base + '_postproccessed.nii.gz'
+            base, image_name, exstension = split_filename(in_file)
+            out_stem = image_name + '_postproccessed.nii.gz'
             out_file = os.path.abspath(os.path.join(self.subject_out_dir, out_stem))
 
-            self.wf = build_postprocessing_workflow(self.postprocessing_config, in_file, out_file, 2, 
-                name=PostProcessSubjectJob.__class__.__name__, mask_file=self.mask_image,
+            self.wf = build_postprocessing_workflow(self.postprocessing_config, in_file, out_file, self.postprocessing_config["ImageTR"], 
+                name="sub_" + self.subject_id, mask_file=self.mask_image,
                 base_dir=self.working_dir, crashdump_dir=self.log_dir)
 
             LOG.info(f"Postprocessing image at path {in_file}")
             self.wf.run()
+
+            # Draw the workflow's process graph if requested in config
+            if self.postprocessing_config["WriteProcessGraph"]:
+                self.wf.write_graph(dotfilename = self.subject_out_dir / "process_graph.dot" , graph2use="colored")
 
 
 def _get_subjects(fmriprep_dir: BIDSLayout, subjects):   

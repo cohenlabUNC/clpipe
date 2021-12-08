@@ -70,6 +70,8 @@
         "LogDirectory": ""
 	},
 	"PostProcessingOptions2": {
+		"WriteProcessGraph": true,
+		"ImageTR": 2,
 		"ProcessingStepOptions": {
 			"TemporalFiltering": {
 				"Algorithm":"Butterworth",
