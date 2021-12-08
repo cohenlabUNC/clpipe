@@ -69,6 +69,35 @@
 		"BIDSValidatorImage": "/proj/hng/singularity_imgs/validator.simg",
         "LogDirectory": ""
 	},
+	"PostProcessingOptions2": {
+		"ProcessingSteps":{
+			"TemporalFiltering": {
+				"Algorithm":"Butterworth",
+				"FilteringHighPass": 0.008,
+				"FilteringLowPass": -1,
+				"FilteringOrder": 2
+			}, 
+			"IntensityNormalization": {
+				"Algorithm": "10000_VoxelMean"
+			}, 
+			"SpatialSmoothing": {
+				"Algorithm": "SUSAN",
+				"BrightnessThreshold": 0,
+      			"FWHM": 0
+			}
+		},
+		"Confounds": ["trans_x", "trans_y", "trans_z", "rot_x", "rot_y", "rot_z",
+   		 "csf", "white_matter", "global_signal", "a_comp_cor.*"],
+		"ConfoundsQuad": ["trans_x", "trans_y", "trans_z", "rot_x", "rot_y", "rot_z",
+    	 "csf", "white_matter", "global_signal"],
+		"ConfoundsDerive": ["trans_x", "trans_y", "trans_z", "rot_x", "rot_y", "rot_z",
+    	 "csf", "white_matter", "global_signal"],
+		"ConfoundsQuadDerive": ["trans_x", "trans_y", "trans_z", "rot_x", "rot_y", "rot_z",
+    	 "csf", "white_matter", "global_signal"],
+		"MemoryUsage": "20000",
+		"TimeUsage": "2:0:0",
+		"NThreads": "1"
+	},
 	"HNGPrepOptions": {
 		"TargetDirectory": "",
 		"TargetSuffix": "space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz",
