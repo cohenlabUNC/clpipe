@@ -130,9 +130,9 @@ def postprocess_fmriprep_dir(subjects=None, config_file=None, fmriprep_dir=None,
 
 def _setup_batch_manager(config):
     batch_manager = BatchManager(config['BatchConfig'], config['LogDirectory'])
-    batch_manager.update_mem_usage(config['PostProcessingOptions2']['PostProcessingMemoryUsage'])
-    batch_manager.update_time(config['PostProcessingOptions2']['PostProcessingTimeUsage'])
-    batch_manager.update_nthreads(config['PostProcessingOptions2']['NThreads'])
+    batch_manager.update_mem_usage(config['PostProcessingOptions2']['BatchOptions']['MemoryUsage'])
+    batch_manager.update_time(config['PostProcessingOptions2']['BatchOptions']['TimeUsage'])
+    batch_manager.update_nthreads(config['PostProcessingOptions2']['BatchOptions']['NThreads'])
     batch_manager.update_email(config["EmailAddress"])
 
     return batch_manager
