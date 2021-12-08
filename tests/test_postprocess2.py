@@ -66,6 +66,18 @@ def test_postprocess_fmriprep_dir(clpipe_fmriprep_dir, artifact_dir, helpers, re
     postprocess_fmriprep_dir(config_file=config, glm_config_file=glm_config, fmriprep_dir=fmriprep_dir,
         output_dir=postproc_dir, log_dir=log_dir)
 
+def test_postprocess_fmriprep_dir_invalid_subject(clpipe_fmriprep_dir, artifact_dir, helpers, request):
+    fmriprep_dir = clpipe_fmriprep_dir / "data_fmriprep" / "fmriprep"
+    config = clpipe_fmriprep_dir / "clpipe_config.json"
+    glm_config = clpipe_fmriprep_dir / "glm_config.json"
+    test_dir = helpers.create_test_dir(artifact_dir, request.node.name)
+    postproc_dir = Path(test_dir / "data_postprocessed")
+    log_dir = Path(test_dir / "logs" / "postproc_logs")
+    log_dir.mkdir(parents=True, exist_ok=True)
+
+    postprocess_fmriprep_dir(subjects=['99'], config_file=config, glm_config_file=glm_config, fmriprep_dir=fmriprep_dir,
+        output_dir=postproc_dir, log_dir=log_dir)
+
 def test_postprocess2_wf(artifact_dir, postprocessing_config, request, sample_raw_image, sample_raw_image_mask, 
     plot_img, write_graph, helpers):
     test_path = helpers.create_test_dir(artifact_dir, request.node.name)

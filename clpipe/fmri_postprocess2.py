@@ -1,3 +1,4 @@
+import sys
 import os
 import logging
 from pathlib import Path
@@ -10,6 +11,7 @@ from .batch_manager import BatchManager, Job
 from nipype.utils.filemanip import split_filename
 from .postprocutils.workflows import build_postprocessing_workflow
 from .postprocutils.confounds import prepare_confounds
+from .error_handler import exception_handler
 
 # This hides a pybids warning
 bids_config.set_option('extension_initial_dot', True)
@@ -19,6 +21,14 @@ LOG = logging.getLogger(__name__)
 
 EXIT_MSG = "Exiting postprocess2"
 PYBIDS_DB_PATH = "TestFiles/fmriprep_dir"
+
+
+class NoSubjectsFoundError(ValueError):
+    pass
+
+
+class SubjectNotFoundError(ValueError):
+    pass
 
 @click.command()
 @click.argument('subjects', nargs=-1, required=False, default=None)
@@ -40,6 +50,7 @@ def fmri_postprocess2_cli(subjects, config_file, glm_config_file, target_dir, ou
     postprocess_fmriprep_dir(subjects=subjects, config_file=config_file, glm_config_file=glm_config_file, fmriprep_dir=target_dir, output_dir=output_dir, 
     batch=batch, submit=submit, log_dir=log_dir, debug=debug)
 
+
 @click.command()
 @click.argument('subject_id', type=click.Path(dir_okay=False, file_okay=True))
 @click.argument('fmriprep_dir', type=click.Path(dir_okay=False, file_okay=True))
@@ -49,11 +60,20 @@ def fmri_postprocess2_cli(subjects, config_file, glm_config_file, target_dir, ou
 def postprocess_subject_cli(subject_id, fmriprep_dir, output_dir, glm_config, log_dir):
     postprocess_subject(subject_id, fmriprep_dir, output_dir, glm_config, log_dir)
 
+
 def postprocess_subject(subject_id, fmriprep_dir, output_dir, glm_config, log_dir):
     click.echo(f"Processing subject: {subject_id}")
+    
+    try:
+        job = PostProcessSubjectJob(subject_id, fmriprep_dir, output_dir, glm_config, log_dir=log_dir)
+        job.run()
+    except SubjectNotFoundError:
+        sys.exit()
+    except FileNotFoundError:
+        sys.exit()
+    
+    sys.exit()
 
-    job = PostProcessSubjectJob(subject_id, fmriprep_dir, output_dir, glm_config, log_dir=log_dir)
-    job.run()
 
 def postprocess_fmriprep_dir(subjects=None, config_file=None, glm_config_file=None, fmriprep_dir=None, output_dir=None, 
     batch=False, submit=False, log_dir=None, debug=False):
@@ -70,18 +90,29 @@ def postprocess_fmriprep_dir(subjects=None, config_file=None, glm_config_file=No
     log_dir = Path(log_dir)
 
     # Setup Logging
-    if debug: LOG.setLevel(logging.DEBUG)
+    if debug: 
+        LOG.setLevel(logging.DEBUG)
+    else:
+        sys.excepthook = exception_handler
     LOG.debug(f"Starting postprocessing job targeting: {str(fmriprep_dir)}")
     click.echo(f"Starting postprocessing job targeting: {str(fmriprep_dir)}")
 
     # Create jobs based on subjects given for processing
     # TODO: PYBIDS_DB_PATH should have config arg
-    jobs_to_run = PostProcessSubjectJobs(fmriprep_dir, output_dir, glm_config_file, subjects, log_dir, PYBIDS_DB_PATH)
+    try:
+        jobs_to_run = PostProcessSubjectJobs(fmriprep_dir, output_dir, glm_config_file, subjects, log_dir, PYBIDS_DB_PATH)
+    except NoSubjectsFoundError:
+        click.echo()
+        sys.exit()
+    except FileNotFoundError:
+        click.echo(f"Invalid fmriprep output path provided: {fmriprep_dir}")
+        sys.exit()
 
     # Setup batch jobs if indicated
     if batch:
-        batch_manager = setup_batch_manager(config)
+        batch_manager = _setup_batch_manager(config)
         jobs_to_run.set_batch_manager(batch_manager)
+        
         click.echo(jobs_to_run.batch_manager.print_jobs())
 
         if submit:
@@ -92,59 +123,49 @@ def postprocess_fmriprep_dir(subjects=None, config_file=None, glm_config_file=No
 
         if submit:
             jobs_to_run.run()
+    sys.exit()
 
-def setup_batch_manager(config):
+
+def _setup_batch_manager(config):
+    #TODO: Remove this hardcoded path
     batch_manager = BatchManager(config.config['BatchConfig'], "/nas/longleaf/home/willasc/repos/clpipe/tests/Output-PostProcessing")
 
     return batch_manager
 
-# TODO: throw exceptions here instead of exiting
-def get_subjects(fmriprep_dir: BIDSLayout, subjects):   
-    # If no subjects were provided, use all subjects in the fmriprep directory
-    if subjects is None or len(subjects) == 0:
-        try:
-            subjects = fmriprep_dir.get_subjects()
-            if len(subjects) == 0:
-                no_subjects_found_str = f"No subjects found to parse at: {fmriprep_dir.root}"
-                print(no_subjects_found_str)
-                LOG.error(no_subjects_found_str)
-                print(EXIT_MSG)
-                exit()
-        except FileNotFoundError as fne:
-            print(f"Invalid path provided: {fmriprep_dir.root}")
-            LOG.debug(fne)
-            print(EXIT_MSG)
-            exit()
-    # If subjects were provided, return those subjects
-    if len(subjects) == 1:
-        processing_msg = f"Processing subject: {subjects[0]}"
-        LOG.info(processing_msg)
-        print(processing_msg)
-    else:
-        processing_msg = f"Processing subjects: {subjects}"
-        LOG.info(processing_msg)
-        print(processing_msg)
 
-    return subjects
-
-class CLPipeJob():
-    pass
-
-class PostProcessSubjectJob(CLPipeJob):
-
+class PostProcessSubjectJob():
     # TODO: add class logger
     def __init__(self, subject_id: str, fmriprep_dir: os.PathLike, out_dir: os.PathLike, 
         glm_config: os.PathLike, log_dir: os.PathLike=None):
         self.subject_id=subject_id
         self.log_dir=log_dir
         self.fmriprep_dir=fmriprep_dir
-        
+        self.out_dir = out_dir
+
         glm_config = GLMConfigParser(glm_config).config
         self.postprocessing_config = glm_config["GLMSetupOptions"]
 
+
+    def __str__(self):
+        return f"Postprocessing Job: sub-{self.subject_id}"
+
+    def run(self):
+        # Open the fmriprep dir and validate that it contains the subject
+        try:
+            self.bids:BIDSLayout = BIDSLayout(self.fmriprep_dir, validate=False, index_metadata=False)
+
+            if len(self.bids.get(subject=self.subject_id)) == 0:
+                snfe = f"Subject {self.subject_id} was not found in fmriprep directory {self.fmriprep_dir}"
+                LOG.error(snfe)
+                raise SubjectNotFoundError(snfe)
+        except FileNotFoundError as fne:
+            fnfe = f"Invalid fmriprep output path provided: {fmriprep_dir}"
+            LOG.error(fnfe)
+            raise fne
+
         # Create a subject folder for this subject's postprocessing output, if one
         # doesn't already exist
-        self.subject_out_dir = out_dir / ("sub-" + subject_id) / "func"
+        self.subject_out_dir = self.out_dir / ("sub-" + self.subject_id) / "func"
         if not self.subject_out_dir.exists():
             self.subject_out_dir.mkdir(exist_ok=True, parents=True)
 
@@ -154,21 +175,19 @@ class PostProcessSubjectJob(CLPipeJob):
             self.subject_out_dir.mkdir(exist_ok=True)
 
         # Create a postprocessing logging directory for this subject, if it doesn't exist
-        self.log_dir = log_dir / ("sub-" + subject_id)
+        self.log_dir = self.log_dir / ("sub-" + self.subject_id)
         if not self.log_dir.exists():
             self.log_dir.mkdir(exist_ok=True)
-
-    def __str__(self):
-        return f"Postprocessing Job: {self.subject_id}"
-
-    def run(self):
-        self.bids:BIDSLayout = BIDSLayout(self.fmriprep_dir, validate=False, index_metadata=False)
         
         # Find the subject's confounds file
         # TODO: Need switch here from config to determine if confounds wanted
-        self.confounds = self.bids.get(
-            subject=self.subject_id, suffix="timeseries", extension=".tsv"
-        )[0]
+        try:
+            self.confounds = self.bids.get(
+                subject=self.subject_id, suffix="timeseries", extension=".tsv"
+            )[0]
+        except IndexError:
+            LOG.info(f"Confounds file for subject {self.subject_id} not found.")
+            self.confounds = None
 
         # Process the subject's confounds
         prepare_confounds(Path(self.confounds), self.subject_out_dir / "confounds.tsv",
@@ -181,9 +200,14 @@ class PostProcessSubjectJob(CLPipeJob):
 
         # Find the subject's mask file
         # TODO: Need switch here from config to determine if mask file wanted
-        self.mask_image = self.bids.get(
-            subject=self.subject_id, suffix="mask", extension=".nii.gz"
-        )[0]
+        try:
+            self.mask_image = self.bids.get(
+                subject=self.subject_id, suffix="mask", extension=".nii.gz"
+            )[0]
+            #TODO: Throw multiple masks found exception?
+        except IndexError:
+            LOG.info(f"Mask image for subject {self.subject_id} not found.")
+            self.mask_image = None
 
         for in_file in self.images_to_process:
             # Calculate the output file name for a given image to process
@@ -195,10 +219,23 @@ class PostProcessSubjectJob(CLPipeJob):
                 name=PostProcessSubjectJob.__class__.__name__, mask_file=self.mask_image,
                 base_dir=self.working_dir, crashdump_dir=self.log_dir)
 
-            print(f"Postprocessing image at path {in_file}")
+            LOG.info(f"Postprocessing image at path {in_file}")
             self.wf.run()
 
-class PostProcessSubjectJobs(CLPipeJob):
+
+def _get_subjects(fmriprep_dir: BIDSLayout, subjects):   
+    # If no subjects were provided, use all subjects in the fmriprep directory
+    if subjects is None or len(subjects) == 0:
+        subjects = fmriprep_dir.get_subjects()
+        if len(subjects) == 0:
+            no_subjects_found_str = f"No subjects found to parse at: {fmriprep_dir.root}"
+            LOG.error(no_subjects_found_str)
+            raise NoSubjectsFoundError(no_subjects_found_str)
+
+    return subjects
+
+
+class PostProcessSubjectJobs():
     post_process_jobs = []
 
     # TODO: Add class logger
@@ -219,11 +256,16 @@ class PostProcessSubjectJobs(CLPipeJob):
 
         # Get the fmriprep_dir as a BIDSLayout object
         if pybids_db_path and not os.path.exists(pybids_db_path):
-            print("Indexing fMRIPrep directory...")
-        self.bids:BIDSLayout = BIDSLayout(fmriprep_dir, validate=False, database_path=self.pybids_db_path, index_metadata=False)
+            LOG.info("Indexing fMRIPrep directory...")
+        
+        try:
+            self.bids:BIDSLayout = BIDSLayout(fmriprep_dir, validate=False, database_path=self.pybids_db_path, index_metadata=False)
+        except FileNotFoundError as fne:
+            LOG.error(fne)
+            raise fne
 
         # Choose the subjects to process
-        self.subjects_to_process = get_subjects(self.bids, subjects_to_process)
+        self.subjects_to_process = _get_subjects(self.bids, subjects_to_process)
         
         # Create the jobs
         self.create_jobs()
@@ -254,10 +296,7 @@ class PostProcessSubjectJobs(CLPipeJob):
         self.batch_manager.compilejobstrings()
 
     def __str__(self):
-        out = ""
-        for job in self.post_process_jobs:
-            out += str(job) + '\n'
-        return out
+        return "\n".join(str(i) for i in self.post_process_jobs)
 
     def run(self):
         if self.slurm:
@@ -265,5 +304,4 @@ class PostProcessSubjectJobs(CLPipeJob):
         else:
             for job in self.post_process_jobs:
                 job.run()
-
         
