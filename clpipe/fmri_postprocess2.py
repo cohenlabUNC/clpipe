@@ -230,7 +230,7 @@ class PostProcessSubjectJob():
 
         # Process the subject's confounds
         prepare_confounds(Path(self.confounds), self.subject_out_dir / "confounds.tsv",
-            self.postprocessing_config)
+            self.postprocessing_config["ConfoundOptions"])
 
         # Process the subject's images
         for in_file in self.images_to_process:

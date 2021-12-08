@@ -70,7 +70,7 @@
         "LogDirectory": ""
 	},
 	"PostProcessingOptions2": {
-		"ProcessingSteps":{
+		"ProcessingStepOptions": {
 			"TemporalFiltering": {
 				"Algorithm":"Butterworth",
 				"FilteringHighPass": 0.008,
@@ -86,17 +86,28 @@
       			"FWHM": 0
 			}
 		},
-		"Confounds": ["trans_x", "trans_y", "trans_z", "rot_x", "rot_y", "rot_z",
-   		 "csf", "white_matter", "global_signal", "a_comp_cor.*"],
-		"ConfoundsQuad": ["trans_x", "trans_y", "trans_z", "rot_x", "rot_y", "rot_z",
-    	 "csf", "white_matter", "global_signal"],
-		"ConfoundsDerive": ["trans_x", "trans_y", "trans_z", "rot_x", "rot_y", "rot_z",
-    	 "csf", "white_matter", "global_signal"],
-		"ConfoundsQuadDerive": ["trans_x", "trans_y", "trans_z", "rot_x", "rot_y", "rot_z",
-    	 "csf", "white_matter", "global_signal"],
-		"MemoryUsage": "20000",
-		"TimeUsage": "2:0:0",
-		"NThreads": "1"
+		"ConfoundOptions": {
+			"Confounds": ["trans_x", "trans_y", "trans_z", "rot_x", "rot_y", "rot_z",
+				"csf", "white_matter", "global_signal", "a_comp_cor.*"],
+			"ConfoundsQuad": ["trans_x", "trans_y", "trans_z", "rot_x", "rot_y", "rot_z",
+			 "csf", "white_matter", "global_signal"],
+			"ConfoundsDerive": ["trans_x", "trans_y", "trans_z", "rot_x", "rot_y", "rot_z",
+			 "csf", "white_matter", "global_signal"],
+			"ConfoundsQuadDerive": ["trans_x", "trans_y", "trans_z", "rot_x", "rot_y", "rot_z",
+			 "csf", "white_matter", "global_signal"],
+			"MotionOutliers": true,
+			"Scrubbing": true,
+			"ScrubVar": "framewise_displacement",
+			"Threshold": 0.9,
+			"ScrubAhead": 1,
+			"ScrubBehind": 1,
+			"ScrubContiguous": 2
+		},
+		"BatchOptions": {
+			"MemoryUsage": "20000",
+			"TimeUsage": "2:0:0",
+			"NThreads": "1"
+		}	
 	},
 	"HNGPrepOptions": {
 		"TargetDirectory": "",
