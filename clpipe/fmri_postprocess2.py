@@ -314,7 +314,18 @@ class PostProcessSubjectJobs():
     def __str__(self):
         return "\n".join(str(i) for i in self.post_process_jobs)
 
+    def setup_directories(self):
+        # Create a postproc output directory, if it doesn't exist
+        if not self.output_dir.exists():
+            self.output_dir.mkdir(exist_ok=True, parents=True)
+
+        # Create a postproc log directory, if it doesn't exist
+        if not self.log_dir.exists():
+            self.log_dir.mkdir(exist_ok=True)
+
     def run(self):
+        self.setup_directories()
+
         if self.slurm:
             self.batch_manager.submit_jobs()
         else:
