@@ -98,10 +98,8 @@ def postprocess_fmriprep_dir(subjects=None, config_file=None, glm_config_file=No
     try:
         jobs_to_run = PostProcessSubjectJobs(fmriprep_dir, output_dir, glm_config_file, subjects, log_dir)
     except NoSubjectsFoundError:
-        click.echo()
         sys.exit()
     except FileNotFoundError:
-        click.echo(f"Invalid fmriprep output path provided: {fmriprep_dir}")
         sys.exit()
 
     # Setup batch jobs if indicated
@@ -128,6 +126,12 @@ def _setup_batch_manager(config):
 
     return batch_manager
 
+def _get_bids_dir(fmriprep_dir, validate=False, database_path=None, index_metadata=False) -> BIDSLayout:
+    try:
+        return BIDSLayout(fmriprep_dir, validate=validate, database_path=database_path, index_metadata=index_metadata)
+    except FileNotFoundError as fne:
+        LOG.error(fne)
+        raise fne
 
 class PostProcessSubjectJob():
     # TODO: add class logger
@@ -193,7 +197,7 @@ class PostProcessSubjectJob():
     def run(self):
         # Open the fmriprep dir and validate that it contains the subject
         try:
-            self.bids:BIDSLayout = BIDSLayout(self.fmriprep_dir, validate=False, index_metadata=False)
+            self.bids:BIDSLayout = _get_bids_dir(self.fmriprep_dir, validate=False, index_metadata=False)
 
             if len(self.bids.get(subject=self.subject_id)) == 0:
                 snfe = f"Subject {self.subject_id} was not found in fmriprep directory {self.fmriprep_dir}"
@@ -259,15 +263,7 @@ class PostProcessSubjectJobs():
         self.pybids_db_path = pybids_db_path
         self.fmriprep_dir = fmriprep_dir
 
-        # Get the fmriprep_dir as a BIDSLayout object
-        if pybids_db_path and not os.path.exists(pybids_db_path):
-            LOG.info("Indexing fMRIPrep directory...")
-        
-        try:
-            self.bids:BIDSLayout = BIDSLayout(fmriprep_dir, validate=False, database_path=self.pybids_db_path, index_metadata=False)
-        except FileNotFoundError as fne:
-            LOG.error(fne)
-            raise fne
+        self.bids:BIDSLayout = _get_bids_dir(self.fmriprep_dir, database_path=pybids_db_path)
 
         # Choose the subjects to process
         self.subjects_to_process = _get_subjects(self.bids, subjects_to_process)
