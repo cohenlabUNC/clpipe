@@ -19,10 +19,6 @@ bids_config.set_option('extension_initial_dot', True)
 logging.basicConfig()
 LOG = logging.getLogger(__name__)
 
-EXIT_MSG = "Exiting postprocess2"
-PYBIDS_DB_PATH = "TestFiles/fmriprep_dir"
-
-
 class NoSubjectsFoundError(ValueError):
     pass
 
@@ -100,7 +96,7 @@ def postprocess_fmriprep_dir(subjects=None, config_file=None, glm_config_file=No
     # Create jobs based on subjects given for processing
     # TODO: PYBIDS_DB_PATH should have config arg
     try:
-        jobs_to_run = PostProcessSubjectJobs(fmriprep_dir, output_dir, glm_config_file, subjects, log_dir, PYBIDS_DB_PATH)
+        jobs_to_run = PostProcessSubjectJobs(fmriprep_dir, output_dir, glm_config_file, subjects, log_dir)
     except NoSubjectsFoundError:
         click.echo()
         sys.exit()
@@ -145,24 +141,10 @@ class PostProcessSubjectJob():
         glm_config = GLMConfigParser(glm_config).config
         self.postprocessing_config = glm_config["GLMSetupOptions"]
 
-
     def __str__(self):
         return f"Postprocessing Job: sub-{self.subject_id}"
 
-    def run(self):
-        # Open the fmriprep dir and validate that it contains the subject
-        try:
-            self.bids:BIDSLayout = BIDSLayout(self.fmriprep_dir, validate=False, index_metadata=False)
-
-            if len(self.bids.get(subject=self.subject_id)) == 0:
-                snfe = f"Subject {self.subject_id} was not found in fmriprep directory {self.fmriprep_dir}"
-                LOG.error(snfe)
-                raise SubjectNotFoundError(snfe)
-        except FileNotFoundError as fne:
-            fnfe = f"Invalid fmriprep output path provided: {fmriprep_dir}"
-            LOG.error(fnfe)
-            raise fne
-
+    def setup_directories(self):
         # Create a subject folder for this subject's postprocessing output, if one
         # doesn't already exist
         self.subject_out_dir = self.out_dir / ("sub-" + self.subject_id) / "func"
@@ -178,7 +160,8 @@ class PostProcessSubjectJob():
         self.log_dir = self.log_dir / ("sub-" + self.subject_id)
         if not self.log_dir.exists():
             self.log_dir.mkdir(exist_ok=True)
-        
+
+    def get_confounds(self):
         # Find the subject's confounds file
         # TODO: Need switch here from config to determine if confounds wanted
         try:
@@ -189,15 +172,7 @@ class PostProcessSubjectJob():
             LOG.info(f"Confounds file for subject {self.subject_id} not found.")
             self.confounds = None
 
-        # Process the subject's confounds
-        prepare_confounds(Path(self.confounds), self.subject_out_dir / "confounds.tsv",
-            self.postprocessing_config)
-
-        # Find the subject's images to run post_proc on
-        self.images_to_process = self.bids.get(
-            subject=self.subject_id, return_type="filename", 
-            extension="nii.gz", datatype="func", suffix="bold")
-
+    def get_mask(self):
         # Find the subject's mask file
         # TODO: Need switch here from config to determine if mask file wanted
         try:
@@ -209,6 +184,36 @@ class PostProcessSubjectJob():
             LOG.info(f"Mask image for subject {self.subject_id} not found.")
             self.mask_image = None
 
+    def get_images_to_process(self):
+        # Find the subject's images to run post_proc on
+        self.images_to_process = self.bids.get(
+            subject=self.subject_id, return_type="filename", 
+            extension="nii.gz", datatype="func", suffix="bold")
+
+    def run(self):
+        # Open the fmriprep dir and validate that it contains the subject
+        try:
+            self.bids:BIDSLayout = BIDSLayout(self.fmriprep_dir, validate=False, index_metadata=False)
+
+            if len(self.bids.get(subject=self.subject_id)) == 0:
+                snfe = f"Subject {self.subject_id} was not found in fmriprep directory {self.fmriprep_dir}"
+                LOG.error(snfe)
+                raise SubjectNotFoundError(snfe)
+        except FileNotFoundError as fne:
+            fnfe = f"Invalid fmriprep output path provided: {fmriprep_dir}"
+            LOG.error(fnfe)
+            raise fne
+        
+        self.setup_directories()
+        self.get_confounds()
+        self.get_mask()
+        self.get_images_to_process()
+
+        # Process the subject's confounds
+        prepare_confounds(Path(self.confounds), self.subject_out_dir / "confounds.tsv",
+            self.postprocessing_config)
+
+        # Process the subject's images
         for in_file in self.images_to_process:
             # Calculate the output file name for a given image to process
             _, base, _ = split_filename(in_file)
