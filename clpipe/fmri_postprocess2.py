@@ -72,16 +72,26 @@ def postprocess_fmriprep_dir(subjects=None, config_file=None, fmriprep_dir=None,
     batch=False, submit=False, log_dir=None, debug=False):
 
     # Handle configuration
-    configParser = ClpipeConfigParser()
-    configParser.config_updater(config_file)
-    config = configParser.config
+    if config_file:
+        configParser = ClpipeConfigParser()
+        configParser.config_updater(config_file)
+        config = configParser.config
+        config_file = Path(config_file)
 
+    if fmriprep_dir:
+        fmriprep_dir = Path(fmriprep_dir)
+    else:
+        fmriprep_dir = Path(config["FMRIPrepOptions"]["OutputDirectory"]) / "fmriprep"
 
-    # Make sure any string paths are converted to Path type
-    config_file = Path(config_file)
-    fmriprep_dir = Path(fmriprep_dir if fmriprep_dir else config["FMRIPrepOptions"]["OutputDirectory"])
-    output_dir = Path(output_dir if output_dir)
-    log_dir = Path(log_dir)
+    if output_dir:
+        output_dir = Path(output_dir)
+    else:
+        output_dir = Path(config["ProjectDirectory"]) / "data_postproc2"
+
+    if log_dir:
+        log_dir = Path(log_dir)
+    else:
+        log_dir = Path(config["ProjectDirectory"]) / "logs" / "postproc2_logs"
 
     # Setup Logging
     if debug: 
@@ -122,7 +132,7 @@ def _setup_batch_manager(config):
     batch_manager = BatchManager(config['BatchConfig'], config['LogDirectory'])
     batch_manager.update_mem_usage(config['PostProcessingOptions2']['PostProcessingMemoryUsage'])
     batch_manager.update_time(config['PostProcessingOptions2']['PostProcessingTimeUsage'])
-    batch_manager.update_nthreads(config.['PostProcessingOptions2']['NThreads'])
+    batch_manager.update_nthreads(config['PostProcessingOptions2']['NThreads'])
     batch_manager.update_email(config["EmailAddress"])
 
     return batch_manager

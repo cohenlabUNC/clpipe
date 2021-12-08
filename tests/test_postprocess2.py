@@ -66,6 +66,11 @@ def test_postprocess_fmriprep_dir(clpipe_fmriprep_dir, artifact_dir, helpers, re
     postprocess_fmriprep_dir(config_file=config, glm_config_file=glm_config, fmriprep_dir=fmriprep_dir,
         output_dir=postproc_dir, log_dir=log_dir)
 
+def test_postprocess_fmriprep_dir_config_only(clpipe_fmriprep_dir, artifact_dir, helpers, request):
+    config = clpipe_fmriprep_dir / "clpipe_config.json"
+
+    postprocess_fmriprep_dir(config_file=config, submit=True, batch=False)
+
 def test_postprocess_fmriprep_dir_invalid_subject(clpipe_fmriprep_dir, artifact_dir, helpers, request):
     fmriprep_dir = clpipe_fmriprep_dir / "data_fmriprep" / "fmriprep"
     config = clpipe_fmriprep_dir / "clpipe_config.json"
