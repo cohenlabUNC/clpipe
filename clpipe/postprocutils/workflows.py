@@ -3,9 +3,9 @@ import os
 from math import sqrt, log
 
 from nipype.interfaces.fsl.maths import MeanImage, BinaryMaths, MedianImage, ApplyMask
-from nipype.interfaces.fsl.utils import ImageStats
+from nipype.interfaces.fsl.utils import ImageStats, FilterRegressor
 from nipype.interfaces.fsl import SUSAN
-from nipype.interfaces.utility import Function, Merge
+from nipype.interfaces.utility import Function, Merge, IdentityInterface
 import nipype.pipeline.engine as pe
 
 from .nodes import build_input_node, build_output_node, ButterworthFilter
@@ -281,7 +281,31 @@ def build_confound_regression_workflow(in_file: os.PathLike=None, mask_file: os.
     if crashdump_dir is not None:
         workflow.config['execution']['crashdump_dir'] = crashdump_dir
 
-def build_aroma_workflow(in_file: os.PathLike=None, mask_file: os.PathLike=None, base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None):
+def build_aroma_workflow(mixing_file: os.PathLike, noise_file: os.PathLike, in_file: os.PathLike=None, out_file: os.PathLike=None, mask_file: os.PathLike=None, 
+    base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None):
+
     workflow = pe.Workflow(name="AROMA", base_dir=base_dir)
     if crashdump_dir is not None:
         workflow.config['execution']['crashdump_dir'] = crashdump_dir
+
+    input_node = pe.Node(IdentityInterface(fields=['in_file', 'out_file', 'mixing_file', 'noise_file', 'mask_file'], mandatory_inputs=False), name="inputnode")
+    output_node = pe.Node(IdentityInterface(fields=['out_file'], mandatory_inputs=True), name="outputnode")
+
+    regfilt_node = pe.Node(FilterRegressor(design_file=mixing_file, filter_columns=noise_file), name="regfilt")
+
+    # Set WF inputs and outputs
+    if in_file:
+        input_node.inputs.in_file = in_file
+    if out_file:
+        input_node.inputs.out_file = out_file
+
+    workflow.connect(input_node, "in_file", regfilt_node, "in_file")
+    workflow.connect(input_node, "out_file", regfilt_node, "out_file")
+    workflow.connect(regfilt_node, "out_file", output_node, "out_file")
+
+    if mask_file:
+        regfilt_node.inputs.mask = mask_file
+
+    return workflow
+
+    
