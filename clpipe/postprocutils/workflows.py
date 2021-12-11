@@ -4,6 +4,7 @@ from math import sqrt, log
 
 from nipype.interfaces.fsl.maths import MeanImage, BinaryMaths, MedianImage, ApplyMask
 from nipype.interfaces.fsl.utils import ImageStats, FilterRegressor
+from nipype.interfaces.fsl.model import GLM
 from nipype.interfaces.fsl import SUSAN
 from nipype.interfaces.utility import Function, Merge, IdentityInterface
 import nipype.pipeline.engine as pe
@@ -276,10 +277,32 @@ def build_butterworth_filter_workflow(hp: float, lp: float, tr: float, order: fl
 
     return workflow
 
-def build_confound_regression_workflow(in_file: os.PathLike=None, mask_file: os.PathLike=None, base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None):
+def build_confound_regression_workflow(design_file: os.PathLike, in_file: os.PathLike=None, out_file: os.PathLike=None, mask_file: os.PathLike=None,
+    base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None):
+    
     workflow = pe.Workflow(name="Confound_Regression", base_dir=base_dir)
     if crashdump_dir is not None:
         workflow.config['execution']['crashdump_dir'] = crashdump_dir
+
+    input_node = pe.Node(IdentityInterface(fields=['in_file', 'out_file', 'design', 'mask_file'], mandatory_inputs=False), name="inputnode")
+    output_node = pe.Node(IdentityInterface(fields=['out_file'], mandatory_inputs=True), name="outputnode")
+
+    regressor_node = pe.Node(GLM(design=design_file), name="regressor")
+
+    # Set WF inputs and outputs
+    if in_file:
+        input_node.inputs.in_file = in_file
+    if out_file:
+        input_node.inputs.out_file = out_file
+
+    workflow.connect(input_node, "in_file", regressor_node, "in_file")
+    workflow.connect(input_node, "out_file", regressor_node, "out_file")
+    workflow.connect(regressor_node, "out_file", output_node, "out_file")
+
+    if mask_file:
+        workflow.connect(input_node, "mask_file", regressor_node, "mask")
+
+    return workflow
 
 def build_aroma_workflow(mixing_file: os.PathLike, noise_file: os.PathLike, in_file: os.PathLike=None, out_file: os.PathLike=None, mask_file: os.PathLike=None, 
     base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None):
@@ -298,13 +321,13 @@ def build_aroma_workflow(mixing_file: os.PathLike, noise_file: os.PathLike, in_f
         input_node.inputs.in_file = in_file
     if out_file:
         input_node.inputs.out_file = out_file
-
+    
     workflow.connect(input_node, "in_file", regfilt_node, "in_file")
     workflow.connect(input_node, "out_file", regfilt_node, "out_file")
     workflow.connect(regfilt_node, "out_file", output_node, "out_file")
 
     if mask_file:
-        regfilt_node.inputs.mask = mask_file
+        workflow.connect(input_node, "mask_file", regfilt_node, "mask")
 
     return workflow
 
