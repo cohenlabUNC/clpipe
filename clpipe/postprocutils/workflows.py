@@ -19,8 +19,8 @@ class AlgorithmNotFoundError(ValueError):
     pass
 
 def build_postprocessing_workflow(postprocessing_config: dict, in_file: os.PathLike, out_file:os.PathLike, tr: int,
-    name:str = "Postprocessing_Pipeline", mask_file: os.PathLike=None, 
-    base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None):
+    name:str = "Postprocessing_Pipeline", mask_file: os.PathLike=None, mixing_file: os.PathLike=None, noise_file: os.PathLike=None,
+    design_file: os.PathLike = None, base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None):
     
     postproc_wf = pe.Workflow(name=name, base_dir=base_dir)
     
@@ -45,23 +45,37 @@ def build_postprocessing_workflow(postprocessing_config: dict, in_file: os.PathL
 
             temporal_filter_algorithm = _getTemporalFilterAlgorithm(algorithm_name)
 
-            current_wf = temporal_filter_algorithm(hp=hp,lp=lp, tr=tr, order=order, base_dir=postproc_wf.base_dir, crashdump_dir=postproc_wf.config['execution']['crashdump_dir'])
+            current_wf = temporal_filter_algorithm(hp=hp,lp=lp, tr=tr, order=order, base_dir=postproc_wf.base_dir, crashdump_dir=crashdump_dir)
         
         elif step == "IntensityNormalization":
             algorithm_name = postprocessing_config["ProcessingStepOptions"][step]["Algorithm"]
 
             intensity_normalization_algorithm = _getIntensityNormalizationAlgorithm(algorithm_name)
 
-            current_wf = intensity_normalization_algorithm(base_dir=postproc_wf.base_dir, mask_file=mask_file, crashdump_dir=postproc_wf.config['execution']['crashdump_dir'])
+            current_wf = intensity_normalization_algorithm(base_dir=postproc_wf.base_dir, mask_file=mask_file, crashdump_dir=crashdump_dir)
         
         elif step == "SpatialSmoothing":
             fwhm_mm= postprocessing_config["ProcessingStepOptions"][step]["FWHM"]
-            brightness_threshold = postprocessing_config["ProcessingStepOptions"][step]["BrightnessThreshold"]
+            #brightness_threshold = postprocessing_config["ProcessingStepOptions"][step]["BrightnessThreshold"]
             algorithm_name = postprocessing_config["ProcessingStepOptions"][step]["Algorithm"]
 
             spatial_smoothing_algorithm = _getSpatialSmoothingAlgorithm(algorithm_name)
 
-            current_wf = spatial_smoothing_algorithm(base_dir=postproc_wf.base_dir, mask_path=mask_file, fwhm_mm=fwhm_mm, crashdump_dir=postproc_wf.config['execution']['crashdump_dir'])
+            current_wf = spatial_smoothing_algorithm(base_dir=postproc_wf.base_dir, mask_path=mask_file, fwhm_mm=fwhm_mm, crashdump_dir=crashdump_dir)
+
+        elif step == "AROMA":
+            algorithm_name = postprocessing_config["ProcessingStepOptions"][step]["Algorithm"]
+
+            apply_aroma_agorithm = _getApplyAROMAAlgorithm(algorithm_name)
+
+            current_wf = apply_aroma_agorithm(mixing_file=mixing_file, noise_file=noise_file, mask_file=mask_file, crashdump_dir=crashdump_dir)
+
+        elif step == "ConfoundRegression":
+            algorithm_name = postprocessing_config["ProcessingStepOptions"][step]["Algorithm"]
+
+            confound_regression_algorithm = _getConfoundRegressionAlgorithm(algorithm_name)
+
+            current_wf = confound_regression_algorithm(design_file=design_file, mask_file=mask_file, crashdump_dir=crashdump_dir)
 
         # Set inputs instead of a connection for first workflow
         if index == 0:
@@ -96,6 +110,18 @@ def _getSpatialSmoothingAlgorithm(algorithmName):
         return build_SUSAN_workflow
     else:
         raise AlgorithmNotFoundError(f"Spatial smoothing algorithm not found: {algorithmName}")
+
+def _getApplyAROMAAlgorithm(algorithmName):
+    if algorithmName == "fsl_regfilt":
+        return build_aroma_workflow
+    else:
+        raise AlgorithmNotFoundError(f"Spatial smoothing algorithm not found: {algorithmName}")
+
+def _getConfoundRegressionAlgorithm(algorithmName):
+    if algorithmName == "fsl_glm":
+        return build_confound_regression_workflow
+    else:
+        raise AlgorithmNotFoundError(f"Confound regression algorithm not found: {algorithmName}")
 
 def build_10000_global_median_workflow(in_file: os.PathLike=None, out_file:os.PathLike=None,
         mask_file: os.PathLike=None, base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None):
@@ -307,7 +333,7 @@ def build_confound_regression_workflow(design_file: os.PathLike, in_file: os.Pat
 def build_aroma_workflow(mixing_file: os.PathLike, noise_file: os.PathLike, in_file: os.PathLike=None, out_file: os.PathLike=None, mask_file: os.PathLike=None, 
     base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None):
 
-    workflow = pe.Workflow(name="AROMA", base_dir=base_dir)
+    workflow = pe.Workflow(name="Apply_AROMA", base_dir=base_dir)
     if crashdump_dir is not None:
         workflow.config['execution']['crashdump_dir'] = crashdump_dir
 
@@ -321,7 +347,7 @@ def build_aroma_workflow(mixing_file: os.PathLike, noise_file: os.PathLike, in_f
         input_node.inputs.in_file = in_file
     if out_file:
         input_node.inputs.out_file = out_file
-    
+
     workflow.connect(input_node, "in_file", regfilt_node, "in_file")
     workflow.connect(input_node, "out_file", regfilt_node, "out_file")
     workflow.connect(regfilt_node, "out_file", output_node, "out_file")

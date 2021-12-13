@@ -84,8 +84,15 @@
 			}, 
 			"SpatialSmoothing": {
 				"Algorithm": "SUSAN",
-				"BrightnessThreshold": 0,
-      			"FWHM": 0
+      			"FWHM": 6
+			},
+			"ApplyAROMA":{
+				"Algorithm": "fsl_regfilt"
+			},
+			"ConfoundRegression": {
+				"Algorithm": "fsl_glm",
+				"Columns": ["csf", "csf_derivative1", "white_matter", "white_matter_derivative1"],
+				"ConfoundFileName" : "confound_regressors.txt"
 			}
 		},
 		"ConfoundOptions": {
