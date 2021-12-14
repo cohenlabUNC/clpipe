@@ -112,24 +112,27 @@ def build_postprocessing_workflow(postprocessing_config: dict, in_file: os.PathL
 
 def build_confound_postprocessing_workflow(postprocessing_config: dict, confound_file: os.PathLike=None, 
     out_file: os.PathLike=None, mixing_file: os.PathLike=None, noise_file: os.PathLike=None, tr: int = None,
-    name:str = "Confound_Postprocessing_Pipeline", processing_steps: list=None,
+    name:str = "Confound_Postprocessing_Pipeline", processing_steps: list=None, column_names: list=None,
     base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None):
     
-    confounds_wf = pe.Workflow(name="Conf", base_dir=base_dir)
+    confounds_wf = pe.Workflow(name=name, base_dir=base_dir)
     if crashdump_dir is not None:
         confounds_wf.config['execution']['crashdump_dir'] = crashdump_dir
     
     if processing_steps is None:
         processing_steps = postprocessing_config["ProcessingSteps"]
+    if column_names is None:
+        column_names = postprocessing_config["ConfoundOptions"]["Columns"]
 
     # Select steps that apply to confounds
     processing_steps = set(processing_steps) & CONFOUND_STEPS
 
     #_tsv_to_nii(confound_file)
 
-    input_node = pe.Node(IdentityInterface(fields=['in_file', 'out_file', 'mixing_file', 'noise_file', 'mask_file'], mandatory_inputs=False), name="inputnode")
+    input_node = pe.Node(IdentityInterface(fields=['in_file', 'out_file', 'columns', 'mixing_file', 'noise_file', 'mask_file'], mandatory_inputs=False), name="inputnode")
     output_node = pe.Node(IdentityInterface(fields=['out_file'], mandatory_inputs=True), name="outputnode")
 
+    tsv_select_node = pe.Node(Function(input_names=["tsv_file", "column_names"], output_names=["tsv_subset_file"], function=_tsv_select_columns), name="tsv_select_columns")
     tsv_to_nii_node = pe.Node(Function(input_names=["tsv_file"], output_names=["nii_file"], function=_tsv_to_nii), name="tsv_to_nii")
     nii_to_tsv_node = pe.Node(Function(input_names=["nii_file", "tsv_file_name"], output_names=["tsv_file"], function=_nii_to_tsv), name="nii_to_tsv")
 
@@ -141,12 +144,33 @@ def build_confound_postprocessing_workflow(postprocessing_config: dict, confound
     if out_file:
         nii_to_tsv_node.inputs.tsv_file_name = out_file
 
-    confounds_wf.connect(input_node, "in_file", tsv_to_nii_node, "tsv_file")
+    input_node.inputs.column_names = column_names
+
+    confounds_wf.connect(input_node, "in_file", tsv_select_node, "tsv_file")
+    confounds_wf.connect(input_node, "column_names", tsv_select_node, "column_names")
+    confounds_wf.connect(tsv_select_node, "tsv_subset_file", tsv_to_nii_node, "tsv_file")
     confounds_wf.connect(tsv_to_nii_node, "nii_file", postproc_wf, "inputnode.in_file")
     confounds_wf.connect(postproc_wf, "outputnode.out_file", nii_to_tsv_node, "nii_file")
     confounds_wf.connect(nii_to_tsv_node, "tsv_file", output_node, "out_file")
 
     return confounds_wf
+
+def _tsv_select_columns(tsv_file, column_names):
+    # Imports must be in function for running as node
+    import pandas as pd
+    from pathlib import Path
+
+    df = pd.read_csv(tsv_file, sep="\t")
+    df = df[column_names]
+
+    # Build the output path
+    tsv_file = Path(tsv_file).stem
+    tsv_subset_file = Path(tsv_file + "_subset.nii")
+
+    df.to_csv(tsv_subset_file, sep="\t")
+
+    return str(tsv_subset_file.absolute())
+
 
 def _tsv_to_nii(tsv_file):
     # Imports must be in function for running as node
@@ -168,9 +192,7 @@ def _tsv_to_nii(tsv_file):
     # Build the output path
     tsv_file = Path(tsv_file)
     path_stem = tsv_file.stem
-    #folder = tsv_file.parent
     nii_path = Path(path_stem + ".nii")
-    #nii_path = folder / (path_stem + ".nii")
 
     # Build wrapper NIFTI image
     image = nib.Nifti1Image(padded_tensor, affine)
