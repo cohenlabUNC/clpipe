@@ -235,9 +235,9 @@ def _getSpatialSmoothingAlgorithm(algorithmName):
 
 def _getApplyAROMAAlgorithm(algorithmName):
     if algorithmName == "fsl_regfilt":
-        return build_aroma_workflow
+        return build_aroma_workflow_fsl_regfilt
     else:
-        raise AlgorithmNotFoundError(f"Spatial smoothing algorithm not found: {algorithmName}")
+        raise AlgorithmNotFoundError(f"Apply AROMA algorithm not found: {algorithmName}")
 
 def _getConfoundRegressionAlgorithm(algorithmName):
     if algorithmName == "fsl_glm":
@@ -478,7 +478,8 @@ def build_confound_regression_afni_3dTproject(in_file: os.PathLike=None, out_fil
         input_node.inputs.in_file = in_file
     if out_file:
         input_node.inputs.out_file = out_file
-    input_node.inputs.ort = confound_file
+    if confound_file:
+        input_node.inputs.ort = confound_file
 
     regressor_node = pe.Node(TProject(polort=0), name="3dTproject")
 
@@ -494,8 +495,8 @@ def build_confound_regression_afni_3dTproject(in_file: os.PathLike=None, out_fil
     return workflow
 
 
-def build_aroma_workflow(mixing_file: os.PathLike, noise_file: os.PathLike, in_file: os.PathLike=None, out_file: os.PathLike=None, mask_file: os.PathLike=None, 
-    base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None):
+def build_aroma_workflow_fsl_regfilt(in_file: os.PathLike=None, out_file: os.PathLike=None, mixing_file: os.PathLike=None, noise_file: os.PathLike=None,  
+    mask_file: os.PathLike=None, base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None):
 
     workflow = pe.Workflow(name="Apply_AROMA", base_dir=base_dir)
     if crashdump_dir is not None:
@@ -504,21 +505,39 @@ def build_aroma_workflow(mixing_file: os.PathLike, noise_file: os.PathLike, in_f
     input_node = pe.Node(IdentityInterface(fields=['in_file', 'out_file', 'mixing_file', 'noise_file', 'mask_file'], mandatory_inputs=False), name="inputnode")
     output_node = pe.Node(IdentityInterface(fields=['out_file'], mandatory_inputs=True), name="outputnode")
 
-    regfilt_node = pe.Node(FilterRegressor(design_file=mixing_file, filter_columns=noise_file), name="regfilt")
+    regfilt_node = pe.Node(FilterRegressor(), name="regfilt")
+    csv_to_list_node = pe.Node(Function(input_names=["csv_file"], output_names=["list"], function=_csv_to_list), name="csv_to_list")
 
     # Set WF inputs and outputs
     if in_file:
         input_node.inputs.in_file = in_file
+    if mixing_file:
+        input_node.inputs.mixing_file = mixing_file
+    if noise_file:
+        input_node.inputs.noise_file = noise_file
     if out_file:
         input_node.inputs.out_file = out_file
+        workflow.connect(input_node, "out_file", regfilt_node, "out_file")
+    if mask_file:
+        input_node.inputs.mask_file = mask_file
+        workflow.connect(input_node, "mask_file", regfilt_node, "mask")
 
     workflow.connect(input_node, "in_file", regfilt_node, "in_file")
-    workflow.connect(input_node, "out_file", regfilt_node, "out_file")
+    workflow.connect(input_node, "noise_file", csv_to_list_node, "csv_file")
+    workflow.connect(csv_to_list_node, "list", regfilt_node, "filter_columns")
+    workflow.connect(input_node, "mixing_file", regfilt_node, "design_file")
     workflow.connect(regfilt_node, "out_file", output_node, "out_file")
-
-    if mask_file:
-        workflow.connect(input_node, "mask_file", regfilt_node, "mask")
 
     return workflow
 
+def _csv_to_list(csv_file):
+    # Imports must be in function for running as node
+    import numpy as np
+    from pathlib import Path
+
+    # Read in the csv
+    data = np.loadtxt(csv_file, delimiter=",", dtype=np.int64)
+    data_list = list(data)
+
+    return data_list
     

@@ -227,3 +227,11 @@ def sample_confounds_timeseries() -> Path:
 @pytest.fixture(scope="module")
 def sample_postprocessed_confounds() -> Path:
     return Path("tests/data/postprocessed_confounds.tsv").resolve()
+
+@pytest.fixture(scope="module")
+def sample_melodic_mixing() -> Path:
+    return Path("tests/data/MELODIC_mixing.tsv").resolve()
+
+@pytest.fixture(scope="module")
+def sample_aroma_noise_ics() -> Path:
+    return Path("tests/data/AROMAnoiseICs.csv").resolve()
