@@ -81,7 +81,7 @@ def build_postprocessing_workflow(postprocessing_config: dict, in_file: os.PathL
 
             current_wf = spatial_smoothing_algorithm(base_dir=postproc_wf.base_dir, mask_path=mask_file, fwhm_mm=fwhm_mm, crashdump_dir=crashdump_dir)
 
-        elif step == "AROMA":
+        elif step == "ApplyAROMA":
             algorithm_name = postprocessing_config["ProcessingStepOptions"][step]["Algorithm"]
 
             apply_aroma_agorithm = _getApplyAROMAAlgorithm(algorithm_name)
@@ -104,7 +104,11 @@ def build_postprocessing_workflow(postprocessing_config: dict, in_file: os.PathL
             
         # Direct the last workflow's output to postproc workflow's output
         if index == step_count - 1:
+            # Set output file name by passing out_file name into input of last node
+            if out_file:
+                postproc_wf.connect(input_node, "out_file", current_wf, "inputnode.out_file")
             postproc_wf.connect(current_wf, "outputnode.out_file", output_node, "out_file")
+            
 
         # Keep a reference to current_wf as "prev_wf" for the next loop
         prev_wf = current_wf
@@ -517,12 +521,12 @@ def build_aroma_workflow_fsl_regfilt(in_file: os.PathLike=None, out_file: os.Pat
         input_node.inputs.noise_file = noise_file
     if out_file:
         input_node.inputs.out_file = out_file
-        workflow.connect(input_node, "out_file", regfilt_node, "out_file")
     if mask_file:
         input_node.inputs.mask_file = mask_file
         workflow.connect(input_node, "mask_file", regfilt_node, "mask")
 
     workflow.connect(input_node, "in_file", regfilt_node, "in_file")
+    workflow.connect(input_node, "out_file", regfilt_node, "out_file")
     workflow.connect(input_node, "noise_file", csv_to_list_node, "csv_file")
     workflow.connect(csv_to_list_node, "list", regfilt_node, "filter_columns")
     workflow.connect(input_node, "mixing_file", regfilt_node, "design_file")

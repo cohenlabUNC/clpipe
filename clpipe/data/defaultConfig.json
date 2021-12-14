@@ -92,7 +92,7 @@
       			"FWHM": 6
 			},
 			"ApplyAROMA":{
-				"Algorithm": "fsl_glm"
+				"Algorithm": "fsl_regfilt"
 			},
 			"ConfoundRegression": {
 				"Algorithm": "afni_3dTproject",

@@ -150,7 +150,7 @@ def test_postprocess2_wf_1_step(artifact_dir, postprocessing_config, request, sa
 
     assert True
 
-def test_postprocess2_wf_2_confound_regression_last(artifact_dir, postprocessing_config, request, sample_raw_image, sample_raw_image_mask, 
+def test_postprocess2_wf_confound_regression_last(artifact_dir, postprocessing_config, request, sample_raw_image, sample_raw_image_mask, 
     sample_confounds_timeseries, plot_img, write_graph, helpers):
 
     postprocessing_config["ProcessingSteps"] = ["SpatialSmoothing", "ConfoundRegression"]
@@ -172,7 +172,7 @@ def test_postprocess2_wf_2_confound_regression_last(artifact_dir, postprocessing
 
     assert True
 
-def test_postprocess2_wf_2_confound_regression_first(artifact_dir, postprocessing_config, request, sample_raw_image, sample_raw_image_mask, 
+def test_postprocess2_wf_confound_regression_first(artifact_dir, postprocessing_config, request, sample_raw_image, sample_raw_image_mask, 
     sample_confounds_timeseries, plot_img, write_graph, helpers):
 
     postprocessing_config["ProcessingSteps"] = ["ConfoundRegression", "SpatialSmoothing"]
@@ -182,6 +182,50 @@ def test_postprocess2_wf_2_confound_regression_first(artifact_dir, postprocessin
     
     wf = build_postprocessing_workflow(postprocessing_config, in_file=sample_raw_image, out_file=out_path, tr=2, mask_file=sample_raw_image_mask,
         confound_file=sample_confounds_timeseries,
+        base_dir=test_path, crashdump_dir=test_path)
+    
+    wf.run()
+
+    if write_graph:
+        wf.write_graph(dotfilename = test_path / "postProcessSubjectFlow", graph2use=write_graph)
+   
+    if plot_img:
+        helpers.plot_4D_img_slice(out_path, "postProcessed.png")
+
+    assert True
+
+def test_postprocess2_wf_aroma(artifact_dir, postprocessing_config, request, sample_raw_image, sample_raw_image_mask, 
+    sample_melodic_mixing, sample_aroma_noise_ics, plot_img, write_graph, helpers):
+
+    postprocessing_config["ProcessingSteps"] = ["ApplyAROMA", "SpatialSmoothing", "IntensityNormalization"]
+
+    test_path = helpers.create_test_dir(artifact_dir, request.node.name)
+    out_path = test_path / "postProcessed.nii.gz"
+    
+    wf = build_postprocessing_workflow(postprocessing_config, in_file=sample_raw_image, out_file=out_path, tr=2, mask_file=sample_raw_image_mask,
+        mixing_file=sample_melodic_mixing, noise_file=sample_aroma_noise_ics,
+        base_dir=test_path, crashdump_dir=test_path)
+    
+    wf.run()
+
+    if write_graph:
+        wf.write_graph(dotfilename = test_path / "postProcessSubjectFlow", graph2use=write_graph)
+   
+    if plot_img:
+        helpers.plot_4D_img_slice(out_path, "postProcessed.png")
+
+    assert True
+
+def test_postprocess2_wf_aroma_last(artifact_dir, postprocessing_config, request, sample_raw_image, sample_raw_image_mask, 
+    sample_melodic_mixing, sample_aroma_noise_ics, plot_img, write_graph, helpers):
+
+    postprocessing_config["ProcessingSteps"] = ["TemporalFiltering", "SpatialSmoothing", "IntensityNormalization", "ApplyAROMA"]
+
+    test_path = helpers.create_test_dir(artifact_dir, request.node.name)
+    out_path = test_path / "postProcessed.nii.gz"
+    
+    wf = build_postprocessing_workflow(postprocessing_config, in_file=sample_raw_image, out_file=out_path, tr=2, mask_file=sample_raw_image_mask,
+        mixing_file=sample_melodic_mixing, noise_file=sample_aroma_noise_ics,
         base_dir=test_path, crashdump_dir=test_path)
     
     wf.run()
