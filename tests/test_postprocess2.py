@@ -137,20 +137,23 @@ def test_prepare_confounds(sample_confounds_timeseries, postprocessing_config, a
     test_path = helpers.create_test_dir(artifact_dir, request.node.name)
     out_path = test_path / "new_confounds.tsv"
 
-    prepare_confounds(sample_confounds_timeseries, out_path, postprocessing_config)
+    cf_workflow = build_confound_postprocessing_workflow(postprocessing_config, confound_file=sample_confounds_timeseries,
+        out_file=out_path, base_dir=test_path, crashdump_dir=test_path, tr=2)
+
+    cf_workflow.run()
     
     assert True
 
 def test_postprocess_subject(clpipe_fmriprep_dir, artifact_dir, helpers, request):
     fmriprep_dir = clpipe_fmriprep_dir / "data_fmriprep" / "fmriprep"
-    glm_config = clpipe_fmriprep_dir / "glm_config.json"
+    config = clpipe_fmriprep_dir / "clpipe_config.json"
     test_dir = helpers.create_test_dir(artifact_dir, request.node.name)
     postproc_dir = Path(test_dir / "data_postprocessed")
     postproc_dir.mkdir(exist_ok=True)
     log_dir = Path(test_dir / "logs" / "postproc_logs")
     log_dir.mkdir(parents=True, exist_ok=True)
 
-    subject = PostProcessSubjectJob('1', clpipe_fmriprep_dir, postproc_dir, glm_config, log_dir=log_dir)
+    subject = PostProcessSubjectJob('1', clpipe_fmriprep_dir, postproc_dir, config, log_dir=log_dir)
     subject.run()
 
 

@@ -9,7 +9,7 @@ from bids import BIDSLayout, BIDSLayoutIndexer, config as bids_config
 from .config_json_parser import ClpipeConfigParser, GLMConfigParser
 from .batch_manager import BatchManager, Job
 from nipype.utils.filemanip import split_filename
-from .postprocutils.workflows import build_postprocessing_workflow
+from .postprocutils.workflows import build_postprocessing_workflow, build_confound_postprocessing_workflow
 from .postprocutils.confounds import prepare_confounds
 from .error_handler import exception_handler
 
@@ -146,7 +146,6 @@ def _get_bids_dir(fmriprep_dir, validate=False, database_path=None, index_metada
         raise fne
 
 class PostProcessSubjectJob():
-    # TODO: add class logger
     def __init__(self, subject_id: str, fmriprep_dir: os.PathLike, out_dir: os.PathLike, 
         config_file: os.PathLike, log_dir: os.PathLike=None):
         self.subject_id=subject_id
@@ -159,6 +158,28 @@ class PostProcessSubjectJob():
 
     def __str__(self):
         return f"Postprocessing Job: sub-{self.subject_id}"
+
+    def load_config(self):
+        # Get postprocessing configuration from general config
+        self.logger.info(f"Ingesting configuration: {self.config_file}")
+        configParser = ClpipeConfigParser()
+        configParser.config_updater(self.config_file)
+        self.postprocessing_config = configParser.config["PostProcessingOptions2"]
+
+    def load_fmriprep_dir(self):
+        # Open the fmriprep dir and validate that it contains the subject
+        self.logger.info(f"Checking fmrioutput for requested subject in: {self.fmriprep_dir}")
+        try:
+            self.bids:BIDSLayout = _get_bids_dir(self.fmriprep_dir, validate=False, index_metadata=False)
+
+            if len(self.bids.get(subject=self.subject_id)) == 0:
+                snfe = f"Subject {self.subject_id} was not found in fmriprep directory {self.fmriprep_dir}"
+                self.logger.error(snfe)
+                raise SubjectNotFoundError(snfe)
+        except FileNotFoundError as fne:
+            fnfe = f"Invalid fmriprep output path provided: {self.fmriprep_dir}"
+            self.logger.error(fnfe, exc_info=True)
+            raise fne
 
     def setup_directories(self):
         # Create a subject folder for this subject's postprocessing output, if one
@@ -241,45 +262,34 @@ class PostProcessSubjectJob():
         # Add handler to the logger
         self.logger.addHandler(f_handler)
 
-    def run(self):
-        self.logger.info(f"Running postprocessing for sub-{self.subject_id}")
+    def process_confounds(self):
+        if not self.postprocessing_config["ConfoundOptions"]["Include"]: return
 
-        # Get postprocessing configuration from general config
-        self.logger.info(f"Ingesting configuration: {self.config_file}")
-        configParser = ClpipeConfigParser()
-        configParser.config_updater(self.config_file)
-        self.postprocessing_config = configParser.config["PostProcessingOptions2"]
-
-        # Open the fmriprep dir and validate that it contains the subject
-        self.logger.info(f"Checking fmrioutput for requested subject in: {self.fmriprep_dir}")
-        try:
-            self.bids:BIDSLayout = _get_bids_dir(self.fmriprep_dir, validate=False, index_metadata=False)
-
-            if len(self.bids.get(subject=self.subject_id)) == 0:
-                snfe = f"Subject {self.subject_id} was not found in fmriprep directory {self.fmriprep_dir}"
-                self.logger.error(snfe)
-                raise SubjectNotFoundError(snfe)
-        except FileNotFoundError as fne:
-            fnfe = f"Invalid fmriprep output path provided: {self.fmriprep_dir}"
-            self.logger.error(fnfe, exc_info=True)
-            raise fne
-        
-        self.setup_directories()
-        self.setup_file_logger()
-        # TODO: Need switch here from config to determine if confounds wanted
+        # TODO: Run this async or batch
+        self.logger.info("Preparing confounds")
         self.get_confounds()
-        # TODO: Need switch here from config to determine if mask file wanted
+        self.confound_out_file = self.subject_out_dir / self.postprocessing_config["ConfoundOptions"]["ProcessedConfoundsFileName"]
+        
+        #TODO: replace config TR with image TR
+        confounds_wf = build_confound_postprocessing_workflow(self.postprocessing_config, confound_file = Path(self.confounds),
+            out_file=self.confound_out_file, tr=self.postprocessing_config["ImageTR"],
+            base_dir=self.working_dir, crashdump_dir=self.log_dir)
+        self.logger.info("Postprocessing confounds")
+        confounds_wf.run()
+        
+        # Draw the workflow's process graph if requested in config
+        if self.postprocessing_config["WriteProcessGraph"]:
+            graph_image_path = self.subject_out_dir / "confounds_process_graph.dot"
+            self.logger.info(f"Drawing confounds workflow graph: {graph_image_path}")
+            confounds_wf.write_graph(dotfilename = graph_image_path, graph2use="colored")
+
+    def process_images(self):
+        # Get images for processing
         self.get_mask()
         self.get_images_to_process()
 
-        # Process the subject's confounds
-        # TODO: Need switch here from config to determine if confounds wanted
-        self.logger.info("Preparing confounds")
-        prepare_confounds(Path(self.confounds), self.subject_out_dir / "confounds.tsv",
-            self.postprocessing_config["ConfoundOptions"])
-
-
         # Process the subject's images
+        # TODO: Run these async or batch
         for in_file in self.images_to_process:
             # Calculate the output file name for a given image to process
             base, image_name, exstension = split_filename(in_file)
@@ -287,19 +297,30 @@ class PostProcessSubjectJob():
             out_file = os.path.abspath(os.path.join(self.subject_out_dir, out_stem))
 
             self.logger.info(f"Building postprocessing workflow for image: {in_file}")
-            self.wf = build_postprocessing_workflow(self.postprocessing_config, in_file, out_file, self.postprocessing_config["ImageTR"], 
+            #TODO: replace config TR with image TR
+            wf = build_postprocessing_workflow(self.postprocessing_config, in_file=in_file, out_file=out_file, tr=self.postprocessing_config["ImageTR"], 
                 name="sub_" + self.subject_id, mask_file=self.mask_image,
                 base_dir=self.working_dir, crashdump_dir=self.log_dir)
 
             self.logger.info(f"Running postprocessing workflow for image: {in_file}")
-            self.wf.run()
+            wf.run()
             self.logger.info(f"Postprocessing workflow complete for image: {in_file}")
 
             # Draw the workflow's process graph if requested in config
             if self.postprocessing_config["WriteProcessGraph"]:
                 graph_image_path = self.subject_out_dir / "process_graph.dot"
                 self.logger.info(f"Drawing workflow graph: {graph_image_path}")
-                self.wf.write_graph(dotfilename = graph_image_path, graph2use="colored")
+                wf.write_graph(dotfilename = graph_image_path, graph2use="colored")
+
+    def run(self):
+        self.logger.info(f"Running postprocessing for sub-{self.subject_id}")
+
+        self.load_config()
+        self.load_fmriprep_dir()
+        self.setup_directories()
+        self.setup_file_logger()
+        self.process_confounds()
+        self.process_images()
 
 
 def _get_subjects(fmriprep_dir: BIDSLayout, subjects):   

@@ -144,15 +144,15 @@ def clpipe_fmriprep_dir(clpipe_dir, sample_confounds_timeseries):
 
 @pytest.fixture(scope="module")
 def clpipe_config_default():
-    return ClpipeConfigParser()
+    return ClpipeConfigParser().config
 
 @pytest.fixture(scope="module")
 def glm_config_default():
     return GLMConfigParser().config
 
 @pytest.fixture(scope="module")
-def postprocessing_config(glm_config_default):
-    return glm_config_default["GLMSetupOptions"]
+def postprocessing_config(clpipe_config_default):
+    return clpipe_config_default["PostProcessingOptions2"]
 
 @pytest.fixture(scope="function")
 def workflow_base(tmp_path):
