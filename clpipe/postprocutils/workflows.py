@@ -22,7 +22,7 @@ class AlgorithmNotFoundError(ValueError):
     
 def build_postprocessing_workflow(postprocessing_config: dict, in_file: os.PathLike=None, out_file:os.PathLike=None,
     name:str = "Postprocessing_Pipeline", processing_steps: list=None, mask_file: os.PathLike=None, mixing_file: os.PathLike=None, 
-    noise_file: os.PathLike=None, design_file: os.PathLike = None, tr: int = None,
+    noise_file: os.PathLike=None, confound_file: os.PathLike = None, tr: int = None,
     base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None):
     
     postproc_wf = pe.Workflow(name=name, base_dir=base_dir)
@@ -92,13 +92,13 @@ def build_postprocessing_workflow(postprocessing_config: dict, in_file: os.PathL
 
             confound_regression_algorithm = _getConfoundRegressionAlgorithm(algorithm_name)
 
-            current_wf = confound_regression_algorithm(design_file=design_file, mask_file=mask_file, crashdump_dir=crashdump_dir)
+            current_wf = confound_regression_algorithm(confound_file=confound_file, mask_file=mask_file, crashdump_dir=crashdump_dir)
 
         # Send input of postproc workflow to first workflow
         if index == 0:
             postproc_wf.connect(input_node, "in_file", current_wf, "inputnode.in_file")
         # Connect previous wf to current wf
-        elif step_count > 2:
+        elif step_count > 1:
             postproc_wf.connect(prev_wf, "outputnode.out_file", current_wf, "inputnode.in_file")
             
         # Direct the last workflow's output to postproc workflow's output
@@ -424,29 +424,34 @@ def build_butterworth_filter_workflow(hp: float, lp: float, tr: float, order: fl
 
     return workflow
 
-def build_confound_regression_workflow(design_file: os.PathLike, in_file: os.PathLike=None, out_file: os.PathLike=None, mask_file: os.PathLike=None,
+def build_confound_regression_workflow(in_file: os.PathLike=None, out_file: os.PathLike=None, confound_file: os.PathLike=None, mask_file: os.PathLike=None,
     base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None):
-    
+
+    # Something specific to confound_regression's setup is not letting it work in postproc wf builder
+
     workflow = pe.Workflow(name="Confound_Regression", base_dir=base_dir)
     if crashdump_dir is not None:
         workflow.config['execution']['crashdump_dir'] = crashdump_dir
 
-    input_node = pe.Node(IdentityInterface(fields=['in_file', 'out_file', 'design', 'mask_file'], mandatory_inputs=False), name="inputnode")
+    input_node = pe.Node(IdentityInterface(fields=['in_file', 'out_file', 'design_file', 'mask_file'], mandatory_inputs=False), name="inputnode")
     output_node = pe.Node(IdentityInterface(fields=['out_file'], mandatory_inputs=True), name="outputnode")
-
-    regressor_node = pe.Node(GLM(design=design_file), name="regressor")
 
     # Set WF inputs and outputs
     if in_file:
         input_node.inputs.in_file = in_file
     if out_file:
         input_node.inputs.out_file = out_file
+    input_node.inputs.design_file = confound_file
+
+    regressor_node = pe.Node(GLM(), name="regressor")
 
     workflow.connect(input_node, "in_file", regressor_node, "in_file")
     workflow.connect(input_node, "out_file", regressor_node, "out_file")
+    workflow.connect(input_node, "design_file", regressor_node, "design")
     workflow.connect(regressor_node, "out_file", output_node, "out_file")
 
     if mask_file:
+        input_node.inputs.mask_file = mask_file
         workflow.connect(input_node, "mask_file", regressor_node, "mask")
 
     return workflow

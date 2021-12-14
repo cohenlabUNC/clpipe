@@ -223,3 +223,7 @@ def random_nii_mask(tmp_path) -> Path:
 @pytest.fixture(scope="module")
 def sample_confounds_timeseries() -> Path:
     return Path("tests/data/sample_confounds_timeseries.tsv").resolve()
+
+@pytest.fixture(scope="module")
+def sample_postprocessed_confounds() -> Path:
+    return Path("tests/data/postprocessed_confounds.tsv").resolve()

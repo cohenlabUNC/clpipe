@@ -299,9 +299,10 @@ class PostProcessSubjectJob():
 
             self.logger.info(f"Building postprocessing workflow for image: {in_file}")
             #TODO: replace config TR with image TR
-            wf = build_postprocessing_workflow(self.postprocessing_config, in_file=in_file, out_file=out_file, tr=self.postprocessing_config["ImageTR"], 
+            wf = build_postprocessing_workflow(self.postprocessing_config, in_file=in_file, out_file=out_file,
                 name=f"Sub_{self.subject_id}_Postprocessing_Pipeline",
-                mask_file=self.mask_image,
+                mask_file=self.mask_image, confound_file = Path(self.confounds),
+                tr=self.postprocessing_config["ImageTR"], 
                 base_dir=self.working_dir, crashdump_dir=self.log_dir)
 
             self.logger.info(f"Running postprocessing workflow for image: {in_file}")

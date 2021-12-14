@@ -88,3 +88,18 @@ def test_butterworth_filter_wf(artifact_dir, sample_raw_image, plot_img, write_g
         helpers.plot_4D_img_slice(filtered_path, "filtered.png")
     
     assert True
+
+def test_confound_regression_wf(artifact_dir, sample_raw_image, sample_postprocessed_confounds, sample_raw_image_mask, plot_img, write_graph, request, helpers):
+    test_path = helpers.create_test_dir(artifact_dir, request.node.name)
+
+    regressed_path = test_path / "sample_raw_regressed.nii"
+
+    wf = build_confound_regression_workflow(confound_file = sample_postprocessed_confounds, in_file=sample_raw_image, out_file=regressed_path, 
+        mask_file=sample_raw_image_mask, base_dir=test_path, crashdump_dir=test_path)
+    wf.run()
+
+    if write_graph:
+        wf.write_graph(dotfilename = test_path / "filteredflow", graph2use=write_graph)
+
+    if plot_img:
+        helpers.plot_4D_img_slice(filtered_path, "filtered.png")

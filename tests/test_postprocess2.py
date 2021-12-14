@@ -84,12 +84,60 @@ def test_postprocess_fmriprep_dir_invalid_subject(clpipe_fmriprep_dir, artifact_
     postprocess_fmriprep_dir(subjects=['99'], config_file=config, glm_config_file=glm_config, fmriprep_dir=fmriprep_dir,
         output_dir=postproc_dir, log_dir=log_dir)
 
-def test_postprocess2_wf(artifact_dir, postprocessing_config, request, sample_raw_image, sample_raw_image_mask, 
-    plot_img, write_graph, helpers):
+def test_postprocess2_wf_2_steps(artifact_dir, postprocessing_config, request, sample_raw_image, sample_raw_image_mask, 
+    sample_confounds_timeseries, plot_img, write_graph, helpers):
+
+    postprocessing_config["ProcessingSteps"] = ["SpatialSmoothing", "IntensityNormalization"]
+
     test_path = helpers.create_test_dir(artifact_dir, request.node.name)
     out_path = test_path / "postProcessed.nii.gz"
     
-    wf = build_postprocessing_workflow(postprocessing_config, sample_raw_image, out_path, 2, mask_file=sample_raw_image_mask,
+    wf = build_postprocessing_workflow(postprocessing_config, in_file=sample_raw_image, out_file=out_path, tr=2, mask_file=sample_raw_image_mask,
+        confound_file=sample_confounds_timeseries,
+        base_dir=test_path, crashdump_dir=test_path)
+    
+    wf.run()
+
+    if write_graph:
+        wf.write_graph(dotfilename = test_path / "postProcessSubjectFlow", graph2use=write_graph)
+   
+    if plot_img:
+        helpers.plot_4D_img_slice(out_path, "postProcessed.png")
+
+    assert True
+
+def test_postprocess2_wf_3_steps(artifact_dir, postprocessing_config, request, sample_raw_image, sample_raw_image_mask, 
+    sample_confounds_timeseries, plot_img, write_graph, helpers):
+
+    postprocessing_config["ProcessingSteps"] = ["SpatialSmoothing", "IntensityNormalization", "TemporalFiltering"]
+
+    test_path = helpers.create_test_dir(artifact_dir, request.node.name)
+    out_path = test_path / "postProcessed.nii.gz"
+    
+    wf = build_postprocessing_workflow(postprocessing_config, in_file=sample_raw_image, out_file=out_path, tr=2, mask_file=sample_raw_image_mask,
+        confound_file=sample_confounds_timeseries,
+        base_dir=test_path, crashdump_dir=test_path)
+    
+    wf.run()
+
+    if write_graph:
+        wf.write_graph(dotfilename = test_path / "postProcessSubjectFlow", graph2use=write_graph)
+   
+    if plot_img:
+        helpers.plot_4D_img_slice(out_path, "postProcessed.png")
+
+    assert True
+
+def test_postprocess2_wf_1_step(artifact_dir, postprocessing_config, request, sample_raw_image, sample_raw_image_mask, 
+    sample_confounds_timeseries, plot_img, write_graph, helpers):
+
+    postprocessing_config["ProcessingSteps"] = ["SpatialSmoothing"]
+
+    test_path = helpers.create_test_dir(artifact_dir, request.node.name)
+    out_path = test_path / "postProcessed.nii.gz"
+    
+    wf = build_postprocessing_workflow(postprocessing_config, in_file=sample_raw_image, out_file=out_path, tr=2, mask_file=sample_raw_image_mask,
+        confound_file=sample_confounds_timeseries,
         base_dir=test_path, crashdump_dir=test_path)
     
     wf.run()
