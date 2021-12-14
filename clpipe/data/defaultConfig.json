@@ -92,10 +92,10 @@
       			"FWHM": 6
 			},
 			"ApplyAROMA":{
-				"Algorithm": "fsl_regfilt"
+				"Algorithm": "fsl_glm"
 			},
 			"ConfoundRegression": {
-				"Algorithm": "fsl_glm",
+				"Algorithm": "afni_3dTproject",
 				"Columns": ["csf", "csf_derivative1", "white_matter", "white_matter_derivative1"],
 				"ConfoundFileName" : "confound_regressors.txt"
 			}

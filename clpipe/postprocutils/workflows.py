@@ -4,6 +4,7 @@ from math import sqrt, log
 
 from nipype.interfaces.fsl.maths import MeanImage, BinaryMaths, MedianImage, ApplyMask
 from nipype.interfaces.fsl.utils import ImageStats, FilterRegressor
+from nipype.interfaces.afni import TProject
 from nipype.interfaces.fsl.model import GLM
 from nipype.interfaces.fsl import SUSAN
 from nipype.interfaces.utility import Function, Merge, IdentityInterface
@@ -85,14 +86,14 @@ def build_postprocessing_workflow(postprocessing_config: dict, in_file: os.PathL
 
             apply_aroma_agorithm = _getApplyAROMAAlgorithm(algorithm_name)
 
-            current_wf = apply_aroma_agorithm(mixing_file=mixing_file, noise_file=noise_file, mask_file=mask_file, crashdump_dir=crashdump_dir)
+            current_wf = apply_aroma_agorithm(mixing_file=mixing_file, noise_file=noise_file, mask_file=mask_file, base_dir=postproc_wf.base_dir, crashdump_dir=crashdump_dir)
 
         elif step == "ConfoundRegression":
             algorithm_name = postprocessing_config["ProcessingStepOptions"][step]["Algorithm"]
 
             confound_regression_algorithm = _getConfoundRegressionAlgorithm(algorithm_name)
 
-            current_wf = confound_regression_algorithm(confound_file=confound_file, mask_file=mask_file, crashdump_dir=crashdump_dir)
+            current_wf = confound_regression_algorithm(confound_file=confound_file, mask_file=mask_file, base_dir=postproc_wf.base_dir, crashdump_dir=crashdump_dir)
 
         # Send input of postproc workflow to first workflow
         if index == 0:
@@ -240,7 +241,9 @@ def _getApplyAROMAAlgorithm(algorithmName):
 
 def _getConfoundRegressionAlgorithm(algorithmName):
     if algorithmName == "fsl_glm":
-        return build_confound_regression_workflow
+        return build_confound_regression_fsl_glm_workflow
+    elif algorithmName == "afni_3dTproject":
+        return build_confound_regression_afni_3dTproject
     else:
         raise AlgorithmNotFoundError(f"Confound regression algorithm not found: {algorithmName}")
 
@@ -424,10 +427,9 @@ def build_butterworth_filter_workflow(hp: float, lp: float, tr: float, order: fl
 
     return workflow
 
-def build_confound_regression_workflow(in_file: os.PathLike=None, out_file: os.PathLike=None, confound_file: os.PathLike=None, mask_file: os.PathLike=None,
+def build_confound_regression_fsl_glm_workflow(in_file: os.PathLike=None, out_file: os.PathLike=None, confound_file: os.PathLike=None, mask_file: os.PathLike=None,
     base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None):
-
-    # Something specific to confound_regression's setup is not letting it work in postproc wf builder
+    #TODO: This function currently returns an empy image
 
     workflow = pe.Workflow(name="Confound_Regression", base_dir=base_dir)
     if crashdump_dir is not None:
@@ -443,11 +445,46 @@ def build_confound_regression_workflow(in_file: os.PathLike=None, out_file: os.P
         input_node.inputs.out_file = out_file
     input_node.inputs.design_file = confound_file
 
-    regressor_node = pe.Node(GLM(), name="regressor")
+    regressor_node = pe.Node(GLM(), name="fsl_glm")
+
+    workflow.connect(input_node, "in_file", regressor_node, "in_file")
+    workflow.connect(input_node, "out_file", regressor_node, "out_res_name")
+    workflow.connect(input_node, "design_file", regressor_node, "design")
+    workflow.connect(regressor_node, "out_res", output_node, "out_file")
+
+    if mask_file:
+        input_node.inputs.mask_file = mask_file
+        workflow.connect(input_node, "mask_file", regressor_node, "mask")
+
+    return workflow
+
+def build_confound_regression_afni_3dTproject(in_file: os.PathLike=None, out_file: os.PathLike=None, confound_file: os.PathLike=None, mask_file: os.PathLike=None,
+    base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None):
+
+    # Referenc command
+    # 3dTproject -input {in_file} -prefix {out_file} -ort {to_regress} -polort 0 -mask {brain_mask}
+
+    # Something specific to confound_regression's setup is not letting it work in postproc wf builder
+
+    workflow = pe.Workflow(name="Confound_Regression", base_dir=base_dir)
+    if crashdump_dir is not None:
+        workflow.config['execution']['crashdump_dir'] = crashdump_dir
+
+    input_node = pe.Node(IdentityInterface(fields=['in_file', 'out_file', 'ort', 'mask_file'], mandatory_inputs=False), name="inputnode")
+    output_node = pe.Node(IdentityInterface(fields=['out_file'], mandatory_inputs=True), name="outputnode")
+
+    # Set WF inputs and outputs
+    if in_file:
+        input_node.inputs.in_file = in_file
+    if out_file:
+        input_node.inputs.out_file = out_file
+    input_node.inputs.ort = confound_file
+
+    regressor_node = pe.Node(TProject(polort=0), name="3dTproject")
 
     workflow.connect(input_node, "in_file", regressor_node, "in_file")
     workflow.connect(input_node, "out_file", regressor_node, "out_file")
-    workflow.connect(input_node, "design_file", regressor_node, "design")
+    workflow.connect(input_node, "ort", regressor_node, "ort")
     workflow.connect(regressor_node, "out_file", output_node, "out_file")
 
     if mask_file:
@@ -455,6 +492,7 @@ def build_confound_regression_workflow(in_file: os.PathLike=None, out_file: os.P
         workflow.connect(input_node, "mask_file", regressor_node, "mask")
 
     return workflow
+
 
 def build_aroma_workflow(mixing_file: os.PathLike, noise_file: os.PathLike, in_file: os.PathLike=None, out_file: os.PathLike=None, mask_file: os.PathLike=None, 
     base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None):
