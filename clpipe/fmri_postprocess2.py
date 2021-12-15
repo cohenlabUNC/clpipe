@@ -58,9 +58,20 @@ def postprocess_subject(subject_id, fmriprep_dir, output_dir, config_file, log_d
     click.echo(f"Processing subject: {subject_id}")
     
     try:
-        job = PostProcessSubjectJob(subject_id, fmriprep_dir, output_dir, config_file, log_dir=log_dir)
+        # Get postprocessing configuration from general config
+        if not config_file:
+            raise ValueError("No config file provided")
+        
+        LOG.info(f"Ingesting configuration: {self.config_file}")
+        configParser = ClpipeConfigParser()
+        configParser.config_updater(self.config_file)
+        postprocessing_config = configParser.config["PostProcessingOptions2"]
+
+        job = PostProcessSubjectJob(subject_id, fmriprep_dir, output_dir, postprocessing_config, log_dir=log_dir)
         job.run()
     except SubjectNotFoundError:
+        sys.exit()
+    except ValueError:
         sys.exit()
     except FileNotFoundError:
         sys.exit()
@@ -71,12 +82,17 @@ def postprocess_subject(subject_id, fmriprep_dir, output_dir, config_file, log_d
 def postprocess_fmriprep_dir(subjects=None, config_file=None, fmriprep_dir=None, output_dir=None, 
     batch=False, submit=False, log_dir=None, debug=False):
 
-    # Handle configuration
-    if config_file:
-        configParser = ClpipeConfigParser()
-        configParser.config_updater(config_file)
-        config = configParser.config
-        config_file = Path(config_file)
+    # Get postprocessing configuration from general config
+    try:
+        if not config_file:
+            raise ValueError("No config file provided")
+
+            configParser = ClpipeConfigParser()
+            configParser.config_updater(config_file)
+            config = configParser.config
+            config_file = Path(config_file)
+    except ValueError:
+        sys.exit()
 
     if fmriprep_dir:
         fmriprep_dir = Path(fmriprep_dir)
@@ -147,24 +163,21 @@ def _get_bids_dir(fmriprep_dir, validate=False, database_path=None, index_metada
 
 class PostProcessSubjectJob():
     def __init__(self, subject_id: str, fmriprep_dir: os.PathLike, out_dir: os.PathLike, 
-        config_file: os.PathLike, log_dir: os.PathLike=None):
+        postprocessing_config: dict, log_dir: os.PathLike=None):
         self.subject_id=subject_id
         self.log_dir=log_dir
         self.fmriprep_dir=fmriprep_dir
         self.out_dir = out_dir
-        self.config_file = config_file
+        self.postprocessing_config = postprocessing_config
+        self.confounds = None
+        self.mixing_file = None
+        self.noise_file = None
+
 
         self.setup_logger()
 
     def __str__(self):
         return f"Postprocessing Job: sub-{self.subject_id}"
-
-    def load_config(self):
-        # Get postprocessing configuration from general config
-        self.logger.info(f"Ingesting configuration: {self.config_file}")
-        configParser = ClpipeConfigParser()
-        configParser.config_updater(self.config_file)
-        self.postprocessing_config = configParser.config["PostProcessingOptions2"]
 
     def load_fmriprep_dir(self):
         # Open the fmriprep dir and validate that it contains the subject
@@ -207,7 +220,7 @@ class PostProcessSubjectJob():
         self.logger.info("Searching for confounds file")
         try:
             self.confounds = self.bids.get(
-                subject=self.subject_id, suffix="timeseries", extension=".tsv"
+                subject=self.subject_id, suffix="timeseries", return_type="filename", extension=".tsv"
             )[0]
             self.logger.info(f"Confounds file found: {self.confounds}")
         except IndexError:
@@ -219,13 +232,38 @@ class PostProcessSubjectJob():
         self.logger.info("Searching for mask file")
         try:
             self.mask_image = self.bids.get(
-                subject=self.subject_id, suffix="mask", extension=".nii.gz"
+                subject=self.subject_id, suffix="mask", extension=".nii.gz", return_type="filename"
             )[0]
             self.logger.info(f"Mask file found: {self.mask_image}")
             #TODO: Throw multiple masks found exception?
         except IndexError:
             self.logger.info(f"Mask image for subject {self.subject_id} not found.")
             self.mask_image = None
+
+    def get_aroma_files(self):
+        # Find the subject's aroma files
+        if "ApplyAROMA" not in self.postprocessing_config["ProcessingSteps"]: return
+
+        self.logger.info("Searching for MELODIC mixing file")
+        try:
+            self.mixing_file = self.bids.get(
+                subject=self.subject_id, suffix="mixing", extension=".tsv", return_type="filename" 
+            )[0]
+            self.logger.info(f"MELODIC mixing file found: {self.mixing_file}")
+        except IndexError:
+            self.logger.info(f"MELODIC mixing file for subject {self.subject_id} not found.")
+            self.confounds = None
+
+        self.logger.info("Searching for AROMA noise ICs file")
+        try:
+            self.noise_file = self.bids.get(
+                subject=self.subject_id, suffix="AROMAnoiseICs", extension=".csv", return_type="filename"
+            )[0]
+            self.logger.info(f"AROMA noise ICs file found: {self.noise_file}")
+        except IndexError:
+            self.logger.info(f"AROMA noise ICs file for subject {self.subject_id} not found.")
+            self.confounds = None
+
 
     def get_images_to_process(self):
         self.logger.info("Searching for images to process")
@@ -274,6 +312,7 @@ class PostProcessSubjectJob():
         confounds_wf = build_confound_postprocessing_workflow(self.postprocessing_config, confound_file = Path(self.confounds),
             out_file=self.confound_out_file, tr=self.postprocessing_config["ImageTR"],
             name=f"Sub_{self.subject_id}_Confound_Postprocessing_Pipeline",
+            mixing_file=self.mixing_file, noise_file=self.noise_file,
             base_dir=self.working_dir, crashdump_dir=self.log_dir)
         self.logger.info("Postprocessing confounds")
         confounds_wf.run()
@@ -301,7 +340,8 @@ class PostProcessSubjectJob():
             #TODO: replace config TR with image TR
             wf = build_postprocessing_workflow(self.postprocessing_config, in_file=in_file, out_file=out_file,
                 name=f"Sub_{self.subject_id}_Postprocessing_Pipeline",
-                mask_file=self.mask_image, confound_file = Path(self.confounds),
+                mask_file=self.mask_image, confound_file = self.confounds,
+                mixing_file=self.mixing_file, noise_file=self.noise_file,
                 tr=self.postprocessing_config["ImageTR"], 
                 base_dir=self.working_dir, crashdump_dir=self.log_dir)
 
@@ -318,10 +358,10 @@ class PostProcessSubjectJob():
     def run(self):
         self.logger.info(f"Running postprocessing for sub-{self.subject_id}")
 
-        self.load_config()
         self.load_fmriprep_dir()
         self.setup_directories()
         self.setup_file_logger()
+        self.get_aroma_files()
         self.process_confounds()
         self.process_images()
 
