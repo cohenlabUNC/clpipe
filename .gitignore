@@ -62,7 +62,6 @@ TestFiles/
 tests/artifacts
 
 # vscode
-.vscode
 *.code-workspace
 
 # pytest
