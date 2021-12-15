@@ -168,22 +168,24 @@ def _tsv_select_columns(tsv_file, column_names):
 
     # Build the output path
     tsv_file = Path(tsv_file).stem
-    tsv_subset_file = Path(tsv_file + "_subset.nii")
+    tsv_subset_file = Path(tsv_file + "_subset.tsv")
 
-    df.to_csv(tsv_subset_file, sep="\t")
+    df.to_csv(tsv_subset_file, sep="\t", index=False)
 
     return str(tsv_subset_file.absolute())
 
 
 def _tsv_to_nii(tsv_file):
     # Imports must be in function for running as node
+    import pandas as pd
     import numpy as np
     import nibabel as nib
     from pathlib import Path
 
     # Read in the confound tsv
     # skiprows=1 skips the header row
-    matrix = np.loadtxt(tsv_file, delimiter='\t', skiprows=1)
+    df = pd.read_csv(tsv_file, sep="\t")
+    matrix = df.to_numpy()
 
     # Transpose the matrix so that time is on axis 1
     transposed_matrix = np.swapaxes(matrix, 0, 1)
