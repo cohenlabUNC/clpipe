@@ -262,7 +262,7 @@ class PostProcessSubjectJob():
 
         self.task_jobs = []
         for task in self.tasks:
-            self.task_jobs.append(PostProcessSubjectTaskJob(self.subject_id, task, self.bids, self.out_dir,
+            self.task_jobs.append(PostProcessSubjectTaskJob(self.subject_id, task, self.bids, self.subject_out_dir,
                 self.postprocessing_config, working_dir = self.working_dir, log_dir = self.log_dir))
 
         for task_job in self.task_jobs:
