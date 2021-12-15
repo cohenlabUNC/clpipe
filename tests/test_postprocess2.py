@@ -150,10 +150,11 @@ def test_postprocess2_wf_1_step(artifact_dir, postprocessing_config, request, sa
 
     assert True
 
+# This test won't work until properly processed confound file provided
 def test_postprocess2_wf_confound_regression_last(artifact_dir, postprocessing_config, request, sample_raw_image, sample_raw_image_mask, 
     sample_confounds_timeseries, plot_img, write_graph, helpers):
 
-    postprocessing_config["ProcessingSteps"] = ["SpatialSmoothing", "ConfoundRegression"]
+    postprocessing_config["ProcessingSteps"] = ["TemporalFiltering", "ConfoundRegression"]
 
     test_path = helpers.create_test_dir(artifact_dir, request.node.name)
     out_path = test_path / "postProcessed.nii.gz"

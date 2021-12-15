@@ -93,7 +93,17 @@ def build_postprocessing_workflow(postprocessing_config: dict, in_file: os.PathL
 
             confound_regression_algorithm = _getConfoundRegressionAlgorithm(algorithm_name)
 
-            current_wf = confound_regression_algorithm(confound_file=confound_file, mask_file=mask_file, base_dir=postproc_wf.base_dir, crashdump_dir=crashdump_dir)
+            column_names = postprocessing_config["ProcessingStepOptions"]["ConfoundRegression"]["Columns"]
+
+            # Build a confounds postprocessing workflow to prep confounds for regression
+            confounds_postproc_wf = build_confound_postprocessing_workflow(postprocessing_config,
+                processing_steps=processing_steps, column_names=column_names,
+                confound_file=confound_file, mixing_file=mixing_file, noise_file=noise_file, tr=tr,
+                base_dir=base_dir, crashdump_dir=crashdump_dir)
+
+            current_wf = confound_regression_algorithm(mask_file=mask_file, base_dir=postproc_wf.base_dir, crashdump_dir=crashdump_dir)
+
+            postproc_wf.connect(confounds_postproc_wf, "outputnode.out_file", current_wf, "inputnode.ort")
 
         # Send input of postproc workflow to first workflow
         if index == 0:
@@ -139,13 +149,15 @@ def build_confound_postprocessing_workflow(postprocessing_config: dict, confound
     tsv_to_nii_node = pe.Node(Function(input_names=["tsv_file"], output_names=["nii_file"], function=_tsv_to_nii), name="tsv_to_nii")
     nii_to_tsv_node = pe.Node(Function(input_names=["nii_file", "tsv_file_name"], output_names=["tsv_file"], function=_nii_to_tsv), name="nii_to_tsv")
 
-    postproc_wf = build_postprocessing_workflow(postprocessing_config, processing_steps=processing_steps, name="Apply_Postprocessing", 
+    postproc_wf = build_postprocessing_workflow(postprocessing_config, processing_steps=processing_steps, name="Confounds_Apply_Postprocessing", 
         mixing_file=mixing_file, noise_file=noise_file, tr=tr)
 
     if confound_file:
         input_node.inputs.in_file = confound_file
     if out_file:
         nii_to_tsv_node.inputs.tsv_file_name = out_file
+    else:
+        nii_to_tsv_node.inputs.tsv_file_name = None
 
     input_node.inputs.column_names = column_names
 
@@ -212,12 +224,20 @@ def _nii_to_tsv(nii_file, tsv_file_name):
     # Imports must be in function for running as node
     import numpy as np
     import nibabel as nib
+    from pathlib import Path
 
     nii_img = nib.load(nii_file)
     img_data = nii_img.get_fdata()
 
     # remove the y and z dimension for conversion back to x, time matrix
     squeezed_img_data = np.squeeze(img_data, (1, 2))
+
+    if not tsv_file_name:
+        # Build the output path
+        nii_file = Path(nii_file)
+        path_stem = nii_file.stem
+        tsv_file_name = Path(path_stem + ".tsv")
+        tsv_file_name = str(tsv_file_name.absolute())
 
     np.savetxt(tsv_file_name, squeezed_img_data)
     return tsv_file_name
