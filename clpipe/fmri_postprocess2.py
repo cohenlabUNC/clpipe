@@ -19,9 +19,14 @@ bids_config.set_option('extension_initial_dot', True)
 # logging.basicConfig(level=logging.INFO)
 LOG = logging.getLogger(__name__)
 
-class NoSubjectsFoundError(ValueError):
+class NoSubjectTaskFoundError(ValueError):
     pass
 
+class NoSubjectTasksFoundError(ValueError):
+    pass
+
+class NoSubjectsFoundError(ValueError):
+    pass
 
 class SubjectNotFoundError(ValueError):
     pass
@@ -169,22 +174,17 @@ def _get_bids_dir(fmriprep_dir, validate=False, database_path=None, index_metada
         raise fne
 
 class PostProcessSubjectJob():
+    
     def __init__(self, subject_id: str, fmriprep_dir: os.PathLike, out_dir: os.PathLike, 
         postprocessing_config: dict, log_dir: os.PathLike=None):
-        self.subject_id=subject_id
+        
+        self.subject_id = subject_id
+        self.fmriprep_dir = fmriprep_dir
         self.log_dir=Path(log_dir)
-        self.fmriprep_dir=Path(fmriprep_dir)
         self.out_dir = Path(out_dir)
         self.postprocessing_config = postprocessing_config
-        self.confounds = None
-        self.mixing_file = None
-        self.noise_file = None
-
 
         self.setup_logger()
-
-    def __str__(self):
-        return f"Postprocessing Job: sub-{self.subject_id}"
 
     def load_fmriprep_dir(self):
         # Open the fmriprep dir and validate that it contains the subject
@@ -221,64 +221,17 @@ class PostProcessSubjectJob():
             self.logger.info(f"Creating subject log directory: {self.log_dir}")
             self.log_dir.mkdir(exist_ok=True)
 
-    def get_confounds(self):
-        # Find the subject's confounds file
+    def setup_file_logger(self):
+        # Create log handler
+        f_handler = logging.FileHandler(self.log_dir / f'sub-{self.subject_id}.log')
+        f_handler.setLevel(logging.DEBUG)
         
-        self.logger.info("Searching for confounds file")
-        try:
-            self.confounds = self.bids.get(
-                subject=self.subject_id, suffix="timeseries", return_type="filename", extension=".tsv"
-            )[0]
-            self.logger.info(f"Confounds file found: {self.confounds}")
-        except IndexError:
-            self.logger.info(f"Confounds file for subject {self.subject_id} not found.")
-            self.confounds = None
+        # Create log format
+        f_format = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        f_handler.setFormatter(f_format)
 
-    def get_mask(self):
-        # Find the subject's mask file
-        self.logger.info("Searching for mask file")
-        try:
-            self.mask_image = self.bids.get(
-                subject=self.subject_id, suffix="mask", extension=".nii.gz", datatype="func", return_type="filename"
-            )[0]
-            self.logger.info(f"Mask file found: {self.mask_image}")
-            #TODO: Throw multiple masks found exception?
-        except IndexError:
-            self.logger.info(f"Mask image for subject {self.subject_id} not found.")
-            self.mask_image = None
-
-    def get_aroma_files(self):
-        # Find the subject's aroma files
-        if "ApplyAROMA" not in self.postprocessing_config["ProcessingSteps"]: return
-
-        self.logger.info("Searching for MELODIC mixing file")
-        try:
-            self.mixing_file = self.bids.get(
-                subject=self.subject_id, suffix="mixing", extension=".tsv", return_type="filename" 
-            )[0]
-            self.logger.info(f"MELODIC mixing file found: {self.mixing_file}")
-        except IndexError:
-            self.logger.info(f"MELODIC mixing file for subject {self.subject_id} not found.")
-            self.confounds = None
-
-        self.logger.info("Searching for AROMA noise ICs file")
-        try:
-            self.noise_file = self.bids.get(
-                subject=self.subject_id, suffix="AROMAnoiseICs", extension=".csv", return_type="filename"
-            )[0]
-            self.logger.info(f"AROMA noise ICs file found: {self.noise_file}")
-        except IndexError:
-            self.logger.info(f"AROMA noise ICs file for subject {self.subject_id} not found.")
-            self.confounds = None
-
-
-    def get_images_to_process(self):
-        self.logger.info("Searching for images to process")
-        # Find the subject's images to run post_proc on
-        self.images_to_process = self.bids.get(
-            subject=self.subject_id, return_type="filename", 
-            extension="nii.gz", datatype="func", suffix="bold")
-        self.logger.info(f"Found {len(self.images_to_process)} images to process")
+        # Add handler to the logger
+        self.logger.addHandler(f_handler)
 
     def setup_logger(self):
         self.logger = logging.getLogger(f"{self.__class__.__name__}.sub-{self.subject_id}")
@@ -295,26 +248,147 @@ class PostProcessSubjectJob():
         # Add handler to logger
         self.logger.addHandler(c_handler)
 
-    def setup_file_logger(self):
-        # Create log handler
-        f_handler = logging.FileHandler(self.log_dir / f'sub-{self.subject_id}.log')
-        f_handler.setLevel(logging.DEBUG)
-        
-        # Create log format
-        f_format = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-        f_handler.setFormatter(f_format)
+    def get_tasks(self):
+        self.logger.info("Searching for tasks")
+        self.tasks = self.bids.get_tasks()
 
-        # Add handler to the logger
-        self.logger.addHandler(f_handler)
+        if len(self.tasks) == 0:
+            raise NoSubjectTasksFoundError(f"No tasks found for sub-{self.subject_id} task-{self.task} not found.")
+
+        self.logger.info(f"Found tasks: {','.join(self.tasks)}")
+
+    def build_task_jobs(self):
+        self.logger.info(f"Building task jobs")
+
+        self.task_jobs = []
+        for task in self.tasks:
+            self.task_jobs.append(PostProcessSubjectTaskJob(self.subject_id, task, self.bids, self.out_dir, self.postprocessing_config, self.log_dir))
+
+        self.logger.info(f"Built {len(self.task_jobs)} task jobs")
+            
+    def run(self):
+        self.setup_directories()
+        self.setup_file_logger()
+        self.load_fmriprep_dir()
+        self.get_tasks()
+        self.build_task_jobs()
+
+        self.logger.info(f"Running {len(self.task_jobs)} task jobs")
+        for task_job in self.task_jobs:
+            task_job.run()
+        self.logger.info(f"Task jobs completed")
+
+class PostProcessSubjectTaskJob():
+    def __init__(self, subject_id: str, task: str, bids: BIDSLayout, out_dir: os.PathLike, 
+        postprocessing_config: dict, log_dir: os.PathLike=None):
+        self.subject_id = subject_id
+        self.task = task
+        self.bids = bids
+        self.log_dir=Path(log_dir)
+        self.out_dir = Path(out_dir)
+        self.postprocessing_config = postprocessing_config
+        self.confounds = None
+        self.mixing_file = None
+        self.noise_file = None
+
+        self.setup_logger()
+
+    def __str__(self):
+        return f"Postprocessing Job: sub-{self.subject_id} task-{self.task}"
+
+    def get_confounds(self):
+        # Find the subject's confounds file
+        
+        self.logger.info("Searching for confounds file")
+        try:
+            self.confounds = self.bids.get(
+                subject=self.subject_id, task=self.task, suffix="timeseries", return_type="filename", extension=".tsv"
+            )[0]
+            self.logger.info(f"Task file found: {self.confounds}")
+        except IndexError:
+            self.logger.info(f"Task file for sub-{self.subject_id} task-{self.task} not found.")
+            self.confounds = None
+
+    def get_mask(self):
+        # Find the subject's mask file
+        self.logger.info("Searching for mask file")
+        try:
+            self.mask_image = self.bids.get(
+                subject=self.subject_id, task=self.task, suffix="mask", extension=".nii.gz", datatype="func", return_type="filename"
+            )[0]
+            self.logger.info(f"Mask file found: {self.mask_image}")
+            #TODO: Throw multiple masks found exception?
+        except IndexError:
+            self.logger.info(f"Mask image for subject {self.subject_id} task-{self.task} not found.")
+            self.mask_image = None
+
+    def get_aroma_files(self):
+        # Find the subject's aroma files
+        if "ApplyAROMA" not in self.postprocessing_config["ProcessingSteps"]: return
+
+        self.logger.info("Searching for MELODIC mixing file")
+        try:
+            self.mixing_file = self.bids.get(
+                subject=self.subject_id, task=self.task, suffix="mixing", extension=".tsv", return_type="filename" 
+            )[0]
+            self.logger.info(f"MELODIC mixing file found: {self.mixing_file}")
+        except IndexError:
+            self.logger.info(f"MELODIC mixing file for sub-{self.subject_id} task-{self.task} not found.")
+            self.mixing_file = None
+
+        self.logger.info("Searching for AROMA noise ICs file")
+        try:
+            self.noise_file = self.bids.get(
+                subject=self.subject_id, task=self.task, suffix="AROMAnoiseICs", extension=".csv", return_type="filename"
+            )[0]
+            self.logger.info(f"AROMA noise ICs file found: {self.noise_file}")
+        except IndexError:
+            self.logger.info(f"AROMA noise ICs file for sub-{self.subject_id} task-{self.task} not found.")
+            self.noise_file = None
+
+
+    def get_image_to_process(self):
+        self.logger.info(f"Searching for image to process for task: {self.task}")
+        # Find the subject's images to run post_proc on
+        try:
+            self.image_to_process = self.bids.get(
+                subject=self.subject_id, task=self.task, return_type="filename", 
+                extension="nii.gz", datatype="func", suffix="bold")[0]
+
+            self.logger.info(f"Found BOLD image: {self.image_to_process}")
+        except IndexError:
+            raise NoSubjectTaskFoundError(f"BOLD image for subject {self.subject_id} task-{self.task} not found.")
+
+    def setup_logger(self):
+        self.logger = logging.getLogger(f"{self.__class__.__name__}.sub-{self.subject_id}")
+        self.logger.setLevel(logging.INFO)
+        
+        # Create log handler
+        c_handler = logging.StreamHandler()
+        c_handler.setLevel(logging.INFO)
+
+        # Create log formatter to add to handler
+        c_format = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        c_handler.setFormatter(c_format)
+        
+        # Add handler to logger
+        self.logger.addHandler(c_handler)
 
     def process_confounds(self):
         if not self.postprocessing_config["ConfoundOptions"]["Include"]: return
 
         # TODO: Run this async or batch
-        self.logger.info("Preparing confounds")
+        self.logger.info(f"Processing confounds for sub-{self.subject_id} task-{self.task}")
         self.get_confounds()
-        self.confound_out_file = self.subject_out_dir / self.postprocessing_config["ConfoundOptions"]["ProcessedConfoundsFileName"]
+        confound_suffix = self.postprocessing_config["ConfoundOptions"]["ProcessedConfoundsSuffix"]
+
+        # Calculate the output file name
+        base, image_name, exstension = split_filename(self.confounds)
+        out_stem = image_name + '_' + confound_suffix + '.tsv'
+        self.confound_out_file = os.path.abspath(os.path.join(self.subject_out_dir, out_stem))
         
+        self.logger.debug(f"Postprocessed confound out file: {self.confound_out_file}")
+    
         #TODO: replace config TR with image TR
         confounds_wf = build_confound_postprocessing_workflow(self.postprocessing_config, confound_file = self.confounds,
             out_file=self.confound_out_file, tr=self.postprocessing_config["ImageTR"],
@@ -326,51 +400,47 @@ class PostProcessSubjectJob():
         
         # Draw the workflow's process graph if requested in config
         if self.postprocessing_config["WriteProcessGraph"]:
-            graph_image_path = self.subject_out_dir / "confounds_process_graph.dot"
+            graph_image_path = self.out_dir / "confounds_process_graph.dot"
             self.logger.info(f"Drawing confounds workflow graph: {graph_image_path}")
             confounds_wf.write_graph(dotfilename = graph_image_path, graph2use="colored")
 
-    def process_images(self):
+    def process_image(self):
         # Get images for processing
         self.get_mask()
-        self.get_images_to_process()
+        self.get_image_to_process()
 
-        # Process the subject's images
-        # TODO: Run these async or batch
-        for in_file in self.images_to_process:
-            # Calculate the output file name for a given image to process
-            base, image_name, exstension = split_filename(in_file)
-            out_stem = image_name + '_postproccessed.nii.gz'
-            out_file = os.path.abspath(os.path.join(self.subject_out_dir, out_stem))
+        # Process the subject's image
 
-            self.logger.info(f"Building postprocessing workflow for image: {in_file}")
-            #TODO: replace config TR with image TR
-            wf = build_postprocessing_workflow(self.postprocessing_config, in_file=in_file, out_file=out_file,
-                name=f"Sub_{self.subject_id}_Postprocessing_Pipeline",
-                mask_file=self.mask_image, confound_file = self.confounds,
-                mixing_file=self.mixing_file, noise_file=self.noise_file,
-                tr=self.postprocessing_config["ImageTR"], 
-                base_dir=self.working_dir, crashdump_dir=self.log_dir)
+        # Calculate the output file name
+        base, image_name, exstension = split_filename(self.image_to_process)
+        out_stem = image_name + '_postproccessed.nii.gz'
+        out_file = os.path.abspath(os.path.join(self.subject_out_dir, out_stem))
 
-            self.logger.info(f"Running postprocessing workflow for image: {in_file}")
-            wf.run()
-            self.logger.info(f"Postprocessing workflow complete for image: {in_file}")
+        self.logger.info(f"Building postprocessing workflow for image: {self.image_to_process}")
+        #TODO: replace config TR with image TR
+        wf = build_postprocessing_workflow(self.postprocessing_config, in_file=self.image_to_process, out_file=out_file,
+            name=f"Sub_{self.subject_id}_Task_{self.task}_Postprocessing_Pipeline",
+            mask_file=self.mask_image, confound_file = self.confounds,
+            mixing_file=self.mixing_file, noise_file=self.noise_file,
+            tr=self.postprocessing_config["ImageTR"], 
+            base_dir=self.working_dir, crashdump_dir=self.log_dir)
 
-            # Draw the workflow's process graph if requested in config
-            if self.postprocessing_config["WriteProcessGraph"]:
-                graph_image_path = self.subject_out_dir / "process_graph.dot"
-                self.logger.info(f"Drawing workflow graph: {graph_image_path}")
-                wf.write_graph(dotfilename = graph_image_path, graph2use="colored")
+        self.logger.info(f"Running postprocessing workflow for image: {self.image_to_process}")
+        wf.run()
+        self.logger.info(f"Postprocessing workflow complete for image: {self.image_to_process}")
+
+        # Draw the workflow's process graph if requested in config
+        if self.postprocessing_config["WriteProcessGraph"]:
+            graph_image_path = self.out_dir / "process_graph.dot"
+            self.logger.info(f"Drawing workflow graph: {graph_image_path}")
+            wf.write_graph(dotfilename = graph_image_path, graph2use="colored")
 
     def run(self):
-        self.logger.info(f"Running postprocessing for sub-{self.subject_id}")
+        self.logger.info(f"Running postprocessing for sub-{self.subject_id} task-{self.task}")
 
-        self.load_fmriprep_dir()
-        self.setup_directories()
-        self.setup_file_logger()
         self.get_aroma_files()
         self.process_confounds()
-        self.process_images()
+        self.process_image()
 
 
 def _get_subjects(fmriprep_dir: BIDSLayout, subjects):   
