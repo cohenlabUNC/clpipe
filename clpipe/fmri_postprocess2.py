@@ -234,7 +234,7 @@ class PostProcessSubjectJob():
         self.logger.addHandler(f_handler)
 
     def setup_logger(self):
-        self.logger = logging.getLogger(f"{self.__class__.__name__}.sub-{self.subject_id}.task-{self.task}")
+        self.logger = logging.getLogger(f"{self.__class__.__name__}.sub-{self.subject_id}")
         self.logger.setLevel(logging.INFO)
         
         # Create log handler
@@ -365,7 +365,7 @@ class PostProcessSubjectTaskJob():
             raise NoSubjectTaskFoundError(f"BOLD image for subject {self.subject_id} task-{self.task} not found.")
 
     def setup_logger(self):
-        self.logger = logging.getLogger(f"{self.__class__.__name__}.sub-{self.subject_id}")
+        self.logger = logging.getLogger(f"{self.__class__.__name__}.sub-{self.subject_id}.task-{self.task}")
         self.logger.setLevel(logging.INFO)
         
         # Create log handler
