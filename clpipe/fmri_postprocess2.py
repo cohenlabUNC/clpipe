@@ -33,7 +33,7 @@ class SubjectNotFoundError(ValueError):
 @click.option('-fmriprep_dir', type=click.Path(exists=True, dir_okay=True, file_okay=False), help="""Which fmriprep directory to process. 
     If a configuration file is provided with a BIDS directory, this argument is not necessary. 
     Note, must point to the ``fmriprep`` directory, not its parent directory.""")
-@click.option('-output_dir', type=click.Path(dir_okay=True, file_okay=False), default=None, required=True, help = """Where to put the postprocessed data. 
+@click.option('-output_dir', type=click.Path(dir_okay=True, file_okay=False), default=None, required=False, help = """Where to put the postprocessed data. 
     If a configuration file is provided with a output directory, this argument is not necessary.""")
 @click.option('-log_dir', type=click.Path(exists=True, dir_okay=True, file_okay=False), default=None, required = False, help = 'Path to the logging directory.')
 @click.option('-batch/-no-batch', is_flag = True, default=True, help = 'Flag to create batch jobs without prompt.')
@@ -45,9 +45,9 @@ def fmri_postprocess2_cli(subjects, config_file, fmriprep_dir, output_dir, batch
 
 
 @click.command()
-@click.argument('subject_id', type=click.Path(dir_okay=False, file_okay=True))
-@click.argument('fmriprep_dir', type=click.Path(dir_okay=False, file_okay=True))
-@click.argument('output_dir', type=click.Path(dir_okay=False, file_okay=True))
+@click.argument('subject_id')
+@click.argument('fmriprep_dir', type=click.Path(dir_okay=True, file_okay=False))
+@click.argument('output_dir', type=click.Path(dir_okay=True, file_okay=False))
 @click.argument('config_file', type=click.Path(dir_okay=False, file_okay=True))
 @click.argument('log_dir', type=click.Path(dir_okay=True, file_okay=False))
 def postprocess_subject_cli(subject_id, fmriprep_dir, output_dir, config_file, log_dir):
@@ -62,9 +62,9 @@ def postprocess_subject(subject_id, fmriprep_dir, output_dir, config_file, log_d
         if not config_file:
             raise ValueError("No config file provided")
         
-        LOG.info(f"Ingesting configuration: {self.config_file}")
+        LOG.info(f"Ingesting configuration: {config_file}")
         configParser = ClpipeConfigParser()
-        configParser.config_updater(self.config_file)
+        configParser.config_updater(config_file)
         postprocessing_config = configParser.config["PostProcessingOptions2"]
 
         job = PostProcessSubjectJob(subject_id, fmriprep_dir, output_dir, postprocessing_config, log_dir=log_dir)
@@ -82,11 +82,13 @@ def postprocess_subject(subject_id, fmriprep_dir, output_dir, config_file, log_d
 def postprocess_fmriprep_dir(subjects=None, config_file=None, fmriprep_dir=None, output_dir=None, 
     batch=False, submit=False, log_dir=None, debug=False):
 
+    config=None
+
     # Get postprocessing configuration from general config
     try:
         if not config_file:
             raise ValueError("No config file provided")
-
+        else:
             configParser = ClpipeConfigParser()
             configParser.config_updater(config_file)
             config = configParser.config
@@ -109,13 +111,18 @@ def postprocess_fmriprep_dir(subjects=None, config_file=None, fmriprep_dir=None,
     else:
         log_dir = Path(config["ProjectDirectory"]) / "logs" / "postproc2_logs"
 
+    slurm_log_dir = log_dir / "slurm_out"
+    if not slurm_log_dir.exists():
+            LOG.info(f"Creating subject working directory: {slurm_log_dir}")
+            slurm_log_dir.mkdir(exist_ok=True)
+
     # Setup Logging
     if debug: 
         LOG.setLevel(logging.DEBUG)
     else:
         sys.excepthook = exception_handler
-    LOG.debug(f"Starting postprocessing job targeting: {str(fmriprep_dir)}")
-    click.echo(f"Starting postprocessing job targeting: {str(fmriprep_dir)}")
+    LOG.debug(f"Preparing postprocessing job targeting: {str(fmriprep_dir)}")
+    click.echo(f"Preparing postprocessing job targeting: {str(fmriprep_dir)}")
 
     # Create jobs based on subjects given for processing
     # TODO: PYBIDS_DB_PATH should have config arg
@@ -128,7 +135,7 @@ def postprocess_fmriprep_dir(subjects=None, config_file=None, fmriprep_dir=None,
 
     # Setup batch jobs if indicated
     if batch:
-        batch_manager = _setup_batch_manager(config)
+        batch_manager = _setup_batch_manager(config, slurm_log_dir)
         jobs_to_run.set_batch_manager(batch_manager)
         
         click.echo(jobs_to_run.batch_manager.print_jobs())
@@ -144,8 +151,8 @@ def postprocess_fmriprep_dir(subjects=None, config_file=None, fmriprep_dir=None,
     sys.exit()
 
 
-def _setup_batch_manager(config):
-    batch_manager = BatchManager(config['BatchConfig'], config['LogDirectory'])
+def _setup_batch_manager(config, log_dir):
+    batch_manager = BatchManager(config['BatchConfig'], log_dir)
     batch_manager.update_mem_usage(config['PostProcessingOptions2']['BatchOptions']['MemoryUsage'])
     batch_manager.update_time(config['PostProcessingOptions2']['BatchOptions']['TimeUsage'])
     batch_manager.update_nthreads(config['PostProcessingOptions2']['BatchOptions']['NThreads'])
@@ -165,9 +172,9 @@ class PostProcessSubjectJob():
     def __init__(self, subject_id: str, fmriprep_dir: os.PathLike, out_dir: os.PathLike, 
         postprocessing_config: dict, log_dir: os.PathLike=None):
         self.subject_id=subject_id
-        self.log_dir=log_dir
-        self.fmriprep_dir=fmriprep_dir
-        self.out_dir = out_dir
+        self.log_dir=Path(log_dir)
+        self.fmriprep_dir=Path(fmriprep_dir)
+        self.out_dir = Path(out_dir)
         self.postprocessing_config = postprocessing_config
         self.confounds = None
         self.mixing_file = None
@@ -232,7 +239,7 @@ class PostProcessSubjectJob():
         self.logger.info("Searching for mask file")
         try:
             self.mask_image = self.bids.get(
-                subject=self.subject_id, suffix="mask", extension=".nii.gz", return_type="filename"
+                subject=self.subject_id, suffix="mask", extension=".nii.gz", datatype="func", return_type="filename"
             )[0]
             self.logger.info(f"Mask file found: {self.mask_image}")
             #TODO: Throw multiple masks found exception?
@@ -427,8 +434,8 @@ class PostProcessSubjectJobs():
             sub_string_temp = submission_string.format(subject_id=job.subject_id,
                                                         fmriprep_dir=self.fmriprep_dir,
                                                         config_file=self.config_file,
-                                                        output_dir=job.subject_out_dir,
-                                                        log_dir=job.log_dir)
+                                                        output_dir=self.output_dir,
+                                                        log_dir=self.log_dir)
             subject_id = Path(job.subject_id).stem
 
             self.batch_manager.addjob(Job("PostProcessing_" + subject_id, sub_string_temp))
