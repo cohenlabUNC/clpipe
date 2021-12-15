@@ -262,7 +262,8 @@ class PostProcessSubjectJob():
 
         self.task_jobs = []
         for task in self.tasks:
-            self.task_jobs.append(PostProcessSubjectTaskJob(self.subject_id, task, self.bids, self.out_dir, self.postprocessing_config, self.log_dir))
+            self.task_jobs.append(PostProcessSubjectTaskJob(self.subject_id, task, self.bids, self.out_dir,
+                self.postprocessing_config, working_dir = self.working_dir, log_dir = self.log_dir))
 
         self.logger.info(f"Built {len(self.task_jobs)} task jobs")
             
@@ -280,11 +281,12 @@ class PostProcessSubjectJob():
 
 class PostProcessSubjectTaskJob():
     def __init__(self, subject_id: str, task: str, bids: BIDSLayout, out_dir: os.PathLike, 
-        postprocessing_config: dict, log_dir: os.PathLike=None):
+        postprocessing_config: dict, working_dir: os.PathLike=None, log_dir: os.PathLike=None):
         self.subject_id = subject_id
         self.task = task
         self.bids = bids
-        self.log_dir=Path(log_dir)
+        self.working_dir = Path(working_dir)
+        self.log_dir = Path(log_dir)
         self.out_dir = Path(out_dir)
         self.postprocessing_config = postprocessing_config
         self.confounds = None
@@ -385,7 +387,7 @@ class PostProcessSubjectTaskJob():
         # Calculate the output file name
         base, image_name, exstension = split_filename(self.confounds)
         out_stem = image_name + '_' + confound_suffix + '.tsv'
-        self.confound_out_file = os.path.abspath(os.path.join(self.subject_out_dir, out_stem))
+        self.confound_out_file = os.path.abspath(os.path.join(self.out_dir, out_stem))
         
         self.logger.debug(f"Postprocessed confound out file: {self.confound_out_file}")
     
@@ -414,7 +416,7 @@ class PostProcessSubjectTaskJob():
         # Calculate the output file name
         base, image_name, exstension = split_filename(self.image_to_process)
         out_stem = image_name + '_postproccessed.nii.gz'
-        out_file = os.path.abspath(os.path.join(self.subject_out_dir, out_stem))
+        out_file = os.path.abspath(os.path.join(self.out_dir, out_stem))
 
         self.logger.info(f"Building postprocessing workflow for image: {self.image_to_process}")
         #TODO: replace config TR with image TR
