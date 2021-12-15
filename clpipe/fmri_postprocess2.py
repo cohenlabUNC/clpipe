@@ -63,16 +63,7 @@ def postprocess_subject(subject_id, fmriprep_dir, output_dir, config_file, log_d
     click.echo(f"Processing subject: {subject_id}")
     
     try:
-        # Get postprocessing configuration from general config
-        if not config_file:
-            raise ValueError("No config file provided")
-        
-        LOG.info(f"Ingesting configuration: {config_file}")
-        configParser = ClpipeConfigParser()
-        configParser.config_updater(config_file)
-        postprocessing_config = configParser.config["PostProcessingOptions2"]
-
-        job = PostProcessSubjectJob(subject_id, fmriprep_dir, output_dir, postprocessing_config, log_dir=log_dir)
+        job = PostProcessSubjectJob(subject_id, fmriprep_dir, output_dir, config_file, log_dir=log_dir)
         job.run()
     except SubjectNotFoundError:
         sys.exit()
@@ -176,15 +167,24 @@ def _get_bids_dir(fmriprep_dir, validate=False, database_path=None, index_metada
 class PostProcessSubjectJob():
     
     def __init__(self, subject_id: str, fmriprep_dir: os.PathLike, out_dir: os.PathLike, 
-        postprocessing_config: dict, log_dir: os.PathLike=None):
+        config_file: dict, log_dir: os.PathLike=None):
         
         self.subject_id = subject_id
         self.fmriprep_dir = fmriprep_dir
         self.log_dir=Path(log_dir)
         self.out_dir = Path(out_dir)
-        self.postprocessing_config = postprocessing_config
+        self.config_file = Path(config_file)
+        self.postprocessing_config = None
 
         self.setup_logger()
+
+    def setup_config(self):
+        # Get postprocessing configuration from general config
+        
+        LOG.info(f"Ingesting configuration: {self.config_file}")
+        configParser = ClpipeConfigParser()
+        configParser.config_updater(self.config_file)
+        self.postprocessing_config = configParser.config["PostProcessingOptions2"]
 
     def load_fmriprep_dir(self):
         # Open the fmriprep dir and validate that it contains the subject
@@ -250,12 +250,12 @@ class PostProcessSubjectJob():
 
     def get_tasks(self):
         self.logger.info("Searching for tasks")
-        self.tasks = self.bids.get_tasks()
+        self.tasks = self.bids.get_tasks(subject=self.subject_id)
 
         if len(self.tasks) == 0:
             raise NoSubjectTasksFoundError(f"No tasks found for sub-{self.subject_id} task-{self.task} not found.")
 
-        self.logger.info(f"Found tasks: {','.join(self.tasks)}")
+        self.logger.info(f"Found tasks: {', '.join(self.tasks)}")
 
     def build_task_jobs(self):
         self.logger.info(f"Building task jobs")
@@ -265,9 +265,12 @@ class PostProcessSubjectJob():
             self.task_jobs.append(PostProcessSubjectTaskJob(self.subject_id, task, self.bids, self.out_dir,
                 self.postprocessing_config, working_dir = self.working_dir, log_dir = self.log_dir))
 
+        for task_job in self.task_jobs:
+            self.logger.info(f"Job: {task_job}")
         self.logger.info(f"Built {len(self.task_jobs)} task jobs")
             
     def run(self):
+        self.setup_config()
         self.setup_directories()
         self.setup_file_logger()
         self.load_fmriprep_dir()
@@ -321,7 +324,7 @@ class PostProcessSubjectTaskJob():
             self.logger.info(f"Mask file found: {self.mask_image}")
             #TODO: Throw multiple masks found exception?
         except IndexError:
-            self.logger.info(f"Mask image for subject {self.subject_id} task-{self.task} not found.")
+            self.logger.warn(f"Mask image for subject {self.subject_id} task-{self.task} not found.")
             self.mask_image = None
 
     def get_aroma_files(self):
