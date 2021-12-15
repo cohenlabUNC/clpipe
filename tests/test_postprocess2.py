@@ -280,6 +280,22 @@ def test_prepare_confounds(sample_confounds_timeseries, postprocessing_config, a
     
     assert True
 
+def test_prepare_confounds_aroma(sample_confounds_timeseries, postprocessing_config, sample_melodic_mixing, sample_aroma_noise_ics,
+    artifact_dir, helpers, request):
+
+    test_path = helpers.create_test_dir(artifact_dir, request.node.name)
+    out_path = test_path / "new_confounds.tsv"
+
+    postprocessing_config["ProcessingSteps"] = ["ApplyAROMA", "TemporalFiltering", "IntensityNormalization"]
+
+    cf_workflow = build_confound_postprocessing_workflow(postprocessing_config, confound_file=sample_confounds_timeseries,
+        out_file=out_path, mixing_file=sample_melodic_mixing, noise_file=sample_aroma_noise_ics,
+        base_dir=test_path, crashdump_dir=test_path, tr=2)
+
+    cf_workflow.run()
+    
+    assert True
+
 def test_postprocess_subject(clpipe_fmriprep_dir, postprocessing_config, artifact_dir, helpers, request):
     fmriprep_dir = clpipe_fmriprep_dir / "data_fmriprep" / "fmriprep"
     test_dir = helpers.create_test_dir(artifact_dir, request.node.name)
@@ -305,7 +321,7 @@ def test_postprocess_subject_aroma_no_confound_processing(clpipe_fmriprep_dir, p
     subject = PostProcessSubjectJob('1', clpipe_fmriprep_dir, postproc_dir, postprocessing_config, log_dir=log_dir)
     subject.run()
 
-def test_postprocess_subject_aroma(clpipe_fmriprep_dir, postprocessing_config, artifact_dir, helpers, request):
+def test_postprocess_subject_aroma_with_confound_processing(clpipe_fmriprep_dir, postprocessing_config, artifact_dir, helpers, request):
     fmriprep_dir = clpipe_fmriprep_dir / "data_fmriprep" / "fmriprep"
     test_dir = helpers.create_test_dir(artifact_dir, request.node.name)
     postproc_dir = Path(test_dir / "data_postprocessed")

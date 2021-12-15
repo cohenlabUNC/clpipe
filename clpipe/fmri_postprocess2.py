@@ -309,7 +309,7 @@ class PostProcessSubjectJob():
         self.confound_out_file = self.subject_out_dir / self.postprocessing_config["ConfoundOptions"]["ProcessedConfoundsFileName"]
         
         #TODO: replace config TR with image TR
-        confounds_wf = build_confound_postprocessing_workflow(self.postprocessing_config, confound_file = Path(self.confounds),
+        confounds_wf = build_confound_postprocessing_workflow(self.postprocessing_config, confound_file = self.confounds,
             out_file=self.confound_out_file, tr=self.postprocessing_config["ImageTR"],
             name=f"Sub_{self.subject_id}_Confound_Postprocessing_Pipeline",
             mixing_file=self.mixing_file, noise_file=self.noise_file,

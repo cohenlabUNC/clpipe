@@ -132,8 +132,6 @@ def build_confound_postprocessing_workflow(postprocessing_config: dict, confound
     # Select steps that apply to confounds
     processing_steps = set(processing_steps) & CONFOUND_STEPS
 
-    #_tsv_to_nii(confound_file)
-
     input_node = pe.Node(IdentityInterface(fields=['in_file', 'out_file', 'columns', 'mixing_file', 'noise_file', 'mask_file'], mandatory_inputs=False), name="inputnode")
     output_node = pe.Node(IdentityInterface(fields=['out_file'], mandatory_inputs=True), name="outputnode")
 
@@ -187,9 +185,12 @@ def _tsv_to_nii(tsv_file):
     # skiprows=1 skips the header row
     matrix = np.loadtxt(tsv_file, delimiter='\t', skiprows=1)
 
+    # Transpose the matrix so that time is on axis 1
+    transposed_matrix = np.swapaxes(matrix, 0, 1)
+
     # Pad the input matrix with two extra dimensions so that the confounds are on the
     # 1st dimension (x) and time is on the 4th dimension - NIFTI standard
-    padded_tensor = np.expand_dims(matrix, (1, 2))
+    padded_tensor = np.expand_dims(transposed_matrix, (1, 2))
 
     # Build an identity affine
     affine = np.eye(4)
