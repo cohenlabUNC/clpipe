@@ -307,7 +307,20 @@ def test_postprocess_subject(clpipe_fmriprep_dir, postprocessing_config, artifac
     subject = PostProcessSubjectJob('1', clpipe_fmriprep_dir, postproc_dir, postprocessing_config, log_dir=log_dir)
     subject.run()
 
-def test_postprocess_subject_aroma_no_confound_processing(clpipe_fmriprep_dir, postprocessing_config, artifact_dir, helpers, request):
+def test_postprocess_subject_with_confounds(clpipe_fmriprep_dir, postprocessing_config, artifact_dir, helpers, request):
+    fmriprep_dir = clpipe_fmriprep_dir / "data_fmriprep" / "fmriprep"
+    test_dir = helpers.create_test_dir(artifact_dir, request.node.name)
+    postproc_dir = Path(test_dir / "data_postprocessed")
+    postproc_dir.mkdir(exist_ok=True)
+    log_dir = Path(test_dir / "logs" / "postproc_logs")
+    log_dir.mkdir(parents=True, exist_ok=True)
+
+    postprocessing_config["ConfoundOptions"]["Include"] = True
+
+    subject = PostProcessSubjectJob('1', clpipe_fmriprep_dir, postproc_dir, postprocessing_config, log_dir=log_dir)
+    subject.run()
+
+def test_postprocess_subject_aroma(clpipe_fmriprep_dir, postprocessing_config, artifact_dir, helpers, request):
     fmriprep_dir = clpipe_fmriprep_dir / "data_fmriprep" / "fmriprep"
     test_dir = helpers.create_test_dir(artifact_dir, request.node.name)
     postproc_dir = Path(test_dir / "data_postprocessed")
@@ -316,7 +329,6 @@ def test_postprocess_subject_aroma_no_confound_processing(clpipe_fmriprep_dir, p
     log_dir.mkdir(parents=True, exist_ok=True)
 
     postprocessing_config["ProcessingSteps"] = ["ApplyAROMA", "SpatialSmoothing", "IntensityNormalization"]
-    postprocessing_config["ConfoundOptions"]["Include"] = False
 
     subject = PostProcessSubjectJob('1', clpipe_fmriprep_dir, postproc_dir, postprocessing_config, log_dir=log_dir)
     subject.run()
