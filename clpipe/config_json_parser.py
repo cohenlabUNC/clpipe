@@ -86,11 +86,6 @@ class ClpipeConfigParser:
                             output_dir=os.path.join(self.config['ProjectDirectory'], 'data_postproc',
                                                     'postproc_default'),
                             output_suffix='postproc_default.nii.gz')
-        # self.setup_intensity_normalization(os.path.join(self.config['FMRIPrepOptions']['OutputDirectory'], "fmriprep"),
-        #                                     None,
-        #                                     os.path.join(self.config['ProjectDirectory'], 'data_postproc', 'normalized'),
-        #                                     None, None,
-        #                                     os.path.join(self.config['ProjectDirectory'], "logs", "intensity_normalization_logs"))
         processing_streams = self.get_processing_stream_names()
         if processing_streams:
             for stream in processing_streams:
@@ -168,24 +163,6 @@ class ClpipeConfigParser:
         else:
             self.config[target_output]['LogDirectory'] = os.path.join(self.config['ProjectDirectory'], 'logs', log_target)
         os.makedirs(self.config[target_output]['LogDirectory'], exist_ok=True)
-
-    def setup_intensity_normalization(self, target_dir, target_suffix, output_dir, output_suffix, method, log_dir):
-        target_output = 'IntensityNormalizationOptions'
-        
-        if target_dir is not None:
-            self.config[target_output]['TargetDirectory'] = os.path.abspath(target_dir)
-        if output_dir is not None:
-            self.config[target_output]['OutputDirectory'] = os.path.abspath(output_dir)
-            os.makedirs(self.config[target_output]['OutputDirectory'], exist_ok=True)
-        if target_suffix is not None:
-            self.config[target_output]['TargetSuffix'] = target_suffix
-        if output_suffix is not None:
-            self.config[target_output]['OutputSuffix'] = output_suffix
-        if method is not None:
-            self.config[target_output]['Method'] = method
-        if log_dir is not None:
-            self.config[target_output]['LogDirectory'] = os.path.abspath(log_dir)
-            os.makedirs(self.config[target_output]['LogDirectory'], exist_ok=True)
 
     def setup_heudiconv(self, dicom_directory, heuristic_file, output_directory):
         if dicom_directory is not None:
