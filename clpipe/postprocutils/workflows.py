@@ -93,7 +93,17 @@ def build_postprocessing_workflow(postprocessing_config: dict, in_file: os.PathL
 
             confound_regression_algorithm = _getConfoundRegressionAlgorithm(algorithm_name)
 
-            current_wf = confound_regression_algorithm(confound_file=confound_file, mask_file=mask_file, base_dir=postproc_wf.base_dir, crashdump_dir=crashdump_dir)
+            column_names = postprocessing_config["ProcessingStepOptions"]["ConfoundRegression"]["Columns"]
+
+            # Build a confounds postprocessing workflow to prep confounds for regression
+            confounds_postproc_wf = build_confound_postprocessing_workflow(postprocessing_config,
+                processing_steps=processing_steps, column_names=column_names,
+                confound_file=confound_file, mixing_file=mixing_file, noise_file=noise_file, tr=tr,
+                base_dir=base_dir, crashdump_dir=crashdump_dir)
+
+            current_wf = confound_regression_algorithm(mask_file=mask_file, base_dir=postproc_wf.base_dir, crashdump_dir=crashdump_dir)
+
+            postproc_wf.connect(confounds_postproc_wf, "outputnode.out_file", current_wf, "inputnode.ort")
 
         # Send input of postproc workflow to first workflow
         if index == 0:
@@ -132,8 +142,6 @@ def build_confound_postprocessing_workflow(postprocessing_config: dict, confound
     # Select steps that apply to confounds
     processing_steps = set(processing_steps) & CONFOUND_STEPS
 
-    #_tsv_to_nii(confound_file)
-
     input_node = pe.Node(IdentityInterface(fields=['in_file', 'out_file', 'columns', 'mixing_file', 'noise_file', 'mask_file'], mandatory_inputs=False), name="inputnode")
     output_node = pe.Node(IdentityInterface(fields=['out_file'], mandatory_inputs=True), name="outputnode")
 
@@ -141,13 +149,15 @@ def build_confound_postprocessing_workflow(postprocessing_config: dict, confound
     tsv_to_nii_node = pe.Node(Function(input_names=["tsv_file"], output_names=["nii_file"], function=_tsv_to_nii), name="tsv_to_nii")
     nii_to_tsv_node = pe.Node(Function(input_names=["nii_file", "tsv_file_name"], output_names=["tsv_file"], function=_nii_to_tsv), name="nii_to_tsv")
 
-    postproc_wf = build_postprocessing_workflow(postprocessing_config, processing_steps=processing_steps, name="Apply_Postprocessing", 
+    postproc_wf = build_postprocessing_workflow(postprocessing_config, processing_steps=processing_steps, name="Confounds_Apply_Postprocessing", 
         mixing_file=mixing_file, noise_file=noise_file, tr=tr)
 
     if confound_file:
         input_node.inputs.in_file = confound_file
     if out_file:
         nii_to_tsv_node.inputs.tsv_file_name = out_file
+    else:
+        nii_to_tsv_node.inputs.tsv_file_name = None
 
     input_node.inputs.column_names = column_names
 
@@ -170,26 +180,31 @@ def _tsv_select_columns(tsv_file, column_names):
 
     # Build the output path
     tsv_file = Path(tsv_file).stem
-    tsv_subset_file = Path(tsv_file + "_subset.nii")
+    tsv_subset_file = Path(tsv_file + "_subset.tsv")
 
-    df.to_csv(tsv_subset_file, sep="\t")
+    df.to_csv(tsv_subset_file, sep="\t", index=False)
 
     return str(tsv_subset_file.absolute())
 
 
 def _tsv_to_nii(tsv_file):
     # Imports must be in function for running as node
+    import pandas as pd
     import numpy as np
     import nibabel as nib
     from pathlib import Path
 
     # Read in the confound tsv
     # skiprows=1 skips the header row
-    matrix = np.loadtxt(tsv_file, delimiter='\t', skiprows=1)
+    df = pd.read_csv(tsv_file, sep="\t")
+    matrix = df.to_numpy()
+
+    # Transpose the matrix so that time is on axis 1
+    transposed_matrix = np.swapaxes(matrix, 0, 1)
 
     # Pad the input matrix with two extra dimensions so that the confounds are on the
     # 1st dimension (x) and time is on the 4th dimension - NIFTI standard
-    padded_tensor = np.expand_dims(matrix, (1, 2))
+    padded_tensor = np.expand_dims(transposed_matrix, (1, 2))
 
     # Build an identity affine
     affine = np.eye(4)
@@ -209,12 +224,20 @@ def _nii_to_tsv(nii_file, tsv_file_name):
     # Imports must be in function for running as node
     import numpy as np
     import nibabel as nib
+    from pathlib import Path
 
     nii_img = nib.load(nii_file)
     img_data = nii_img.get_fdata()
 
     # remove the y and z dimension for conversion back to x, time matrix
     squeezed_img_data = np.squeeze(img_data, (1, 2))
+
+    if not tsv_file_name:
+        # Build the output path
+        nii_file = Path(nii_file)
+        path_stem = nii_file.stem
+        tsv_file_name = Path(path_stem + ".tsv")
+        tsv_file_name = str(tsv_file_name.absolute())
 
     np.savetxt(tsv_file_name, squeezed_img_data)
     return tsv_file_name

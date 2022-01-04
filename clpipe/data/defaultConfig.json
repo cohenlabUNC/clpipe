@@ -101,9 +101,9 @@
 			}
 		},
 		"ConfoundOptions": {
-			"Include": true,
+			"Include": false,
 			"Columns": ["csf", "csf_derivative1", "white_matter", "white_matter_derivative1"],
-			"ProcessedConfoundsFileName": "postprocessed_confounds.tsv"
+			"ProcessedConfoundsSuffix": "postprocessed"
 		},
 		"BatchOptions": {
 			"MemoryUsage": "20000",
