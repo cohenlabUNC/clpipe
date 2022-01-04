@@ -15,27 +15,3 @@ def command_log(config):
     ctx = click.get_current_context()
     print(ctx.info_name)
     print(os.getlogin())
-
-def parse_dir_subjects(directory_path: str, prefix='sub-'):
-    """Generates a list of subjects based on the folder names of a given directory.
-
-    Args:
-        directory_path (str): [description]
-        subjects (list, optional): [description]. Defaults to None.
-
-    Returns:
-        list: list of subject ids
-    """
-    sublist = [o.replace(prefix, '') for o in os.listdir(directory_path)
-                if os.path.isdir(os.path.join(directory_path, o)) and prefix in o]
-
-    return sublist
-
-def build_arg_string(**kwargs):
-    """Builds a string based on keyword arguments for debug display.
-    """
-    out = " Submitted Args:\n"
-    for arg in kwargs:
-        out += f"\t{arg}: {str(kwargs[arg])}\n"
-
-    return(out)
