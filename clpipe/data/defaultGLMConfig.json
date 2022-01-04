@@ -3,7 +3,6 @@
   "Authors": "Me, myself, and I",
   "DateCreated": "",
   "GLMSetupOptions": {
-    "ProcessingSteps":["temporal_filtering", "intensity_normalization", "spatial_smoothing"],
     "ParentClpipeConfig":"",
     "TargetDirectory": "",
     "TargetSuffix": "space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz",
@@ -27,9 +26,6 @@
     "ConfoundsDerive": ["trans_x", "trans_y", "trans_z", "rot_x", "rot_y", "rot_z"],
     "ConfoundsQuad": [],
     "ConfoundsQuadDerive": [],
-    "FilteringHighPass": 0.008,
-		"FilteringLowPass": -1,
-		"FilteringOrder": 2,
     "MotionOutliers": true,
     "ScrubVar": "framewise_displacement",
     "Threshold": 0.9,
