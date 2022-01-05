@@ -10,7 +10,6 @@ from nilearn.image import load_img, index_img
 from click.testing import CliRunner
 
 from clpipe.postprocutils.workflows import *
-from clpipe.postprocutils.confounds import prepare_confounds
 from clpipe.fmri_postprocess2 import PostProcessSubjectJobs, PostProcessSubjectJob, postprocess_fmriprep_dir, fmri_postprocess2_cli
 
 def test_postprocess_cli_debug(clpipe_fmriprep_dir, artifact_dir, helpers, request):

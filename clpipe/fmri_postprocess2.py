@@ -10,7 +10,6 @@ from .config_json_parser import ClpipeConfigParser, GLMConfigParser
 from .batch_manager import BatchManager, Job
 from nipype.utils.filemanip import split_filename
 from .postprocutils.workflows import build_postprocessing_workflow, build_confound_postprocessing_workflow
-from .postprocutils.confounds import prepare_confounds
 from .error_handler import exception_handler
 
 # This hides a pybids warning
