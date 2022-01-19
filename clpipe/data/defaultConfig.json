@@ -91,7 +91,7 @@
 				"Algorithm": "SUSAN",
       			"FWHM": 6
 			},
-			"ApplyAROMA":{
+			"AROMARegression":{
 				"Algorithm": "fsl_regfilt"
 			},
 			"ConfoundRegression": {
