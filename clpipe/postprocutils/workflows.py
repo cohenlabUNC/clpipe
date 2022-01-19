@@ -15,7 +15,7 @@ from .nodes import build_input_node, build_output_node, ButterworthFilter
 RESCALING_10000_GLOBALMEDIAN = "globalmedian_10000"
 RESCALING_100_VOXELMEAN = "voxelmean_100"
 NORMALIZATION_METHODS = (RESCALING_10000_GLOBALMEDIAN, RESCALING_100_VOXELMEAN)
-CONFOUND_STEPS = {"TemporalFiltering", "ApplyAROMA"}
+CONFOUND_STEPS = {"TemporalFiltering", "AROMARegression"}
 
 class AlgorithmNotFoundError(ValueError):
     pass
@@ -81,10 +81,10 @@ def build_postprocessing_workflow(postprocessing_config: dict, in_file: os.PathL
 
             current_wf = spatial_smoothing_algorithm(base_dir=postproc_wf.base_dir, mask_path=mask_file, fwhm_mm=fwhm_mm, crashdump_dir=crashdump_dir)
 
-        elif step == "ApplyAROMA":
+        elif step == "AROMARegression":
             algorithm_name = postprocessing_config["ProcessingStepOptions"][step]["Algorithm"]
 
-            apply_aroma_agorithm = _getApplyAROMAAlgorithm(algorithm_name)
+            apply_aroma_agorithm = _getAROMARegressionAlgorithm(algorithm_name)
 
             current_wf = apply_aroma_agorithm(mixing_file=mixing_file, noise_file=noise_file, mask_file=mask_file, base_dir=postproc_wf.base_dir, crashdump_dir=crashdump_dir)
 
@@ -260,11 +260,11 @@ def _getSpatialSmoothingAlgorithm(algorithmName):
     else:
         raise AlgorithmNotFoundError(f"Spatial smoothing algorithm not found: {algorithmName}")
 
-def _getApplyAROMAAlgorithm(algorithmName):
+def _getAROMARegressionAlgorithm(algorithmName):
     if algorithmName == "fsl_regfilt":
         return build_aroma_workflow_fsl_regfilt
     else:
-        raise AlgorithmNotFoundError(f"Apply AROMA algorithm not found: {algorithmName}")
+        raise AlgorithmNotFoundError(f"AROMA regression algorithm not found: {algorithmName}")
 
 def _getConfoundRegressionAlgorithm(algorithmName):
     if algorithmName == "fsl_glm":

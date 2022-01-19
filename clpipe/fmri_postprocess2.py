@@ -328,7 +328,7 @@ class PostProcessSubjectTaskJob():
 
     def get_aroma_files(self):
         # Find the subject's aroma files
-        if "ApplyAROMA" not in self.postprocessing_config["ProcessingSteps"]: return
+        if "AROMARegression" not in self.postprocessing_config["ProcessingSteps"]: return
 
         self.logger.info("Searching for MELODIC mixing file")
         try:

@@ -197,7 +197,7 @@ def test_postprocess2_wf_confound_regression_first(artifact_dir, postprocessing_
 def test_postprocess2_wf_aroma(artifact_dir, postprocessing_config, request, sample_raw_image, sample_raw_image_mask, 
     sample_melodic_mixing, sample_aroma_noise_ics, plot_img, write_graph, helpers):
 
-    postprocessing_config["ProcessingSteps"] = ["ApplyAROMA", "SpatialSmoothing", "IntensityNormalization"]
+    postprocessing_config["ProcessingSteps"] = ["AROMARegression", "SpatialSmoothing", "IntensityNormalization"]
 
     test_path = helpers.create_test_dir(artifact_dir, request.node.name)
     out_path = test_path / "postProcessed.nii.gz"
@@ -219,7 +219,7 @@ def test_postprocess2_wf_aroma(artifact_dir, postprocessing_config, request, sam
 def test_postprocess2_wf_aroma_last(artifact_dir, postprocessing_config, request, sample_raw_image, sample_raw_image_mask, 
     sample_melodic_mixing, sample_aroma_noise_ics, plot_img, write_graph, helpers):
 
-    postprocessing_config["ProcessingSteps"] = ["TemporalFiltering", "SpatialSmoothing", "IntensityNormalization", "ApplyAROMA"]
+    postprocessing_config["ProcessingSteps"] = ["TemporalFiltering", "SpatialSmoothing", "IntensityNormalization", "AROMARegression"]
 
     test_path = helpers.create_test_dir(artifact_dir, request.node.name)
     out_path = test_path / "postProcessed.nii.gz"
@@ -286,7 +286,7 @@ def test_prepare_confounds_aroma(sample_confounds_timeseries, postprocessing_con
     test_path = helpers.create_test_dir(artifact_dir, request.node.name)
     out_path = test_path / "new_confounds.tsv"
 
-    postprocessing_config["ProcessingSteps"] = ["ApplyAROMA", "TemporalFiltering", "IntensityNormalization"]
+    postprocessing_config["ProcessingSteps"] = ["AROMARegression", "TemporalFiltering", "IntensityNormalization"]
 
     cf_workflow = build_confound_postprocessing_workflow(postprocessing_config, confound_file=sample_confounds_timeseries,
         out_file=out_path, mixing_file=sample_melodic_mixing, noise_file=sample_aroma_noise_ics,
@@ -328,7 +328,7 @@ def test_postprocess_subject_aroma(clpipe_fmriprep_dir, postprocessing_config, a
     log_dir = Path(test_dir / "logs" / "postproc_logs")
     log_dir.mkdir(parents=True, exist_ok=True)
 
-    postprocessing_config["ProcessingSteps"] = ["ApplyAROMA", "SpatialSmoothing", "IntensityNormalization"]
+    postprocessing_config["ProcessingSteps"] = ["AROMARegression", "SpatialSmoothing", "IntensityNormalization"]
 
     subject = PostProcessSubjectJob('1', clpipe_fmriprep_dir, postproc_dir, postprocessing_config, log_dir=log_dir)
     subject.run()
@@ -341,7 +341,7 @@ def test_postprocess_subject_aroma_with_confound_processing(clpipe_fmriprep_dir,
     log_dir = Path(test_dir / "logs" / "postproc_logs")
     log_dir.mkdir(parents=True, exist_ok=True)
 
-    postprocessing_config["ProcessingSteps"] = ["ApplyAROMA", "SpatialSmoothing", "IntensityNormalization"]
+    postprocessing_config["ProcessingSteps"] = ["AROMARegression", "SpatialSmoothing", "IntensityNormalization"]
 
     subject = PostProcessSubjectJob('1', clpipe_fmriprep_dir, postproc_dir, postprocessing_config, log_dir=log_dir)
     subject.run()
