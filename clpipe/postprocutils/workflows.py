@@ -245,6 +245,8 @@ def _nii_to_tsv(nii_file, tsv_file_name):
 def _getTemporalFilterAlgorithm(algorithmName):
     if algorithmName == "Butterworth":
         return build_butterworth_filter_workflow
+    elif algorithmName == "fslmaths":
+        return build_fslmath_temporal_filter
     else:
         raise AlgorithmNotFoundError(f"Temporal filtering algorithm not found: {algorithmName}")
 
@@ -429,7 +431,7 @@ def _calc_susan_threshold(median_intensity, p2_intensity):
 def _setup_usans_input(tmean_image, susan_threshold):
     return [(tmean_image, susan_threshold)]
 
-def build_butterworth_filter_workflow(hp: float, lp: float, tr: float, order: float, in_file: os.PathLike=None, 
+def build_butterworth_filter_workflow(hp: float, lp: float, tr: float, order: float=None, in_file: os.PathLike=None, 
     out_file: os.PathLike=None, base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None):
     
     workflow = pe.Workflow(name="Butterworth", base_dir=base_dir)
@@ -454,7 +456,7 @@ def build_butterworth_filter_workflow(hp: float, lp: float, tr: float, order: fl
 
     return workflow
 
-def build_fslmath_temporal_filter(hp: float, lp: float, tr: float, in_file: os.PathLike=None, 
+def build_fslmath_temporal_filter(hp: float, lp: float, tr: float, order: float=None, in_file: os.PathLike=None, 
     out_file: os.PathLike=None, base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None):
 
     workflow = pe.Workflow(name="fslmaths_Temporal_Filter", base_dir=base_dir)
