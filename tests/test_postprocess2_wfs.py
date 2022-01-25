@@ -89,6 +89,23 @@ def test_butterworth_filter_wf(artifact_dir, sample_raw_image, plot_img, write_g
     
     assert True
 
+def test_fslmath_temporal_filter_wf(artifact_dir, sample_raw_image, plot_img, write_graph, request, helpers):
+    test_path = helpers.create_test_dir(artifact_dir, request.node.name)
+    
+    filtered_path = test_path / "sample_raw_filtered.nii"
+
+    wf = build_fslmath_temporal_filter(hp=.008, lp=-1, tr=2, in_file=sample_raw_image, out_file=filtered_path, 
+        base_dir=test_path, crashdump_dir=test_path)
+    wf.run()
+
+    if write_graph:
+        wf.write_graph(dotfilename = test_path / "filteredflow", graph2use=write_graph)
+
+    if plot_img:
+        helpers.plot_4D_img_slice(filtered_path, "filtered.png")
+    
+    assert True
+
 def test_confound_regression_fsl_glm_wf(artifact_dir, sample_raw_image, sample_postprocessed_confounds, sample_raw_image_mask, plot_img, write_graph, request, helpers):
     test_path = helpers.create_test_dir(artifact_dir, request.node.name)
 
