@@ -2,7 +2,7 @@ import os
 
 from math import sqrt, log
 
-from nipype.interfaces.fsl.maths import MeanImage, BinaryMaths, MedianImage, ApplyMask
+from nipype.interfaces.fsl.maths import MeanImage, BinaryMaths, MedianImage, ApplyMask, TemporalFilter
 from nipype.interfaces.fsl.utils import ImageStats, FilterRegressor
 from nipype.interfaces.afni import TProject
 from nipype.interfaces.fsl.model import GLM
@@ -451,6 +451,44 @@ def build_butterworth_filter_workflow(hp: float, lp: float, tr: float, order: fl
     workflow.connect(input_node, "in_file", butterworth_node, "in_file")
     workflow.connect(input_node, "out_file", butterworth_node, "out_file")
     workflow.connect(butterworth_node, "out_file", output_node, "out_file")
+
+    return workflow
+
+def build_fslmath_temporal_filter(hp: float, lp: float, tr: float, in_file: os.PathLike=None, 
+    out_file: os.PathLike=None, base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None):
+
+    workflow = pe.Workflow(name="fslmaths_Temporal_Filter", base_dir=base_dir)
+    if crashdump_dir is not None:
+        workflow.config['execution']['crashdump_dir'] = crashdump_dir
+
+    # Setup identity (pass through) input/output nodes
+    input_node = build_input_node()
+    output_node = build_output_node()
+
+    fwhm_to_sigma = sqrt(8 * log(2))
+
+    hp_volumes, lp_volumes = -1, -1
+
+    if hp != -1:
+        hp_volumes = 1 / (hp * fwhm_to_sigma * tr)
+    if lp != -1:
+        lp_volumes = 1 / (lp * fwhm_to_sigma * tr)
+
+    mean_image_node = pe.Node(MeanImage(), name="mean_image")
+    temporal_filter_node = pe.Node(TemporalFilter(highpass_sigma=hp_volumes, lowpass_sigma=lp_volumes), name="temporal_filter")
+    add_node = pe.Node(BinaryMaths(operation='add'), name="add_mean")
+
+     # Set WF inputs and outputs
+    if in_file:
+        input_node.inputs.in_file = in_file
+    if out_file:
+        input_node.inputs.out_file = out_file
+
+    workflow.connect(input_node, "in_file", mean_image_node, "in_file")
+    workflow.connect(input_node, "in_file", temporal_filter_node, "in_file")
+    workflow.connect(mean_image_node, "out_file", add_node, "operand_file")
+    workflow.connect(temporal_filter_node, "out_file", add_node, "in_file")
+    workflow.connect(add_node, "out_file", output_node, "out_file")
 
     return workflow
 
