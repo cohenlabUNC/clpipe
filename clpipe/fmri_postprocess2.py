@@ -463,7 +463,7 @@ class PostProcessSubjectJobs():
     post_process_jobs = []
 
     # TODO: Add class logger
-    def __init__(self, fmriprep_dir, output_dir: os.PathLike, config_file: os.PathLike, 
+    def __init__(self, clpipe_dir, fmriprep_dir, output_dir: os.PathLike, config_file: os.PathLike, 
         subjects_to_process=None, log_dir: os.PathLike=None, pybids_db_path: os.PathLike=None):
         
         self.setup_logger()
@@ -478,9 +478,11 @@ class PostProcessSubjectJobs():
         self.config_file = config_file
         self.slurm = False
         self.pybids_db_path = pybids_db_path
+        self.clpipe_dir = clpipe_dir
         self.fmriprep_dir = fmriprep_dir
 
-        self.bids:BIDSLayout = _get_bids_dir(self.fmriprep_dir, database_path=pybids_db_path)
+        self.bids:BIDSLayout = _get_bids_dir(self.fmriprep_dir, database_path=pybids_db_path, index_metadata=True)
+        self.bids.add_derivatives(fmriprep_dir)
 
         # Choose the subjects to process
         self.subjects_to_process = _get_subjects(self.bids, subjects_to_process)

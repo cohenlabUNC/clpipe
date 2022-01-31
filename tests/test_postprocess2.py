@@ -256,18 +256,19 @@ def test_postprocess2_wf_no_mask(artifact_dir, postprocessing_config, request, s
 
     assert True
 
-
-def test_postprocess2(clpipe_fmriprep_dir, artifact_dir, helpers, request):
+def test_postprocess_subjects_job(clpipe_fmriprep_dir, artifact_dir, helpers, request):
+    config = clpipe_fmriprep_dir / "clpipe_config.json"
+    bids_dir = clpipe_fmriprep_dir / "data_BIDS"
     fmriprep_dir = clpipe_fmriprep_dir / "data_fmriprep" / "fmriprep"
-    glm_config = clpipe_fmriprep_dir / "glm_config.json"
     test_dir = helpers.create_test_dir(artifact_dir, request.node.name)
     postproc_dir = Path(test_dir / "data_postprocessed")
+    pybids_db_path = Path(test_dir / "bids_index")
+    
     log_dir = Path(test_dir / "logs" / "postproc_logs")
     log_dir.mkdir(parents=True, exist_ok=True)
 
-    jobs = PostProcessSubjectJobs(fmriprep_dir, postproc_dir, glm_config,
-        log_dir=log_dir)
-    jobs.run()
+    jobs = PostProcessSubjectJobs(bids_dir, fmriprep_dir, postproc_dir, config,
+        log_dir=log_dir, pybids_db_path=pybids_db_path)
 
 def test_prepare_confounds(sample_confounds_timeseries, postprocessing_config, artifact_dir, helpers, request):
     test_path = helpers.create_test_dir(artifact_dir, request.node.name)
@@ -296,7 +297,7 @@ def test_prepare_confounds_aroma(sample_confounds_timeseries, postprocessing_con
     
     assert True
 
-def test_postprocess_subject(clpipe_fmriprep_dir, postprocessing_config, artifact_dir, helpers, request):
+def test_postprocess_subject_job(clpipe_fmriprep_dir, postprocessing_config, artifact_dir, helpers, request):
     fmriprep_dir = clpipe_fmriprep_dir / "data_fmriprep" / "fmriprep"
     test_dir = helpers.create_test_dir(artifact_dir, request.node.name)
     postproc_dir = Path(test_dir / "data_postprocessed")

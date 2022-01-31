@@ -121,7 +121,7 @@ def clpipe_bids_dir(clpipe_dir):
 #TODO: seperate AROMA into its own type of fmriprep dir
 @pytest.fixture(scope="module")
 def clpipe_fmriprep_dir(clpipe_dir, sample_raw_image, sample_raw_image_mask, 
-    sample_confounds_timeseries, sample_melodic_mixing, sample_aroma_noise_ics):
+    sample_confounds_timeseries, sample_melodic_mixing, sample_aroma_noise_ics, sample_fmriprep_dataset_description):
     """Fixture which adds fmriprep subject folders and mock fmriprep output data to data_fmriprep directory."""
 
     tasks = ["task1", "task2"]
@@ -133,8 +133,13 @@ def clpipe_fmriprep_dir(clpipe_dir, sample_raw_image, sample_raw_image_mask,
     melodic_mixing_suffix = "desc-MELODIC_mixing.tsv"
     aroma_noise_ics_suffix = "AROMAnoiseICs.csv"
 
+    fmriprep_dir = clpipe_dir / "data_fmriprep" / "fmriprep"
+    fmriprep_dir.mkdir(parents=True)
+
+    shutil.copy(sample_fmriprep_dataset_description, fmriprep_dir)
+
     for sub_num in range(NUM_SUBJECTS):
-        subject_folder = clpipe_dir / "data_fmriprep" / "fmriprep" / f"sub-{sub_num}" / "func"
+        subject_folder = fmriprep_dir / f"sub-{sub_num}" / "func"
         subject_folder.mkdir(parents=True)
         
         for task in tasks:
@@ -242,3 +247,7 @@ def sample_melodic_mixing() -> Path:
 @pytest.fixture(scope="module")
 def sample_aroma_noise_ics() -> Path:
     return Path("tests/data/AROMAnoiseICs.csv").resolve()
+
+@pytest.fixture(scope="module")
+def sample_fmriprep_dataset_description() -> Path:
+    return Path("tests/data/dataset_description.json").resolve()
