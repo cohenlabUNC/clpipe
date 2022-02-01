@@ -155,7 +155,7 @@ def _setup_batch_manager(config, log_dir):
 
     return batch_manager
 
-def _get_bids_dir(fmriprep_dir, validate=False, database_path=None, index_metadata=False) -> BIDSLayout:
+def _get_bids(bids_dir: os.PathLike, validate=False, database_path=None, index_metadata=False) -> BIDSLayout:
     try:
         indexer = BIDSLayoutIndexer(validate=validate, index_metadata=index_metadata)
         return BIDSLayout(fmriprep_dir, validate=validate, indexer=indexer, database_path=database_path)
@@ -447,10 +447,10 @@ class PostProcessSubjectTaskJob():
         self.process_image()
 
 
-def _get_subjects(fmriprep_dir: BIDSLayout, subjects):   
+def _get_subjects(bids_dir: BIDSLayout, subjects):   
     # If no subjects were provided, use all subjects in the fmriprep directory
     if subjects is None or len(subjects) == 0:
-        subjects = fmriprep_dir.get_subjects()
+        subjects = fmriprep_dir.get_subjects(scope='derivatives')
         if len(subjects) == 0:
             no_subjects_found_str = f"No subjects found to parse at: {fmriprep_dir.root}"
             LOG.error(no_subjects_found_str)
@@ -463,7 +463,7 @@ class PostProcessSubjectJobs():
     post_process_jobs = []
 
     # TODO: Add class logger
-    def __init__(self, clpipe_dir, fmriprep_dir, output_dir: os.PathLike, config_file: os.PathLike, 
+    def __init__(self, bids_dir, fmriprep_dir, output_dir: os.PathLike, config_file: os.PathLike, 
         subjects_to_process=None, log_dir: os.PathLike=None, pybids_db_path: os.PathLike=None):
         
         self.setup_logger()
@@ -478,10 +478,10 @@ class PostProcessSubjectJobs():
         self.config_file = config_file
         self.slurm = False
         self.pybids_db_path = pybids_db_path
-        self.clpipe_dir = clpipe_dir
+        self.bids_dir = bids_dir
         self.fmriprep_dir = fmriprep_dir
 
-        self.bids:BIDSLayout = _get_bids_dir(self.fmriprep_dir, database_path=pybids_db_path, index_metadata=True)
+        self.bids:BIDSLayout = _get_bids(self.bids_dir, database_path=pybids_db_path, index_metadata=True)
         self.bids.add_derivatives(fmriprep_dir)
 
         # Choose the subjects to process
