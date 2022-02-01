@@ -2,6 +2,7 @@ import pytest
 import sys
 import os
 import shutil
+import json
 from pathlib import Path
 
 import numpy as np
@@ -125,11 +126,12 @@ def clpipe_fmriprep_dir(clpipe_bids_dir, sample_raw_image, sample_raw_image_mask
     sample_confounds_timeseries, sample_melodic_mixing, sample_aroma_noise_ics, sample_fmriprep_dataset_description):
     """Fixture which adds fmriprep subject folders and mock fmriprep output data to data_fmriprep directory."""
 
-    tasks = ["task1", "task2"]
+    tasks = ["rest", "task1", "task2"]
 
     image_space = "space-MNI152NLin2009cAsym"
     bold_suffix = "desc-preproc_bold.nii.gz"
     mask_suffix = "desc-brain_mask.nii.gz"
+    sidecar_suffix = "desc-preproc_bold.json"
     confounds_suffix = "desc-confounds_timeseries.tsv"
     melodic_mixing_suffix = "desc-MELODIC_mixing.tsv"
     aroma_noise_ics_suffix = "AROMAnoiseICs.csv"
@@ -152,6 +154,15 @@ def clpipe_fmriprep_dir(clpipe_bids_dir, sample_raw_image, sample_raw_image_mask
             shutil.copy(sample_confounds_timeseries, subject_folder / f"sub-{sub_num}_{task_info}_{confounds_suffix}")
             shutil.copy(sample_melodic_mixing, subject_folder / f"sub-{sub_num}_{task_info}_{melodic_mixing_suffix}")
             shutil.copy(sample_aroma_noise_ics, subject_folder / f"sub-{sub_num}_{task_info}_{aroma_noise_ics_suffix}")
+
+            if task == "rest":
+                tr = .6
+            else:
+                tr = .9
+            sidecar_json = {"RepetitionTime": tr, "TaskName": task}
+            with open(subject_folder / f"sub-{sub_num}_{task_info}_{image_space}_{sidecar_suffix}", "w") as sidecar_file:
+                json.dump(sidecar_json, sidecar_file)
+
     
     return clpipe_bids_dir
 
