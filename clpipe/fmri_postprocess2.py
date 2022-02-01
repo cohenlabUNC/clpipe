@@ -21,7 +21,7 @@ LOG = logging.getLogger(__name__)
 class NoSubjectTaskFoundError(ValueError):
     pass
 
-class NoSubjectTasksFoundError(ValueError):
+class NoImagesFoundError(ValueError):
     pass
 
 class NoSubjectsFoundError(ValueError):
@@ -249,50 +249,59 @@ class PostProcessSubjectJob():
         # Add handler to logger
         self.logger.addHandler(c_handler)
 
-    def get_tasks(self):
-        self.logger.info("Searching for tasks")
-        self.tasks = self.bids.get_tasks(subject=self.subject_id, scope="derivatives")
+    def get_images(self):
+        self.images_to_process = self.bids.get_tasks(subject=self.subject_id, scope="derivatives")
+        
+        self.logger.info(f"Searching for images to process")
+        # Find the subject's images to run post_proc on
+        try:
+            self.images_to_process = self.bids.get(return_type="filename",
+                subject=self.subject_id, extension="nii.gz", datatype="func", 
+                suffix="bold", desc="preproc", scope="derivatives")[0]
 
-        if len(self.tasks) == 0:
-            raise NoSubjectTasksFoundError(f"No tasks found for sub-{self.subject_id} task-{self.task} not found.")
+            self.logger.info(f"Found BOLD image: {self.images_to_process} with TR: {self.tr}")
+        except IndexError:
+            raise NoImagesFound(f"No preproc BOLD image for subject {self.subject_id} found.")
 
-        self.logger.info(f"Found tasks: {', '.join(self.tasks)}")
+        if len(self.images_to_process) == 0:
+            raise NoImagesFoundError(f"No preproc BOLD imagess found for sub-{self.subject_id}.")
 
-    def build_task_jobs(self):
-        self.logger.info(f"Building task jobs")
+        self.logger.info(f"Found images: {', '.join(self.images_to_process)}")
 
-        self.task_jobs = []
-        for task in self.tasks:
-            self.task_jobs.append(PostProcessSubjectTaskJob(self.subject_id, task, self.bids, self.subject_out_dir,
+    def build_image_jobs(self):
+        self.logger.info(f"Building image jobs")
+
+        self.image_jobs = []
+        for image in self.images_to_process:
+            self.image_jobs.append(PostProcessImage(image, self.subject_out_dir,
                 self.postprocessing_config, working_dir = self.working_dir, log_dir = self.log_dir))
 
-        for task_job in self.task_jobs:
-            self.logger.info(f"Job: {task_job}")
-        self.logger.info(f"Built {len(self.task_jobs)} task jobs")
+        for image_job in self.image_jobs:
+            self.logger.info(f"Job: {image_job}")
+        self.logger.info(f"Built {len(self.image_jobs)} image jobs")
 
     def setup(self):
         self.setup_config()
         self.setup_directories()
         self.setup_file_logger()
         self.load_bids_dir()
-        self.get_tasks()
-        self.build_task_jobs()
+        self.get_images()
+        self.build_image_jobs()
 
     def run(self):
         self.setup()
-        self.logger.info(f"Running {len(self.task_jobs)} task jobs")
-        for task_job in self.task_jobs:
-            task_job.run()
-        self.logger.info(f"Task jobs completed")
+        self.logger.info(f"Running {len(self.image_jobs)} image jobs")
+        for image_job in self.image_jobs:
+            image_job.run()
+        self.logger.info(f"Image jobs completed")
 
     def __call__(self):
         self.run()
 
-class PostProcessSubjectTaskJob():
-    def __init__(self, subject_id: str, task: str, bids: BIDSLayout, out_dir: os.PathLike, 
+class PostProcessImage():
+    def __init__(self, image_path: os.PathLike, bids: BIDSLayout, out_dir: os.PathLike, 
         postprocessing_config: dict, working_dir: os.PathLike=None, log_dir: os.PathLike=None):
-        self.subject_id = subject_id
-        self.task = task
+        self.image_path = image_path
         self.bids = bids
         self.working_dir = Path(working_dir)
         self.log_dir = Path(log_dir)
@@ -361,22 +370,6 @@ class PostProcessSubjectTaskJob():
             self.logger.info(f"AROMA noise ICs file for sub-{self.subject_id} task-{self.task} not found.")
             self.noise_file = None
 
-
-    def get_image_to_process(self):
-        self.logger.info(f"Searching for image to process for task: {self.task}")
-        # Find the subject's images to run post_proc on
-        try:
-            image_to_process_result = self.bids.get(
-                subject=self.subject_id, task=self.task, extension="nii.gz", datatype="func", 
-                suffix="bold", desc="preproc", scope="derivatives")[0]
-            self.image_to_process = image_to_process_result.path
-
-            self.tr = image_to_process_result.get_metadata()['RepetitionTime']
-
-            self.logger.info(f"Found BOLD image: {self.image_to_process} with TR: {self.tr}")
-        except IndexError:
-            raise NoSubjectTaskFoundError(f"BOLD image for subject {self.subject_id} task-{self.task} not found.")
-
     def setup_logger(self):
         self.logger = logging.getLogger(f"{self.__class__.__name__}.sub-{self.subject_id}.task-{self.task}")
         self.logger.setLevel(logging.INFO)
@@ -427,6 +420,7 @@ class PostProcessSubjectTaskJob():
         self.get_image_to_process()
 
         # Process the subject's image
+        self.tr = image_to_process_result.get_metadata()['RepetitionTime']
 
         # Calculate the output file name
         base, image_name, exstension = split_filename(self.image_to_process)
