@@ -126,7 +126,7 @@ def clpipe_fmriprep_dir(clpipe_bids_dir, sample_raw_image, sample_raw_image_mask
     sample_confounds_timeseries, sample_melodic_mixing, sample_aroma_noise_ics, sample_fmriprep_dataset_description):
     """Fixture which adds fmriprep subject folders and mock fmriprep output data to data_fmriprep directory."""
 
-    tasks = ["rest", "task1", "task2"]
+    tasks = ["rest", "task1", "task2_run-1", "task2_run-2"]
 
     image_space = "space-MNI152NLin2009cAsym"
     bold_suffix = "desc-preproc_bold.nii.gz"
@@ -145,8 +145,9 @@ def clpipe_fmriprep_dir(clpipe_bids_dir, sample_raw_image, sample_raw_image_mask
         subject_folder = fmriprep_dir / f"sub-{sub_num}" / "func"
         subject_folder.mkdir(parents=True)
         
+
         for task in tasks:
-            task_info = f"task-{task}_run-1"
+            task_info = f"task-{task}"
             
             shutil.copy(sample_raw_image, subject_folder / f"sub-{sub_num}_{task_info}_{image_space}_{bold_suffix}")
             shutil.copy(sample_raw_image_mask, subject_folder / f"sub-{sub_num}_{task_info}_{image_space}_{mask_suffix}")
