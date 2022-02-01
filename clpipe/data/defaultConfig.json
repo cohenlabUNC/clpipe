@@ -71,7 +71,6 @@
 	},
 	"PostProcessingOptions2": {
 		"WriteProcessGraph": true,
-		"ImageTR": 2,
 		"ProcessingSteps": [
 			"SpatialSmoothing",
 			"TemporalFiltering",

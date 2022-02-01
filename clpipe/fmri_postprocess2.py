@@ -366,11 +366,14 @@ class PostProcessSubjectTaskJob():
         self.logger.info(f"Searching for image to process for task: {self.task}")
         # Find the subject's images to run post_proc on
         try:
-            self.image_to_process = self.bids.get(
-                subject=self.subject_id, task=self.task, return_type="filename", 
-                extension="nii.gz", datatype="func", suffix="bold", desc="preproc", scope="derivatives")[0]
+            image_to_process_result = self.bids.get(
+                subject=self.subject_id, task=self.task, extension="nii.gz", datatype="func", 
+                suffix="bold", desc="preproc", scope="derivatives")[0]
+            self.image_to_process = image_to_process_result.path
 
-            self.logger.info(f"Found BOLD image: {self.image_to_process}")
+            self.tr = image_to_process_result.get_metadata()['RepetitionTime']
+
+            self.logger.info(f"Found BOLD image: {self.image_to_process} with TR: {self.tr}")
         except IndexError:
             raise NoSubjectTaskFoundError(f"BOLD image for subject {self.subject_id} task-{self.task} not found.")
 
@@ -406,7 +409,7 @@ class PostProcessSubjectTaskJob():
     
         #TODO: replace config TR with image TR
         confounds_wf = build_confound_postprocessing_workflow(self.postprocessing_config, confound_file = self.confounds,
-            out_file=self.confound_out_file, tr=self.postprocessing_config["ImageTR"],
+            out_file=self.confound_out_file, tr=self.tr,
             name=f"Sub_{self.subject_id}_Confound_Postprocessing_Pipeline",
             mixing_file=self.mixing_file, noise_file=self.noise_file,
             base_dir=self.working_dir, crashdump_dir=self.log_dir)
