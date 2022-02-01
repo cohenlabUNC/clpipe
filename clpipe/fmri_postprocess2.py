@@ -407,7 +407,6 @@ class PostProcessSubjectTaskJob():
         
         self.logger.debug(f"Postprocessed confound out file: {self.confound_out_file}")
     
-        #TODO: replace config TR with image TR
         confounds_wf = build_confound_postprocessing_workflow(self.postprocessing_config, confound_file = self.confounds,
             out_file=self.confound_out_file, tr=self.tr,
             name=f"Sub_{self.subject_id}_Confound_Postprocessing_Pipeline",
@@ -440,7 +439,7 @@ class PostProcessSubjectTaskJob():
             name=f"Sub_{self.subject_id}_Task_{self.task}_Postprocessing_Pipeline",
             mask_file=self.mask_image, confound_file = self.confounds,
             mixing_file=self.mixing_file, noise_file=self.noise_file,
-            tr=self.postprocessing_config["ImageTR"], 
+            tr=self.tr, 
             base_dir=self.working_dir, crashdump_dir=self.log_dir)
 
         self.logger.info(f"Running postprocessing workflow for image: {self.image_to_process}")
