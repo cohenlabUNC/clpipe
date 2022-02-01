@@ -158,18 +158,19 @@ def _setup_batch_manager(config, log_dir):
 def _get_bids(bids_dir: os.PathLike, validate=False, database_path=None, index_metadata=False) -> BIDSLayout:
     try:
         indexer = BIDSLayoutIndexer(validate=validate, index_metadata=index_metadata)
-        return BIDSLayout(fmriprep_dir, validate=validate, indexer=indexer, database_path=database_path)
+        return BIDSLayout(bids_dir, validate=validate, indexer=indexer, database_path=database_path)
     except FileNotFoundError as fne:
         LOG.error(fne)
         raise fne
 
 class PostProcessSubjectJob():
     
-    def __init__(self, subject_id: str, fmriprep_dir: os.PathLike, out_dir: os.PathLike, 
+    def __init__(self, subject_id: str, bids_dir: os.PathLike, fmriprep_dir: os.PathLike, out_dir: os.PathLike, 
         config_file: dict, log_dir: os.PathLike=None):
         
         self.subject_id = subject_id
-        self.fmriprep_dir = fmriprep_dir
+        self.bids_dir = Path(bids_dir)
+        self.fmriprep_dir = Path(fmriprep_dir)
         self.log_dir=Path(log_dir)
         self.out_dir = Path(out_dir)
         self.config_file = Path(config_file)
@@ -185,18 +186,19 @@ class PostProcessSubjectJob():
         configParser.config_updater(self.config_file)
         self.postprocessing_config = configParser.config["PostProcessingOptions2"]
 
-    def load_fmriprep_dir(self):
-        # Open the fmriprep dir and validate that it contains the subject
-        self.logger.info(f"Checking fmrioutput for requested subject in: {self.fmriprep_dir}")
+    def load_bids_dir(self):
+        # Open the bids dir and validate that it contains the subject
+        self.logger.info(f"Checking fmri output for requested subject in: {self.bids_dir}")
         try:
-            self.bids:BIDSLayout = _get_bids_dir(self.fmriprep_dir, validate=False, index_metadata=False)
+            self.bids:BIDSLayout = _get_bids(self.bids_dir, validate=False, index_metadata=True)
+            self.bids.add_derivatives(self.fmriprep_dir)
 
-            if len(self.bids.get(subject=self.subject_id)) == 0:
-                snfe = f"Subject {self.subject_id} was not found in fmriprep directory {self.fmriprep_dir}"
+            if len(self.bids.get(subject=self.subject_id, scope="derivatives")) == 0:
+                snfe = f"Subject {self.subject_id} was not found in fmri output directory {self.bids_dir}"
                 self.logger.error(snfe)
                 raise SubjectNotFoundError(snfe)
         except FileNotFoundError as fne:
-            fnfe = f"Invalid fmriprep output path provided: {self.fmriprep_dir}"
+            fnfe = f"Invalid bids output path provided: {self.bids_dir}"
             self.logger.error(fnfe, exc_info=True)
             raise fne
 
@@ -249,7 +251,7 @@ class PostProcessSubjectJob():
 
     def get_tasks(self):
         self.logger.info("Searching for tasks")
-        self.tasks = self.bids.get_tasks(subject=self.subject_id)
+        self.tasks = self.bids.get_tasks(subject=self.subject_id, scope="derivatives")
 
         if len(self.tasks) == 0:
             raise NoSubjectTasksFoundError(f"No tasks found for sub-{self.subject_id} task-{self.task} not found.")
@@ -272,7 +274,7 @@ class PostProcessSubjectJob():
         self.setup_config()
         self.setup_directories()
         self.setup_file_logger()
-        self.load_fmriprep_dir()
+        self.load_bids_dir()
         self.get_tasks()
         self.build_task_jobs()
 
@@ -306,7 +308,8 @@ class PostProcessSubjectTaskJob():
         self.logger.info("Searching for confounds file")
         try:
             self.confounds = self.bids.get(
-                subject=self.subject_id, task=self.task, suffix="timeseries", return_type="filename", extension=".tsv"
+                subject=self.subject_id, task=self.task, suffix="timeseries", return_type="filename", extension=".tsv",
+                    desc="confounds", scope="derivatives"
             )[0]
             self.logger.info(f"Task file found: {self.confounds}")
         except IndexError:
@@ -318,7 +321,8 @@ class PostProcessSubjectTaskJob():
         self.logger.info("Searching for mask file")
         try:
             self.mask_image = self.bids.get(
-                subject=self.subject_id, task=self.task, suffix="mask", extension=".nii.gz", datatype="func", return_type="filename"
+                subject=self.subject_id, task=self.task, suffix="mask", extension=".nii.gz", datatype="func", return_type="filename",
+                    desc="brain", scope="derivatives"
             )[0]
             self.logger.info(f"Mask file found: {self.mask_image}")
             #TODO: Throw multiple masks found exception?
@@ -333,7 +337,8 @@ class PostProcessSubjectTaskJob():
         self.logger.info("Searching for MELODIC mixing file")
         try:
             self.mixing_file = self.bids.get(
-                subject=self.subject_id, task=self.task, suffix="mixing", extension=".tsv", return_type="filename" 
+                subject=self.subject_id, task=self.task, suffix="mixing", extension=".tsv", return_type="filename",
+                    desc="MELODIC", scope="derivatives"
             )[0]
             self.logger.info(f"MELODIC mixing file found: {self.mixing_file}")
         except IndexError:
@@ -343,7 +348,8 @@ class PostProcessSubjectTaskJob():
         self.logger.info("Searching for AROMA noise ICs file")
         try:
             self.noise_file = self.bids.get(
-                subject=self.subject_id, task=self.task, suffix="AROMAnoiseICs", extension=".csv", return_type="filename"
+                subject=self.subject_id, task=self.task, suffix="AROMAnoiseICs", extension=".csv", return_type="filename",
+                    scope="derivatives"
             )[0]
             self.logger.info(f"AROMA noise ICs file found: {self.noise_file}")
         except IndexError:
@@ -357,7 +363,7 @@ class PostProcessSubjectTaskJob():
         try:
             self.image_to_process = self.bids.get(
                 subject=self.subject_id, task=self.task, return_type="filename", 
-                extension="nii.gz", datatype="func", suffix="bold")[0]
+                extension="nii.gz", datatype="func", suffix="bold", desc="preproc", scope="derivatives")[0]
 
             self.logger.info(f"Found BOLD image: {self.image_to_process}")
         except IndexError:
@@ -450,9 +456,9 @@ class PostProcessSubjectTaskJob():
 def _get_subjects(bids_dir: BIDSLayout, subjects):   
     # If no subjects were provided, use all subjects in the fmriprep directory
     if subjects is None or len(subjects) == 0:
-        subjects = fmriprep_dir.get_subjects(scope='derivatives')
+        subjects = bids_dir.get_subjects(scope='derivatives')
         if len(subjects) == 0:
-            no_subjects_found_str = f"No subjects found to parse at: {fmriprep_dir.root}"
+            no_subjects_found_str = f"No subjects found to parse at: {bids_dir.root}"
             LOG.error(no_subjects_found_str)
             raise NoSubjectsFoundError(no_subjects_found_str)
 
@@ -494,7 +500,7 @@ class PostProcessSubjectJobs():
         self.logger.info("Creating postprocessing jobs")
         for subject in self.subjects_to_process:
             # Create a new job and add to list of jobs to be run
-            job_to_add = PostProcessSubjectJob(subject, self.fmriprep_dir,
+            job_to_add = PostProcessSubjectJob(subject, self.bids_dir, self.fmriprep_dir,
                 self.output_dir, self.config_file, log_dir=self.log_dir)
             self.post_process_jobs.append(job_to_add)
         self.logger.info(f"Created {len(self.post_process_jobs)} postprocessing jobs")
@@ -505,9 +511,10 @@ class PostProcessSubjectJobs():
         self.slurm=True
         self.batch_manager = batch_manager
 
-        submission_string = """postprocess_subject {subject_id} {fmriprep_dir} {output_dir} {config_file} {log_dir}"""
+        submission_string = """postprocess_subject {subject_id} {bids_dir} {fmriprep_dir} {output_dir} {config_file} {log_dir}"""
         for job in self.post_process_jobs:
             sub_string_temp = submission_string.format(subject_id=job.subject_id,
+                                                        bids_dir=self.bids_dir,
                                                         fmriprep_dir=self.fmriprep_dir,
                                                         config_file=self.config_file,
                                                         output_dir=self.output_dir,
