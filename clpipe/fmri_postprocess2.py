@@ -163,10 +163,21 @@ def _setup_batch_manager(config, log_dir):
 
     return batch_manager
 
-def _get_bids(bids_dir: os.PathLike, validate=False, database_path=None, index_metadata=False) -> BIDSLayout:
+def _get_bids(bids_dir: os.PathLike, validate=False, database_path: os.PathLike=None, fmriprep_dir: os.PathLike=None, index_metadata=True) -> BIDSLayout:
     try:
-        indexer = BIDSLayoutIndexer(validate=validate, index_metadata=index_metadata)
-        return BIDSLayout(bids_dir, validate=validate, indexer=indexer, database_path=database_path)
+        database_path = Path(database_path)
+        
+        if database_path.exists():
+            return BIDSLayout(database_path=database_path)
+        else:
+            indexer = BIDSLayoutIndexer(validate=validate, index_metadata=index_metadata)
+            LOG.info(f"Indexing BIDS directory: {bids_dir}")
+            print("(this can take a few minutes)")
+
+            if fmriprep_dir:
+                return BIDSLayout(bids_dir, validate=validate, indexer=indexer, database_path=database_path, derivatives=fmriprep_dir)
+            else:
+                return BIDSLayout(bids_dir, validate=validate, indexer=indexer, database_path=database_path)
     except FileNotFoundError as fne:
         LOG.error(fne)
         raise fne
@@ -505,8 +516,7 @@ class PostProcessSubjectJobs():
         self.bids_dir = bids_dir
         self.fmriprep_dir = fmriprep_dir
 
-        self.bids:BIDSLayout = _get_bids(self.bids_dir, database_path=pybids_db_path, index_metadata=True)
-        self.bids.add_derivatives(fmriprep_dir)
+        self.bids:BIDSLayout = _get_bids(self.bids_dir, database_path=pybids_db_path, fmriprep_dir=fmriprep_dir)
 
         # Choose the subjects to process
         self.subjects_to_process = _get_subjects(self.bids, subjects_to_process)
@@ -529,12 +539,13 @@ class PostProcessSubjectJobs():
         self.slurm=True
         self.batch_manager = batch_manager
 
-        submission_string = """postprocess_subject {subject_id} {bids_dir} {fmriprep_dir} {output_dir} {config_file} {log_dir}"""
+        submission_string = """postprocess_subject {subject_id} {bids_dir} {fmriprep_dir} {output_dir} {config_file} {index_dir} {log_dir}"""
         for job in self.post_process_jobs:
             sub_string_temp = submission_string.format(subject_id=job.subject_id,
                                                         bids_dir=self.bids_dir,
                                                         fmriprep_dir=self.fmriprep_dir,
                                                         config_file=self.config_file,
+                                                        index_dir=self.pybids_db_path,
                                                         output_dir=self.output_dir,
                                                         log_dir=self.log_dir)
             subject_id = Path(job.subject_id).stem
