@@ -41,13 +41,15 @@ class SubjectNotFoundError(ValueError):
     If a configuration file is provided with a output directory, this argument is not necessary.""")
 @click.option('-log_dir', type=click.Path(exists=True, dir_okay=True, file_okay=False), default=None, required = False, help = 'Path to the logging directory.')
 @click.option('-index_dir', type=click.Path(exists=True, dir_okay=True, file_okay=False), default=None, required=False,
-              help='Use a given configuration file.')
+              help='Give the path to an existing pybids index database.')
+@click.option('-refresh_index', is_flag=True, default=False, required=False,
+              help='Refresh the pybids index database to reflect new fmriprep artifacts.')
 @click.option('-batch/-no-batch', is_flag = True, default=True, help = 'Flag to create batch jobs without prompt.')
 @click.option('-submit', is_flag = True, default=False, help = 'Flag to submit commands to the HPC without prompt.')
 @click.option('-debug', is_flag = True, default=False, help = 'Print detailed processing information and traceback for errors.')
-def fmri_postprocess2_cli(subjects, config_file, fmriprep_dir, output_dir, batch, submit, log_dir, index_dir, debug):
+def fmri_postprocess2_cli(subjects, config_file, fmriprep_dir, output_dir, batch, submit, log_dir, index_dir, refresh_index, debug):
     postprocess_fmriprep_dir(subjects=subjects, config_file=config_file, fmriprep_dir=fmriprep_dir, output_dir=output_dir, 
-    batch=batch, submit=submit, log_dir=log_dir, pybids_db_path=index_dir, debug=debug)
+    batch=batch, submit=submit, log_dir=log_dir, pybids_db_path=index_dir, refresh_index=refresh_index, debug=debug)
 
 
 @click.command()
@@ -77,7 +79,7 @@ def postprocess_subject(subject_id, fmriprep_dir, output_dir, config_file, log_d
 
 
 def postprocess_fmriprep_dir(subjects=None, config_file=None, bids_dir=None, fmriprep_dir=None, output_dir=None, 
-    batch=False, submit=False, log_dir=None, pybids_db_path=None, debug=False):
+    batch=False, submit=False, log_dir=None, pybids_db_path=None, refresh_index=False, debug=False):
 
     config=None
 
@@ -130,7 +132,7 @@ def postprocess_fmriprep_dir(subjects=None, config_file=None, bids_dir=None, fmr
     # TODO: PYBIDS_DB_PATH should have config arg
     try:
         jobs_to_run = PostProcessSubjectJobs(bids_dir, fmriprep_dir, output_dir, config_file, subjects_to_process=subjects, 
-            log_dir=log_dir, pybids_db_path=pybids_db_path)
+            log_dir=log_dir, pybids_db_path=pybids_db_path, refresh_index=refresh_index)
     except NoSubjectsFoundError:
         sys.exit()
     except FileNotFoundError:
@@ -163,21 +165,24 @@ def _setup_batch_manager(config, log_dir):
 
     return batch_manager
 
-def _get_bids(bids_dir: os.PathLike, validate=False, database_path: os.PathLike=None, fmriprep_dir: os.PathLike=None, index_metadata=True) -> BIDSLayout:
+def _get_bids(bids_dir: os.PathLike, validate=False, database_path: os.PathLike=None, fmriprep_dir: os.PathLike=None, 
+                index_metadata=True, refresh=False) -> BIDSLayout:
     try:
         database_path = Path(database_path)
         
-        if database_path.exists():
+        # Use an existing pybids database, and user did not request an index refresh
+        if database_path.exists() and not refresh:
             return BIDSLayout(database_path=database_path)
+        # Index from scratch (slow)
         else:
             indexer = BIDSLayoutIndexer(validate=validate, index_metadata=index_metadata)
             LOG.info(f"Indexing BIDS directory: {bids_dir}")
             print("(this can take a few minutes)")
 
             if fmriprep_dir:
-                return BIDSLayout(bids_dir, validate=validate, indexer=indexer, database_path=database_path, derivatives=fmriprep_dir)
+                return BIDSLayout(bids_dir, validate=validate, indexer=indexer, database_path=database_path, derivatives=fmriprep_dir, reset_database=refresh)
             else:
-                return BIDSLayout(bids_dir, validate=validate, indexer=indexer, database_path=database_path)
+                return BIDSLayout(bids_dir, validate=validate, indexer=indexer, database_path=database_path, reset_database=refresh)
     except FileNotFoundError as fne:
         LOG.error(fne)
         raise fne
@@ -499,7 +504,7 @@ class PostProcessSubjectJobs():
 
     # TODO: Add class logger
     def __init__(self, bids_dir, fmriprep_dir, output_dir: os.PathLike, config_file: os.PathLike, 
-        subjects_to_process=None, log_dir: os.PathLike=None, pybids_db_path: os.PathLike=None):
+        subjects_to_process=None, log_dir: os.PathLike=None, pybids_db_path: os.PathLike=None, refresh_index=False):
         
         self.setup_logger()
 
@@ -516,7 +521,7 @@ class PostProcessSubjectJobs():
         self.bids_dir = bids_dir
         self.fmriprep_dir = fmriprep_dir
 
-        self.bids:BIDSLayout = _get_bids(self.bids_dir, database_path=pybids_db_path, fmriprep_dir=fmriprep_dir)
+        self.bids:BIDSLayout = _get_bids(self.bids_dir, database_path=pybids_db_path, fmriprep_dir=fmriprep_dir, refresh=refresh_index)
 
         # Choose the subjects to process
         self.subjects_to_process = _get_subjects(self.bids, subjects_to_process)
