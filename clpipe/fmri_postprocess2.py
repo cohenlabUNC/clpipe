@@ -109,7 +109,7 @@ def postprocess_fmriprep_dir(subjects=None, config_file=None, fmriprep_dir=None,
     slurm_log_dir = log_dir / "slurm_out"
     if not slurm_log_dir.exists():
             LOG.info(f"Creating subject working directory: {slurm_log_dir}")
-            slurm_log_dir.mkdir(exist_ok=True)
+            slurm_log_dir.mkdir(exist_ok=True, parents=True)
 
     # Setup Logging
     if debug: 
