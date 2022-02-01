@@ -311,7 +311,7 @@ def test_postprocess_subject_job(clpipe_fmriprep_dir, artifact_dir, helpers, req
     log_dir.mkdir(parents=True, exist_ok=True)
 
     subject = PostProcessSubjectJob('1', bids_dir, fmriprep_dir, postproc_dir, config, log_dir=log_dir)
-    subject.run()
+    subject.setup()
 
 def test_postprocess_subject_with_confounds(clpipe_fmriprep_dir, postprocessing_config, artifact_dir, helpers, request):
     fmriprep_dir = clpipe_fmriprep_dir / "data_fmriprep" / "fmriprep"

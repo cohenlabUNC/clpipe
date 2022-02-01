@@ -269,8 +269,8 @@ class PostProcessSubjectJob():
         for task_job in self.task_jobs:
             self.logger.info(f"Job: {task_job}")
         self.logger.info(f"Built {len(self.task_jobs)} task jobs")
-            
-    def run(self):
+
+    def setup(self):
         self.setup_config()
         self.setup_directories()
         self.setup_file_logger()
@@ -278,10 +278,15 @@ class PostProcessSubjectJob():
         self.get_tasks()
         self.build_task_jobs()
 
+    def run(self):
+        self.setup()
         self.logger.info(f"Running {len(self.task_jobs)} task jobs")
         for task_job in self.task_jobs:
             task_job.run()
         self.logger.info(f"Task jobs completed")
+
+    def __call__(self):
+        self.run()
 
 class PostProcessSubjectTaskJob():
     def __init__(self, subject_id: str, task: str, bids: BIDSLayout, out_dir: os.PathLike, 
@@ -452,6 +457,9 @@ class PostProcessSubjectTaskJob():
         self.process_confounds()
         self.process_image()
 
+    def __call__(self):
+        self.run()
+
 
 def _get_subjects(bids_dir: BIDSLayout, subjects):   
     # If no subjects were provided, use all subjects in the fmriprep directory
@@ -580,4 +588,7 @@ class PostProcessSubjectJobs():
             self.logger.info(f"Running {num_jobs} postprocessing jobs")
             for job in self.post_process_jobs:
                 job.run()
+
+    def __call__(self):
+        self.run()
         
