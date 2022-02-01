@@ -32,7 +32,7 @@ class SubjectNotFoundError(ValueError):
 
 @click.command()
 @click.argument('subjects', nargs=-1, required=False, default=None)
-@click.option('-config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True), default=None, required = True,
+@click.option('-config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True), default=None, required=True,
               help='Use a given configuration file.')
 @click.option('-fmriprep_dir', type=click.Path(exists=True, dir_okay=True, file_okay=False), help="""Which fmriprep directory to process. 
     If a configuration file is provided with a BIDS directory, this argument is not necessary. 
@@ -40,12 +40,14 @@ class SubjectNotFoundError(ValueError):
 @click.option('-output_dir', type=click.Path(dir_okay=True, file_okay=False), default=None, required=False, help = """Where to put the postprocessed data. 
     If a configuration file is provided with a output directory, this argument is not necessary.""")
 @click.option('-log_dir', type=click.Path(exists=True, dir_okay=True, file_okay=False), default=None, required = False, help = 'Path to the logging directory.')
+@click.option('-index_dir', type=click.Path(exists=True, dir_okay=True, file_okay=False), default=None, required=False,
+              help='Use a given configuration file.')
 @click.option('-batch/-no-batch', is_flag = True, default=True, help = 'Flag to create batch jobs without prompt.')
 @click.option('-submit', is_flag = True, default=False, help = 'Flag to submit commands to the HPC without prompt.')
 @click.option('-debug', is_flag = True, default=False, help = 'Print detailed processing information and traceback for errors.')
-def fmri_postprocess2_cli(subjects, config_file, fmriprep_dir, output_dir, batch, submit, log_dir, debug):
+def fmri_postprocess2_cli(subjects, config_file, fmriprep_dir, output_dir, batch, submit, log_dir, index_dir, debug):
     postprocess_fmriprep_dir(subjects=subjects, config_file=config_file, fmriprep_dir=fmriprep_dir, output_dir=output_dir, 
-    batch=batch, submit=submit, log_dir=log_dir, debug=debug)
+    batch=batch, submit=submit, log_dir=log_dir, pybids_db_path=index_dir, debug=debug)
 
 
 @click.command()
@@ -74,8 +76,8 @@ def postprocess_subject(subject_id, fmriprep_dir, output_dir, config_file, log_d
     sys.exit()
 
 
-def postprocess_fmriprep_dir(subjects=None, config_file=None, fmriprep_dir=None, output_dir=None, 
-    batch=False, submit=False, log_dir=None, debug=False):
+def postprocess_fmriprep_dir(subjects=None, config_file=None, bids_dir=None, fmriprep_dir=None, output_dir=None, 
+    batch=False, submit=False, log_dir=None, pybids_db_path=None, debug=False):
 
     config=None
 
@@ -95,6 +97,11 @@ def postprocess_fmriprep_dir(subjects=None, config_file=None, fmriprep_dir=None,
         fmriprep_dir = Path(fmriprep_dir)
     else:
         fmriprep_dir = Path(config["FMRIPrepOptions"]["OutputDirectory"]) / "fmriprep"
+
+    if bids_dir:
+        bids_dir = Path(bids_dir)
+    else:
+        bids_dir = Path(config["FMRIPrepOptions"]["BIDSDirectory"])
 
     if output_dir:
         output_dir = Path(output_dir)
@@ -122,7 +129,8 @@ def postprocess_fmriprep_dir(subjects=None, config_file=None, fmriprep_dir=None,
     # Create jobs based on subjects given for processing
     # TODO: PYBIDS_DB_PATH should have config arg
     try:
-        jobs_to_run = PostProcessSubjectJobs(fmriprep_dir, output_dir, config_file, subjects, log_dir)
+        jobs_to_run = PostProcessSubjectJobs(bids_dir, fmriprep_dir, output_dir, config_file, subjects_to_process=subjects, 
+            log_dir=log_dir, pybids_db_path=pybids_db_path)
     except NoSubjectsFoundError:
         sys.exit()
     except FileNotFoundError:
