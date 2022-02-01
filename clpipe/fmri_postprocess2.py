@@ -57,16 +57,17 @@ def fmri_postprocess2_cli(subjects, config_file, fmriprep_dir, output_dir, batch
 @click.argument('fmriprep_dir', type=click.Path(dir_okay=True, file_okay=False))
 @click.argument('output_dir', type=click.Path(dir_okay=True, file_okay=False))
 @click.argument('config_file', type=click.Path(dir_okay=False, file_okay=True))
+@click.argument('index_dir', type=click.Path(dir_okay=True, file_okay=False))
 @click.argument('log_dir', type=click.Path(dir_okay=True, file_okay=False))
-def postprocess_subject_cli(subject_id, fmriprep_dir, output_dir, config_file, log_dir):
-    postprocess_subject(subject_id, fmriprep_dir, output_dir, config_file, log_dir)
+def postprocess_subject_cli(subject_id, fmriprep_dir, output_dir, config_file, index_dir, log_dir):
+    postprocess_subject(subject_id, fmriprep_dir, output_dir, config_file, index_dir, log_dir)
 
 
-def postprocess_subject(subject_id, fmriprep_dir, output_dir, config_file, log_dir):
+def postprocess_subject(subject_id, fmriprep_dir, output_dir, config_file, index_dir, log_dir):
     click.echo(f"Processing subject: {subject_id}")
     
     try:
-        job = PostProcessSubjectJob(subject_id, fmriprep_dir, output_dir, config_file, log_dir=log_dir)
+        job = PostProcessSubjectJob(subject_id, fmriprep_dir, output_dir, config_file, pybids_db_path=index_dir, log_dir=log_dir)
         job.run()
     except SubjectNotFoundError:
         sys.exit()
@@ -177,7 +178,7 @@ def _get_bids(bids_dir: os.PathLike, validate=False, database_path: os.PathLike=
         else:
             indexer = BIDSLayoutIndexer(validate=validate, index_metadata=index_metadata)
             LOG.info(f"Indexing BIDS directory: {bids_dir}")
-            print("(this can take a few minutes)")
+            print("Indexing BIDS directory - this can take a few minutes...")
 
             if fmriprep_dir:
                 return BIDSLayout(bids_dir, validate=validate, indexer=indexer, database_path=database_path, derivatives=fmriprep_dir, reset_database=refresh)
@@ -190,10 +191,11 @@ def _get_bids(bids_dir: os.PathLike, validate=False, database_path: os.PathLike=
 class PostProcessSubjectJob():
     
     def __init__(self, subject_id: str, bids_dir: os.PathLike, fmriprep_dir: os.PathLike, out_dir: os.PathLike, 
-        config_file: dict, log_dir: os.PathLike=None):
+        config_file: dict, pybids_db_path: os.PathLike=None, log_dir: os.PathLike=None):
         
         self.subject_id = subject_id
         self.bids_dir = Path(bids_dir)
+        self.pybids_db_path = Path(pybids_db_path)
         self.fmriprep_dir = Path(fmriprep_dir)
         self.log_dir=Path(log_dir)
         self.out_dir = Path(out_dir)
@@ -214,8 +216,7 @@ class PostProcessSubjectJob():
         # Open the bids dir and validate that it contains the subject
         self.logger.info(f"Checking fmri output for requested subject in: {self.bids_dir}")
         try:
-            self.bids:BIDSLayout = _get_bids(self.bids_dir, validate=False, index_metadata=True)
-            self.bids.add_derivatives(self.fmriprep_dir)
+            self.bids:BIDSLayout = _get_bids(self.bids_dir, database_path=self.pybids_db_path)
 
             if len(self.bids.get(subject=self.subject_id, scope="derivatives")) == 0:
                 snfe = f"Subject {self.subject_id} was not found in fmri output directory {self.bids_dir}"
@@ -534,7 +535,7 @@ class PostProcessSubjectJobs():
         for subject in self.subjects_to_process:
             # Create a new job and add to list of jobs to be run
             job_to_add = PostProcessSubjectJob(subject, self.bids_dir, self.fmriprep_dir,
-                self.output_dir, self.config_file, log_dir=self.log_dir)
+                self.output_dir, self.config_file, pybids_db_path=self.pybids_db_path, log_dir=self.log_dir)
             self.post_process_jobs.append(job_to_add)
         self.logger.info(f"Created {len(self.post_process_jobs)} postprocessing jobs")
         
