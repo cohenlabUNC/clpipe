@@ -250,16 +250,13 @@ class PostProcessSubjectJob():
         self.logger.addHandler(c_handler)
 
     def get_images(self):
-        self.images_to_process = self.bids.get_tasks(subject=self.subject_id, scope="derivatives")
-        
         self.logger.info(f"Searching for images to process")
         # Find the subject's images to run post_proc on
         try:
             self.images_to_process = self.bids.get(return_type="filename",
                 subject=self.subject_id, extension="nii.gz", datatype="func", 
-                suffix="bold", desc="preproc", scope="derivatives")[0]
+                suffix="bold", desc="preproc", scope="derivatives")
 
-            self.logger.info(f"Found BOLD image: {self.images_to_process} with TR: {self.tr}")
         except IndexError:
             raise NoImagesFound(f"No preproc BOLD image for subject {self.subject_id} found.")
 
@@ -273,7 +270,7 @@ class PostProcessSubjectJob():
 
         self.image_jobs = []
         for image in self.images_to_process:
-            self.image_jobs.append(PostProcessImage(image, self.subject_out_dir,
+            self.image_jobs.append(PostProcessImage(image, self.bids, self.subject_out_dir,
                 self.postprocessing_config, working_dir = self.working_dir, log_dir = self.log_dir))
 
         for image_job in self.image_jobs:
@@ -301,7 +298,8 @@ class PostProcessSubjectJob():
 class PostProcessImage():
     def __init__(self, image_path: os.PathLike, bids: BIDSLayout, out_dir: os.PathLike, 
         postprocessing_config: dict, working_dir: os.PathLike=None, log_dir: os.PathLike=None):
-        self.image_path = image_path
+        self.image_path = Path(image_path)
+        self.image_file_name = self.image_path.stem
         self.bids = bids
         self.working_dir = Path(working_dir)
         self.log_dir = Path(log_dir)
@@ -314,7 +312,7 @@ class PostProcessImage():
         self.setup_logger()
 
     def __str__(self):
-        return f"Postprocessing Job: sub-{self.subject_id} task-{self.task}"
+        return f"Postprocessing Job: {self.image_file_name}"
 
     def get_confounds(self):
         # Find the subject's confounds file
@@ -371,7 +369,7 @@ class PostProcessImage():
             self.noise_file = None
 
     def setup_logger(self):
-        self.logger = logging.getLogger(f"{self.__class__.__name__}.sub-{self.subject_id}.task-{self.task}")
+        self.logger = logging.getLogger(f"{self.__class__.__name__}.{self.image_file_name}")
         self.logger.setLevel(logging.INFO)
         
         # Create log handler
@@ -420,6 +418,7 @@ class PostProcessImage():
         self.get_image_to_process()
 
         # Process the subject's image
+        # TODO update this
         self.tr = image_to_process_result.get_metadata()['RepetitionTime']
 
         # Calculate the output file name
@@ -447,7 +446,7 @@ class PostProcessImage():
             wf.write_graph(dotfilename = graph_image_path, graph2use="colored")
 
     def run(self):
-        self.logger.info(f"Running postprocessing for sub-{self.subject_id} task-{self.task}")
+        self.logger.info(f"Running postprocessing for {self.image_file_name}")
 
         self.get_aroma_files()
         self.process_confounds()
