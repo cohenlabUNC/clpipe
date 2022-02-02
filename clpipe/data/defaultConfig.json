@@ -95,7 +95,7 @@
 				"Algorithm": "fsl_regfilt"
 			},
 			"Resample":{
-				"Reference": "SET REFERENCE"
+				"ReferenceImage": "SET REFERENCE IMAGE"
 			},
 			"ConfoundRegression": {
 				"Algorithm": "afni_3dTproject",

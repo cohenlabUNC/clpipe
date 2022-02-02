@@ -372,7 +372,7 @@ def test_postprocess2_wf_fslmaths_temporal_filter(artifact_dir, postprocessing_c
 def test_postprocess2_wf_resample(artifact_dir, postprocessing_config, request, sample_raw_image, sample_reference, sample_raw_image_mask, plot_img, write_graph, helpers):
 
     postprocessing_config["ProcessingSteps"] = ["SpatialSmoothing", "IntensityNormalization", "TemporalFiltering", "Resample"]
-    postprocessing_config["ProcessingStepOptions"]["Resample"]["Reference"] = str(sample_reference)
+    postprocessing_config["ProcessingStepOptions"]["Resample"]["ReferenceImage"] = str(sample_reference)
 
     test_path = helpers.create_test_dir(artifact_dir, request.node.name)
     out_path = test_path / "postProcessed.nii.gz"
