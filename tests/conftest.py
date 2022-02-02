@@ -242,3 +242,7 @@ def sample_melodic_mixing() -> Path:
 @pytest.fixture(scope="module")
 def sample_aroma_noise_ics() -> Path:
     return Path("tests/data/AROMAnoiseICs.csv").resolve()
+
+@pytest.fixture(scope="module")
+def sample_reference() -> Path:
+    return Path("tests/artifacts/tpl-MNIPediatricAsym_cohort-2_res-1_T1w.nii.gz").resolve()
