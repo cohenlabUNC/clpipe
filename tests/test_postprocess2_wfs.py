@@ -161,7 +161,7 @@ def test_resample_wf(artifact_dir, sample_raw_image, sample_reference, plot_img,
 
     resampled_path = test_path / "resampled.nii.gz"
 
-    wf = build_resample_wf
+    wf = build_resample_workflow(
         reference_image=sample_reference, in_file=sample_raw_image, out_file=resampled_path, base_dir=test_path, crashdump_dir=test_path)
     wf.run()
 
@@ -169,4 +169,4 @@ def test_resample_wf(artifact_dir, sample_raw_image, sample_reference, plot_img,
         wf.write_graph(dotfilename = test_path / "resampleflow", graph2use=write_graph)
 
     if plot_img:
-        helpers.plot_4D_img_slice(regressed_path, "resample.png")
+        helpers.plot_4D_img_slice(resampled_path, "resample.png")
