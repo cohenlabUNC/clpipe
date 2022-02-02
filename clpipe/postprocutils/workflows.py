@@ -104,6 +104,13 @@ def build_postprocessing_workflow(postprocessing_config: dict, in_file: os.PathL
             current_wf = confound_regression_algorithm(mask_file=mask_file, base_dir=postproc_wf.base_dir, crashdump_dir=crashdump_dir)
 
             postproc_wf.connect(confounds_postproc_wf, "outputnode.out_file", current_wf, "inputnode.ort")
+        
+        elif step == "Resample":
+            reference_image = postprocessing_config["ProcessingStepOptions"][step]["ReferenceImage"]
+            if reference_image == "SET REFERENCE":
+                raise ValueError("No reference provided. Please set a path to reference in clpipe_config.json")
+
+            current_wf = build_resample_workflow(reference_image=reference_image, base_dir=postproc_wf.base_dir, crashdump_dir=crashdump_dir)
 
         # Send input of postproc workflow to first workflow
         if index == 0:

@@ -94,6 +94,9 @@
 			"AROMARegression":{
 				"Algorithm": "fsl_regfilt"
 			},
+			"Resample":{
+				"Reference": "SET REFERENCE"
+			},
 			"ConfoundRegression": {
 				"Algorithm": "afni_3dTproject",
 				"Columns": ["csf", "csf_derivative1", "white_matter", "white_matter_derivative1"],
