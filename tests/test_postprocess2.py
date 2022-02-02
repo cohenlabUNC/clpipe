@@ -369,4 +369,25 @@ def test_postprocess2_wf_fslmaths_temporal_filter(artifact_dir, postprocessing_c
 
     assert True
 
+def test_postprocess2_wf_resample(artifact_dir, postprocessing_config, request, sample_raw_image, sample_reference, sample_raw_image_mask, plot_img, write_graph, helpers):
+
+    postprocessing_config["ProcessingSteps"] = ["SpatialSmoothing", "IntensityNormalization", "TemporalFiltering", "Resample"]
+    postprocessing_config["ProcessingStepOptions"]["Resample"]["Reference"] = str(sample_reference)
+
+    test_path = helpers.create_test_dir(artifact_dir, request.node.name)
+    out_path = test_path / "postProcessed.nii.gz"
+    
+    wf = build_postprocessing_workflow(postprocessing_config, in_file=sample_raw_image, out_file=out_path, tr=2, mask_file=sample_raw_image_mask,
+        base_dir=test_path, crashdump_dir=test_path)
+    
+    wf.run()
+
+    if write_graph:
+        wf.write_graph(dotfilename = test_path / "postProcessSubjectFlow", graph2use=write_graph)
+   
+    if plot_img:
+        helpers.plot_4D_img_slice(out_path, "postProcessed.png")
+
+    assert True
+
 
