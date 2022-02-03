@@ -23,6 +23,7 @@ setup(name='clpipe',
                         'nilearn',
                         'dcm2bids',
                         'nipype',
+                        'pybids>=0.14.0',
                         'templateflow',
                         'deepdiff'],
       entry_points='''
