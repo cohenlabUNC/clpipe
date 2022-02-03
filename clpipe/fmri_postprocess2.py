@@ -55,20 +55,21 @@ def fmri_postprocess2_cli(subjects, config_file, fmriprep_dir, output_dir, batch
 
 @click.command()
 @click.argument('subject_id')
+@click.argument('bids_dir', type=click.Path(dir_okay=True, file_okay=False))
 @click.argument('fmriprep_dir', type=click.Path(dir_okay=True, file_okay=False))
 @click.argument('output_dir', type=click.Path(dir_okay=True, file_okay=False))
 @click.argument('config_file', type=click.Path(dir_okay=False, file_okay=True))
 @click.argument('index_dir', type=click.Path(dir_okay=True, file_okay=False))
 @click.argument('log_dir', type=click.Path(dir_okay=True, file_okay=False))
-def postprocess_subject_cli(subject_id, fmriprep_dir, output_dir, config_file, index_dir, log_dir):
-    postprocess_subject(subject_id, fmriprep_dir, output_dir, config_file, index_dir, log_dir)
+def postprocess_subject_cli(subject_id, bids_dir, fmriprep_dir, output_dir, config_file, index_dir, log_dir):
+    postprocess_subject(subject_id, bids_dir, fmriprep_dir, output_dir, config_file, index_dir, log_dir)
 
 
-def postprocess_subject(subject_id, fmriprep_dir, output_dir, config_file, index_dir, log_dir):
+def postprocess_subject(subject_id, bids_dir, fmriprep_dir, output_dir, config_file, index_dir, log_dir):
     click.echo(f"Processing subject: {subject_id}")
     
     try:
-        job = PostProcessSubjectJob(subject_id, fmriprep_dir, output_dir, config_file, pybids_db_path=index_dir, log_dir=log_dir)
+        job = PostProcessSubjectJob(subject_id, bids_dir, fmriprep_dir, output_dir, config_file, pybids_db_path=index_dir, log_dir=log_dir)
         job.run()
     except SubjectNotFoundError:
         sys.exit()
@@ -78,7 +79,6 @@ def postprocess_subject(subject_id, fmriprep_dir, output_dir, config_file, index
         sys.exit()
     
     sys.exit()
-
 
 def postprocess_fmriprep_dir(subjects=None, config_file=None, bids_dir=None, fmriprep_dir=None, output_dir=None, 
     batch=False, submit=False, log_dir=None, pybids_db_path=None, refresh_index=False, debug=False):
@@ -116,6 +116,11 @@ def postprocess_fmriprep_dir(subjects=None, config_file=None, bids_dir=None, fmr
         log_dir = Path(log_dir)
     else:
         log_dir = Path(config["ProjectDirectory"]) / "logs" / "postproc2_logs"
+
+    if pybids_db_path:
+        pybids_db_path = Path(pybids_db_path)
+    else:
+        pybids_db_path = Path(config["ProjectDirectory"]) / "bids_index"
 
     slurm_log_dir = log_dir / "slurm_out"
     if not slurm_log_dir.exists():
