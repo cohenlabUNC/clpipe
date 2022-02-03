@@ -1,6 +1,7 @@
 import sys
 import os
 import logging
+import json
 from pathlib import Path
 
 import click
@@ -397,7 +398,17 @@ class PostProcessSubjectTaskJob():
                 suffix="bold", desc="preproc", scope="derivatives")[0]
             self.image_to_process = image_to_process_result.path
 
-            self.tr = image_to_process_result.get_metadata()['RepetitionTime']
+
+            # To get the TR, we do another, similar query to get the sidecar and open it as a dict, because indexing metadata in
+            # pybids is too slow to be worth just having the TR available
+            # This can probably be done in just one query combined with the above
+            image_to_process_json = self.bids.get(
+                subject=self.subject_id, task=self.task, extension=".json", datatype="func", 
+                suffix="bold", desc="preproc", scope="derivatives", return_type="filename")[0]
+
+            with open(image_to_process_json) as sidecar_file:
+                sidecar_data = json.load(sidecar_file)
+                self.tr = sidecar_data["RepetitionTime"] 
 
             self.logger.info(f"Found BOLD image: {self.image_to_process} with TR: {self.tr}")
         except IndexError:
