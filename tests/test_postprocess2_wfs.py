@@ -153,3 +153,20 @@ def test_apply_aroma_fsl_regfilt_wf(artifact_dir, sample_raw_image, sample_melod
 
     if plot_img:
         helpers.plot_4D_img_slice(regressed_path, "aromaaplied.png")
+
+#TODO: Provide reference image
+def test_resample_wf(artifact_dir, sample_raw_image, sample_reference, plot_img, write_graph, request, helpers):
+    
+    test_path = helpers.create_test_dir(artifact_dir, request.node.name)
+
+    resampled_path = test_path / "resampled.nii.gz"
+
+    wf = build_resample_workflow(
+        reference_image=sample_reference, in_file=sample_raw_image, out_file=resampled_path, base_dir=test_path, crashdump_dir=test_path)
+    wf.run()
+
+    if write_graph:
+        wf.write_graph(dotfilename = test_path / "resampleflow", graph2use=write_graph)
+
+    if plot_img:
+        helpers.plot_4D_img_slice(resampled_path, "resample.png")
