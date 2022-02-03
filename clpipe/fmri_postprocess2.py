@@ -15,7 +15,7 @@ from .error_handler import exception_handler
 # This hides a pybids warning
 bids_config.set_option('extension_initial_dot', True)
 
-# logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.INFO)
 LOG = logging.getLogger(__name__)
 
 class NoSubjectTaskFoundError(ValueError):
@@ -40,7 +40,7 @@ class SubjectNotFoundError(ValueError):
 @click.option('-output_dir', type=click.Path(dir_okay=True, file_okay=False), default=None, required=False, help = """Where to put the postprocessed data. 
     If a configuration file is provided with a output directory, this argument is not necessary.""")
 @click.option('-log_dir', type=click.Path(exists=True, dir_okay=True, file_okay=False), default=None, required = False, help = 'Path to the logging directory.')
-@click.option('-index_dir', type=click.Path(exists=True, dir_okay=True, file_okay=False), default=None, required=False,
+@click.option('-index_dir', type=click.Path(dir_okay=True, file_okay=False), default=None, required=False,
               help='Give the path to an existing pybids index database.')
 @click.option('-refresh_index', is_flag=True, default=False, required=False,
               help='Refresh the pybids index database to reflect new fmriprep artifacts.')
@@ -167,12 +167,13 @@ def _setup_batch_manager(config, log_dir):
     return batch_manager
 
 def _get_bids(bids_dir: os.PathLike, validate=False, database_path: os.PathLike=None, fmriprep_dir: os.PathLike=None, 
-                index_metadata=True, refresh=False) -> BIDSLayout:
+                index_metadata=False, refresh=False) -> BIDSLayout:
     try:
         database_path = Path(database_path)
         
         # Use an existing pybids database, and user did not request an index refresh
         if database_path.exists() and not refresh:
+            LOG.info(f"Using existing BIDS index: {database_path}")
             return BIDSLayout(database_path=database_path)
         # Index from scratch (slow)
         else:
@@ -525,6 +526,7 @@ class PostProcessSubjectJobs():
         self.bids:BIDSLayout = _get_bids(self.bids_dir, database_path=pybids_db_path, fmriprep_dir=fmriprep_dir, refresh=refresh_index)
 
         # Choose the subjects to process
+        self.logger.info("Searching for subjects to process")
         self.subjects_to_process = _get_subjects(self.bids, subjects_to_process)
         
         # Create the jobs
