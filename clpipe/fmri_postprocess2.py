@@ -202,7 +202,7 @@ class PostProcessSubjectJob():
         
         self.subject_id = subject_id
         self.bids_dir = Path(bids_dir)
-        self.pybids_db_path = Path(pybids_db_path)
+        self.pybids_db_path = pybids_db_path
         self.fmriprep_dir = Path(fmriprep_dir)
         self.log_dir=Path(log_dir)
         self.out_dir = Path(out_dir)
