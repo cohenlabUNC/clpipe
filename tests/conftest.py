@@ -264,3 +264,7 @@ def sample_aroma_noise_ics() -> Path:
 @pytest.fixture(scope="module")
 def sample_fmriprep_dataset_description() -> Path:
     return Path("tests/data/dataset_description.json").resolve()
+
+@pytest.fixture(scope="module")
+def sample_reference() -> Path:
+    return Path("tests/artifacts/tpl-MNIPediatricAsym_cohort-2_res-1_T1w.nii.gz").resolve()

@@ -6,7 +6,7 @@ from nipype.interfaces.fsl.maths import MeanImage, BinaryMaths, MedianImage, App
 from nipype.interfaces.fsl.utils import ImageStats, FilterRegressor
 from nipype.interfaces.afni import TProject
 from nipype.interfaces.fsl.model import GLM
-from nipype.interfaces.fsl import SUSAN
+from nipype.interfaces.fsl import SUSAN, FLIRT
 from nipype.interfaces.utility import Function, Merge, IdentityInterface
 import nipype.pipeline.engine as pe
 
@@ -104,6 +104,13 @@ def build_postprocessing_workflow(postprocessing_config: dict, in_file: os.PathL
             current_wf = confound_regression_algorithm(mask_file=mask_file, base_dir=postproc_wf.base_dir, crashdump_dir=crashdump_dir)
 
             postproc_wf.connect(confounds_postproc_wf, "outputnode.out_file", current_wf, "inputnode.ort")
+        
+        elif step == "Resample":
+            reference_image = postprocessing_config["ProcessingStepOptions"][step]["ReferenceImage"]
+            if reference_image == "SET REFERENCE IMAGE":
+                raise ValueError("No reference image provided. Please set a path to reference in clpipe_config.json")
+
+            current_wf = build_resample_workflow(reference_image=reference_image, base_dir=postproc_wf.base_dir, crashdump_dir=crashdump_dir)
 
         # Send input of postproc workflow to first workflow
         if index == 0:
@@ -594,6 +601,34 @@ def build_aroma_workflow_fsl_regfilt(in_file: os.PathLike=None, out_file: os.Pat
     workflow.connect(csv_to_list_node, "list", regfilt_node, "filter_columns")
     workflow.connect(input_node, "mixing_file", regfilt_node, "design_file")
     workflow.connect(regfilt_node, "out_file", output_node, "out_file")
+
+    return workflow
+
+def build_resample_workflow(reference_image:os.PathLike=None, in_file: os.PathLike=None, 
+    out_file: os.PathLike=None, base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None):
+    
+    workflow = pe.Workflow(name="Resample", base_dir=base_dir)
+    if crashdump_dir is not None:
+        workflow.config['execution']['crashdump_dir'] = crashdump_dir
+
+    # Setup identity (pass through) input/output nodes
+    input_node = build_input_node()
+    output_node = build_output_node()
+
+    resample_node = pe.Node(FLIRT(apply_xfm = True,
+                                 reference = reference_image,
+                                 uses_qform = True),
+                                 name="resample")
+
+    # Set WF inputs and outputs
+    if in_file:
+        input_node.inputs.in_file = in_file
+    if out_file:
+        input_node.inputs.out_file = out_file
+
+    workflow.connect(input_node, "in_file", resample_node, "in_file")
+    workflow.connect(input_node, "out_file", resample_node, "out_file")
+    workflow.connect(resample_node, "out_file", output_node, "out_file")
 
     return workflow
 
