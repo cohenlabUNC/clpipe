@@ -281,27 +281,28 @@ class PostProcessSubjectJob():
         # Add handler to logger
         self.logger.addHandler(c_handler)
 
-    def get_images(self):
+    def build_image_jobs(self):
         self.logger.info(f"Searching for images to process")
         # Find the subject's images to run post_proc on
         try:
-            self.images_to_process = self.bids.get(return_type="filename",
+            images_to_process = self.bids.get(
                 subject=self.subject_id, extension="nii.gz", datatype="func", 
                 suffix="bold", desc="preproc", scope="derivatives")
 
         except IndexError:
             raise NoImagesFound(f"No preproc BOLD image for subject {self.subject_id} found.")
 
-        if len(self.images_to_process) == 0:
+        if len(images_to_process) == 0:
             raise NoImagesFoundError(f"No preproc BOLD imagess found for sub-{self.subject_id}.")
 
-        self.logger.info(f"Found images: {', '.join(self.images_to_process)}")
+        self.logger.info(f"Found images: {len(images_to_process)}")
 
-    def build_image_jobs(self):
         self.logger.info(f"Building image jobs")
 
         self.image_jobs = []
-        for image in self.images_to_process:
+        for image in images_to_process:
+            self.image_elements = None
+
             self.image_jobs.append(PostProcessImage(image, self.bids, self.subject_out_dir,
                 self.postprocessing_config, working_dir = self.working_dir, log_dir = self.log_dir))
 
@@ -314,7 +315,6 @@ class PostProcessSubjectJob():
         self.setup_directories()
         self.setup_file_logger()
         self.load_bids_dir()
-        self.get_images()
         self.build_image_jobs()
 
     def run(self):
@@ -328,8 +328,10 @@ class PostProcessSubjectJob():
         self.run()
 
 class PostProcessImage():
-    def __init__(self, image_path: os.PathLike, bids: BIDSLayout, out_dir: os.PathLike, 
+    def __init__(self, task: str, run: str, image_path: os.PathLike, bids: BIDSLayout, out_dir: os.PathLike, 
         postprocessing_config: dict, working_dir: os.PathLike=None, log_dir: os.PathLike=None):
+        self.task = task
+        self.run = run
         self.image_path = Path(image_path)
         self.image_file_name = self.image_path.stem
         self.bids = bids
