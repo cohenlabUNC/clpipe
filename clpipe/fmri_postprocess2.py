@@ -453,31 +453,44 @@ class PostProcessImage():
             self.logger.info(f"Drawing confounds workflow graph: {graph_image_path}")
             confounds_wf.write_graph(dotfilename = graph_image_path, graph2use="colored")
 
-    def process_image(self):
-        # Get images for processing
-        self.get_mask()
+    def get_tr(self):
+        # To get the TR, we do another, similar query to get the sidecar and open it as a dict, because indexing metadata in
+        # pybids is too slow to be worth just having the TR available
+        # This can probably be done in just one query combined with the above
+        image_to_process_json = self.bids.get(
+            subject=self.subject_id, task=self.task, extension=".json", datatype="func", 
+            suffix="bold", desc="preproc", scope="derivatives", return_type="filename")[0]
 
-        # Process the subject's image
-        # TODO update this
-        self.tr = image_to_process_result.get_metadata()['RepetitionTime']
+        with open(image_to_process_json) as sidecar_file:
+            sidecar_data = json.load(sidecar_file)
+            self.tr = sidecar_data["RepetitionTime"]
 
+
+    def setup_workflow(self):
         # Calculate the output file name
-        base, image_name, exstension = split_filename(self.image_to_process)
+        base, image_name, exstension = split_filename(self.image_file_name)
         out_stem = image_name + '_postproccessed.nii.gz'
         out_file = os.path.abspath(os.path.join(self.out_dir, out_stem))
 
-        self.logger.info(f"Building postprocessing workflow for image: {self.image_to_process}")
-        #TODO: replace config TR with image TR
-        wf = build_postprocessing_workflow(self.postprocessing_config, in_file=self.image_to_process, out_file=out_file,
+        self.logger.info(f"Building postprocessing workflow for image: {self.image_file_name}")
+        wf = build_postprocessing_workflow(self.postprocessing_config, in_file=self.image_file_name, out_file=out_file,
             name=f"Sub_{self.subject_id}_Task_{self.task}_Postprocessing_Pipeline",
             mask_file=self.mask_image, confound_file = self.confounds,
             mixing_file=self.mixing_file, noise_file=self.noise_file,
             tr=self.tr, 
             base_dir=self.working_dir, crashdump_dir=self.log_dir)
 
-        self.logger.info(f"Running postprocessing workflow for image: {self.image_to_process}")
+    def setup(self):
+        self.get_aroma_files()
+        self.get_mask()
+        self.get_tr()
+        self.process_confounds()
+        self.setup_workflow()
+
+    def run(self):
+        self.logger.info(f"Running postprocessing workflow for image: {self.image_file_name}")
         wf.run()
-        self.logger.info(f"Postprocessing workflow complete for image: {self.image_to_process}")
+        self.logger.info(f"Postprocessing workflow complete for image: {self.image_file_name}")
 
         # Draw the workflow's process graph if requested in config
         if self.postprocessing_config["WriteProcessGraph"]:
@@ -485,12 +498,8 @@ class PostProcessImage():
             self.logger.info(f"Drawing workflow graph: {graph_image_path}")
             wf.write_graph(dotfilename = graph_image_path, graph2use="colored")
 
-    def run(self):
-        self.logger.info(f"Running postprocessing for {self.image_file_name}")
-
-        self.get_aroma_files()
-        self.process_confounds()
-        self.process_image()
+        
+        
 
     def __call__(self):
         self.run()
