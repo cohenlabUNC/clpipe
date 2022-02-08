@@ -223,7 +223,7 @@ class PostProcessSubjectJob():
         # Open the bids dir and validate that it contains the subject
         self.logger.info(f"Checking fmri output for requested subject in: {self.bids_dir}")
         try:
-            self.bids:BIDSLayout = _get_bids(self.bids_dir, database_path=self.pybids_db_path)
+            self.bids:BIDSLayout = _get_bids(self.bids_dir, database_path=self.pybids_db_path, fmriprep_dir=self.fmriprep_dir)
 
             if len(self.bids.get(subject=self.subject_id, scope="derivatives")) == 0:
                 snfe = f"Subject {self.subject_id} was not found in fmri output directory {self.bids_dir}"
@@ -298,12 +298,18 @@ class PostProcessSubjectJob():
         self.logger.info(f"Found images: {len(images_to_process)}")
 
         self.logger.info(f"Building image jobs")
-
         self.image_jobs = []
         for image in images_to_process:
-            self.image_elements = None
+            image_entities = image.get_entities()
 
-            self.image_jobs.append(PostProcessImage(image, self.bids, self.subject_out_dir,
+            task = image_entities['task']
+            
+            try:
+                run = image_entities['run']
+            except KeyError:
+                run = None
+
+            self.image_jobs.append(PostProcessImage(self.subject_id, task, run, image.path, self.bids, self.subject_out_dir,
                 self.postprocessing_config, working_dir = self.working_dir, log_dir = self.log_dir))
 
         for image_job in self.image_jobs:
@@ -328,8 +334,9 @@ class PostProcessSubjectJob():
         self.run()
 
 class PostProcessImage():
-    def __init__(self, task: str, run: str, image_path: os.PathLike, bids: BIDSLayout, out_dir: os.PathLike, 
+    def __init__(self, subject_id:str, task: str, run: str, image_path: os.PathLike, bids: BIDSLayout, out_dir: os.PathLike, 
         postprocessing_config: dict, working_dir: os.PathLike=None, log_dir: os.PathLike=None):
+        self.subject_id = subject_id
         self.task = task
         self.run = run
         self.image_path = Path(image_path)
@@ -449,7 +456,6 @@ class PostProcessImage():
     def process_image(self):
         # Get images for processing
         self.get_mask()
-        self.get_image_to_process()
 
         # Process the subject's image
         # TODO update this

@@ -298,7 +298,7 @@ def test_prepare_confounds_aroma(sample_confounds_timeseries, postprocessing_con
         base_dir=test_path, crashdump_dir=test_path, tr=2)
 
     cf_workflow.run()
-    
+    S
     assert True
 
 def test_postprocess_subject_job_setup(clpipe_fmriprep_dir, artifact_dir, helpers, request):
@@ -310,8 +310,9 @@ def test_postprocess_subject_job_setup(clpipe_fmriprep_dir, artifact_dir, helper
     postproc_dir.mkdir(exist_ok=True)
     log_dir = Path(test_dir / "logs" / "postproc_logs")
     log_dir.mkdir(parents=True, exist_ok=True)
+    pybids_db_path = test_dir / "BIDS_index"
 
-    subject = PostProcessSubjectJob('1', bids_dir, fmriprep_dir, postproc_dir, config, log_dir=log_dir)
+    subject = PostProcessSubjectJob('1', bids_dir, fmriprep_dir, postproc_dir, config, pybids_db_path=pybids_db_path, log_dir=log_dir)
 
     subject.setup()
 
@@ -342,7 +343,7 @@ def test_postprocess_subject_with_confounds(clpipe_fmriprep_dir, postprocessing_
 
     postprocessing_config["ConfoundOptions"]["Include"] = True
 
-    subject = PostProcessSubjectJob('1', clpipe_fmriprep_dir, postproc_dir, postprocessing_config, log_dir=log_dir)
+    subject = PostProcessSubjectJob('1', clpipe_fmriprep_dir, postproc_dir, postprocessing_config, pybids_db_path="bids_index", log_dir=log_dir)
     subject.run()
 
 def test_postprocess_subject_aroma(clpipe_fmriprep_dir, postprocessing_config, artifact_dir, helpers, request):
