@@ -322,15 +322,17 @@ class PostProcessSubjectJob():
         self.setup_file_logger()
         self.load_bids_dir()
         self.build_image_jobs()
+        for image in self.image_jobs:
+            image.setup()
 
     def run(self):
-        self.setup()
         self.logger.info(f"Running {len(self.image_jobs)} image jobs")
         for image_job in self.image_jobs:
             image_job.run()
         self.logger.info(f"Image jobs completed")
 
     def __call__(self):
+        self.setup()
         self.run()
 
 class PostProcessImage():
@@ -378,7 +380,7 @@ class PostProcessImage():
                     desc="brain", scope="derivatives"
             )[0]
             self.logger.info(f"Mask file found: {self.mask_image}")
-            #TODO: Throw multiple masks found exception?
+            #TODO: Notify if mask not found
         except IndexError:
             self.logger.warn(f"Mask image for subject {self.subject_id} task-{self.task} not found.")
             self.mask_image = None
@@ -424,7 +426,19 @@ class PostProcessImage():
         # Add handler to logger
         self.logger.addHandler(c_handler)
 
-    def process_confounds(self):
+    def get_tr(self):
+        # To get the TR, we do another, similar query to get the sidecar and open it as a dict, because indexing metadata in
+        # pybids is too slow to be worth just having the TR available
+        # This can probably be done in just one query combined with the above
+        image_to_process_json = self.bids.get(
+            subject=self.subject_id, task=self.task, extension=".json", datatype="func", 
+            suffix="bold", desc="preproc", scope="derivatives", return_type="filename")[0]
+
+        with open(image_to_process_json) as sidecar_file:
+            sidecar_data = json.load(sidecar_file)
+            self.tr = sidecar_data["RepetitionTime"]
+
+    def setup_confounds_workflow(self):
         if not self.postprocessing_config["ConfoundOptions"]["Include"]: return
 
         # TODO: Run this async or batch
@@ -439,32 +453,11 @@ class PostProcessImage():
         
         self.logger.debug(f"Postprocessed confound out file: {self.confound_out_file}")
     
-        confounds_wf = build_confound_postprocessing_workflow(self.postprocessing_config, confound_file = self.confounds,
+        self.confounds_wf = build_confound_postprocessing_workflow(self.postprocessing_config, confound_file = self.confounds,
             out_file=self.confound_out_file, tr=self.tr,
             name=f"Sub_{self.subject_id}_Confound_Postprocessing_Pipeline",
             mixing_file=self.mixing_file, noise_file=self.noise_file,
             base_dir=self.working_dir, crashdump_dir=self.log_dir)
-        self.logger.info("Postprocessing confounds")
-        confounds_wf.run()
-        
-        # Draw the workflow's process graph if requested in config
-        if self.postprocessing_config["WriteProcessGraph"]:
-            graph_image_path = self.out_dir / "confounds_process_graph.dot"
-            self.logger.info(f"Drawing confounds workflow graph: {graph_image_path}")
-            confounds_wf.write_graph(dotfilename = graph_image_path, graph2use="colored")
-
-    def get_tr(self):
-        # To get the TR, we do another, similar query to get the sidecar and open it as a dict, because indexing metadata in
-        # pybids is too slow to be worth just having the TR available
-        # This can probably be done in just one query combined with the above
-        image_to_process_json = self.bids.get(
-            subject=self.subject_id, task=self.task, extension=".json", datatype="func", 
-            suffix="bold", desc="preproc", scope="derivatives", return_type="filename")[0]
-
-        with open(image_to_process_json) as sidecar_file:
-            sidecar_data = json.load(sidecar_file)
-            self.tr = sidecar_data["RepetitionTime"]
-
 
     def setup_workflow(self):
         # Calculate the output file name
@@ -484,8 +477,8 @@ class PostProcessImage():
         self.get_aroma_files()
         self.get_mask()
         self.get_tr()
-        self.process_confounds()
         self.setup_workflow()
+        self.setup_confounds_workflow()
 
     def run(self):
         self.logger.info(f"Running postprocessing workflow for image: {self.image_file_name}")
@@ -498,10 +491,17 @@ class PostProcessImage():
             self.logger.info(f"Drawing workflow graph: {graph_image_path}")
             wf.write_graph(dotfilename = graph_image_path, graph2use="colored")
 
+        self.logger.info("Postprocessing confounds")
+        self.confounds_wf.run()
         
-        
+        # Draw the workflow's process graph if requested in config
+        if self.postprocessing_config["WriteProcessGraph"]:
+            graph_image_path = self.out_dir / "confounds_process_graph.dot"
+            self.logger.info(f"Drawing confounds workflow graph: {graph_image_path}")
+            self.confounds_wf.write_graph(dotfilename = graph_image_path, graph2use="colored")
 
     def __call__(self):
+        self.setup()
         self.run()
 
 
