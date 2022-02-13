@@ -317,37 +317,49 @@ def test_postprocess_subject_job_setup(clpipe_fmriprep_dir, artifact_dir, helper
     subject.setup()
 
     # Should be a task/run for each of rest, task1, task2-run1, task2-run2
-    assert len(subject.tasks) == 4
+    assert len(subject.image_jobs) == 4
 
-def test_postprocess_subject_job(clpipe_fmriprep_dir, artifact_dir, helpers, request):
+def test_postprocess_subject_job(clpipe_fmriprep_dir, config_file, artifact_dir, helpers, request):
     fmriprep_dir = clpipe_fmriprep_dir / "data_fmriprep" / "fmriprep"
     bids_dir = clpipe_fmriprep_dir / "data_BIDS"
-    config = clpipe_fmriprep_dir / "clpipe_config.json"
     test_dir = helpers.create_test_dir(artifact_dir, request.node.name)
     postproc_dir = Path(test_dir / "data_postprocessed")
     postproc_dir.mkdir(exist_ok=True)
     log_dir = Path(test_dir / "logs" / "postproc_logs")
     log_dir.mkdir(parents=True, exist_ok=True)
+    pybids_db_path = test_dir / "BIDS_index"
 
-    subject = PostProcessSubjectJob('1', bids_dir, fmriprep_dir, postproc_dir, config, log_dir=log_dir)
+    subject = PostProcessSubjectJob('1', bids_dir, fmriprep_dir, postproc_dir, config_file, pybids_db_path=pybids_db_path, log_dir=log_dir)
 
     subject()
 
-def test_postprocess_subject_with_confounds(clpipe_fmriprep_dir, postprocessing_config, artifact_dir, helpers, request):
+def test_postprocess_subject_with_confounds(clpipe_fmriprep_dir, config_file_confounds, artifact_dir, helpers, request):
     fmriprep_dir = clpipe_fmriprep_dir / "data_fmriprep" / "fmriprep"
+    bids_dir = clpipe_fmriprep_dir / "data_BIDS"
     test_dir = helpers.create_test_dir(artifact_dir, request.node.name)
     postproc_dir = Path(test_dir / "data_postprocessed")
     postproc_dir.mkdir(exist_ok=True)
     log_dir = Path(test_dir / "logs" / "postproc_logs")
     log_dir.mkdir(parents=True, exist_ok=True)
 
-    postprocessing_config["ConfoundOptions"]["Include"] = True
+    subject = PostProcessSubjectJob('1', bids_dir, fmriprep_dir, postproc_dir, config_file_confounds, pybids_db_path="bids_index", log_dir=log_dir)
+    subject()
 
-    subject = PostProcessSubjectJob('1', clpipe_fmriprep_dir, postproc_dir, postprocessing_config, pybids_db_path="bids_index", log_dir=log_dir)
-    subject.run()
-
-def test_postprocess_subject_aroma(clpipe_fmriprep_dir, postprocessing_config, artifact_dir, helpers, request):
+def test_postprocess_subject_aroma(clpipe_fmriprep_dir, config_file_aroma, artifact_dir, helpers, request):
     fmriprep_dir = clpipe_fmriprep_dir / "data_fmriprep" / "fmriprep"
+    bids_dir = clpipe_fmriprep_dir / "data_BIDS"
+    test_dir = helpers.create_test_dir(artifact_dir, request.node.name)
+    postproc_dir = Path(test_dir / "data_postprocessed")
+    postproc_dir.mkdir(exist_ok=True)
+    log_dir = Path(test_dir / "logs" / "postproc_logs")
+    log_dir.mkdir(parents=True, exist_ok=True)
+
+    subject = PostProcessSubjectJob('1', bids_dir, fmriprep_dir, postproc_dir, config_file_aroma, pybids_db_path="bids_index", log_dir=log_dir)
+    subject()
+
+def test_postprocess_subject_aroma_with_confound_processing(clpipe_fmriprep_dir, config_file_aroma_confounds, artifact_dir, helpers, request):
+    fmriprep_dir = clpipe_fmriprep_dir / "data_fmriprep" / "fmriprep"
+    bids_dir = clpipe_fmriprep_dir / "data_BIDS"
     test_dir = helpers.create_test_dir(artifact_dir, request.node.name)
     postproc_dir = Path(test_dir / "data_postprocessed")
     postproc_dir.mkdir(exist_ok=True)
@@ -356,21 +368,8 @@ def test_postprocess_subject_aroma(clpipe_fmriprep_dir, postprocessing_config, a
 
     postprocessing_config["ProcessingSteps"] = ["AROMARegression", "SpatialSmoothing", "IntensityNormalization"]
 
-    subject = PostProcessSubjectJob('1', clpipe_fmriprep_dir, postproc_dir, postprocessing_config, log_dir=log_dir)
-    subject.run()
-
-def test_postprocess_subject_aroma_with_confound_processing(clpipe_fmriprep_dir, postprocessing_config, artifact_dir, helpers, request):
-    fmriprep_dir = clpipe_fmriprep_dir / "data_fmriprep" / "fmriprep"
-    test_dir = helpers.create_test_dir(artifact_dir, request.node.name)
-    postproc_dir = Path(test_dir / "data_postprocessed")
-    postproc_dir.mkdir(exist_ok=True)
-    log_dir = Path(test_dir / "logs" / "postproc_logs")
-    log_dir.mkdir(parents=True, exist_ok=True)
-
-    postprocessing_config["ProcessingSteps"] = ["AROMARegression", "SpatialSmoothing", "IntensityNormalization"]
-
-    subject = PostProcessSubjectJob('1', clpipe_fmriprep_dir, postproc_dir, postprocessing_config, log_dir=log_dir)
-    subject.run()
+    subject = PostProcessSubjectJob('1', bids_dir, fmriprep_dir, postproc_dir, config_file_aroma_confounds, pybids_db_path="bids_index", log_dir=log_dir)
+    subject()
 
 def test_postprocess2_wf_fslmaths_temporal_filter(artifact_dir, postprocessing_config, request, sample_raw_image, sample_raw_image_mask, 
     sample_confounds_timeseries, plot_img, write_graph, helpers):

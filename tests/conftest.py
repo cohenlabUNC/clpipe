@@ -268,3 +268,35 @@ def sample_fmriprep_dataset_description() -> Path:
 @pytest.fixture(scope="module")
 def sample_reference() -> Path:
     return Path("tests/artifacts/tpl-MNIPediatricAsym_cohort-2_res-1_T1w.nii.gz").resolve()
+
+@pytest.fixture(scope="module")
+def config_file(clpipe_dir):
+    return clpipe_dir / "clpipe_config.json"
+
+@pytest.fixture(scope="module")
+def config_file_confounds(clpipe_config_default, config_file):
+    clpipe_config_default["PostProcessingOptions2"]["ConfoundOptions"]["Include"] = True
+
+    with open(config_file, 'w') as f:
+        json.dump(clpipe_config_default, f)
+
+    return config_file
+
+@pytest.fixture(scope="module")
+def config_file_aroma(clpipe_config_default, config_file):
+    clpipe_config_default["PostProcessingOptions2"]["ProcessingSteps"] = ["AROMARegression", "SpatialSmoothing", "IntensityNormalization"]
+
+    with open(config_file, 'w') as f:
+        json.dump(clpipe_config_default, f)
+
+    return config_file
+
+@pytest.fixture(scope="module")
+def config_file_aroma_confounds(clpipe_config_default, config_file):
+    clpipe_config_default["PostProcessingOptions2"]["ConfoundOptions"]["Include"] = True
+    clpipe_config_default["PostProcessingOptions2"]["ProcessingSteps"] = ["AROMARegression", "SpatialSmoothing", "IntensityNormalization"]
+
+    with open(config_file, 'w') as f:
+        json.dump(clpipe_config_default, f)
+
+    return config_file
