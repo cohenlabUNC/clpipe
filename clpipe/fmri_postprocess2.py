@@ -198,7 +198,7 @@ def _get_bids(bids_dir: os.PathLike, validate=False, database_path: os.PathLike=
 class PostProcessSubjectJob():
     
     def __init__(self, subject_id: str, bids_dir: os.PathLike, fmriprep_dir: os.PathLike, out_dir: os.PathLike, 
-        config_file: dict, pybids_db_path: os.PathLike=None, log_dir: os.PathLike=None):
+        config_file: os.PathLike, pybids_db_path: os.PathLike=None, log_dir: os.PathLike=None):
         
         self.subject_id = subject_id
         self.bids_dir = Path(bids_dir)
@@ -336,11 +336,11 @@ class PostProcessSubjectJob():
         self.run()
 
 class PostProcessImage():
-    def __init__(self, subject_id:str, task: str, run: str, image_path: os.PathLike, bids: BIDSLayout, out_dir: os.PathLike, 
+    def __init__(self, subject_id:str, task: str, run_num: str, image_path: os.PathLike, bids: BIDSLayout, out_dir: os.PathLike, 
         postprocessing_config: dict, working_dir: os.PathLike=None, log_dir: os.PathLike=None):
         self.subject_id = subject_id
         self.task = task
-        self.run = run
+        self.run_num = run_num
         self.image_path = Path(image_path)
         self.image_file_name = self.image_path.stem
         self.bids = bids
@@ -351,6 +351,8 @@ class PostProcessImage():
         self.confounds = None
         self.mixing_file = None
         self.noise_file = None
+        self.wf = None
+        self.confounds_wf = None
 
         self.setup_logger()
 
@@ -363,7 +365,7 @@ class PostProcessImage():
         self.logger.info("Searching for confounds file")
         try:
             self.confounds = self.bids.get(
-                subject=self.subject_id, task=self.task, suffix="timeseries", return_type="filename", extension=".tsv",
+                subject=self.subject_id, task=self.task, run=self.run_num, suffix="timeseries", return_type="filename", extension=".tsv",
                     desc="confounds", scope="derivatives"
             )[0]
             self.logger.info(f"Task file found: {self.confounds}")
@@ -376,7 +378,7 @@ class PostProcessImage():
         self.logger.info("Searching for mask file")
         try:
             self.mask_image = self.bids.get(
-                subject=self.subject_id, task=self.task, suffix="mask", extension=".nii.gz", datatype="func", return_type="filename",
+                subject=self.subject_id, task=self.task, run=self.run_num, suffix="mask", extension=".nii.gz", datatype="func", return_type="filename",
                     desc="brain", scope="derivatives"
             )[0]
             self.logger.info(f"Mask file found: {self.mask_image}")
@@ -392,7 +394,7 @@ class PostProcessImage():
         self.logger.info("Searching for MELODIC mixing file")
         try:
             self.mixing_file = self.bids.get(
-                subject=self.subject_id, task=self.task, suffix="mixing", extension=".tsv", return_type="filename",
+                subject=self.subject_id, task=self.task, run=self.run_num, suffix="mixing", extension=".tsv", return_type="filename",
                     desc="MELODIC", scope="derivatives"
             )[0]
             self.logger.info(f"MELODIC mixing file found: {self.mixing_file}")
@@ -403,7 +405,7 @@ class PostProcessImage():
         self.logger.info("Searching for AROMA noise ICs file")
         try:
             self.noise_file = self.bids.get(
-                subject=self.subject_id, task=self.task, suffix="AROMAnoiseICs", extension=".csv", return_type="filename",
+                subject=self.subject_id, task=self.task, run=self.run_num, suffix="AROMAnoiseICs", extension=".csv", return_type="filename",
                     scope="derivatives"
             )[0]
             self.logger.info(f"AROMA noise ICs file found: {self.noise_file}")
@@ -466,7 +468,7 @@ class PostProcessImage():
         out_file = os.path.abspath(os.path.join(self.out_dir, out_stem))
 
         self.logger.info(f"Building postprocessing workflow for image: {self.image_file_name}")
-        wf = build_postprocessing_workflow(self.postprocessing_config, in_file=self.image_file_name, out_file=out_file,
+        self.wf = build_postprocessing_workflow(self.postprocessing_config, in_file=self.image_path, out_file=out_file,
             name=f"Sub_{self.subject_id}_Task_{self.task}_Postprocessing_Pipeline",
             mask_file=self.mask_image, confound_file = self.confounds,
             mixing_file=self.mixing_file, noise_file=self.noise_file,
@@ -482,23 +484,25 @@ class PostProcessImage():
 
     def run(self):
         self.logger.info(f"Running postprocessing workflow for image: {self.image_file_name}")
-        wf.run()
+        self.wf.run()
         self.logger.info(f"Postprocessing workflow complete for image: {self.image_file_name}")
 
         # Draw the workflow's process graph if requested in config
         if self.postprocessing_config["WriteProcessGraph"]:
             graph_image_path = self.out_dir / "process_graph.dot"
             self.logger.info(f"Drawing workflow graph: {graph_image_path}")
-            wf.write_graph(dotfilename = graph_image_path, graph2use="colored")
+            self.wf.write_graph(dotfilename = graph_image_path, graph2use="colored")
 
-        self.logger.info("Postprocessing confounds")
-        self.confounds_wf.run()
-        
-        # Draw the workflow's process graph if requested in config
-        if self.postprocessing_config["WriteProcessGraph"]:
-            graph_image_path = self.out_dir / "confounds_process_graph.dot"
-            self.logger.info(f"Drawing confounds workflow graph: {graph_image_path}")
-            self.confounds_wf.write_graph(dotfilename = graph_image_path, graph2use="colored")
+        # Process confounds, if this option was included
+        if self.confounds_wf:
+            self.logger.info("Postprocessing confounds")
+            self.confounds_wf.run()
+            
+            # Draw the workflow's process graph if requested in config
+            if self.postprocessing_config["WriteProcessGraph"]:
+                graph_image_path = self.out_dir / "confounds_process_graph.dot"
+                self.logger.info(f"Drawing confounds workflow graph: {graph_image_path}")
+                self.confounds_wf.write_graph(dotfilename = graph_image_path, graph2use="colored")
 
     def __call__(self):
         self.setup()
