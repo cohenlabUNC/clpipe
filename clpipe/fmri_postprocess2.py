@@ -354,6 +354,9 @@ class PostProcessImage():
         self.wf = None
         self.confounds_wf = None
 
+        self.name = f"Subject_{self.subject_id}_Task_{self.task}"
+        if self.run_num: self.name += f"_Run_{self.run_num}"
+
         self.setup_logger()
 
     def __str__(self):
@@ -457,7 +460,7 @@ class PostProcessImage():
     
         self.confounds_wf = build_confound_postprocessing_workflow(self.postprocessing_config, confound_file = self.confounds,
             out_file=self.confound_out_file, tr=self.tr,
-            name=f"Sub_{self.subject_id}_Confound_Postprocessing_Pipeline",
+            name=f"{self.name}_Confound_Postprocessing_Pipeline",
             mixing_file=self.mixing_file, noise_file=self.noise_file,
             base_dir=self.working_dir, crashdump_dir=self.log_dir)
 
@@ -469,7 +472,7 @@ class PostProcessImage():
 
         self.logger.info(f"Building postprocessing workflow for image: {self.image_file_name}")
         self.wf = build_postprocessing_workflow(self.postprocessing_config, in_file=self.image_path, out_file=out_file,
-            name=f"Sub_{self.subject_id}_Task_{self.task}_Postprocessing_Pipeline",
+            name=f"{self.name}_Postprocessing_Pipeline",
             mask_file=self.mask_image, confound_file = self.confounds,
             mixing_file=self.mixing_file, noise_file=self.noise_file,
             tr=self.tr, 
