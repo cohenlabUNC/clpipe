@@ -294,7 +294,7 @@ def config_file_aroma(clpipe_config_default, config_file):
 @pytest.fixture(scope="module")
 def config_file_aroma_confounds(clpipe_config_default, config_file):
     clpipe_config_default["PostProcessingOptions2"]["ConfoundOptions"]["Include"] = True
-    clpipe_config_default["PostProcessingOptions2"]["ProcessingSteps"] = ["AROMARegression", "SpatialSmoothing", "IntensityNormalization"]
+    clpipe_config_default["PostProcessingOptions2"]["ProcessingSteps"] = ["AROMARegression", "TemporalFiltering"]
 
     with open(config_file, 'w') as f:
         json.dump(clpipe_config_default, f)
