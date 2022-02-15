@@ -221,12 +221,12 @@ class PostProcessSubjectJob():
 
     def load_bids_dir(self):
         # Open the bids dir and validate that it contains the subject
-        self.logger.info(f"Checking fmri output for requested subject in: {self.bids_dir}")
+        self.logger.info(f"Checking for requested subject in fmriprep output")
         try:
             self.bids:BIDSLayout = _get_bids(self.bids_dir, database_path=self.pybids_db_path)
 
             if len(self.bids.get(subject=self.subject_id, scope="derivatives")) == 0:
-                snfe = f"Subject {self.subject_id} was not found in fmri output directory {self.bids_dir}"
+                snfe = f"Subject {self.subject_id} was not found in fmriprep output. You may need to add the option '-refresh_index' if this is a new subject."
                 self.logger.error(snfe)
                 raise SubjectNotFoundError(snfe)
         except FileNotFoundError as fne:
