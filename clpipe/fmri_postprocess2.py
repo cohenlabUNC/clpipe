@@ -31,6 +31,15 @@ class NoSubjectsFoundError(ValueError):
 class SubjectNotFoundError(ValueError):
     pass
 
+class ConfoundsNotFoundError(ValueError):
+    pass
+
+class MixingFileNotFoundError(ValueError):
+    pass
+
+class NoiseFileNotFoundError(ValueError):
+    pass
+
 @click.command()
 @click.argument('subjects', nargs=-1, required=False, default=None)
 @click.option('-config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True), default=None, required=True,
@@ -70,7 +79,7 @@ def postprocess_subject(subject_id, bids_dir, fmriprep_dir, output_dir, config_f
     
     try:
         job = PostProcessSubjectJob(subject_id, bids_dir, fmriprep_dir, output_dir, config_file, pybids_db_path=index_dir, log_dir=log_dir)
-        job.run()
+        job()
     except SubjectNotFoundError:
         sys.exit()
     except ValueError:
@@ -153,13 +162,13 @@ def postprocess_fmriprep_dir(subjects=None, config_file=None, bids_dir=None, fmr
         click.echo(jobs_to_run.batch_manager.print_jobs())
 
         if submit:
-            jobs_to_run.run()
+            jobs_to_run()
     # Otherwise, process the images locally
     else:
         click.echo(str(jobs_to_run))
 
         if submit:
-            jobs_to_run.run()
+            jobs_to_run()
     sys.exit()
 
 
@@ -300,17 +309,24 @@ class PostProcessSubjectJob():
         self.logger.info(f"Building image jobs")
         self.image_jobs = []
         for image in images_to_process:
-            image_entities = image.get_entities()
-
-            task = image_entities['task']
-            
             try:
-                run = image_entities['run']
-            except KeyError:
-                run = None
+                image_entities = image.get_entities()
 
-            self.image_jobs.append(PostProcessImage(self.subject_id, task, run, image.path, self.bids, self.subject_out_dir,
-                self.postprocessing_config, working_dir = self.working_dir, log_dir = self.log_dir))
+                task = image_entities['task']
+                
+                try:
+                    run = image_entities['run']
+                except KeyError:
+                    run = None
+
+                self.image_jobs.append(PostProcessImage(self.subject_id, task, run, image.path, self.bids, self.subject_out_dir,
+                    self.postprocessing_config, working_dir = self.working_dir, log_dir = self.log_dir))
+            except ConfoundsNotFoundError as cnfe:
+                self.logger.error(cnfe)
+            except NoiseFileNotFoundError as nfnfe:
+                self.logger.error(nfnfe)
+            except MixingFileNotFoundError as mfnfe:
+                self.logger.error(mfnfe)
 
         for image_job in self.image_jobs:
             self.logger.info(f"Job: {image_job}")
@@ -368,13 +384,12 @@ class PostProcessImage():
         self.logger.info("Searching for confounds file")
         try:
             self.confounds = self.bids.get(
-                subject=self.subject_id, task=self.task, run=self.run_num, suffix="timeseries", return_type="filename", extension=".tsv",
+                subject=self.subject_id, task=self.task, run=self.run_num, return_type="filename", extension=".tsv",
                     desc="confounds", scope="derivatives"
             )[0]
-            self.logger.info(f"Task file found: {self.confounds}")
+            self.logger.info(f"Confound file found: {self.confounds}")
         except IndexError:
-            self.logger.info(f"Task file for sub-{self.subject_id} task-{self.task} not found.")
-            self.confounds = None
+            raise ConfoundsNotFoundError(f"Confound file for sub-{self.subject_id} task-{self.task} run-{self.run_num} not found.")
 
     def get_mask(self):
         # Find the subject's mask file
@@ -402,8 +417,7 @@ class PostProcessImage():
             )[0]
             self.logger.info(f"MELODIC mixing file found: {self.mixing_file}")
         except IndexError:
-            self.logger.info(f"MELODIC mixing file for sub-{self.subject_id} task-{self.task} not found.")
-            self.mixing_file = None
+            raise MixingFileNotFoundError(f"MELODIC mixing file for sub-{self.subject_id} task-{self.task} not found.")
 
         self.logger.info("Searching for AROMA noise ICs file")
         try:
@@ -413,8 +427,7 @@ class PostProcessImage():
             )[0]
             self.logger.info(f"AROMA noise ICs file found: {self.noise_file}")
         except IndexError:
-            self.logger.info(f"AROMA noise ICs file for sub-{self.subject_id} task-{self.task} not found.")
-            self.noise_file = None
+            raise NoiseFileNotFoundError(f"AROMA noise ICs file for sub-{self.subject_id} task-{self.task} not found.")
 
     def setup_logger(self):
         self.logger = logging.getLogger(f"{self.__class__.__name__}.{self.image_file_name}")
@@ -639,7 +652,7 @@ class PostProcessSubjectJobs():
         else:
             self.logger.info(f"Running {num_jobs} postprocessing jobs")
             for job in self.post_process_jobs:
-                job.run()
+                job()
 
     def __call__(self):
         self.run()
