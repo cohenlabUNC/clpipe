@@ -19,7 +19,6 @@ CONFOUND_STEPS = {"TemporalFiltering", "AROMARegression"}
 
 class AlgorithmNotFoundError(ValueError):
     pass
-
     
 def build_postprocessing_workflow(postprocessing_config: dict, in_file: os.PathLike=None, out_file:os.PathLike=None,
     name:str = "Postprocessing_Pipeline", processing_steps: list=None, mask_file: os.PathLike=None, mixing_file: os.PathLike=None, 
@@ -148,6 +147,9 @@ def build_confound_postprocessing_workflow(postprocessing_config: dict, confound
 
     # Select steps that apply to confounds
     processing_steps = set(processing_steps) & CONFOUND_STEPS
+    
+    if len(list(processing_steps)) < 1:
+        raise ValueError("The confounds PostProcess workflow requires at least 1 processing step.") 
 
     input_node = pe.Node(IdentityInterface(fields=['in_file', 'out_file', 'columns', 'mixing_file', 'noise_file', 'mask_file'], mandatory_inputs=False), name="inputnode")
     output_node = pe.Node(IdentityInterface(fields=['out_file'], mandatory_inputs=True), name="outputnode")
