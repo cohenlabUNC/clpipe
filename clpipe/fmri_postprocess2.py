@@ -430,7 +430,7 @@ class PostProcessImage():
             raise NoiseFileNotFoundError(f"AROMA noise ICs file for sub-{self.subject_id} task-{self.task} not found.")
 
     def setup_logger(self):
-        self.logger = logging.getLogger(f"{self.__class__.__name__}.{self.image_file_name}")
+        self.logger = logging.getLogger(f"{self.__str__()}")
         self.logger.setLevel(logging.INFO)
         
         # Create log handler
@@ -471,11 +471,15 @@ class PostProcessImage():
         
         self.logger.debug(f"Postprocessed confound out file: {self.confound_out_file}")
     
-        self.confounds_wf = build_confound_postprocessing_workflow(self.postprocessing_config, confound_file = self.confounds,
-            out_file=self.confound_out_file, tr=self.tr,
-            name=f"{self.name}_Confound_Postprocessing_Pipeline",
-            mixing_file=self.mixing_file, noise_file=self.noise_file,
-            base_dir=self.working_dir, crashdump_dir=self.log_dir)
+        try:
+            self.confounds_wf = build_confound_postprocessing_workflow(self.postprocessing_config, confound_file = self.confounds,
+                out_file=self.confound_out_file, tr=self.tr,
+                name=f"{self.name}_Confound_Postprocessing_Pipeline",
+                mixing_file=self.mixing_file, noise_file=self.noise_file,
+                base_dir=self.working_dir, crashdump_dir=self.log_dir)
+        except ValueError as ve:
+            self.logger.warn(ve)
+            self.logger.warn("Skipping confounds processing")
 
     def setup_workflow(self):
         # Calculate the output file name
