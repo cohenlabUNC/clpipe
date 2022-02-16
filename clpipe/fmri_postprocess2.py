@@ -298,39 +298,30 @@ class PostProcessSubjectJob():
                 subject=self.subject_id, extension="nii.gz", datatype="func", 
                 suffix="bold", desc="preproc", scope="derivatives")
 
-        except IndexError:
-            raise NoImagesFound(f"No preproc BOLD image for subject {self.subject_id} found.")
+            if len(images_to_process) == 0:
+                raise NoImagesFoundError(f"No preproc BOLD imagess found for sub-{self.subject_id}.")
 
-        if len(images_to_process) == 0:
-            raise NoImagesFoundError(f"No preproc BOLD imagess found for sub-{self.subject_id}.")
+            self.logger.info(f"Found images: {len(images_to_process)}")
+            self.logger.info(f"Building image jobs")
 
-        self.logger.info(f"Found images: {len(images_to_process)}")
-
-        self.logger.info(f"Building image jobs")
-        self.image_jobs = []
-        for image in images_to_process:
-            try:
+            self.image_jobs = []
+            for image in images_to_process:
                 image_entities = image.get_entities()
-
                 task = image_entities['task']
-                
                 try:
                     run = image_entities['run']
                 except KeyError:
                     run = None
 
                 self.image_jobs.append(PostProcessImage(self.subject_id, task, run, image.path, self.bids, self.subject_out_dir,
-                    self.postprocessing_config, working_dir = self.working_dir, log_dir = self.log_dir))
-            except ConfoundsNotFoundError as cnfe:
-                self.logger.error(cnfe)
-            except NoiseFileNotFoundError as nfnfe:
-                self.logger.error(nfnfe)
-            except MixingFileNotFoundError as mfnfe:
-                self.logger.error(mfnfe)
+                self.postprocessing_config, working_dir = self.working_dir, log_dir = self.log_dir))
+                
+            for image_job in self.image_jobs:
+                self.logger.info(f"Job: {image_job}")
+            self.logger.info(f"Built {len(self.image_jobs)} image jobs")
 
-        for image_job in self.image_jobs:
-            self.logger.info(f"Job: {image_job}")
-        self.logger.info(f"Built {len(self.image_jobs)} image jobs")
+        except IndexError:
+            raise NoImagesFoundError(f"No preproc BOLD image for subject {self.subject_id} found.")
 
     def setup(self):
         self.setup_config()
@@ -338,13 +329,18 @@ class PostProcessSubjectJob():
         self.setup_file_logger()
         self.load_bids_dir()
         self.build_image_jobs()
-        for image in self.image_jobs:
-            image.setup()
 
     def run(self):
         self.logger.info(f"Running {len(self.image_jobs)} image jobs")
         for image_job in self.image_jobs:
-            image_job.run()
+            try:
+                image_job()
+            except ConfoundsNotFoundError as cnfe:
+                self.logger.error(cnfe)
+            except NoiseFileNotFoundError as nfnfe:
+                self.logger.error(nfnfe)
+            except MixingFileNotFoundError as mfnfe:
+                self.logger.error(mfnfe)
         self.logger.info(f"Image jobs completed")
 
     def __call__(self):
@@ -656,7 +652,10 @@ class PostProcessSubjectJobs():
         else:
             self.logger.info(f"Running {num_jobs} postprocessing jobs")
             for job in self.post_process_jobs:
-                job()
+                try:
+                    job()
+                except NoImagesFoundError as nife:
+                    self.logger.error(nife)
 
     def __call__(self):
         self.run()
