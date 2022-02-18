@@ -194,7 +194,9 @@ def _fmri_postprocess_image(config, file, task = None, tr=None, beta_series = Fa
         logging.info('Found confound regressors')
         confounds, fdts = _regression_prep(config, confound_regressors)
         if drop_tps is not None:
-            confounds = confounds.iloc[:(confounds.shape[0]-(drop_tps))]
+            c_f_t = pandas.DataFrame(confounds)
+            c_f_t = c_f_t.iloc[:(c_f_t.shape[0]-(drop_tps))]
+            confounds = numpy.asarray(c_f_t)
             logging.info('Removing last ' + str(drop_tps) + ' time points')
             fdts = fdts.iloc[:(fdts.shape[0]-(drop_tps))]
         if tr is None:
