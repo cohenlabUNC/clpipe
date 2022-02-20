@@ -117,12 +117,11 @@ def build_postprocessing_workflow(postprocessing_config: dict, in_file: os.PathL
         # Connect previous wf to current wf
         elif step_count > 1:
             postproc_wf.connect(prev_wf, "outputnode.out_file", current_wf, "inputnode.in_file")
-            
+
         # Direct the last workflow's output to postproc workflow's output
         if index == step_count - 1:
             # Set output file name by passing out_file name into input of last node
-            if out_file:
-                postproc_wf.connect(input_node, "out_file", current_wf, "inputnode.out_file")
+            postproc_wf.connect(input_node, "out_file", current_wf, "inputnode.out_file")
             postproc_wf.connect(current_wf, "outputnode.out_file", output_node, "out_file")
             
 
@@ -159,7 +158,7 @@ def build_confound_postprocessing_workflow(postprocessing_config: dict, confound
 
     tsv_select_node = pe.Node(Function(input_names=["tsv_file", "column_names"], output_names=["tsv_subset_file"], function=_tsv_select_columns), name="tsv_select_columns")
     tsv_to_nii_node = pe.Node(Function(input_names=["tsv_file"], output_names=["nii_file"], function=_tsv_to_nii), name="tsv_to_nii")
-    nii_to_tsv_node = pe.Node(Function(input_names=["nii_file", "tsv_file_name"], output_names=["tsv_file"], function=_nii_to_tsv), name="nii_to_tsv")
+    nii_to_tsv_node = pe.Node(Function(input_names=["nii_file", "tsv_file"], output_names=["tsv_file"], function=_nii_to_tsv), name="nii_to_tsv")
 
     postproc_wf = build_postprocessing_workflow(postprocessing_config, processing_steps=processing_steps, name="Confounds_Apply_Postprocessing", 
         mixing_file=mixing_file, noise_file=noise_file, tr=tr)
@@ -174,11 +173,14 @@ def build_confound_postprocessing_workflow(postprocessing_config: dict, confound
 
     confounds_wf.connect(input_node, "in_file", tsv_select_node, "tsv_file")
     confounds_wf.connect(input_node, "column_names", tsv_select_node, "column_names")
+
     confounds_wf.connect(tsv_select_node, "tsv_subset_file", tsv_to_nii_node, "tsv_file")
     confounds_wf.connect(tsv_to_nii_node, "nii_file", postproc_wf, "inputnode.in_file")
-    confounds_wf.connect(input_node, "out_file", postproc_wf, "inputnode.out_file")
+
+    #confounds_wf.connect(input_node, "out_file", postproc_wf, "inputnode.out_file")
     confounds_wf.connect(postproc_wf, "outputnode.out_file", nii_to_tsv_node, "nii_file")
-    confounds_wf.connect(nii_to_tsv_node, "tsv_file", output_node, "out_file")
+    confounds_wf.connect(input_node, "out_file", nii_to_tsv_node, "tsv_file")
+    #confounds_wf.connect(nii_to_tsv_node, "tsv_file", output_node, "out_file")
 
     return confounds_wf
 
@@ -232,7 +234,7 @@ def _tsv_to_nii(tsv_file):
 
     return str(nii_path.absolute())
 
-def _nii_to_tsv(nii_file, tsv_file_name):
+def _nii_to_tsv(nii_file, tsv_file):
     # Imports must be in function for running as node
     import numpy as np
     import nibabel as nib
@@ -244,15 +246,15 @@ def _nii_to_tsv(nii_file, tsv_file_name):
     # remove the y and z dimension for conversion back to x, time matrix
     squeezed_img_data = np.squeeze(img_data, (1, 2))
 
-    if not tsv_file_name:
+    if not tsv_file:
         # Build the output path
         nii_file = Path(nii_file)
         path_stem = nii_file.stem
-        tsv_file_name = Path(path_stem + ".tsv")
-        tsv_file_name = str(tsv_file_name.absolute())
+        tsv_file = Path(path_stem + ".tsv")
+        tsv_file = str(tsv_file.absolute())
 
-    np.savetxt(tsv_file_name, squeezed_img_data)
-    return tsv_file_name
+    np.savetxt(tsv_file, squeezed_img_data)
+    return tsv_file
 
 def _getTemporalFilterAlgorithm(algorithmName):
     if algorithmName == "Butterworth":
