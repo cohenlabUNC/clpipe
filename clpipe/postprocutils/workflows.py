@@ -2,6 +2,7 @@ import os
 
 from math import sqrt, log
 
+#TODO: import these without specifying, to help with code readability
 from nipype.interfaces.fsl.maths import MeanImage, BinaryMaths, MedianImage, ApplyMask, TemporalFilter
 from nipype.interfaces.fsl.utils import ImageStats, FilterRegressor
 from nipype.interfaces.afni import TProject
