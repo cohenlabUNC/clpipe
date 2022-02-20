@@ -136,6 +136,9 @@ def build_confound_postprocessing_workflow(postprocessing_config: dict, confound
     name:str = "Confound_Postprocessing_Pipeline", processing_steps: list=None, column_names: list=None,
     base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None):
     
+    # Use the R variant of fsl_regfilt for confounds
+    postprocessing_config["ProcessingStepOptions"]["AROMARegression"]["Algorithm"] = "fsl_regfilt_R"
+
     confounds_wf = pe.Workflow(name=name, base_dir=base_dir)
     if crashdump_dir is not None:
         confounds_wf.config['execution']['crashdump_dir'] = crashdump_dir
@@ -164,9 +167,8 @@ def build_confound_postprocessing_workflow(postprocessing_config: dict, confound
     if confound_file:
         input_node.inputs.in_file = confound_file
     if out_file:
-        nii_to_tsv_node.inputs.tsv_file_name = out_file
-    else:
-        nii_to_tsv_node.inputs.tsv_file_name = None
+        input_node.inputs.out_file = out_file
+        #nii_to_tsv_node.inputs.tsv_file_name = out_file
 
     input_node.inputs.column_names = column_names
 
@@ -174,6 +176,7 @@ def build_confound_postprocessing_workflow(postprocessing_config: dict, confound
     confounds_wf.connect(input_node, "column_names", tsv_select_node, "column_names")
     confounds_wf.connect(tsv_select_node, "tsv_subset_file", tsv_to_nii_node, "tsv_file")
     confounds_wf.connect(tsv_to_nii_node, "nii_file", postproc_wf, "inputnode.in_file")
+    confounds_wf.connect(input_node, "out_file", postproc_wf, "inputnode.out_file")
     confounds_wf.connect(postproc_wf, "outputnode.out_file", nii_to_tsv_node, "nii_file")
     confounds_wf.connect(nii_to_tsv_node, "tsv_file", output_node, "out_file")
 
@@ -274,6 +277,8 @@ def _getSpatialSmoothingAlgorithm(algorithmName):
 def _getAROMARegressionAlgorithm(algorithmName):
     if algorithmName == "fsl_regfilt":
         return build_aroma_workflow_fsl_regfilt
+    if algorithmName == "fsl_regfilt_R":
+        return build_aroma_workflow_fsl_regfilt_R
     else:
         raise AlgorithmNotFoundError(f"AROMA regression algorithm not found: {algorithmName}")
 
@@ -605,6 +610,46 @@ def build_aroma_workflow_fsl_regfilt(in_file: os.PathLike=None, out_file: os.Pat
     workflow.connect(regfilt_node, "out_file", output_node, "out_file")
 
     return workflow
+
+def build_aroma_workflow_fsl_regfilt_R(in_file: os.PathLike=None, out_file: os.PathLike=None, mixing_file: os.PathLike=None, noise_file: os.PathLike=None,  
+    mask_file=None, base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None):
+
+    workflow = pe.Workflow(name="Apply_AROMA_fsl_regfilt_R", base_dir=base_dir)
+    if crashdump_dir is not None:
+        workflow.config['execution']['crashdump_dir'] = crashdump_dir
+
+    input_node = pe.Node(IdentityInterface(fields=['in_file', 'out_file', 'mixing_file', 'noise_file'], mandatory_inputs=False), name="inputnode")
+    output_node = pe.Node(IdentityInterface(fields=['out_file'], mandatory_inputs=True), name="outputnode")
+
+    regfilt_R_node = pe.Node(Function(input_names=["in_file", "out_file", "mixing_file", "noise_file"], output_names=["out_file"], function=_fsl_regfilt_R), name="fsl_regfilt_R")
+
+    # Set WF inputs and outputs
+    if in_file:
+        input_node.inputs.in_file = in_file
+    if mixing_file:
+        input_node.inputs.mixing_file = mixing_file
+    if noise_file:
+        input_node.inputs.noise_file = noise_file
+    if out_file:
+        input_node.inputs.out_file = out_file
+
+    workflow.connect(input_node, "in_file", regfilt_R_node, "in_file")
+    workflow.connect(input_node, "out_file", regfilt_R_node, "out_file")
+    workflow.connect(input_node, "mixing_file", regfilt_R_node, "mixing_file")
+    workflow.connect(input_node, "noise_file", regfilt_R_node, "noise_file")
+    workflow.connect(regfilt_R_node, "out_file", output_node, "out_file")
+
+    return workflow
+
+def _fsl_regfilt_R(in_file, out_file, mixing_file, noise_file):
+    import os
+
+    os.system("module use /proj/mnhallqlab/sw/modules")
+    os.system("module load 'r/4.0.3_depend'")
+
+    os.system(f"/nas/longleaf/home/willasc/repos/fmri_processing_scripts/fsl_regfilt.R {in_file} {mixing_file} {noise_file} 4 {out_file}")
+
+    return out_file
 
 def build_resample_workflow(reference_image:os.PathLike=None, in_file: os.PathLike=None, 
     out_file: os.PathLike=None, base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None):
