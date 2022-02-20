@@ -136,7 +136,7 @@ def build_confound_postprocessing_workflow(postprocessing_config: dict, confound
     name:str = "Confound_Postprocessing_Pipeline", processing_steps: list=None, column_names: list=None,
     base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None):
     
-    # Use the R variant of fsl_regfilt for confounds
+    # Force use of the R variant of fsl_regfilt for confounds
     postprocessing_config["ProcessingStepOptions"]["AROMARegression"]["Algorithm"] = "fsl_regfilt_R"
 
     confounds_wf = pe.Workflow(name=name, base_dir=base_dir)
@@ -151,6 +151,7 @@ def build_confound_postprocessing_workflow(postprocessing_config: dict, confound
     # Select steps that apply to confounds
     processing_steps = set(processing_steps) & CONFOUND_STEPS
     
+    # Reject if no processing steps are applicable to confounds
     if len(list(processing_steps)) < 1:
         raise ValueError("The confounds PostProcess workflow requires at least 1 processing step.") 
 
@@ -161,6 +162,7 @@ def build_confound_postprocessing_workflow(postprocessing_config: dict, confound
     tsv_to_nii_node = pe.Node(Function(input_names=["tsv_file"], output_names=["nii_file"], function=_tsv_to_nii), name="tsv_to_nii")
     nii_to_tsv_node = pe.Node(Function(input_names=["nii_file", "tsv_file"], output_names=["tsv_file"], function=_nii_to_tsv), name="nii_to_tsv")
 
+    # Build the inner postprocessing workflow
     postproc_wf = build_postprocessing_workflow(postprocessing_config, processing_steps=processing_steps, name="Confounds_Apply_Postprocessing", 
         mixing_file=mixing_file, noise_file=noise_file, tr=tr)
 
@@ -168,20 +170,25 @@ def build_confound_postprocessing_workflow(postprocessing_config: dict, confound
         input_node.inputs.in_file = confound_file
     if out_file:
         input_node.inputs.out_file = out_file
-        #nii_to_tsv_node.inputs.tsv_file_name = out_file
 
     input_node.inputs.column_names = column_names
 
+    # Setup input connections
     confounds_wf.connect(input_node, "in_file", tsv_select_node, "tsv_file")
     confounds_wf.connect(input_node, "column_names", tsv_select_node, "column_names")
+    confounds_wf.connect(input_node, "out_file", nii_to_tsv_node, "tsv_file")
 
+    # Select desired columns from input tsv and convert it to a .nii file
     confounds_wf.connect(tsv_select_node, "tsv_subset_file", tsv_to_nii_node, "tsv_file")
+    
+    # Input the .nii file into the postprocessing workflow
     confounds_wf.connect(tsv_to_nii_node, "nii_file", postproc_wf, "inputnode.in_file")
 
-    #confounds_wf.connect(input_node, "out_file", postproc_wf, "inputnode.out_file")
+    # Convert the output of the postprocessing workflow back to .tsv format
     confounds_wf.connect(postproc_wf, "outputnode.out_file", nii_to_tsv_node, "nii_file")
-    confounds_wf.connect(input_node, "out_file", nii_to_tsv_node, "tsv_file")
-    #confounds_wf.connect(nii_to_tsv_node, "tsv_file", output_node, "out_file")
+    
+    # Setup output
+    confounds_wf.connect(nii_to_tsv_node, "tsv_file", output_node, "out_file")
 
     return confounds_wf
 
