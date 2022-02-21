@@ -26,6 +26,7 @@ setup(name='clpipe',
                         'pybids>=0.14.0',
                         'templateflow',
                         'deepdiff'],
+      package_data={'clpipe': ['R_scripts/*.R']},
       entry_points='''
       [console_scripts]
       fmriprep_process=clpipe.fmri_preprocess:fmriprep_process

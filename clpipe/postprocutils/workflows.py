@@ -1,6 +1,8 @@
 import os
 
 from math import sqrt, log
+import copy
+import pkg_resources
 
 #TODO: import these without specifying, to help with code readability
 from nipype.interfaces.fsl.maths import MeanImage, BinaryMaths, MedianImage, ApplyMask, TemporalFilter
@@ -11,7 +13,8 @@ from nipype.interfaces.fsl import SUSAN, FLIRT
 from nipype.interfaces.utility import Function, Merge, IdentityInterface
 import nipype.pipeline.engine as pe
 
-from .nodes import build_input_node, build_output_node, ButterworthFilter
+from .nodes import build_input_node, build_output_node, ButterworthFilter, RegressAromaR
+import clpipe.postprocutils.r_setup
 
 RESCALING_10000_GLOBALMEDIAN = "globalmedian_10000"
 RESCALING_100_VOXELMEAN = "voxelmean_100"
@@ -137,6 +140,7 @@ def build_confound_postprocessing_workflow(postprocessing_config: dict, confound
     base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None):
     
     # Force use of the R variant of fsl_regfilt for confounds
+    postprocessing_config = copy.deepcopy(postprocessing_config)
     postprocessing_config["ProcessingStepOptions"]["AROMARegression"]["Algorithm"] = "fsl_regfilt_R"
 
     confounds_wf = pe.Workflow(name=name, base_dir=base_dir)
@@ -624,6 +628,9 @@ def build_aroma_workflow_fsl_regfilt(in_file: os.PathLike=None, out_file: os.Pat
 def build_aroma_workflow_fsl_regfilt_R(in_file: os.PathLike=None, out_file: os.PathLike=None, mixing_file: os.PathLike=None, noise_file: os.PathLike=None,  
     mask_file=None, base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None):
 
+    clpipe.postprocutils.r_setup.setup_clpipe_R_lib()
+    fsl_regfilt_R_script_path = pkg_resources.resource_filename("clpipe", "data/R_scripts/fsl_regfilt.R")
+
     workflow = pe.Workflow(name="Apply_AROMA_fsl_regfilt_R", base_dir=base_dir)
     if crashdump_dir is not None:
         workflow.config['execution']['crashdump_dir'] = crashdump_dir
@@ -631,7 +638,7 @@ def build_aroma_workflow_fsl_regfilt_R(in_file: os.PathLike=None, out_file: os.P
     input_node = pe.Node(IdentityInterface(fields=['in_file', 'out_file', 'mixing_file', 'noise_file'], mandatory_inputs=False), name="inputnode")
     output_node = pe.Node(IdentityInterface(fields=['out_file'], mandatory_inputs=True), name="outputnode")
 
-    regfilt_R_node = pe.Node(Function(input_names=["in_file", "out_file", "mixing_file", "noise_file"], output_names=["out_file"], function=_fsl_regfilt_R), name="fsl_regfilt_R")
+    regfilt_R_node = pe.Node(RegressAromaR(script_file=fsl_regfilt_R_script_path, n_threads=4), name="fsl_regfilt_R")
 
     # Set WF inputs and outputs
     if in_file:
@@ -644,22 +651,12 @@ def build_aroma_workflow_fsl_regfilt_R(in_file: os.PathLike=None, out_file: os.P
         input_node.inputs.out_file = out_file
 
     workflow.connect(input_node, "in_file", regfilt_R_node, "in_file")
-    workflow.connect(input_node, "out_file", regfilt_R_node, "out_file")
+    #workflow.connect(input_node, "out_file", regfilt_R_node, "out_file")
     workflow.connect(input_node, "mixing_file", regfilt_R_node, "mixing_file")
     workflow.connect(input_node, "noise_file", regfilt_R_node, "noise_file")
     workflow.connect(regfilt_R_node, "out_file", output_node, "out_file")
 
     return workflow
-
-def _fsl_regfilt_R(in_file, out_file, mixing_file, noise_file):
-    import os
-
-    os.system("module use /proj/mnhallqlab/sw/modules")
-    os.system("module load 'r/4.0.3_depend'")
-
-    os.system(f"/nas/longleaf/home/willasc/repos/fmri_processing_scripts/fsl_regfilt.R {in_file} {mixing_file} {noise_file} 4 {out_file}")
-
-    return out_file
 
 def build_resample_workflow(reference_image:os.PathLike=None, in_file: os.PathLike=None, 
     out_file: os.PathLike=None, base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None):
