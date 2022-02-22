@@ -217,6 +217,7 @@ class PostProcessSubjectJob():
         self.out_dir = Path(out_dir)
         self.config_file = Path(config_file)
         self.postprocessing_config = None
+        self.image_space = None
 
         self.setup_logger()
 
@@ -300,9 +301,12 @@ class PostProcessSubjectJob():
         self.logger.info(f"Searching for images to process")
         # Find the subject's images to run post_proc on
         try:
+            self.image_space = self.postprocessing_config["TargetImageSpace"]
+            self.logger.info(f"Target image space: {self.image_space}")
+
             images_to_process = self.bids.get(
                 subject=self.subject_id, extension="nii.gz", datatype="func", 
-                suffix="bold", desc="preproc", scope="derivatives")
+                suffix="bold", desc="preproc", scope="derivatives", space=self.image_space)
 
             if len(images_to_process) == 0:
                 raise NoImagesFoundError(f"No preproc BOLD imagess found for sub-{self.subject_id}.")
@@ -319,7 +323,7 @@ class PostProcessSubjectJob():
                 except KeyError:
                     run = None
 
-                self.image_jobs.append(PostProcessImage(self.subject_id, task, run, image.path, self.bids, self.subject_out_dir,
+                self.image_jobs.append(PostProcessImage(self.subject_id, task, run, self.image_space, image.path, self.bids, self.subject_out_dir,
                 self.postprocessing_config, working_dir = self.subject_working_dir, log_dir = self.log_dir))
                 
             for image_job in self.image_jobs:
@@ -354,11 +358,12 @@ class PostProcessSubjectJob():
         self.run()
 
 class PostProcessImage():
-    def __init__(self, subject_id:str, task: str, run_num: str, image_path: os.PathLike, bids: BIDSLayout, out_dir: os.PathLike, 
+    def __init__(self, subject_id:str, task: str, run_num: str, space: str, image_path: os.PathLike, bids: BIDSLayout, out_dir: os.PathLike, 
         postprocessing_config: dict, working_dir: os.PathLike=None, log_dir: os.PathLike=None):
         self.subject_id = subject_id
         self.task = task
         self.run_num = run_num
+        self.space = space
         self.image_path = Path(image_path)
         self.image_file_name = self.image_path.stem
         self.bids = bids
@@ -398,7 +403,7 @@ class PostProcessImage():
         self.logger.info("Searching for mask file")
         try:
             self.mask_image = self.bids.get(
-                subject=self.subject_id, task=self.task, run=self.run_num, suffix="mask", extension=".nii.gz", datatype="func", return_type="filename",
+                subject=self.subject_id, task=self.task, run=self.run_num, space=self.space, suffix="mask", extension=".nii.gz", datatype="func", return_type="filename",
                     desc="brain", scope="derivatives"
             )[0]
             self.logger.info(f"Mask file found: {self.mask_image}")
