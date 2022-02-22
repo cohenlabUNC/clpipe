@@ -473,6 +473,12 @@ class PostProcessImage():
                 name=f"{self.name}_Confound_Postprocessing_Pipeline",
                 mixing_file=self.mixing_file, noise_file=self.noise_file,
                 base_dir=self.working_dir, crashdump_dir=self.log_dir)
+
+            # Draw the confound workflow's process graph if requested in config
+            if self.postprocessing_config["WriteProcessGraph"]:
+                graph_image_path = self.out_dir / "confounds_processsing_plan.dot"
+                self.logger.info(f"Drawing confounds workflow graph: {graph_image_path}")
+                self.confounds_wf.write_graph(dotfilename = graph_image_path, graph2use="colored")
         except ValueError as ve:
             self.logger.warn(ve)
             self.logger.warn("Skipping confounds processing")
@@ -490,6 +496,12 @@ class PostProcessImage():
             mixing_file=self.mixing_file, noise_file=self.noise_file,
             tr=self.tr, 
             base_dir=self.working_dir, crashdump_dir=self.log_dir)
+        
+        # Draw the workflow's process graph if requested in config
+        if self.postprocessing_config["WriteProcessGraph"]:
+            graph_image_path = self.out_dir / "processing_plan.dot"
+            self.logger.info(f"Drawing workflow graph: {graph_image_path}")
+            self.wf.write_graph(dotfilename = graph_image_path, graph2use="colored")
 
     def setup(self):
         self.get_aroma_files()
@@ -503,23 +515,11 @@ class PostProcessImage():
         self.wf.run()
         self.logger.info(f"Postprocessing workflow complete for image: {self.image_file_name}")
 
-        # Draw the workflow's process graph if requested in config
-        if self.postprocessing_config["WriteProcessGraph"]:
-            graph_image_path = self.out_dir / "process_graph.dot"
-            self.logger.info(f"Drawing workflow graph: {graph_image_path}")
-            self.wf.write_graph(dotfilename = graph_image_path, graph2use="colored")
-
         # Process confounds, if this option was included
         if self.confounds_wf:
             self.logger.info("Postprocessing confounds")
             self.confounds_wf.run()
             
-            # Draw the workflow's process graph if requested in config
-            if self.postprocessing_config["WriteProcessGraph"]:
-                graph_image_path = self.out_dir / "confounds_process_graph.dot"
-                self.logger.info(f"Drawing confounds workflow graph: {graph_image_path}")
-                self.confounds_wf.write_graph(dotfilename = graph_image_path, graph2use="colored")
-
     def __call__(self):
         self.setup()
         self.run()
