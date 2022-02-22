@@ -251,11 +251,17 @@ class PostProcessSubjectJob():
             self.logger.info(f"Creating subject directory: {self.subject_out_dir}")
             self.subject_out_dir.mkdir(exist_ok=True, parents=True)
 
-        # Create a nipype working directory for this subject, if it doesn't exist
-        self.working_dir = self.subject_out_dir / "working"
-        if not self.working_dir.exists():
-            self.logger.info(f"Creating subject working directory: {self.working_dir}")
-            self.subject_out_dir.mkdir(exist_ok=True)
+        # If no top-level working directory is provided, make one in the out_dir
+        self.working_dir = self.postprocessing_config["WorkingDirectory"]
+        if not self.working_dir:
+            self.subject_working_dir = self.out_dir / "working" / ("sub-" + self.subject_id)
+        # Otherwise, use the provided top-level directory as a base, and name working directory after the subject
+        else:
+            self.subject_working_dir = Path(self.working_dir) / ("sub-" + self.subject_id) 
+        # Create the working directory, if it doesn't exist
+        if not self.subject_working_dir.exists():
+            self.logger.info(f"Creating subject working directory: {self.subject_working_dir}")
+            self.subject_working_dir.mkdir(exist_ok=True, parents=True)
 
         # Create a postprocessing logging directory for this subject, if it doesn't exist
         self.log_dir = self.log_dir / ("sub-" + self.subject_id)
@@ -314,7 +320,7 @@ class PostProcessSubjectJob():
                     run = None
 
                 self.image_jobs.append(PostProcessImage(self.subject_id, task, run, image.path, self.bids, self.subject_out_dir,
-                self.postprocessing_config, working_dir = self.working_dir, log_dir = self.log_dir))
+                self.postprocessing_config, working_dir = self.subject_working_dir, log_dir = self.log_dir))
                 
             for image_job in self.image_jobs:
                 self.logger.info(f"Job: {image_job}")

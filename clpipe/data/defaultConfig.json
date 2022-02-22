@@ -70,6 +70,7 @@
         "LogDirectory": ""
 	},
 	"PostProcessingOptions2": {
+		"WorkingDirectory": "",
 		"WriteProcessGraph": true,
 		"ProcessingSteps": [
 			"SpatialSmoothing",
