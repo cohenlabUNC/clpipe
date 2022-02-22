@@ -251,10 +251,10 @@ class PostProcessSubjectJob():
             self.logger.info(f"Creating subject directory: {self.subject_out_dir}")
             self.subject_out_dir.mkdir(exist_ok=True, parents=True)
 
-        # If no top-level working directory is provided, use the subject's output directory
+        # If no top-level working directory is provided, make one in the out_dir
         self.working_dir = self.postprocessing_config["WorkingDirectory"]
         if not self.working_dir:
-            self.subject_working_dir = self.subject_out_dir / "working"
+            self.subject_working_dir = self.out_dir / "working" / ("sub-" + self.subject_id)
         # Otherwise, use the provided top-level directory as a base, and name working directory after the subject
         else:
             self.subject_working_dir = Path(self.working_dir) / ("sub-" + self.subject_id) 
