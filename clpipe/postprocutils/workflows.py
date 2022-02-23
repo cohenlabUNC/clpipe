@@ -257,6 +257,8 @@ def _nii_to_tsv(nii_file, tsv_file):
 
     # remove the y and z dimension for conversion back to x, time matrix
     squeezed_img_data = np.squeeze(img_data, (1, 2))
+    # transpose the data back
+    transposed_matrix = np.swapaxes(squeezed_img_data, 0, 1)
 
     if not tsv_file:
         # Build the output path
@@ -265,7 +267,7 @@ def _nii_to_tsv(nii_file, tsv_file):
         tsv_file = Path(path_stem + ".tsv")
         tsv_file = str(tsv_file.absolute())
 
-    np.savetxt(tsv_file, squeezed_img_data)
+    np.savetxt(tsv_file, transposed_matrix, delimiter='\t')
     return tsv_file
 
 def _getTemporalFilterAlgorithm(algorithmName):
