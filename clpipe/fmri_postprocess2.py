@@ -309,7 +309,7 @@ class PostProcessSubjectJob():
                 suffix="bold", desc="preproc", scope="derivatives", space=self.image_space)
 
             if len(images_to_process) == 0:
-                raise NoImagesFoundError(f"No preproc BOLD imagess found for sub-{self.subject_id}.")
+                raise NoImagesFoundError(f"No preproc BOLD images found for sub-{self.subject_id} in space {self.image_space}.")
 
             self.logger.info(f"Found images: {len(images_to_process)}")
             self.logger.info(f"Building image jobs")
@@ -605,7 +605,7 @@ class PostProcessSubjectJobs():
                                                         log_dir=self.log_dir)
             subject_id = Path(job.subject_id).stem
 
-            self.batch_manager.addjob(Job("PostProcessing_" + subject_id, sub_string_temp))
+            self.batch_manager.addjob(Job("PostProcessing_sub-" + subject_id, sub_string_temp))
 
         self.batch_manager.createsubmissionhead()
         self.batch_manager.compilejobstrings()
