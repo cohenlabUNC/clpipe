@@ -153,10 +153,13 @@ def build_confound_postprocessing_workflow(postprocessing_config: dict, confound
         column_names = postprocessing_config["ConfoundOptions"]["Columns"]
 
     # Select steps that apply to confounds
-    processing_steps = set(processing_steps) & CONFOUND_STEPS
-    
+    confounds_processing_steps = []
+    for step in processing_steps:
+        if step in CONFOUND_STEPS:
+            confounds_processing_steps.append(step)
+
     # Reject if no processing steps are applicable to confounds
-    if len(list(processing_steps)) < 1:
+    if len(list(confounds_processing_steps)) < 1:
         raise ValueError("The confounds PostProcess workflow requires at least 1 processing step.") 
 
     input_node = pe.Node(IdentityInterface(fields=['in_file', 'out_file', 'columns', 'mixing_file', 'noise_file', 'mask_file'], mandatory_inputs=False), name="inputnode")
@@ -167,7 +170,7 @@ def build_confound_postprocessing_workflow(postprocessing_config: dict, confound
     nii_to_tsv_node = pe.Node(Function(input_names=["nii_file", "tsv_file"], output_names=["tsv_file"], function=_nii_to_tsv), name="nii_to_tsv")
 
     # Build the inner postprocessing workflow
-    postproc_wf = build_postprocessing_workflow(postprocessing_config, processing_steps=processing_steps, name="Confounds_Apply_Postprocessing", 
+    postproc_wf = build_postprocessing_workflow(postprocessing_config, processing_steps=confounds_processing_steps, name="Confounds_Apply_Postprocessing", 
         mixing_file=mixing_file, noise_file=noise_file, tr=tr)
 
     if confound_file:
