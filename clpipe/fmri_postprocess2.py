@@ -217,6 +217,7 @@ class PostProcessSubjectJob():
         self.out_dir = Path(out_dir)
         self.config_file = Path(config_file)
         self.postprocessing_config = None
+        self.image_space = None
 
         self.setup_logger()
 
@@ -251,11 +252,17 @@ class PostProcessSubjectJob():
             self.logger.info(f"Creating subject directory: {self.subject_out_dir}")
             self.subject_out_dir.mkdir(exist_ok=True, parents=True)
 
-        # Create a nipype working directory for this subject, if it doesn't exist
-        self.working_dir = self.subject_out_dir / "working"
-        if not self.working_dir.exists():
-            self.logger.info(f"Creating subject working directory: {self.working_dir}")
-            self.subject_out_dir.mkdir(exist_ok=True)
+        # If no top-level working directory is provided, make one in the out_dir
+        self.working_dir = self.postprocessing_config["WorkingDirectory"]
+        if not self.working_dir:
+            self.subject_working_dir = self.out_dir / "working" / ("sub-" + self.subject_id)
+        # Otherwise, use the provided top-level directory as a base, and name working directory after the subject
+        else:
+            self.subject_working_dir = Path(self.working_dir) / ("sub-" + self.subject_id) 
+        # Create the working directory, if it doesn't exist
+        if not self.subject_working_dir.exists():
+            self.logger.info(f"Creating subject working directory: {self.subject_working_dir}")
+            self.subject_working_dir.mkdir(exist_ok=True, parents=True)
 
         # Create a postprocessing logging directory for this subject, if it doesn't exist
         self.log_dir = self.log_dir / ("sub-" + self.subject_id)
@@ -294,12 +301,15 @@ class PostProcessSubjectJob():
         self.logger.info(f"Searching for images to process")
         # Find the subject's images to run post_proc on
         try:
+            self.image_space = self.postprocessing_config["TargetImageSpace"]
+            self.logger.info(f"Target image space: {self.image_space}")
+
             images_to_process = self.bids.get(
                 subject=self.subject_id, extension="nii.gz", datatype="func", 
-                suffix="bold", desc="preproc", scope="derivatives")
+                suffix="bold", desc="preproc", scope="derivatives", space=self.image_space)
 
             if len(images_to_process) == 0:
-                raise NoImagesFoundError(f"No preproc BOLD imagess found for sub-{self.subject_id}.")
+                raise NoImagesFoundError(f"No preproc BOLD images found for sub-{self.subject_id} in space {self.image_space}.")
 
             self.logger.info(f"Found images: {len(images_to_process)}")
             self.logger.info(f"Building image jobs")
@@ -313,8 +323,8 @@ class PostProcessSubjectJob():
                 except KeyError:
                     run = None
 
-                self.image_jobs.append(PostProcessImage(self.subject_id, task, run, image.path, self.bids, self.subject_out_dir,
-                self.postprocessing_config, working_dir = self.working_dir, log_dir = self.log_dir))
+                self.image_jobs.append(PostProcessImage(self.subject_id, task, run, self.image_space, image.path, self.bids, self.subject_out_dir,
+                self.postprocessing_config, working_dir = self.subject_working_dir, log_dir = self.log_dir))
                 
             for image_job in self.image_jobs:
                 self.logger.info(f"Job: {image_job}")
@@ -348,11 +358,12 @@ class PostProcessSubjectJob():
         self.run()
 
 class PostProcessImage():
-    def __init__(self, subject_id:str, task: str, run_num: str, image_path: os.PathLike, bids: BIDSLayout, out_dir: os.PathLike, 
+    def __init__(self, subject_id:str, task: str, run_num: str, space: str, image_path: os.PathLike, bids: BIDSLayout, out_dir: os.PathLike, 
         postprocessing_config: dict, working_dir: os.PathLike=None, log_dir: os.PathLike=None):
         self.subject_id = subject_id
         self.task = task
         self.run_num = run_num
+        self.space = space
         self.image_path = Path(image_path)
         self.image_file_name = self.image_path.stem
         self.bids = bids
@@ -392,7 +403,7 @@ class PostProcessImage():
         self.logger.info("Searching for mask file")
         try:
             self.mask_image = self.bids.get(
-                subject=self.subject_id, task=self.task, run=self.run_num, suffix="mask", extension=".nii.gz", datatype="func", return_type="filename",
+                subject=self.subject_id, task=self.task, run=self.run_num, space=self.space, suffix="mask", extension=".nii.gz", datatype="func", return_type="filename",
                     desc="brain", scope="derivatives"
             )[0]
             self.logger.info(f"Mask file found: {self.mask_image}")
@@ -473,6 +484,12 @@ class PostProcessImage():
                 name=f"{self.name}_Confound_Postprocessing_Pipeline",
                 mixing_file=self.mixing_file, noise_file=self.noise_file,
                 base_dir=self.working_dir, crashdump_dir=self.log_dir)
+
+            # Draw the confound workflow's process graph if requested in config
+            if self.postprocessing_config["WriteProcessGraph"]:
+                graph_image_path = self.out_dir / "confounds_processsing_plan.dot"
+                self.logger.info(f"Drawing confounds workflow graph: {graph_image_path}")
+                self.confounds_wf.write_graph(dotfilename = graph_image_path, graph2use="colored")
         except ValueError as ve:
             self.logger.warn(ve)
             self.logger.warn("Skipping confounds processing")
@@ -490,6 +507,12 @@ class PostProcessImage():
             mixing_file=self.mixing_file, noise_file=self.noise_file,
             tr=self.tr, 
             base_dir=self.working_dir, crashdump_dir=self.log_dir)
+        
+        # Draw the workflow's process graph if requested in config
+        if self.postprocessing_config["WriteProcessGraph"]:
+            graph_image_path = self.out_dir / "processing_plan.dot"
+            self.logger.info(f"Drawing workflow graph: {graph_image_path}")
+            self.wf.write_graph(dotfilename = graph_image_path, graph2use="colored")
 
     def setup(self):
         self.get_aroma_files()
@@ -503,23 +526,11 @@ class PostProcessImage():
         self.wf.run()
         self.logger.info(f"Postprocessing workflow complete for image: {self.image_file_name}")
 
-        # Draw the workflow's process graph if requested in config
-        if self.postprocessing_config["WriteProcessGraph"]:
-            graph_image_path = self.out_dir / "process_graph.dot"
-            self.logger.info(f"Drawing workflow graph: {graph_image_path}")
-            self.wf.write_graph(dotfilename = graph_image_path, graph2use="colored")
-
         # Process confounds, if this option was included
         if self.confounds_wf:
             self.logger.info("Postprocessing confounds")
             self.confounds_wf.run()
             
-            # Draw the workflow's process graph if requested in config
-            if self.postprocessing_config["WriteProcessGraph"]:
-                graph_image_path = self.out_dir / "confounds_process_graph.dot"
-                self.logger.info(f"Drawing confounds workflow graph: {graph_image_path}")
-                self.confounds_wf.write_graph(dotfilename = graph_image_path, graph2use="colored")
-
     def __call__(self):
         self.setup()
         self.run()
@@ -594,7 +605,7 @@ class PostProcessSubjectJobs():
                                                         log_dir=self.log_dir)
             subject_id = Path(job.subject_id).stem
 
-            self.batch_manager.addjob(Job("PostProcessing_" + subject_id, sub_string_temp))
+            self.batch_manager.addjob(Job("PostProcessing_sub-" + subject_id, sub_string_temp))
 
         self.batch_manager.createsubmissionhead()
         self.batch_manager.compilejobstrings()

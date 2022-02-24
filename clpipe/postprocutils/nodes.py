@@ -3,7 +3,7 @@ import numpy as np
 import os
 
 from nipype.interfaces.base import BaseInterface, \
-    BaseInterfaceInputSpec, traits, File, TraitedSpec
+    BaseInterfaceInputSpec, traits, File, TraitedSpec, CommandLine, CommandLineInputSpec
 from nipype.utils.filemanip import split_filename
 import nipype.pipeline.engine as pe
 from nipype.interfaces.utility import IdentityInterface
@@ -26,7 +26,6 @@ class ButterworthFilterInputSpec(BaseInterfaceInputSpec):
     tr = traits.Float(desc='Repetition time.', mandatory=True)
     order = traits.Float(desc='Order of the filter', mandatory=True)
     out_file = File(mandatory=False)
-
 
 class ButterworthFilterOutputSpec(TraitedSpec):
     out_file = File(exists=False, desc="Filtered image")
@@ -60,3 +59,24 @@ class ButterworthFilter(BaseInterface):
         outputs['out_file'] = os.path.abspath(self.new_file)
 
         return outputs
+
+
+class RegressAromaRInputSpec(CommandLineInputSpec):
+    script_file = File(exists=True, desc='Path to fsl_regfilt.R', mandatory=True, position=0, argstr="%s")
+    in_file = File(exists=True, desc='Image to be regressed', mandatory=True, position=1, argstr="%s")
+    mixing_file = File(exists=True, desc='The AROMA mixing file', mandatory=True, position=2, argstr="%s")
+    noise_file = File(exists=True, desc='The AROMA noise file', mandatory=True, position=3, argstr="%s")
+    n_threads = traits.Int(mandatory=True, position=4, argstr="%d")
+    out_file = File(position=5, argstr="%s", name_source=['in_file'], name_template='%s_AROMAregressed.nii.gz')
+
+class RegressAromaROutputSpec(TraitedSpec):
+    out_file = File(exists=False, desc="Regressed image")
+
+class RegressAromaR(CommandLine):
+    input_spec = RegressAromaRInputSpec
+    output_spec = RegressAromaROutputSpec
+    _cmd = "Rscript"
+
+    def _filename_from_source(self, name, chain=None):
+        retval = super()._filename_from_source(name, chain=chain)
+        return os.path.abspath(retval)

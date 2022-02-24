@@ -70,7 +70,9 @@
         "LogDirectory": ""
 	},
 	"PostProcessingOptions2": {
+		"WorkingDirectory": "",
 		"WriteProcessGraph": true,
+		"TargetImageSpace": "MNI152NLin2009cAsym",
 		"ProcessingSteps": [
 			"SpatialSmoothing",
 			"TemporalFiltering",

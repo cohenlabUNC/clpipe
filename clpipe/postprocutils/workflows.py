@@ -1,7 +1,10 @@
 import os
 
 from math import sqrt, log
+import copy
+import pkg_resources
 
+#TODO: import these without specifying, to help with code readability
 from nipype.interfaces.fsl.maths import MeanImage, BinaryMaths, MedianImage, ApplyMask, TemporalFilter
 from nipype.interfaces.fsl.utils import ImageStats, FilterRegressor
 from nipype.interfaces.afni import TProject
@@ -10,7 +13,8 @@ from nipype.interfaces.fsl import SUSAN, FLIRT
 from nipype.interfaces.utility import Function, Merge, IdentityInterface
 import nipype.pipeline.engine as pe
 
-from .nodes import build_input_node, build_output_node, ButterworthFilter
+from .nodes import build_input_node, build_output_node, ButterworthFilter, RegressAromaR
+import clpipe.postprocutils.r_setup
 
 RESCALING_10000_GLOBALMEDIAN = "globalmedian_10000"
 RESCALING_100_VOXELMEAN = "voxelmean_100"
@@ -117,12 +121,11 @@ def build_postprocessing_workflow(postprocessing_config: dict, in_file: os.PathL
         # Connect previous wf to current wf
         elif step_count > 1:
             postproc_wf.connect(prev_wf, "outputnode.out_file", current_wf, "inputnode.in_file")
-            
+
         # Direct the last workflow's output to postproc workflow's output
         if index == step_count - 1:
             # Set output file name by passing out_file name into input of last node
-            if out_file:
-                postproc_wf.connect(input_node, "out_file", current_wf, "inputnode.out_file")
+            postproc_wf.connect(input_node, "out_file", current_wf, "inputnode.out_file")
             postproc_wf.connect(current_wf, "outputnode.out_file", output_node, "out_file")
             
 
@@ -136,6 +139,10 @@ def build_confound_postprocessing_workflow(postprocessing_config: dict, confound
     name:str = "Confound_Postprocessing_Pipeline", processing_steps: list=None, column_names: list=None,
     base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None):
     
+    # Force use of the R variant of fsl_regfilt for confounds
+    postprocessing_config = copy.deepcopy(postprocessing_config)
+    postprocessing_config["ProcessingStepOptions"]["AROMARegression"]["Algorithm"] = "fsl_regfilt_R"
+
     confounds_wf = pe.Workflow(name=name, base_dir=base_dir)
     if crashdump_dir is not None:
         confounds_wf.config['execution']['crashdump_dir'] = crashdump_dir
@@ -146,9 +153,13 @@ def build_confound_postprocessing_workflow(postprocessing_config: dict, confound
         column_names = postprocessing_config["ConfoundOptions"]["Columns"]
 
     # Select steps that apply to confounds
-    processing_steps = set(processing_steps) & CONFOUND_STEPS
-    
-    if len(list(processing_steps)) < 1:
+    confounds_processing_steps = []
+    for step in processing_steps:
+        if step in CONFOUND_STEPS:
+            confounds_processing_steps.append(step)
+
+    # Reject if no processing steps are applicable to confounds
+    if len(list(confounds_processing_steps)) < 1:
         raise ValueError("The confounds PostProcess workflow requires at least 1 processing step.") 
 
     input_node = pe.Node(IdentityInterface(fields=['in_file', 'out_file', 'columns', 'mixing_file', 'noise_file', 'mask_file'], mandatory_inputs=False), name="inputnode")
@@ -156,25 +167,34 @@ def build_confound_postprocessing_workflow(postprocessing_config: dict, confound
 
     tsv_select_node = pe.Node(Function(input_names=["tsv_file", "column_names"], output_names=["tsv_subset_file"], function=_tsv_select_columns), name="tsv_select_columns")
     tsv_to_nii_node = pe.Node(Function(input_names=["tsv_file"], output_names=["nii_file"], function=_tsv_to_nii), name="tsv_to_nii")
-    nii_to_tsv_node = pe.Node(Function(input_names=["nii_file", "tsv_file_name"], output_names=["tsv_file"], function=_nii_to_tsv), name="nii_to_tsv")
+    nii_to_tsv_node = pe.Node(Function(input_names=["nii_file", "tsv_file"], output_names=["tsv_file"], function=_nii_to_tsv), name="nii_to_tsv")
 
-    postproc_wf = build_postprocessing_workflow(postprocessing_config, processing_steps=processing_steps, name="Confounds_Apply_Postprocessing", 
+    # Build the inner postprocessing workflow
+    postproc_wf = build_postprocessing_workflow(postprocessing_config, processing_steps=confounds_processing_steps, name="Confounds_Apply_Postprocessing", 
         mixing_file=mixing_file, noise_file=noise_file, tr=tr)
 
     if confound_file:
         input_node.inputs.in_file = confound_file
     if out_file:
-        nii_to_tsv_node.inputs.tsv_file_name = out_file
-    else:
-        nii_to_tsv_node.inputs.tsv_file_name = None
+        input_node.inputs.out_file = out_file
 
     input_node.inputs.column_names = column_names
 
+    # Setup input connections
     confounds_wf.connect(input_node, "in_file", tsv_select_node, "tsv_file")
     confounds_wf.connect(input_node, "column_names", tsv_select_node, "column_names")
+    confounds_wf.connect(input_node, "out_file", nii_to_tsv_node, "tsv_file")
+
+    # Select desired columns from input tsv and convert it to a .nii file
     confounds_wf.connect(tsv_select_node, "tsv_subset_file", tsv_to_nii_node, "tsv_file")
+    
+    # Input the .nii file into the postprocessing workflow
     confounds_wf.connect(tsv_to_nii_node, "nii_file", postproc_wf, "inputnode.in_file")
+
+    # Convert the output of the postprocessing workflow back to .tsv format
     confounds_wf.connect(postproc_wf, "outputnode.out_file", nii_to_tsv_node, "nii_file")
+    
+    # Setup output
     confounds_wf.connect(nii_to_tsv_node, "tsv_file", output_node, "out_file")
 
     return confounds_wf
@@ -229,7 +249,7 @@ def _tsv_to_nii(tsv_file):
 
     return str(nii_path.absolute())
 
-def _nii_to_tsv(nii_file, tsv_file_name):
+def _nii_to_tsv(nii_file, tsv_file):
     # Imports must be in function for running as node
     import numpy as np
     import nibabel as nib
@@ -240,16 +260,18 @@ def _nii_to_tsv(nii_file, tsv_file_name):
 
     # remove the y and z dimension for conversion back to x, time matrix
     squeezed_img_data = np.squeeze(img_data, (1, 2))
+    # transpose the data back
+    transposed_matrix = np.swapaxes(squeezed_img_data, 0, 1)
 
-    if not tsv_file_name:
+    if not tsv_file:
         # Build the output path
         nii_file = Path(nii_file)
         path_stem = nii_file.stem
-        tsv_file_name = Path(path_stem + ".tsv")
-        tsv_file_name = str(tsv_file_name.absolute())
+        tsv_file = Path(path_stem + ".tsv")
+        tsv_file = str(tsv_file.absolute())
 
-    np.savetxt(tsv_file_name, squeezed_img_data)
-    return tsv_file_name
+    np.savetxt(tsv_file, transposed_matrix, delimiter='\t')
+    return tsv_file
 
 def _getTemporalFilterAlgorithm(algorithmName):
     if algorithmName == "Butterworth":
@@ -274,6 +296,8 @@ def _getSpatialSmoothingAlgorithm(algorithmName):
 def _getAROMARegressionAlgorithm(algorithmName):
     if algorithmName == "fsl_regfilt":
         return build_aroma_workflow_fsl_regfilt
+    if algorithmName == "fsl_regfilt_R":
+        return build_aroma_workflow_fsl_regfilt_R
     else:
         raise AlgorithmNotFoundError(f"AROMA regression algorithm not found: {algorithmName}")
 
@@ -603,6 +627,39 @@ def build_aroma_workflow_fsl_regfilt(in_file: os.PathLike=None, out_file: os.Pat
     workflow.connect(csv_to_list_node, "list", regfilt_node, "filter_columns")
     workflow.connect(input_node, "mixing_file", regfilt_node, "design_file")
     workflow.connect(regfilt_node, "out_file", output_node, "out_file")
+
+    return workflow
+
+def build_aroma_workflow_fsl_regfilt_R(in_file: os.PathLike=None, out_file: os.PathLike=None, mixing_file: os.PathLike=None, noise_file: os.PathLike=None,  
+    mask_file=None, base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None):
+
+    clpipe.postprocutils.r_setup.setup_clpipe_R_lib()
+    fsl_regfilt_R_script_path = pkg_resources.resource_filename("clpipe", "data/R_scripts/fsl_regfilt.R")
+
+    workflow = pe.Workflow(name="Apply_AROMA_fsl_regfilt_R", base_dir=base_dir)
+    if crashdump_dir is not None:
+        workflow.config['execution']['crashdump_dir'] = crashdump_dir
+
+    input_node = pe.Node(IdentityInterface(fields=['in_file', 'out_file', 'mixing_file', 'noise_file'], mandatory_inputs=False), name="inputnode")
+    output_node = pe.Node(IdentityInterface(fields=['out_file'], mandatory_inputs=True), name="outputnode")
+
+    regfilt_R_node = pe.Node(RegressAromaR(script_file=fsl_regfilt_R_script_path, n_threads=4), name="fsl_regfilt_R")
+
+    # Set WF inputs and outputs
+    if in_file:
+        input_node.inputs.in_file = in_file
+    if mixing_file:
+        input_node.inputs.mixing_file = mixing_file
+    if noise_file:
+        input_node.inputs.noise_file = noise_file
+    if out_file:
+        input_node.inputs.out_file = out_file
+
+    workflow.connect(input_node, "in_file", regfilt_R_node, "in_file")
+    #workflow.connect(input_node, "out_file", regfilt_R_node, "out_file")
+    workflow.connect(input_node, "mixing_file", regfilt_R_node, "mixing_file")
+    workflow.connect(input_node, "noise_file", regfilt_R_node, "noise_file")
+    workflow.connect(regfilt_R_node, "out_file", output_node, "out_file")
 
     return workflow
 
