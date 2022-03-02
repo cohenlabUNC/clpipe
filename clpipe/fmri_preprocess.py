@@ -21,6 +21,9 @@ from .error_handler import exception_handler
               help='Where to put HPC output files (such as SLURM output files)')
 @click.option('-submit', is_flag=True, default=False, help='Flag to submit commands to the HPC')
 @click.option('-debug', is_flag=True, help='Flag to enable detailed error messages and traceback')
+def fmriprep_process_cli(bids_dir, working_dir, output_dir, config_file, subjects, log_dir, submit, debug):
+    fmriprep_process(bids_dir=bids_dir, working_dir=working_dir, output_dir=output_dir, config_file=config_file, subjects=subjects,log_dir=log_dir,submit=submit, debug=debug)
+
 def fmriprep_process(bids_dir=None, working_dir=None, output_dir=None, config_file=None, subjects=None,log_dir=None,submit=False, debug=False):
     """This command runs a BIDS formatted dataset through fMRIprep. Specify subject IDs to run specific subjects. If left blank, runs all subjects."""
 

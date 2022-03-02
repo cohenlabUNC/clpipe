@@ -27,7 +27,7 @@ setup(name='clpipe',
                         'deepdiff'],
       entry_points='''
       [console_scripts]
-      fmriprep_process=clpipe.fmri_preprocess:fmriprep_process
+      fmriprep_process=clpipe.fmri_preprocess:fmriprep_process_cli
       dicom_to_nifti_to_bids_converter_setup=clpipe.dicom_to_bids_converter:dicom_to_nifti_to_bids_converter_setup
       dicom_to_nifti_to_bids_converter=clpipe.dicom_to_bids_converter:dicom_to_nifti_to_bids_converter
       bids_validate=clpipe.bids_validator:bids_validate
