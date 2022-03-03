@@ -6,9 +6,12 @@ LOG_FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 logging.basicConfig(level=logging.INFO)
 
 class App:
-    def __init__(self, config_file=None, name="", parallel=False):
+    def __init__(self, config_file=None, name="", submit=False, distribute=False, debug=False):
         self.name = name
-        self.parallel = parallel
+        self.distribute = distribute
+        self.submit = submit
+        self.debug = debug
+        self.cluster = None
 
         if not config_file:
             raise ValueError("No config file provided")
@@ -18,8 +21,30 @@ class App:
             self.config = configParser.config
             self.config_file = Path(config_file)
 
-    def run(self):
+        if self.distribute:
+            self.cluster = Cluster(self.config["BatchConfig"])
+
+    def run():
         pass
+
+
+class BIDSApp:
+    def __init__(self, bids_dir, subjects=None, config_file=None, name="", submit=False, distribute=False, debug=False):
+        super(name=name, config_file=config_file, distribute=distribute, debug=debug)
+
+        self.jobs: JobList = None
+        self.bids_dir = bids_dir
+
+        self.subjects_to_process = _get_subjects(self.bids, subjects_to_process)
+
+    def build_jobs(self):
+        pass
+
+    def run(self):
+        if self.distribute:
+            self.jobs.distribute_jobs(self.cluster)
+        else:
+            self.jobs.run_jobs()
 
 
 class Job:
@@ -86,6 +111,10 @@ class JobList:
     def run_jobs(self):
         for job in self.jobs:
             job.run()
+
+    def distribute_jobs(self, cluster: Cluster):
+        for job in self.jobs:
+            cluster.distribute(job)
 
 
 class Cluster:
