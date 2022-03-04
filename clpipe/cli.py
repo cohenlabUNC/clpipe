@@ -7,6 +7,7 @@ from clpipe.fmri_preprocess import fmriprep_process as fmriprep_process_logic
 
 @click.group()
 def cli():
+    """Welcome to clpipe. Please choose a processing command."""
     pass
 
 @cli.command()
@@ -21,6 +22,7 @@ def cli():
               help = 'symlink the source data into project/data_dicoms. Usually safe to do.')
 def project_setup(project_title = None, project_dir = None, source_data = None, move_source_data = None,
                   symlink_source_data = None):
+    """Set up a clpipe project"""
     project_setup_logic.project_setup(project_title = project_title, project_dir = project_dir, source_data = source_data, move_source_data = move_source_data,
                   symlink_source_data = symlink_source_data)
 
@@ -37,6 +39,7 @@ def project_setup(project_title = None, project_dir = None, source_data = None, 
 @click.option('-longitudinal', is_flag = True, default = False, help = 'Convert all subjects/sessions into individual pseudo-subjects. Use if you do not want T1w averaged across sessions during FMRIprep')
 @click.option('-submit', is_flag=True, default=False, help = 'Submit jobs to HPC')
 def convert2bids(dicom_dir, dicom_dir_format, bids_dir, conv_config_file, config_file, overwrite, log_dir, subject, session, longitudinal, submit):
+    """Convert DICOM files to BIDS format"""
     convert2bids_logic(dicom_dir=dicom_dir, dicom_dir_format=dicom_dir_format, bids_dir=bids_dir, conv_config_file=conv_config_file, config_file=config_file, overwrite=overwrite,
         log_dir=log_dir, subject=subject, session=session, longitudinal=longitudinal, submit=submit)
 
@@ -49,6 +52,7 @@ def convert2bids(dicom_dir, dicom_dir_format, bids_dir, conv_config_file, config
 @click.option('-interactive', is_flag = True, default=False, help = 'Run in an interactive session. Only use in an interactive compute session.')
 @click.option('-debug', is_flag=True, help = 'Produce detailed debug and traceback.')
 def bids_validate(bids_dir, config_file, interactive, submit, verbose, debug):
+    """Validate a BIDS directory"""
     bids_validate_logic(bids_dir=bids_dir, config_file=config_file, interactive=interactive, submit=submit, verbose=verbose, debug=debug)
 
 
@@ -67,4 +71,5 @@ def bids_validate(bids_dir, config_file, interactive, submit, verbose, debug):
 @click.option('-submit', is_flag=True, default=False, help='Flag to submit commands to the HPC')
 @click.option('-debug', is_flag=True, help='Flag to enable detailed error messages and traceback')
 def fmriprep_process(bids_dir, working_dir, output_dir, config_file, subjects, log_dir, submit, debug):
+    """Submit BIDS-formatted images to fMRIPrep"""
     fmriprep_process_logic(bids_dir=bids_dir, working_dir=working_dir, output_dir=output_dir, config_file=config_file, subjects=subjects,log_dir=log_dir,submit=submit, debug=debug)
