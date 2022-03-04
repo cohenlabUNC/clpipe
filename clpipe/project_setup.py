@@ -5,21 +5,6 @@ from pkg_resources import resource_stream
 import json
 from .template_flow import _templateflow_setup
 
-@click.command()
-@click.option('-project_title', required=True, default=None)
-@click.option('-project_dir', required = True ,type=click.Path(exists=False, dir_okay=True, file_okay=True), default=None,
-              help='Where the project will be located.')
-@click.option('-source_data', required = True, type=click.Path(exists=True, dir_okay=True, file_okay=False),
-              help='Where the raw data (usually DICOMs) are located.')
-@click.option('-move_source_data', is_flag = True, default = False,
-              help='Move source data into project/data_DICOMs folder. USE WITH CAUTION.')
-@click.option('-symlink_source_data', is_flag = True, default = False,
-              help = 'symlink the source data into project/data_dicoms. Usually safe to do.')
-def project_setup_cli(project_title = None, project_dir = None, source_data = None, move_source_data = None,
-                  symlink_source_data = None):
-    project_setup(project_title = project_title, project_dir = project_dir, source_data = source_data, move_source_data = move_source_data,
-                  symlink_source_data = symlink_source_data)
-
 def project_setup(project_title = None, project_dir = None, source_data = None, move_source_data = None,
                   symlink_source_data = None):
 
