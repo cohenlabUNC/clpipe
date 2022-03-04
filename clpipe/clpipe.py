@@ -42,7 +42,7 @@ class BIDSApp:
         self.jobs: JobList = None
         self.bids_dir = bids_dir
 
-        self.subjects_to_process = utils._get_subjects(self.bids, subjects)
+        self.subjects_to_process = clpipe.utils._get_subjects(self.bids, subjects)
 
     def build_jobs(self):
         pass
