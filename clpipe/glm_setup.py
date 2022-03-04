@@ -101,6 +101,9 @@ def _glm_prep(glm_config, subject, task, drop_tps):
 
     subject_files = glob.glob(search_string, recursive=True)
 
+    if not subject_files:
+        raise ValueError(f"No subject found matching: {subject}")
+
     glm_setup = pe.Workflow(name='glm_setup')
     glm_setup.base_dir = os.path.join(glm_config.config["GLMSetupOptions"]['WorkingDirectory'], "sub-"+subject)
     input_node = pe.Node(IdentityInterface(fields=['in_file', 'out_file', 'mask_file']), name='input')
@@ -256,6 +259,8 @@ def _glm_prep(glm_config, subject, task, drop_tps):
                 glm_setup.run()
             except Exception as err:
                 logging.exception(err)
+        else:
+            raise ValueError(f"No task found matching: {task}")
 
 def _build_output_directory_structure(config, filepath):
 
