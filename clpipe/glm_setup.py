@@ -1,3 +1,5 @@
+from distutils.command.config import config
+from distutils.log import debug
 import os
 import glob
 import click
@@ -21,6 +23,7 @@ import pandas
 import re
 import clpipe.postprocutils
 import numpy as np
+import clpipe.fmri_postprocess2
 
 @click.command()
 @click.argument('subjects', nargs=-1, required=False, default=None)
@@ -93,6 +96,52 @@ def glm_setup(subjects = None, config_file=None, glm_config_file = None,
 
             logging.info('Running Subject ' + sub)
             _glm_prep(glm_config, sub, task, drop_tps)
+
+
+def glm_setup_postproc2(subjects = None, config_file=None, glm_config_file = None,
+                     submit=False, batch=True, debug = None, drop_tps = None):
+    # Translate glm_config to standard config
+
+    config = ClpipeConfigParser()
+    postproc2_config = config.config["PostProcessingOptions2"]
+
+    glm_config = GLMConfigParser(glm_config_file)
+    glm_setup_config = glm_config.config['GLMSetupOptions']
+    
+    #task = glm_config.config['GLMSetupOptions']['TaskName']
+
+    # Grab directory paths specific to the GLM config
+    fmriprep_dir = glm_setup_config['TargetDirectory']
+    output_dir = glm_setup_config['OutputDirectory']
+    log_dir = glm_setup_config['LogDirectory']
+
+    # Copy relevant settings from GLM config to postproc2 config
+    postproc2_config["WorkingDirectory"] = glm_setup_config['WorkingDirectory']
+    postproc2_config["ProcessingStepOptions"]["SpatialSmoothing"]["FWHM"] = glm_setup_config['SUSANOptions']["FWHM"]
+    postproc2_config["ConfoundOptions"]["Columns"] = glm_setup_config["Confounds"]
+    postproc2_config["BatchOptions"]["MemoryUsage"] = glm_setup_config["MemoryUsage"]
+    postproc2_config["BatchOptions"]["TimeUsage"] = glm_setup_config["TimeUsage"]
+    postproc2_config["BatchOptions"]["NThreads"] = glm_setup_config["NThreads"]
+
+    # Set algorithms up to use the same nodes as GLM setup
+
+    # Save updated config file
+    # config.config_updater(config_file)
+
+    # clpipe.fmri_postprocess2.postprocess_fmriprep_dir(subjects=subjects, config_file=config_file,
+    #     fmriprep_dir=fmriprep_dir, output_dir=output_dir, log_dir=log_dir,
+    #     batch=batch, submit=submit, debug=debug)
+
+
+def GLMSetupApp(clpipe.BIDSApp):
+    def __init__(subjects = None, config_file=None, glm_config_file = None,
+        submit=False, distribute=False, debug = None, drop_tps = None)
+
+        super(name="GLM-Setup", config_file=config_file, distribute=distribute, debug=debug)
+
+        subjects = subjects
+        glm_config_file = glm_config_file
+        drop_tps = drop_tps
 
 
 def _glm_prep(glm_config, subject, task, drop_tps):
