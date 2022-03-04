@@ -149,6 +149,7 @@ def fmriprep_process(bids_dir, working_dir, output_dir, config_file, subjects, l
     """Submit BIDS-formatted images to fMRIPrep"""
     fmriprep_process_logic(bids_dir=bids_dir, working_dir=working_dir, output_dir=output_dir, config_file=config_file, subjects=subjects,log_dir=log_dir,submit=submit, debug=debug)
 
+
 @cli.command()
 @click.argument('subjects', nargs=-1, required=False, default=None)
 @click.option('-config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True), default=None, required = True,
