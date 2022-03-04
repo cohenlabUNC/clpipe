@@ -35,6 +35,10 @@ import numpy as np
               help='Submit to batch, or run in current session. Mainly used internally.')
 @click.option('-debug', is_flag=True, default=False,
               help='Print detailed processing information and traceback for errors.')
+def glm_setup_cli(subjects, config_file, glm_config_file, submit, batch, debug, drop_tps):
+    glm_setup(subjects = subjects, config_file=config_file, glm_config_file = glm_config_file,
+                     submit=submit, batch=batch, debug = debug, drop_tps = drop_tps)
+
 def glm_setup(subjects = None, config_file=None, glm_config_file = None,
                      submit=False, batch=True, debug = None, drop_tps = None):
     if not debug:
