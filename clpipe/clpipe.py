@@ -1,5 +1,12 @@
+import os
 import logging
-from enum import Enum, auto
+import json
+from pathlib import Path
+from typing import List
+from pkg_resources import resource_stream
+
+import clpipe.config_json_parser
+import clpipe.utils
 
 LOG_FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 
@@ -16,9 +23,9 @@ class App:
         if not config_file:
             raise ValueError("No config file provided")
         else:
-            self.configParser = ClpipeConfigParser()
+            self.configParser = clpipe.config_json_parser.ClpipeConfigParser()
             self.configParser.config_updater(config_file)
-            self.config = configParser.config
+            self.config = self.configParser.config
             self.config_file = Path(config_file)
 
         if self.distribute:
@@ -30,12 +37,12 @@ class App:
 
 class BIDSApp:
     def __init__(self, bids_dir, subjects=None, config_file=None, name="", submit=False, distribute=False, debug=False):
-        super(name=name, config_file=config_file, distribute=distribute, debug=debug)
+        super.__init__(name=name, config_file=config_file, distribute=distribute, debug=debug)
 
         self.jobs: JobList = None
         self.bids_dir = bids_dir
 
-        self.subjects_to_process = _get_subjects(self.bids, subjects_to_process)
+        self.subjects_to_process = utils._get_subjects(self.bids, subjects)
 
     def build_jobs(self):
         pass
@@ -46,16 +53,11 @@ class BIDSApp:
         else:
             self.jobs.run_jobs()
 
-
 class Job:
-    def __init__(self, job_runner: JobRunner=None, name="", log_dir=None):
-        self.job_runner = job_runner
+    def __init__(self, name="", log_dir=None):
         self.name = name
         self.log_dir = log_dir
         self._setup_logger()
-
-        if not job_runner:
-            self.job_runner = JobRunner()
         
     def _setup_logger(self):
         self.logger = logging.getLogger(f"{self.__class__.__name__}{self.name}")
@@ -99,37 +101,6 @@ class Job:
     def __call__(self):
         self.setup()
         self.run()
-
-
-class JobList:
-    def __init__(self, jobs: List):
-        self.jobs = jobs
-
-    def add_job(self, job: Job)
-        self.jobs.append(job)
-
-    def run_jobs(self):
-        for job in self.jobs:
-            job.run()
-
-    def distribute_jobs(self, cluster: Cluster):
-        for job in self.jobs:
-            cluster.distribute(job)
-
-
-class Cluster:
-    def __init__(self, cluster_config: ClusterConfig=None):
-        self.cluster_config = cluster_config
-        self.cmd_string = None
-
-    def distribute(self, job: Job)
-        cmd_string = job.get_cmd_string()
-        if cmd_string:
-            self.submission_cmd = cluster_config.generate_submission_string(job.name, job.cmd_string)
-            os.system(self.submission_cmd)
-        else:
-            raise NotImplementedError("Job must implement get_cmd_string() to distribute.")
-
 
 class ClusterConfig:
     def __init__(self, batchsystemConfig, outputDirectory=None):
@@ -196,3 +167,31 @@ class ClusterConfig:
         head.append(self.config['CommandWrapper'])
 
         self.header_template = " ".join(head)
+
+class Cluster:
+    def __init__(self, cluster_config: ClusterConfig=None):
+        self.cluster_config = cluster_config
+        self.cmd_string = None
+
+    def distribute(self, job: Job):
+        cmd_string = job.get_cmd_string()
+        if cmd_string:
+            self.submission_cmd = self.cluster_config.generate_submission_string(job.name, job.cmd_string)
+            os.system(self.submission_cmd)
+        else:
+            raise NotImplementedError("Job must implement get_cmd_string() to distribute.")
+
+class JobList:
+    def __init__(self, jobs: List):
+        self.jobs = jobs
+
+    def add_job(self, job: Job):
+        self.jobs.append(job)
+
+    def run_jobs(self):
+        for job in self.jobs:
+            job.run()
+
+    def distribute_jobs(self, cluster: Cluster):
+        for job in self.jobs:
+            cluster.distribute(job)
