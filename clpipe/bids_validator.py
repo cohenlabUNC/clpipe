@@ -6,6 +6,7 @@ from .error_handler import exception_handler
 from .batch_manager import BatchManager, Job
 from .config_json_parser import ClpipeConfigParser
 
+
 def bids_validate(bids_dir=None, config_file=None, log_dir=None, interactive=False, submit=True, verbose=False, debug=False):
     """Runs the BIDS-Validator program on a dataset. If a configuration file has a BIDSDirectory specified, you do not need to provide a BIDS directory in the command."""
     if not debug:
