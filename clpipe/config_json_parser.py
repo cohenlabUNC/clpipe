@@ -42,7 +42,9 @@ class ClpipeConfigParser:
         if new_config is None:
             try:
                 # Attempt to pull in the config from the current directory
+                cwd_config = Path.cwd() / 'clpipe_config.json'
                 new_config = config_json_parser(Path.cwd() / 'clpipe_config.json')
+                print(f"Using discovered configuration file: {cwd_config}")
             except FileNotFoundError:
                 pass
         else:
