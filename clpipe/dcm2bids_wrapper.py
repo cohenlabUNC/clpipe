@@ -100,7 +100,8 @@ def convert2bids(dicom_dir=None, dicom_dir_format=None, bids_dir=None, conv_conf
     batch_manager.compilejobstrings()
     if submit:
         batch_manager.submit_jobs()
-        config.config_json_dump(os.path.dirname(os.path.abspath(config_file)), config_file)
+        if config_file:
+            config.config_json_dump(os.path.dirname(os.path.abspath(config_file)), config_file)
     else:
         batch_manager.print_jobs()
 
