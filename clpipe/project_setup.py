@@ -20,6 +20,10 @@ def project_setup(project_title = None, project_dir = None, source_data = None, 
 
     config = ClpipeConfigParser()
     org_source = os.path.abspath(source_data)
+
+    # Create the project directory
+    os.makedirs(project_dir, exist_ok=True)
+
     if move_source_data or symlink_source_data:
         source_data = os.path.join(os.path.abspath(project_dir), 'data_DICOMs')
     config.setup_project(project_title, project_dir, source_data)
