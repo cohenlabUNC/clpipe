@@ -9,7 +9,7 @@ from .template_flow import _templateflow_setup
 @click.option('-project_title', required=True, default=None)
 @click.option('-project_dir', required = True ,type=click.Path(exists=False, dir_okay=True, file_okay=True), default=None,
               help='Where the project will be located.')
-@click.option('-source_data', type=click.Path(exists=True, dir_okay=True, file_okay=False),
+@click.option('-source_data', required = True, type=click.Path(exists=True, dir_okay=True, file_okay=False),
               help='Where the raw data (usually DICOMs) are located.')
 @click.option('-move_source_data', is_flag = True, default = False,
               help='Move source data into project/data_DICOMs folder. USE WITH CAUTION.')
