@@ -49,7 +49,7 @@ class BIDSApp:
 
     def run(self):
         if self.distribute:
-            self.jobs.distribute_jobs(self.cluster)
+            self.cluster.distribute(self.jobs)
         else:
             self.jobs.run_jobs()
 
@@ -168,19 +168,6 @@ class ClusterConfig:
 
         self.header_template = " ".join(head)
 
-class Cluster:
-    def __init__(self, cluster_config: ClusterConfig=None):
-        self.cluster_config = cluster_config
-        self.cmd_string = None
-
-    def distribute(self, job: Job):
-        cmd_string = job.get_cmd_string()
-        if cmd_string:
-            self.submission_cmd = self.cluster_config.generate_submission_string(job.name, job.cmd_string)
-            os.system(self.submission_cmd)
-        else:
-            raise NotImplementedError("Job must implement get_cmd_string() to distribute.")
-
 class JobList:
     def __init__(self, jobs: List):
         self.jobs = jobs
@@ -192,6 +179,17 @@ class JobList:
         for job in self.jobs:
             job.run()
 
-    def distribute_jobs(self, cluster: Cluster):
-        for job in self.jobs:
-            cluster.distribute(job)
+class Cluster:
+    def __init__(self, cluster_config: ClusterConfig=None):
+        self.cluster_config = cluster_config
+        self.cmd_string = None
+
+    def distribute(self, joblist: JobList):
+        for job in joblist.jobs:
+            cmd_string = job.get_cmd_string()
+            if cmd_string:
+                self.submission_cmd = self.cluster_config.generate_submission_string(job.name, job.cmd_string)
+                os.system(self.submission_cmd)
+            else:
+                raise NotImplementedError("Job must implement get_cmd_string() to distribute.")
+
