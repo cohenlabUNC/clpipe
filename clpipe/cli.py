@@ -82,7 +82,7 @@ def cli():
 def project_setup(project_title = None, project_dir = None, source_data = None, move_source_data = None,
                   symlink_source_data = None):
     """Set up a clpipe project"""
-    project_setup_logic.project_setup(project_title = project_title, project_dir = project_dir, source_data = source_data, move_source_data = move_source_data,
+    project_setup_logic(project_title = project_title, project_dir = project_dir, source_data = source_data, move_source_data = move_source_data,
                   symlink_source_data = symlink_source_data)
 
 @cli.command()
