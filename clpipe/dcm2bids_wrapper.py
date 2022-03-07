@@ -16,13 +16,16 @@ def convert2bids(dicom_dir=None, dicom_dir_format=None, bids_dir=None, conv_conf
                           dicom_dir_format,
                           log_dir)
 
-    if not all([config.config['DICOMToBIDSOptions']['DICOMDirectory'],
-            config.config['DICOMToBIDSOptions']['BIDSDirectory'],
-            config.config['DICOMToBIDSOptions']['ConversionConfig'],
-            config.config['DICOMToBIDSOptions']['DICOMFormatString'],
-            config.config['DICOMToBIDSOptions']['LogDirectory']]):
-        raise ValueError('DICOM directory, BIDS directory, conversion config, log directory and/or format string are not specified.')
-
+    if not config.config['DICOMToBIDSOptions']['DICOMDirectory']:
+        raise ValueError('DICOM directory not specified.')
+    if not config.config['DICOMToBIDSOptions']['BIDSDirectory']:
+        raise ValueError('BIDS directory not specified.')
+    if not config.config['DICOMToBIDSOptions']['ConversionConfig']:
+        raise ValueError('Conversion config not specified.')
+    if not config.config['DICOMToBIDSOptions']['DICOMFormatString']:
+        raise ValueError('Format string not specified.')
+    if not config.config['DICOMToBIDSOptions']['LogDirectory']:
+        raise ValueError('Log directory not specified.')
 
 
     dicom_dir = config.config['DICOMToBIDSOptions']['DICOMDirectory']
