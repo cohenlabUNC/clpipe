@@ -1,0 +1,4 @@
+pytest
+wheel
+matplotlib
+-e .

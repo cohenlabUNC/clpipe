@@ -2,6 +2,7 @@ import datetime
 import getpass
 import json
 import os
+from pathlib import Path
 import collections
 import click
 from pkg_resources import resource_stream, resource_filename
@@ -39,10 +40,17 @@ class ClpipeConfigParser:
 
     def config_updater(self, new_config):
         if new_config is None:
-            None
+            try:
+                # Attempt to pull in the config from the current directory
+                cwd_config = Path.cwd() / 'clpipe_config.json'
+                new_config = config_json_parser(Path.cwd() / 'clpipe_config.json')
+                print(f"Using discovered configuration file: {cwd_config}")
+            except FileNotFoundError:
+                pass
         else:
             new_config = config_json_parser(new_config)
-            self.config = update(self.config, new_config)
+        
+        self.config = update(self.config, new_config)
 
     def config_json_dump(self, outputdir, filepath):
         if filepath is None:

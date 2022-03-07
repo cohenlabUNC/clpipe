@@ -69,6 +69,60 @@
 		"BIDSValidatorImage": "/proj/hng/singularity_imgs/validator.simg",
         "LogDirectory": ""
 	},
+	"PostProcessingOptions2": {
+		"WorkingDirectory": "",
+		"WriteProcessGraph": true,
+		"TargetImageSpace": "MNI152NLin2009cAsym",
+		"ProcessingSteps": [
+			"SpatialSmoothing",
+			"TemporalFiltering",
+			"IntensityNormalization"
+		],
+		"ProcessingStepOptions": {
+			"TemporalFiltering": {
+				"Algorithm":"Butterworth",
+				"FilteringHighPass": 0.008,
+				"FilteringLowPass": -1,
+				"FilteringOrder": 2
+			}, 
+			"IntensityNormalization": {
+				"Algorithm": "10000_GlobalMedian"
+			}, 
+			"SpatialSmoothing": {
+				"Algorithm": "SUSAN",
+      			"FWHM": 6
+			},
+			"AROMARegression":{
+				"Algorithm": "fsl_regfilt"
+			},
+			"Resample":{
+				"ReferenceImage": "SET REFERENCE IMAGE"
+			},
+			"ConfoundRegression": {
+				"Algorithm": "afni_3dTproject",
+				"Columns": ["csf", "csf_derivative1", "white_matter", "white_matter_derivative1"],
+				"ConfoundFileName" : "confound_regressors.txt"
+			}
+		},
+		"ConfoundOptions": {
+			"Include": false,
+			"Columns": ["csf", "csf_derivative1", "white_matter", "white_matter_derivative1"],
+			"ProcessedConfoundsSuffix": "postprocessed"
+		},
+		"BatchOptions": {
+			"MemoryUsage": "20000",
+			"TimeUsage": "2:0:0",
+			"NThreads": "1"
+		}	
+	},
+	"HNGPrepOptions": {
+		"TargetDirectory": "",
+		"TargetSuffix": "space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz",
+		"OutputDirectory": "",
+		"OutputSuffix": "",
+		"IntensityNormalizationMethod": "10000_globalmedian",
+		"LogDirectory": ""
+	},
 	"BetaSeriesOptions": {
 		"TargetDirectory": "",
 		"TargetSuffix": "preproc_bold.nii.gz",
