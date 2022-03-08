@@ -14,7 +14,7 @@ def bids_validate(bids_dir=None, config_file=None, interactive=False, submit=Tru
     config.config_updater(config_file)
     config.setup_fmriprep_directories(bids_dir, None, None)
 
-    if bids_dir is None and config_file is None:
+    if bids_dir is None and not config.config['FMRIPrepOptions']['BIDSDirectory']:
         raise ValueError('Specify a BIDS directory in either the configuration file, or in the command')
 
     batch_manager = BatchManager(batchsystemConfig=config.config['BatchConfig'])
