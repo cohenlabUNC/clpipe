@@ -46,10 +46,9 @@ class ClpipeConfigParser:
                 new_config = config_json_parser(Path.cwd() / 'clpipe_config.json')
                 print(f"Using discovered configuration file: {cwd_config}")
             except FileNotFoundError:
-                pass
+                return None
         else:
             new_config = config_json_parser(new_config)
-        
         self.config = update(self.config, new_config)
 
     def config_json_dump(self, outputdir, filepath):
