@@ -92,8 +92,7 @@ def glm_setup(subjects = None, config_file=None, glm_config_file = None,
             batch_manager.compilejobstrings()
             click.echo(batch_manager.print_jobs())
     else:
-        for sub in subjects:
-
+        for sub in sublist:
             logging.info('Running Subject ' + sub)
             _glm_prep(glm_config, sub, task, drop_tps)
 
