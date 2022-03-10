@@ -129,26 +129,6 @@ def glm_setup_postproc2(subjects = None, config_file=None, glm_config_file = Non
     postproc2_config["BatchOptions"]["TimeUsage"] = glm_setup_config["TimeUsage"]
     postproc2_config["BatchOptions"]["NThreads"] = glm_setup_config["NThreads"]
 
-    # Set algorithms up to use the same nodes as GLM setup
-
-    # Save updated config file
-    # config.config_updater(config_file)
-
-    # clpipe.fmri_postprocess2.postprocess_fmriprep_dir(subjects=subjects, config_file=config_file,
-    #     fmriprep_dir=fmriprep_dir, output_dir=output_dir, log_dir=log_dir,
-    #     batch=batch, submit=submit, debug=debug)
-
-
-def GLMSetupApp(clpipe.BIDSApp):
-    def __init__(subjects = None, config_file=None, glm_config_file = None,
-        submit=False, distribute=False, debug = None, drop_tps = None)
-
-        super(name="GLM-Setup", config_file=config_file, distribute=distribute, debug=debug)
-
-        subjects = subjects
-        glm_config_file = glm_config_file
-        drop_tps = drop_tps
-
 
 def _glm_prep(glm_config, subject, task, drop_tps):
     fsl.FSLCommand.set_default_output_type('NIFTI_GZ')
