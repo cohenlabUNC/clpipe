@@ -166,6 +166,7 @@ def build_confound_postprocessing_workflow(postprocessing_config: dict, confound
     output_node = pe.Node(IdentityInterface(fields=['out_file'], mandatory_inputs=True), name="outputnode")
 
     tsv_select_node = pe.Node(Function(input_names=["tsv_file", "column_names"], output_names=["tsv_subset_file"], function=_tsv_select_columns), name="tsv_select_columns")
+    tsv_replace_nas_node = pe.Node(Function(input_names=["tsv_file"], output_names=["tsv_no_na"], function=_tsv_replace_nas_with_column_mean), name="tsv_replace_nas")
     tsv_to_nii_node = pe.Node(Function(input_names=["tsv_file"], output_names=["nii_file"], function=_tsv_to_nii), name="tsv_to_nii")
     nii_to_tsv_node = pe.Node(Function(input_names=["nii_file", "tsv_file"], output_names=["tsv_file"], function=_nii_to_tsv), name="nii_to_tsv")
 
@@ -185,8 +186,9 @@ def build_confound_postprocessing_workflow(postprocessing_config: dict, confound
     confounds_wf.connect(input_node, "column_names", tsv_select_node, "column_names")
     confounds_wf.connect(input_node, "out_file", nii_to_tsv_node, "tsv_file")
 
-    # Select desired columns from input tsv and convert it to a .nii file
-    confounds_wf.connect(tsv_select_node, "tsv_subset_file", tsv_to_nii_node, "tsv_file")
+    # Select desired columns from input tsv, replace n/a values with column mean, and convert it to a .nii file
+    confounds_wf.connect(tsv_select_node, "tsv_subset_file", tsv_replace_nas_node, "tsv_file")
+    confounds_wf.connect(tsv_replace_nas_node, "tsv_no_na", tsv_to_nii_node, "tsv_file")
     
     # Input the .nii file into the postprocessing workflow
     confounds_wf.connect(tsv_to_nii_node, "nii_file", postproc_wf, "inputnode.in_file")
@@ -210,6 +212,28 @@ def _tsv_select_columns(tsv_file, column_names):
     # Build the output path
     tsv_file = Path(tsv_file).stem
     tsv_subset_file = Path(tsv_file + "_subset.tsv")
+
+    df.to_csv(tsv_subset_file, sep="\t", index=False)
+
+    return str(tsv_subset_file.absolute())
+
+def _tsv_replace_nas_with_column_mean(tsv_file):
+    # Imports must be in function for running as node
+    import pandas as pd
+    from pathlib import Path
+
+    df = pd.read_csv(tsv_file, sep="\t")
+
+    # Get all of the columns with n/a values
+    na_columns = df.columns[df.isna().any()].tolist()
+
+    # Replace n/a values with column mean
+    for column in na_columns:
+        df[column] = df[column].fillna(df[column].mean())
+
+    # Build the output path
+    tsv_file = Path(tsv_file).stem
+    tsv_subset_file = Path(tsv_file + "_replace-nas.tsv")
 
     df.to_csv(tsv_subset_file, sep="\t", index=False)
 
