@@ -159,7 +159,7 @@ def _glm_prep(glm_config, subject, task, drop_tps):
             images_to_process.append(image)
 
     if len(images_to_process) == 0:
-        raise ValueError(f"No task found matching: {task} for subject {subject}")
+        raise ValueError(f"No task found matching: task-{task} for subject {subject}")
 
     for image in images_to_process:
         logging.info('Processing ' + image)
