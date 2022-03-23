@@ -13,7 +13,7 @@ clpipe was developed to streamline the processing of MRI data using the high per
 
 .. toctree::
    :maxdepth: 1
-   :caption: Contents:
+   :caption: Documentation
 
    install
    project_setup
@@ -28,7 +28,7 @@ clpipe was developed to streamline the processing of MRI data using the high per
 
 .. toctree::
    :maxdepth: 1
-   :caption: Tutorial:
+   :caption: Tutorial
 
    install_tutorial
    dicom2bids_tutorial
