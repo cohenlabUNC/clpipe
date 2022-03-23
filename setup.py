@@ -36,7 +36,6 @@ setup(name='clpipe',
       dicom_to_nifti_to_bids_converter=clpipe.dicom_to_bids_converter:dicom_to_nifti_to_bids_converter
       bids_validate=clpipe.bids_validator:bids_validate
       fmri_postprocess=clpipe.fmri_postprocess:fmri_postprocess
-      fmri_postprocess2=clpipe.fmri_postprocess2:fmri_postprocess2_cli
       fmri_process_check=clpipe.fmri_process_check:fmri_process_check
       get_reports=clpipe.get_reports:get_reports
       get_config_file=clpipe.grab_config_file:get_config_file
