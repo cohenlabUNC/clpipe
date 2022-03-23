@@ -15,6 +15,11 @@ from .template_flow import _templateflow_setup
               help='Move source data into project/data_DICOMs folder. USE WITH CAUTION.')
 @click.option('-symlink_source_data', is_flag = True, default = False,
               help = 'symlink the source data into project/data_dicoms. Usually safe to do.')
+def project_setup_cli(project_title = None, project_dir = None, source_data = None, move_source_data = None,
+                  symlink_source_data = None):
+    project_setup(project_title = project_title, project_dir = project_dir, source_data = source_data, move_source_data = move_source_data,
+                  symlink_source_data = symlink_source_data)
+
 def project_setup(project_title = None, project_dir = None, source_data = None, move_source_data = None,
                   symlink_source_data = None):
 
