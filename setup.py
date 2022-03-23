@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(name='clpipe',
-      version='1.4',
+      version='1.5.0',
       description='clpipe: MRI processing pipeline for high performance clusters',
       url='https://github.com/cohenlabUNC/clpipe',
       author='Maintainer: Teague Henry, Contributor: Deepak Melwani',
