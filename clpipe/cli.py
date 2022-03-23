@@ -4,6 +4,7 @@ from clpipe.project_setup import project_setup as project_setup_logic
 from clpipe.dcm2bids_wrapper import convert2bids as convert2bids_logic
 from clpipe.bids_validator import bids_validate as bids_validate_logic
 from clpipe.fmri_preprocess import fmriprep_process as fmriprep_process_logic
+from clpipe.glm_setup import glm_setup as glm_setup_logic
 
 @click.group()
 def cli():
@@ -73,3 +74,21 @@ def bids_validate(bids_dir, config_file, interactive, submit, verbose, debug):
 def fmriprep_process(bids_dir, working_dir, output_dir, config_file, subjects, log_dir, submit, debug):
     """Submit BIDS-formatted images to fMRIPrep"""
     fmriprep_process_logic(bids_dir=bids_dir, working_dir=working_dir, output_dir=output_dir, config_file=config_file, subjects=subjects,log_dir=log_dir,submit=submit, debug=debug)
+
+@cli.command()
+@click.argument('subjects', nargs=-1, required=False, default=None)
+@click.option('-config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True), default=None, required = True,
+              help='Use a given configuration file.')
+@click.option('-glm_config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True), default=None, required = True,
+              help='Use a given GLM configuration file.')
+@click.option('-drop_tps', type=click.Path(exists=True, dir_okay=False, file_okay=True), default=None, required = False,
+              help='Drop timepoints csv sheet')
+@click.option('-submit', is_flag=True, default=False, help='Flag to submit commands to the HPC.')
+@click.option('-batch/-single', default=True,
+              help='Submit to batch, or run in current session. Mainly used internally.')
+@click.option('-debug', is_flag=True, default=False,
+              help='Print detailed processing information and traceback for errors.')
+def glm_setup(subjects, config_file, glm_config_file, submit, batch, debug, drop_tps):
+    """Prepare task images and confound files for GLM analysis"""
+    glm_setup_logic(subjects = subjects, config_file=config_file, glm_config_file = glm_config_file,
+                     submit=submit, batch=batch, debug = debug, drop_tps = drop_tps)
