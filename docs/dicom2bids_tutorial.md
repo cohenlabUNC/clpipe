@@ -58,10 +58,10 @@ Open clpipe_config.json and navigate to the "DICOMToBIDSOptions":
 
 This section tells clpipe how to run your BIDS conversion. Note that clpipe has been automatically configured to point to your DICOM directory, "DICOMDirectory", which will serve as the input to the dcm2bids command. The output folder, "BIDSDirectory", is also already set. These can be modified to point to new locations if necessary - for example, you may want to create more than one BIDS directory for testing purposes.
 
-The option "DICOMFormatString" must be set to run your bids conversion. This configuration tells clpipe how to identify subjects and (if relevant) sessions within `data_DICOMs`. To pick up on the subject ids in our example dataset, the placeholder `{subject}` should be given in place of a specific subject's directory:
+The option "DICOMFormatString" must be set to run your bids conversion. This configuration tells clpipe how to identify subjects and (if relevant) sessions within `data_DICOMs`. To pick up on the subject ids in our example dataset, the placeholder `{subject}` should be given in place of a specific subject's directory. The subject ID cannot contain underscores, so we will include the `mr_` portion of the subject folder name before the `{subject}` placeholder to exclude it from the subject's generated id:
 
 ```
-"DICOMFormatString": "dcm_qa_nih/In/20180918GE/{subject}"
+"DICOMFormatString": "dcm_qa_nih/In/20180918GE/mr_{subject}"
 ```
 
 If your data contained an addtional folder layer corresponding to session ids, you would similarily mark this with a `{session}` placeholder
@@ -115,9 +115,9 @@ clpipe will then print out a "plan" for executing your jobs:
 
 ```
 dcm_qa_nih/In/20180918GE/*
-/nas/longleaf/home/willasc/data/clpipe/clpipe_tutorial_project/data_DICOMs/dcm_qa_nih/In/20180918GE/{subject}/
-sbatch --no-requeue -n 1 --mem=5000 --time=1:0:0 --cpus-per-task=2 --job-name="convert_sub-mr_0004" --output=/nas/longleaf/home/willasc/data/clpipe/clpipe_tutorial_project/logs/DCM2BIDS_logs/Output-convert_sub-mr_0004-jobid-%j.out --wrap="dcm2bids -d <your system's path>/clpipe_tutorial_project/data_DICOMs/dcm_qa_nih/In/20180918GE/mr_0004/ -o <your system's path>/clpipe/clpipe_tutorial_project/data_BIDS -p mr_0004 -c <your system's path>/clpipe_tutorial_project/conversion_config.json"
-sbatch --no-requeue -n 1 --mem=5000 --time=1:0:0 --cpus-per-task=2 --job-name="convert_sub-mr_0005" --output=<your system's path>/clpipe_tutorial_project/logs/DCM2BIDS_logs/Output-convert_sub-mr_0005-jobid-%j.out --wrap="dcm2bids -d <your system's path>clpipe_tutorial_project/data_DICOMs/dcm_qa_nih/In/20180918GE/mr_0005/ -o <your system's path>/clpipe_tutorial_project/data_BIDS -p mr_0005 -c <your system's path>/clpipe_tutorial_project/conversion_config.json"
+<your system's path>/clpipe_tutorial_project/data_DICOMs/dcm_qa_nih/In/20180918GE/{subject}/
+sbatch --no-requeue -n 1 --mem=5000 --time=1:0:0 --cpus-per-task=2 --job-name="convert_sub-0004" --output=<your system's path>/clpipe_tutorial_project/logs/DCM2BIDS_logs/Output-convert_sub-0004-jobid-%j.out --wrap="dcm2bids -d <your system's path>/clpipe_tutorial_project/data_DICOMs/dcm_qa_nih/In/20180918GE/0004/ -o <your system's path>/clpipe/clpipe_tutorial_project/data_BIDS -p 0004 -c <your system's path>/clpipe_tutorial_project/conversion_config.json"
+sbatch --no-requeue -n 1 --mem=5000 --time=1:0:0 --cpus-per-task=2 --job-name="convert_sub-0005" --output=<your system's path>/clpipe_tutorial_project/logs/DCM2BIDS_logs/Output-convert_sub-0005-jobid-%j.out --wrap="dcm2bids -d <your system's path>clpipe_tutorial_project/data_DICOMs/dcm_qa_nih/In/20180918GE/0005/ -o <your system's path>/clpipe_tutorial_project/data_BIDS -p 0005 -c <your system's path>/clpipe_tutorial_project/conversion_config.json"
 ...
 ```
 
@@ -133,7 +133,7 @@ clpipe should then report that you have submitted 4 jobs to the cluster:
 
 ```
 dcm_qa_nih/In/20180918GE/*
-/nas/longleaf/home/willasc/data/clpipe/clpipe_tutorial_project/data_DICOMs/dcm_qa_nih/In/20180918GE/{subject}/
+<your system's path>/clpipe_tutorial_project/data_DICOMs/dcm_qa_nih/In/20180918GE/mr_{subject}/
 Submitted batch job 38210854
 Submitted batch job 38210855
 Submitted batch job 38210856
@@ -152,14 +152,14 @@ Now, your BIDS directory should look something like this:
 ├── participants.tsv
 ├── README
 ├── sourcedata
-├── sub-mr_0004
+├── sub-0004
 │   └── func
-│       ├── sub-mr_0004_task-rest_bold.json
-│       └── sub-mr_0004_task-rest_bold.nii.gz
+│       ├── sub-0004_task-rest_bold.json
+│       └── sub-0004_task-rest_bold.nii.gz
 └── tmp_dcm2bids
 ```
 
-But wait a second! You were expecting four subjects to be in your BIDS directory, but only `sub-mr_0004` is present. The next section will guide you through how to tune your `conversion_config.json` file to pick up all of the images you need.
+But wait a second! You were expecting four subjects to be in your BIDS directory, but only `sub-0004` is present. The next section will guide you through how to tune your `conversion_config.json` file to pick up all of the images you need.
 
 ## Iterating on Your Conversion
 
@@ -170,20 +170,20 @@ The folder `tmp_dcm2bids` contains all of the images that were not matched to an
 ```
 └── tmp_dcm2bids
     ├── log
-    │   ├── sub-mr_0004_2022-02-17T103129.039268.log
-    │   ├── sub-mr_0005_2022-02-17T103129.116426.log
-    │   ├── sub-mr_0006_2022-02-17T103129.082788.log
-    │   └── sub-mr_0007_2022-02-17T103129.191004.log
-    ├── sub-mr_0004
-    ├── sub-mr_0005
-    │   ├── 005_mr_0005_Axial_EPI-FMRI_(Sequential_I_to_S)_20180918114023.json
-    │   └── 005_mr_0005_Axial_EPI-FMRI_(Sequential_I_to_S)_20180918114023.nii.gz
-    ├── sub-mr_0006
-    │   ├── 006_mr_0006_Axial_EPI-FMRI_(Interleaved_S_to_I)_20180918114023.json
-    │   └── 006_mr_0006_Axial_EPI-FMRI_(Interleaved_S_to_I)_20180918114023.nii.gz
-    └── sub-mr_0007
-        ├── 007_mr_0007_Axial_EPI-FMRI_(Sequential_S_to_I)_20180918114023.json
-        └── 007_mr_0007_Axial_EPI-FMRI_(Sequential_S_to_I)_20180918114023.nii.gz
+    │   ├── sub-0004_2022-02-17T103129.039268.log
+    │   ├── sub-0005_2022-02-17T103129.116426.log
+    │   ├── sub-0006_2022-02-17T103129.082788.log
+    │   └── sub-0007_2022-02-17T103129.191004.log
+    ├── sub-0004
+    ├── sub-0005
+    │   ├── 005_0005_Axial_EPI-FMRI_(Sequential_I_to_S)_20180918114023.json
+    │   └── 005_0005_Axial_EPI-FMRI_(Sequential_I_to_S)_20180918114023.nii.gz
+    ├── sub-0006
+    │   ├── 006_0006_Axial_EPI-FMRI_(Interleaved_S_to_I)_20180918114023.json
+    │   └── 006_0006_Axial_EPI-FMRI_(Interleaved_S_to_I)_20180918114023.nii.gz
+    └── sub-0007
+        ├── 007_0007_Axial_EPI-FMRI_(Sequential_S_to_I)_20180918114023.json
+        └── 007_0007_Axial_EPI-FMRI_(Sequential_S_to_I)_20180918114023.nii.gz
 ```
 
 As the raw data folder we have pointed clpipe toward, `20180918GE`, contains functional data, we will look at the `"func"` list item in our `conversion_config.json` to adjust:
@@ -227,22 +227,22 @@ Now, all subjects should be present in your BIDS directory along with their rest
 
 ```
 ...
-├── sub-mr_0004
+├── sub-0004
 │   └── func
-│       ├── sub-mr_0004_task-rest_bold.json
-│       └── sub-mr_0004_task-rest_bold.nii.gz
-├── sub-mr_0005
+│       ├── sub-0004_task-rest_bold.json
+│       └── sub-0004_task-rest_bold.nii.gz
+├── sub-0005
 │   └── func
-│       ├── sub-mr_0005_task-rest_bold.json
-│       └── sub-mr_0005_task-rest_bold.nii.gz
-├── sub-mr_0006
+│       ├── sub-0005_task-rest_bold.json
+│       └── sub-0005_task-rest_bold.nii.gz
+├── sub-0006
 │   └── func
-│       ├── sub-mr_0006_task-rest_bold.json
-│       └── sub-mr_0006_task-rest_bold.nii.gz
-├── sub-mr_0007
+│       ├── sub-0006_task-rest_bold.json
+│       └── sub-0006_task-rest_bold.nii.gz
+├── sub-0007
 │   └── func
-│       ├── sub-mr_0007_task-rest_bold.json
-│       └── sub-mr_0007_task-rest_bold.nii.gz
+│       ├── sub-0007_task-rest_bold.json
+│       └── sub-0007_task-rest_bold.nii.gz
 └── tmp_dcm2bids
 ```
 
@@ -260,7 +260,7 @@ We can point clpipe to this additional data by modifying the `clpipe_config.json
 	"DICOMDirectory": "<your system's path>/clpipe_tutorial_project/data_DICOMs",
 	"BIDSDirectory": "<your system's path>/clpipe_tutorial_project/data_BIDS",
 	"ConversionConfig": "<your system's path>/clpipe_tutorial_project/conversion_config.json",
-	"DICOMFormatString": "dcm_qa_nih/In/20180918Si/{subject}",
+	"DICOMFormatString": "dcm_qa_nih/In/20180918Si/mr_{subject}",
 	"TimeUsage": "1:0:0",
 	"MemUsage": "5000",
 	"CoreUsage": "2",
@@ -271,27 +271,28 @@ We can point clpipe to this additional data by modifying the `clpipe_config.json
 We pick up a new subject this way:
 
 ```
-├── sub-mr_0003
+├── sub-0003
 │   └── fmap
-│       ├── sub-mr_0003_dir-AP_epi.json
-│       └── sub-mr_0003_dir-AP_epi.nii.gz
+│       ├── sub-0003_dir-AP_epi.json
+│       └── sub-0003_dir-AP_epi.nii.gz
 ```
 
 However, our tmp_dcm2bids now contains more images that were not picked up. The images with "EPI" in the title are the field maps that our critera did not match:
 
 ```
-├── sub-mr_0004
-    │   ├── 004_mr_0004_Axial_EPI-FMRI_(Interleaved_I_to_S)_20180918114023.json
-    │   └── 004_mr_0004_Axial_EPI-FMRI_(Interleaved_I_to_S)_20180918114023.nii.gz
-    ├── sub-mr_0005
-    │   ├── 005_mr_0005_EPI_PE=RL_20180918121230.json
-    │   └── 005_mr_0005_EPI_PE=RL_20180918121230.nii.gz
-    ├── sub-mr_0006
-    │   ├── 006_mr_0006_EPI_PE=LR_20180918121230.json
-    │   └── 006_mr_0006_EPI_PE=LR_20180918121230.nii.gz
+├── tmp_dcm2bids	
+	├── sub-0004
+    │   ├── 004_0004_Axial_EPI-FMRI_(Interleaved_I_to_S)_20180918114023.json
+    │   └── 004_0004_Axial_EPI-FMRI_(Interleaved_I_to_S)_20180918114023.nii.gz
+    ├── sub-0005
+    │   ├── 005_0005_EPI_PE=RL_20180918121230.json
+    │   └── 005_0005_EPI_PE=RL_20180918121230.nii.gz
+    ├── sub-0006
+    │   ├── 006_0006_EPI_PE=LR_20180918121230.json
+    │   └── 006_0006_EPI_PE=LR_20180918121230.nii.gz
 ```
 
-Like our last iteration, we can adjust the conversion_config.json file to pick up these images. However, the two fmap critera we have already are properly picking up on the AP/PA field maps. Create two new critera to match the field maps found in `sub-mr_0005` and `sub-mr_0006`, one from LR and another for RL:
+Like our last iteration, we can adjust the conversion_config.json file to pick up these images. However, the two fmap critera we have already are properly picking up on the AP/PA field maps. Create two new critera to match the field maps found in `sub-0005` and `sub-0006`, one from LR and another for RL:
 
 ```
 {
@@ -316,21 +317,23 @@ Like our last iteration, we can adjust the conversion_config.json file to pick u
 
 > Note: The "intendedFor" field points the fieldmap critera to the index of its corresponding functional image critera. In this case, we only have one functional image critera, for the resting state image, which is listed first (index 0). Therefore, it is important that the resting image critera stays first in the list; otherwise, these indexes would need to be updated.
 
-After running the conversion again, you should now see that `sub-mr_0005` and `sub-mr_0006` have fieldmap images in addition to their functional scans:
+After running the conversion again, you should now see that `sub-0005` and `sub-0006` have fieldmap images in addition to their functional scans:
 
 ```
-├── sub-mr_0005
+├── sub-0005
 │   ├── fmap
-│   │   ├── sub-mr_0005_dir-RL_epi.json
-│   │   └── sub-mr_0005_dir-RL_epi.nii.gz
+│   │   ├── sub-0005_dir-RL_epi.json
+│   │   └── sub-0005_dir-RL_epi.nii.gz
 │   └── func
-│       ├── sub-mr_0005_task-rest_bold.json
-│       └── sub-mr_0005_task-rest_bold.nii.gz
-├── sub-mr_0006
+│       ├── sub-0005_task-rest_bold.json
+│       └── sub-0005_task-rest_bold.nii.gz
+├── sub-0006
 │   ├── fmap
-│   │   ├── sub-mr_0006_dir-LR_epi.json
-│   │   └── sub-mr_0006_dir-LR_epi.nii.gz
+│   │   ├── sub-0006_dir-LR_epi.json
+│   │   └── sub-0006_dir-LR_epi.nii.gz
 │   └── func
-│       ├── sub-mr_0006_task-rest_bold.json
-│       └── sub-mr_0006_task-rest_bold.nii.gz
+│       ├── sub-0006_task-rest_bold.json
+│       └── sub-0006_task-rest_bold.nii.gz
 ```
+
+Great! However, this BIDS directory is not finished quite yet - next we will use the BIDS validator tool to detect the problems with our BIDS directory.
