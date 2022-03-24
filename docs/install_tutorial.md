@@ -5,7 +5,7 @@
 First, [install clpipe](https://clpipe.readthedocs.io/en/latest/install.html) using pip and Github
 
 ```
-pip3 install --upgrade git+git://github.com/cohenlabUNC/clpipe
+pip3 install --upgrade git+https://github.com/cohenlabUNC/clpipe.git
 ```
 
 Create a new folder for your project
