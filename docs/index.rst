@@ -32,4 +32,5 @@ clpipe was developed to streamline the processing of MRI data using the high per
 
    install_tutorial
    dicom2bids_tutorial
+   bids_validation_tutorial
 
