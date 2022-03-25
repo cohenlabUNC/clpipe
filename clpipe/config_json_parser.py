@@ -189,6 +189,14 @@ class ClpipeConfigParser:
             self.config['DICOMToBIDSOptions']['LogDirectory'] = os.path.join(self.config['ProjectDirectory'], 'logs', 'DCM2BIDS_logs')
         os.makedirs(self.config['DICOMToBIDSOptions']['LogDirectory'], exist_ok=True)
 
+        # Create a default .bidsignore file
+        bids_ignore_path = os.path.join(self.config['DICOMToBIDSOptions']['BIDSDirectory'], ".bidsignore")
+        if not os.path.exists(bids_ignore_path):
+            with open(bids_ignore_path, 'w') as bids_ignore_file:
+                # Ignore dcm2bid's auto-generated directory
+                bids_ignore_file.write("tmp_dcm2bids")
+
+
     def setup_roiextract(self, target_dir, target_suffix, output_dir, log_dir = None):
         if target_dir is not None:
             self.config['ROIExtractionOptions']['TargetDirectory'] = os.path.abspath(target_dir)
