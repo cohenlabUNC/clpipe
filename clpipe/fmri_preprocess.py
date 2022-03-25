@@ -42,13 +42,13 @@ def fmriprep_process(bids_dir=None, working_dir=None, output_dir=None, config_fi
         raise ValueError(
             'Please make sure the BIDS, working and output directories are specified in either the configfile or in the command. At least one is not specified.')
     singularity_string = '''unset PYTHONPATH; {templateflow1} singularity run -B {templateflow2}{bindPaths} {batchcommands} {fmriprepInstance} {bids_dir} {output_dir} participant ''' \
-                         '''--participant-label {participantLabels} -w {working_dir} --fs-license-file {fslicense} {threads} {otheropts}'''
+                         '''--participant-label {participantLabels} -w {working_dir} --fs-license-file {fslicense} {threads} {useAROMA} {otheropts}'''
 
     docker_string =  '''docker run --rm -ti'''\
                      '''-v {fslicense}:/opt/freesurfer/license.txt:ro '''\
                      '''-v {bids_dir}:/data:ro -v {output_dir}:/out ''' \
                      '''-v {working_dir}:/work ''' \
-                     '''{docker_fmriprep} /data /out participant -w /work {threads} {otheropts} --participant-label {participantLabels}'''
+                     '''{docker_fmriprep} /data /out participant -w /work {threads} {useAROMA} {otheropts} --participant-label {participantLabels}'''
 
 
     if config.config['FMRIPrepOptions']['TemplateFlowToggle']:
@@ -57,6 +57,10 @@ def fmriprep_process(bids_dir=None, working_dir=None, output_dir=None, config_fi
     else:
         template1 = ""
         template2 = ""
+
+    useAROMA = ""
+    if config.config['FMRIPrepOptions']['UseAROMA']:
+        useAROMA = "--use-aroma"
 
     if not subjects:
         subjectstring = "ALL"
@@ -87,6 +91,7 @@ def fmriprep_process(bids_dir=None, working_dir=None, output_dir=None, config_fi
                 participantLabels=sub,
                 fslicense=config.config['FMRIPrepOptions']['FreesurferLicensePath'],
                 threads= threads,
+                useAROMA=useAROMA,
                 otheropts=config.config['FMRIPrepOptions']['CommandLineOpts']
             )))
         else:
