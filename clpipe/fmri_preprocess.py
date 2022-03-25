@@ -58,9 +58,12 @@ def fmriprep_process(bids_dir=None, working_dir=None, output_dir=None, config_fi
         template1 = ""
         template2 = ""
 
+    otherOpts = config.config['FMRIPrepOptions']['CommandLineOpts']
     useAROMA = ""
     if config.config['FMRIPrepOptions']['UseAROMA']:
-        useAROMA = "--use-aroma"
+        # Check to make sure '--use-aroma' isn't already specified in otherOpts, to prevent duplicating the option
+        if "--use-aroma" not in otherOpts:
+            useAROMA = "--use-aroma"
 
     if not subjects:
         subjectstring = "ALL"
@@ -92,7 +95,7 @@ def fmriprep_process(bids_dir=None, working_dir=None, output_dir=None, config_fi
                 fslicense=config.config['FMRIPrepOptions']['FreesurferLicensePath'],
                 threads= threads,
                 useAROMA=useAROMA,
-                otheropts=config.config['FMRIPrepOptions']['CommandLineOpts']
+                otheropts=otherOpts
             )))
         else:
             batch_manager.addjob(Job("sub-" + sub + "_fmriprep", singularity_string.format(
@@ -106,8 +109,9 @@ def fmriprep_process(bids_dir=None, working_dir=None, output_dir=None, config_fi
                 participantLabels=sub,
                 fslicense=config.config['FMRIPrepOptions']['FreesurferLicensePath'],
                 threads= threads,
+                useAROMA=useAROMA,
                 bindPaths=batch_manager.config['SingularityBindPaths'],
-                otheropts=config.config['FMRIPrepOptions']['CommandLineOpts']
+                otheropts=otherOpts
             )))
 
     batch_manager.compilejobstrings()
