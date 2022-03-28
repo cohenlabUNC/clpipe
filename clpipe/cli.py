@@ -1,4 +1,6 @@
 import click
+import pkg_resources
+import sys
 
 from .fmri_postprocess2 import postprocess_image_controller, postprocess_subject_controller, postprocess_subjects_controller, DEFAULT_PROCESSING_STREAM_NAME
 
@@ -65,10 +67,20 @@ from clpipe.bids_validator import bids_validate as bids_validate_logic
 from clpipe.fmri_preprocess import fmriprep_process as fmriprep_process_logic
 from clpipe.glm_setup import glm_setup as glm_setup_logic
 
-@click.group()
-def cli():
+@click.group(invoke_without_command=True)
+@click.pass_context
+@click.option('-v', '--version', is_flag = True, default=False, help="Display clpipe's version.")
+def cli(ctx, version):
     """Welcome to clpipe. Please choose a processing command."""
-    pass
+    if ctx.invoked_subcommand is None:
+        if version:
+            clpipe_version = pkg_resources.get_distribution('clpipe').version
+            print(f"clpipe v{clpipe_version}")
+            sys.exit(0)
+        else:
+            ctx = click.get_current_context()
+            click.echo(ctx.get_help())
+            ctx.exit()
 
 @cli.command()
 @click.option('-project_title', required=True, default=None)
