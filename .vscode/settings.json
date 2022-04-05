@@ -1,9 +1,0 @@
-{
-    "python.testing.pytestArgs": [
-        "tests",
-        "--basetemp=TestFiles/unittests",
-        "--write_graph=colored"
-    ],
-    "python.testing.unittestEnabled": false,
-    "python.testing.pytestEnabled": true
-}
