@@ -50,7 +50,7 @@ setup(name='clpipe',
       glm_setup=clpipe.cli:glm_setup
       glm_l1_preparefsf=clpipe.cli:glm_l1_preparefsf
       glm_l2_preparefsf=clpipe.cli:glm_l2_preparefsf
-      fsl_onset_extract=clpipe.fsl_onset_extract:fsl_onset_extract
+      fsl_onset_extract=clpipe.cli:glm_onset_extract
       reho_extract=clpipe.reho_extract:reho_extract
       t2star_extract=clpipe.t2star_extract:t2star_extract
       ''',

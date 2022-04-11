@@ -1,6 +1,5 @@
 import os
 import glob
-import click
 from .config_json_parser import ClpipeConfigParser, GLMConfigParser
 import logging
 import sys
@@ -12,13 +11,7 @@ import numpy
 import pandas
 import numpy as np
 
-@click.command()
-@click.option('-config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True), default=None, required = True,
-              help='Use a given configuration file.')
-@click.option('-glm_config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True), default=None, required = True,
-              help='Use a given GLM configuration file.')
-@click.option('-debug', is_flag=True, default=False,
-              help='Print detailed processing information and traceback for errors.')
+
 def fsl_onset_extract(config_file=None, glm_config_file = None, debug = None):
     if not debug:
         sys.excepthook = exception_handler

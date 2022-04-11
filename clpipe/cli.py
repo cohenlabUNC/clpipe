@@ -9,6 +9,7 @@ from clpipe.fmri_preprocess import fmriprep_process as fmriprep_process_logic
 from clpipe.glm_setup import glm_setup as glm_setup_logic
 from clpipe.glm_l1 import glm_l1_preparefsf as glm_l1_preparefsf_logic
 from clpipe.glm_l2 import glm_l2_preparefsf as glm_l2_preparefsf_logic
+from clpipe.fsl_onset_extract import fsl_onset_extract as fsl_onset_extract_logic
 
 @click.group(invoke_without_command=True)
 @click.pass_context
@@ -128,3 +129,15 @@ def glm_l1_preparefsf(glm_config_file, l1_name, debug):
 def glm_l2_preparefsf(glm_config_file, l2_name, debug):
     """Propagate an .fsf file template for L2 GLM analysis"""
     glm_l2_preparefsf_logic(glm_config_file=glm_config_file, l2_name=l2_name, debug=debug)
+
+
+@cli.command()
+@click.option('-config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True), default=None, required = True,
+              help='Use a given configuration file.')
+@click.option('-glm_config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True), default=None, required = True,
+              help='Use a given GLM configuration file.')
+@click.option('-debug', is_flag=True, default=False,
+              help='Print detailed processing information and traceback for errors.')
+def glm_onset_extract(config_file, glm_config_file, debug):
+    """Convert onset files to FSL's 3 column format"""
+    fsl_onset_extract_logic(config_file=config_file, glm_config_file = glm_config_file, debug = debug)
