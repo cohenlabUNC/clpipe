@@ -1,7 +1,6 @@
 import os
 import glob
 import logging
-import click
 from .config_json_parser import ClpipeConfigParser, GLMConfigParser
 import sys
 from .error_handler import exception_handler
@@ -10,13 +9,7 @@ import pandas as pd
 import shutil
 
 
-@click.command()
-@click.option('-glm_config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True), default=None, required = True,
-              help='Use a given GLM configuration file.')
-@click.option('-l2_name',  default=None, required = True,
-              help='Name for a given L2 model')
-@click.option('-debug', is_flag=True, help='Flag to enable detailed error messages and traceback')
-def glm_l2_preparefsf(glm_config_file, l2_name, debug):
+def glm_l2_preparefsf(glm_config_file=None, l2_name=None, debug=None):
     if not debug:
         sys.excepthook = exception_handler
         logging.basicConfig(level=logging.INFO)
@@ -32,7 +25,6 @@ def glm_l2_preparefsf(glm_config_file, l2_name, debug):
     glm_setup_options = glm_config.config['GLMSetupOptions']
 
     _glm_l2_propagate(l2_block, glm_setup_options)
-
 
 
 def _glm_l2_propagate(l2_block, glm_setup_options):
@@ -83,6 +75,3 @@ def _glm_l2_propagate(l2_block, glm_setup_options):
 
         except Exception as err:
             logging.exception(err)
-
-
-

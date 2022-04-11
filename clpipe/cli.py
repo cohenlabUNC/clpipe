@@ -7,6 +7,8 @@ from clpipe.dcm2bids_wrapper import convert2bids as convert2bids_logic
 from clpipe.bids_validator import bids_validate as bids_validate_logic
 from clpipe.fmri_preprocess import fmriprep_process as fmriprep_process_logic
 from clpipe.glm_setup import glm_setup as glm_setup_logic
+from clpipe.glm_l1 import glm_l1_preparefsf as glm_l1_preparefsf_logic
+from clpipe.glm_l2 import glm_l2_preparefsf as glm_l2_preparefsf_logic
 
 @click.group(invoke_without_command=True)
 @click.pass_context
@@ -104,3 +106,25 @@ def glm_setup(subjects, config_file, glm_config_file, submit, batch, debug, drop
     """Prepare task images and confound files for GLM analysis"""
     glm_setup_logic(subjects = subjects, config_file=config_file, glm_config_file = glm_config_file,
                      submit=submit, batch=batch, debug = debug, drop_tps = drop_tps)
+
+
+@cli.command()
+@click.option('-glm_config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True), default=None, required = True,
+              help='Use a given GLM configuration file.')
+@click.option('-l1_name',  default=None, required = True,
+              help='Name for a given L1 model')
+@click.option('-debug', is_flag=True, help='Flag to enable detailed error messages and traceback')
+def glm_l1_preparefsf(glm_config_file, l1_name, debug):
+    """Propagate an .fsf file template for L1 GLM analysis"""
+    glm_l1_preparefsf_logic(glm_config_file=glm_config_file, l1_name=l1_name, debug=debug)
+
+
+@cli.command()
+@click.option('-glm_config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True), default=None, required = True,
+              help='Use a given GLM configuration file.')
+@click.option('-l2_name',  default=None, required = True,
+              help='Name for a given L2 model')
+@click.option('-debug', is_flag=True, help='Flag to enable detailed error messages and traceback')
+def glm_l2_preparefsf(glm_config_file, l2_name, debug):
+    """Propagate an .fsf file template for L2 GLM analysis"""
+    glm_l2_preparefsf_logic(glm_config_file=glm_config_file, l2_name=l2_name, debug=debug)
