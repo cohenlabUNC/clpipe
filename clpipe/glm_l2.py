@@ -78,9 +78,13 @@ def _glm_l2_propagate(l2_block, glm_setup_options):
             logging.exception(err)
 
 
-def glm_apply_mumford_workaround(l1_feat_path=None):
-    logging.info(f"Applying Mumford workaround to: {l1_feat_folder}")
-    for l1_feat_folder in os.scandir(l1_feat_path):
+def glm_apply_mumford_workaround(glm_config_file=None, l1_feat_folders_path=None):
+    if glm_config_file:
+        glm_config = GLMConfigParser(glm_config_file)
+        l1_feat_folders_path = glm_config["Level1Setups"]["OutputDir"]
+
+    logging.info(f"Applying Mumford workaround to: {l1_feat_folders_path}")
+    for l1_feat_folder in os.scandir(l1_feat_folders_path):
         if os.path.isdir(l1_feat_folder):
             _apply_mumford_workaround(l1_feat_folder)
 
