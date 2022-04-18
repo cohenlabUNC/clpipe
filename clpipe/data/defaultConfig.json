@@ -73,30 +73,14 @@
 		"WorkingDirectory": "",
 		"WriteProcessGraph": true,
 		"TargetImageSpace": "MNI152NLin2009cAsym",
-		"ProcessingSteps": [
-			"SpatialSmoothing",
-			"TemporalFiltering",
-			"IntensityNormalization"
-		],
 		"ProcessingStepOptions": {
 			"TemporalFiltering": {
-				"Algorithm":"Butterworth",
 				"FilteringHighPass": 0.008,
 				"FilteringLowPass": -1,
 				"FilteringOrder": 2
 			}, 
-			"IntensityNormalization": {
-				"Algorithm": "10000_GlobalMedian"
-			}, 
 			"SpatialSmoothing": {
-				"Algorithm": "SUSAN",
       			"FWHM": 6
-			},
-			"AROMARegression":{
-				"Algorithm": "fsl_regfilt"
-			},
-			"Resample":{
-				"ReferenceImage": "SET REFERENCE IMAGE"
 			},
 			"ConfoundRegression": {
 				"Algorithm": "afni_3dTproject",
@@ -160,33 +144,47 @@
 	},
 	"ProcessingStreams": [
 		{
-			"ProcessingStream": "noGSR",
+			"ProcessingStream": "smooth-filter-normalize",
 			"PostProcessingOptions": {
-				"GlobalSignalRegression": false,
-				"OutputDirectory": "",
-				"OutputSuffix": ""
-			},
-			"BetaSeriesOptions": {
-				"GlobalSignalRegression": false,
-				"OutputDirectory": "",
-				"OutputSuffix": ""
-			},
-			"SUSANOptions": {
-				"OutputSuffix": "preproc_susan250.nii.gz",
-				"BrightnessThreshold": 250
+				"ProcessingSteps": [
+					"SpatialSmoothing",
+					"TemporalFiltering",
+					"IntensityNormalization"
+				]
 			}
 		},
 		{
-			"ProcessingStream": "noScrub",
+			"ProcessingStream": "smooth-aroma_regress-filter-normalize",
 			"PostProcessingOptions": {
-				"Scrubbing": false,
-				"OutputDirectory": "",
-				"OutputSuffix": ""
-			},
-			"BetaSeriesOptions":{
-
-			},
-			"SUSANOptions": {
+				"ProcessingSteps": [
+					"SpatialSmoothing",
+					"AROMARegression",
+					"TemporalFiltering",
+					"IntensityNormalization"
+				]
+			}
+		},
+		{
+			"ProcessingStream": "filter-confound_regress",
+			"PostProcessingOptions": {
+				"ProcessingSteps": [
+					"TemporalFiltering",
+					"ConfoundRegression"
+				]
+			}
+		},
+		{
+			"ProcessingStream": "smooth-aroma-filter-normalize-fwhm-8",
+			"PostProcessingOptions": {
+				"ProcessingSteps": [
+					"SpatialSmoothing",
+					"AROMARegression",
+					"TemporalFiltering",
+					"IntensityNormalization"
+				],
+				"SpatialSmoothing": {
+					"FWHM": 8
+				}
 			}
 		}
 
