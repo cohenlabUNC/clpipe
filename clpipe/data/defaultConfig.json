@@ -73,14 +73,30 @@
 		"WorkingDirectory": "",
 		"WriteProcessGraph": true,
 		"TargetImageSpace": "MNI152NLin2009cAsym",
+		"ProcessingSteps": [
+			"SpatialSmoothing",
+			"TemporalFiltering",
+			"IntensityNormalization"
+		],
 		"ProcessingStepOptions": {
 			"TemporalFiltering": {
+				"Algorithm":"Butterworth",
 				"FilteringHighPass": 0.008,
 				"FilteringLowPass": -1,
 				"FilteringOrder": 2
 			}, 
+			"IntensityNormalization": {
+				"Algorithm": "10000_GlobalMedian"
+			}, 
 			"SpatialSmoothing": {
+				"Algorithm": "SUSAN",
       			"FWHM": 6
+			},
+			"AROMARegression":{
+				"Algorithm": "fsl_regfilt"
+			},
+			"Resample":{
+				"ReferenceImage": "SET REFERENCE IMAGE"
 			},
 			"ConfoundRegression": {
 				"Algorithm": "afni_3dTproject",
