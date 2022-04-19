@@ -194,6 +194,7 @@ def glm_apply_mumford_workaround(glm_config_file, l1_feat_folders_path):
     """Apply the Mumford registration workaround to L1 FEAT folders. Applied by default in glm-l2-preparefsf. """
     if not (glm_config_file or l1_feat_folders_path):
         click.echo("Error: At least one of either option '-glm_config_file' or '-l1_feat_folders_path' required.")
+        sys.exit()
 
 
 @cli.command()
