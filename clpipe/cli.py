@@ -110,7 +110,7 @@ def glm_setup(subjects, config_file, glm_config_file, submit, batch, debug, drop
 @click.option('-glm_config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True), default=None, required = False,
               help='Use a given GLM configuration file.')
 @click.option('-l1_feat_folders_path', type=click.Path(exists=True, dir_okay=True, file_okay=False), default=None, required = False,
-              help='Use a given GLM configuration file.')
+              help='Location of your L1 FEAT folders.')
 def glm_apply_mumford_workaround(glm_config_file, l1_feat_folders_path):
     """Apply the Mumford registration workaround to L1 FEAT folders. Applied by default in glm-l2-preparefsf. """
     if not (glm_config_file or l1_feat_folders_path):
