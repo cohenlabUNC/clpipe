@@ -188,6 +188,12 @@ def glm_l1_preparefsf(glm_config_file, l1_name, debug):
 def glm_l2_preparefsf(glm_config_file, l2_name, debug):
     """Propagate an .fsf file template for L2 GLM analysis"""
     glm_l2_preparefsf_logic(glm_config_file=glm_config_file, l2_name=l2_name, debug=debug)
+@click.option('-l1_feat_folders_path', type=click.Path(exists=True, dir_okay=True, file_okay=False), default=None, required = False,
+              help='Location of your L1 FEAT folders.')
+def glm_apply_mumford_workaround(glm_config_file, l1_feat_folders_path):
+    """Apply the Mumford registration workaround to L1 FEAT folders. Applied by default in glm-l2-preparefsf. """
+    if not (glm_config_file or l1_feat_folders_path):
+        click.echo("Error: At least one of either option '-glm_config_file' or '-l1_feat_folders_path' required.")
 
 
 @cli.command()
