@@ -82,11 +82,15 @@ def glm_apply_mumford_workaround(glm_config_file=None, l1_feat_folders_path=None
     if glm_config_file:
         glm_config = GLMConfigParser(glm_config_file)
         l1_feat_folders_path = glm_config["Level1Setups"]["OutputDir"]
+    print(f"Applying Mumford workaround to: {l1_feat_folders_path}")
 
     logging.info(f"Applying Mumford workaround to: {l1_feat_folders_path}")
     for l1_feat_folder in os.scandir(l1_feat_folders_path):
         if os.path.isdir(l1_feat_folder):
+            print(f"Processing L1 FEAT folder: {l1_feat_folder.path}")
             _apply_mumford_workaround(l1_feat_folder)
+
+    print(f"Finished applying Mumford workaround.")
 
 
 def _apply_mumford_workaround(l1_feat_folder):
@@ -110,4 +114,8 @@ def _apply_mumford_workaround(l1_feat_folder):
         logging.info("Copying mean func image")
         shutil.copy(os.path.join(l1_feat_folder, 'mean_func.nii.gz'), os.path.join(l1_feat_folder, "reg/standard.nii.gz"))
     except FileNotFoundError as e:
-        print(e)
+        print(e, "- skipping")
+
+
+
+
