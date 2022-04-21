@@ -7,6 +7,7 @@ from clpipe.dcm2bids_wrapper import convert2bids as convert2bids_logic
 from clpipe.bids_validator import bids_validate as bids_validate_logic
 from clpipe.fmri_preprocess import fmriprep_process as fmriprep_process_logic
 from clpipe.glm_setup import glm_setup as glm_setup_logic
+from clpipe.glm_l2 import glm_apply_mumford_workaround as glm_apply_mumford_workaround_logic
 
 @click.group(invoke_without_command=True)
 @click.pass_context
@@ -104,3 +105,16 @@ def glm_setup(subjects, config_file, glm_config_file, submit, batch, debug, drop
     """Prepare task images and confound files for GLM analysis"""
     glm_setup_logic(subjects = subjects, config_file=config_file, glm_config_file = glm_config_file,
                      submit=submit, batch=batch, debug = debug, drop_tps = drop_tps)
+
+@cli.command()
+@click.option('-glm_config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True), default=None, required = False,
+              help='Use a given GLM configuration file.')
+@click.option('-l1_feat_folders_path', type=click.Path(exists=True, dir_okay=True, file_okay=False), default=None, required = False,
+              help='Location of your L1 FEAT folders.')
+def glm_apply_mumford_workaround(glm_config_file, l1_feat_folders_path):
+    """Apply the Mumford registration workaround to L1 FEAT folders. Applied by default in glm-l2-preparefsf. """
+    if not (glm_config_file or l1_feat_folders_path):
+        click.echo("Error: At least one of either option '-glm_config_file' or '-l1_feat_folders_path' required.")
+        sys.exit()
+
+    glm_apply_mumford_workaround_logic(glm_config_file=glm_config_file, l1_feat_folders_path=l1_feat_folders_path)

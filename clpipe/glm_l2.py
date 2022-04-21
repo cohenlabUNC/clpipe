@@ -62,10 +62,11 @@ def _glm_l2_propagate(l2_block, glm_setup_options):
                 if not os.path.exists(feat):
                     raise FileNotFoundError("Cannot find "+ feat)
                 else:
-                    if os.path.exists(os.path.join(feat, "reg_standard")):
-                        shutil.rmtree(os.path.join(feat, "reg_standard"))
-                    shutil.copy(os.path.join(os.environ["FSLDIR"], 'etc/flirtsch/ident.mat'), os.path.join(feat, "reg/example_func2standard.mat"))
-                    shutil.copy(os.path.join(feat, 'mean_func.nii.gz'), os.path.join(feat, "reg/standard.nii.gz"))
+                    _apply_mumford_workaround(feat)
+                    # if os.path.exists(os.path.join(feat, "reg_standard")):
+                    #     shutil.rmtree(os.path.join(feat, "reg_standard"))
+                    # shutil.copy(os.path.join(os.environ["FSLDIR"], 'etc/flirtsch/ident.mat'), os.path.join(feat, "reg/example_func2standard.mat"))
+                    # shutil.copy(os.path.join(feat, 'mean_func.nii.gz'), os.path.join(feat, "reg/standard.nii.gz"))
                     new_fsf[image_files_ind[counter - 1]] = "set feat_files(" + str(counter) + ") \"" + os.path.abspath(
                         feat) + "\"\n"
                     counter = counter + 1
@@ -83,6 +84,46 @@ def _glm_l2_propagate(l2_block, glm_setup_options):
 
         except Exception as err:
             logging.exception(err)
+
+
+def glm_apply_mumford_workaround(glm_config_file=None, l1_feat_folders_path=None):
+    if glm_config_file:
+        glm_config = GLMConfigParser(glm_config_file)
+        l1_feat_folders_path = glm_config["Level1Setups"]["OutputDir"]
+    print(f"Applying Mumford workaround to: {l1_feat_folders_path}")
+
+    logging.info(f"Applying Mumford workaround to: {l1_feat_folders_path}")
+    for l1_feat_folder in os.scandir(l1_feat_folders_path):
+        if os.path.isdir(l1_feat_folder):
+            print(f"Processing L1 FEAT folder: {l1_feat_folder.path}")
+            _apply_mumford_workaround(l1_feat_folder)
+
+    print(f"Finished applying Mumford workaround.")
+
+
+def _apply_mumford_workaround(l1_feat_folder):
+    """
+    When using an image registration other than FSL's, such as fMRIPrep's, this work-around is
+    necessary to run FEAT L2 analysis in FSL.
+
+    See: https://mumfordbrainstats.tumblr.com/post/166054797696/feat-registration-workaround
+    """
+    for mat in glob.glob(os.path.join(l1_feat_folder, "reg", "*.mat")):
+        os.remove(mat)
+
+    reg_standard_path = os.path.join(l1_feat_folder, "reg_standard")
+    if os.path.exists(reg_standard_path):
+        logging.info(f"Removing: {reg_standard_path}")
+        shutil.rmtree(os.path.join(l1_feat_folder, "reg_standard"))
+
+    try:
+        logging.info("Copying identity matrix")
+        shutil.copy(os.path.join(os.environ["FSLDIR"], 'etc/flirtsch/ident.mat'), os.path.join(l1_feat_folder, "reg/example_func2standard.mat"))
+        logging.info("Copying mean func image")
+        shutil.copy(os.path.join(l1_feat_folder, 'mean_func.nii.gz'), os.path.join(l1_feat_folder, "reg/standard.nii.gz"))
+    except FileNotFoundError as e:
+        print(e, "- skipping")
+
 
 
 
