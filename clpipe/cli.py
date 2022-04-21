@@ -215,4 +215,4 @@ def report_outliers(confounds_dir, confounds_file, output_file, confound_suffix)
     if confounds_dir:
         get_study_outliers(confounds_dir, output_file, confound_suffix)
     else:
-        get_image_confounds(confounds_file, output_file)
+        get_image_confounds(confounds_file)
