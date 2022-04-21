@@ -8,6 +8,10 @@ from clpipe.bids_validator import bids_validate as bids_validate_logic
 from clpipe.fmri_preprocess import fmriprep_process as fmriprep_process_logic
 from clpipe.glm_setup import glm_setup as glm_setup_logic
 from clpipe.glm_l2 import glm_apply_mumford_workaround as glm_apply_mumford_workaround_logic
+from clpipe.glm_l1 import glm_l1_preparefsf as glm_l1_preparefsf_logic
+from clpipe.glm_l2 import glm_l2_preparefsf as glm_l2_preparefsf_logic
+from clpipe.fsl_onset_extract import fsl_onset_extract as fsl_onset_extract_logic
+from clpipe.outliers_report import get_study_outliers, get_image_confounds
 
 @click.group(invoke_without_command=True)
 @click.pass_context
@@ -118,3 +122,50 @@ def glm_apply_mumford_workaround(glm_config_file, l1_feat_folders_path):
         sys.exit()
 
     glm_apply_mumford_workaround_logic(glm_config_file=glm_config_file, l1_feat_folders_path=l1_feat_folders_path)
+
+@cli.command()
+@click.option('-glm_config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True), default=None, required = True,
+              help='Use a given GLM configuration file.')
+@click.option('-l1_name',  default=None, required = True,
+              help='Name for a given L1 model')
+@click.option('-debug', is_flag=True, help='Flag to enable detailed error messages and traceback')
+def glm_l1_preparefsf(glm_config_file, l1_name, debug):
+    """Propagate an .fsf file template for L1 GLM analysis"""
+    glm_l1_preparefsf_logic(glm_config_file=glm_config_file, l1_name=l1_name, debug=debug)
+
+
+@cli.command()
+@click.option('-glm_config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True), default=None, required = True,
+              help='Use a given GLM configuration file.')
+@click.option('-l2_name',  default=None, required = True,
+              help='Name for a given L2 model')
+@click.option('-debug', is_flag=True, help='Flag to enable detailed error messages and traceback')
+def glm_l2_preparefsf(glm_config_file, l2_name, debug):
+    """Propagate an .fsf file template for L2 GLM analysis"""
+    glm_l2_preparefsf_logic(glm_config_file=glm_config_file, l2_name=l2_name, debug=debug)
+
+
+@cli.command()
+@click.option('-config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True), default=None, required = True,
+              help='Use a given configuration file.')
+@click.option('-glm_config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True), default=None, required = True,
+              help='Use a given GLM configuration file.')
+@click.option('-debug', is_flag=True, default=False,
+              help='Print detailed processing information and traceback for errors.')
+def glm_onset_extract(config_file, glm_config_file, debug):
+    """Convert onset files to FSL's 3 column format"""
+    fsl_onset_extract_logic(config_file=config_file, glm_config_file = glm_config_file, debug = debug)
+
+
+@cli.command()
+@click.option('--confounds_dir', type=click.Path(exists=True, dir_okay=True, file_okay=False), help="Path to a directory containing subjects and confounds files.")
+@click.option('--confounds_file', type=click.Path(exists=True, dir_okay=False, file_okay=True), help="Path to confounds file")
+@click.option('--output_file', type=click.Path(dir_okay=False, file_okay=True), help="Path to save outlier count results.")
+@click.option('--confound_suffix', help="Confound file to search for, like 'confounds.tsv'", default='confounds.tsv')
+def report_outliers(confounds_dir, confounds_file, output_file, confound_suffix):
+    """Generate a confound outliers report."""
+    
+    if confounds_dir:
+        get_study_outliers(confounds_dir, output_file, confound_suffix)
+    else:
+        get_image_confounds(confounds_file)
