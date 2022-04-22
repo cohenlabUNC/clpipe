@@ -13,6 +13,6 @@ If you use clpipe to process data for a publication, please cite the Zenodo repo
 1. Open a Longleaf terminal session
 2. Switch to python 3.6.6 using `module add python/3.6.6`
 3. Install clpipe from GitHub with 
-```pip3 install --user --upgrade  git+git://github.com/CohenLabUNC/clpipe.git```
+```pip3 install --user --upgrade  git+https://github.com/cohenlabUNC/clpipe.git```
 
 All necessary dependencies should install to your local Python library, and the console commands should be immediately useable.
