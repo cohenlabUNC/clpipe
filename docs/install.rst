@@ -6,13 +6,13 @@ Installation of clpipe is fairly simple. If you have priviledges to add python p
 
 .. code-block:: console
 
-    pip3 install --upgrade git+git://github.com/cohenlabUNC/clpipe
+    pip3 install --upgrade git+https://github.com/cohenlabUNC/clpipe.git
 
 If you don't have access to the global library (perhaps you are just a user of an HPC), you can install a local copy by adding the ``--user`` flag.
 
 .. code-block:: console
 
-     pip3 install --user --upgrade git+git://github.com/cohenlabUNC/clpipe
+     pip3 install --user --upgrade git+https://github.com/cohenlabUNC/clpipe.git
 
 The installation will also install any additional packaged needed.
 
