@@ -298,7 +298,7 @@ def test_prepare_confounds_aroma(sample_confounds_timeseries, postprocessing_con
         base_dir=test_path, crashdump_dir=test_path, tr=2)
 
     cf_workflow.run()
-    S
+    
     assert True
 
 def test_postprocess_subject_job_setup(clpipe_fmriprep_dir, artifact_dir, helpers, request):
