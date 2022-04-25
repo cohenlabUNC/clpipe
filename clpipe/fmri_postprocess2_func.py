@@ -1,11 +1,9 @@
 import sys
 import os
 import logging
-import json
 import warnings
 from pathlib import Path
 
-import click
 with warnings.catch_warnings():
     # This hides a pybids future warning
     warnings.filterwarnings("ignore", category=FutureWarning)
@@ -16,81 +14,12 @@ from .batch_manager import BatchManager, Job
 from nipype.utils.filemanip import split_filename
 from .postprocutils.workflows import build_postprocessing_workflow, build_confound_postprocessing_workflow
 from .error_handler import exception_handler
-
+from .errors import *
 
 logging.basicConfig(level=logging.INFO)
 LOG = logging.getLogger(__name__)
 
-class NoSubjectTaskFoundError(ValueError):
-    pass
-
-class NoImagesFoundError(ValueError):
-    pass
-
-class NoSubjectsFoundError(ValueError):
-    pass
-
-class SubjectNotFoundError(ValueError):
-    pass
-
-class ConfoundsNotFoundError(ValueError):
-    pass
-
-class MixingFileNotFoundError(ValueError):
-    pass
-
-class NoiseFileNotFoundError(ValueError):
-    pass
-
-@click.command()
-@click.argument('subjects', nargs=-1, required=False, default=None)
-@click.option('-config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True), default=None, required=True,
-              help='Use a given configuration file.')
-@click.option('-fmriprep_dir', type=click.Path(exists=True, dir_okay=True, file_okay=False), help="""Which fmriprep directory to process. 
-    If a configuration file is provided with a BIDS directory, this argument is not necessary. 
-    Note, must point to the ``fmriprep`` directory, not its parent directory.""")
-@click.option('-output_dir', type=click.Path(dir_okay=True, file_okay=False), default=None, required=False, help = """Where to put the postprocessed data. 
-    If a configuration file is provided with a output directory, this argument is not necessary.""")
-@click.option('-log_dir', type=click.Path(exists=True, dir_okay=True, file_okay=False), default=None, required = False, help = 'Path to the logging directory.')
-@click.option('-index_dir', type=click.Path(dir_okay=True, file_okay=False), default=None, required=False,
-              help='Give the path to an existing pybids index database.')
-@click.option('-refresh_index', is_flag=True, default=False, required=False,
-              help='Refresh the pybids index database to reflect new fmriprep artifacts.')
-@click.option('-batch/-no-batch', is_flag = True, default=True, help = 'Flag to create batch jobs without prompt.')
-@click.option('-submit', is_flag = True, default=False, help = 'Flag to submit commands to the HPC without prompt.')
-@click.option('-debug', is_flag = True, default=False, help = 'Print detailed processing information and traceback for errors.')
-def fmri_postprocess2_cli(subjects, config_file, fmriprep_dir, output_dir, batch, submit, log_dir, index_dir, refresh_index, debug):
-    postprocess_fmriprep_dir(subjects=subjects, config_file=config_file, fmriprep_dir=fmriprep_dir, output_dir=output_dir, 
-    batch=batch, submit=submit, log_dir=log_dir, pybids_db_path=index_dir, refresh_index=refresh_index, debug=debug)
-
-
-@click.command()
-@click.argument('subject_id')
-@click.argument('bids_dir', type=click.Path(dir_okay=True, file_okay=False))
-@click.argument('fmriprep_dir', type=click.Path(dir_okay=True, file_okay=False))
-@click.argument('output_dir', type=click.Path(dir_okay=True, file_okay=False))
-@click.argument('config_file', type=click.Path(dir_okay=False, file_okay=True))
-@click.argument('index_dir', type=click.Path(dir_okay=True, file_okay=False))
-@click.argument('log_dir', type=click.Path(dir_okay=True, file_okay=False))
-def postprocess_subject_cli(subject_id, bids_dir, fmriprep_dir, output_dir, config_file, index_dir, log_dir):
-    postprocess_subject(subject_id, bids_dir, fmriprep_dir, output_dir, config_file, index_dir, log_dir)
-
-
-@click.command()
-@click.argument('config_file', type=click.Path(dir_okay=False, file_okay=True))
-@click.argument('subject_id')
-@click.argument('task')
-@click.argument('run')
-@click.argument('image_space')
-@click.argument('bids_dir', type=click.Path(dir_okay=True, file_okay=False))
-@click.argument('subject_out_dir', type=click.Path(dir_okay=True, file_okay=False))
-@click.argument('working_dir', type=click.Path(dir_okay=True, file_okay=False))
-@click.argument('log_dir', type=click.Path(dir_okay=True, file_okay=False))
-def postprocess_image_cli(config_file, subject_id, task, run, image_space, image_path, bids_dir, subject_out_dir, working_dir, log_dir):
-    postprocess_image(config_file, subject_id, task, run, image_space, image_path, bids_dir, subject_out_dir, working_dir, log_dir)
-
-
-def postprocess_fmriprep_dir(subjects=None, config_file=None, bids_dir=None, fmriprep_dir=None, output_dir=None, 
+def postprocess_subjects_controller(subjects=None, config_file=None, bids_dir=None, fmriprep_dir=None, output_dir=None, 
     batch=False, submit=False, log_dir=None, pybids_db_path=None, refresh_index=False, debug=False):
 
     config = _parse_config(config_file)
@@ -139,7 +68,7 @@ def postprocess_fmriprep_dir(subjects=None, config_file=None, bids_dir=None, fmr
     else:
         sys.excepthook = exception_handler
     LOG.debug(f"Preparing postprocessing job targeting: {str(fmriprep_dir)}")
-    click.echo(f"Preparing postprocessing job targeting: {str(fmriprep_dir)}")
+    print(f"Preparing postprocessing job targeting: {str(fmriprep_dir)}")
 
     # Setup batch jobs if indicated
     batch_manager = None
@@ -164,8 +93,8 @@ def postprocess_fmriprep_dir(subjects=None, config_file=None, bids_dir=None, fmr
     sys.exit()
 
 
-def postprocess_subject(subject_id, bids_dir, fmriprep_dir, output_dir, config_file, index_dir, batch, submit, log_dir):
-    click.echo(f"Processing subject: {subject_id}")
+def postprocess_subject_controller(subject_id, bids_dir, fmriprep_dir, output_dir, config_file, index_dir, batch, submit, log_dir):
+    print(f"Processing subject: {subject_id}")
 
     config = _parse_config(config_file)
     config_file = Path(config_file)
@@ -191,11 +120,13 @@ def postprocess_subject(subject_id, bids_dir, fmriprep_dir, output_dir, config_f
     sys.exit()
 
 
-def postprocess_image(config_file, subject_id, task, run, image_space, image_path, bids_dir, subject_out_dir, working_dir, log_dir):
-    click.echo(f"Processing subject: {subject_id}")
+def postprocess_image_controller(config_file, subject_id, task, run, image_space, image_path, bids_dir, subject_out_dir, working_dir, log_dir):
+    print(f"Processing subject: {subject_id}")
 
     config = _parse_config(config_file)
     config_file = Path(config_file)
+
+    print("Processing image")
     
 
 def process_subjects(bids_dir, fmriprep_dir, output_dir: os.PathLike, config_file: os.PathLike, submit=False, batch_manager=None,
