@@ -31,9 +31,11 @@ def postprocess_subjects_cli(subjects, config_file, fmriprep_dir, output_dir, ba
 @click.argument('output_dir', type=click.Path(dir_okay=True, file_okay=False))
 @click.argument('config_file', type=click.Path(dir_okay=False, file_okay=True))
 @click.argument('index_dir', type=click.Path(dir_okay=True, file_okay=False))
+@click.option('-batch/-no-batch', is_flag = True, default=True, help = 'Flag to create batch jobs without prompt.')
+@click.option('-submit', is_flag = True, default=False, help = 'Flag to submit commands to the HPC without prompt.')
 @click.argument('log_dir', type=click.Path(dir_okay=True, file_okay=False))
-def postprocess_subject_cli(subject_id, bids_dir, fmriprep_dir, output_dir, config_file, index_dir, log_dir):
-    postprocess_subject_controller(subject_id, bids_dir, fmriprep_dir, output_dir, config_file, index_dir, log_dir)
+def postprocess_subject_cli(subject_id, bids_dir, fmriprep_dir, output_dir, config_file, index_dir, batch, submit, log_dir):
+    postprocess_subject_controller(subject_id, bids_dir, fmriprep_dir, output_dir, config_file, index_dir, batch, submit, log_dir)
 
 
 @click.command()
@@ -42,6 +44,7 @@ def postprocess_subject_cli(subject_id, bids_dir, fmriprep_dir, output_dir, conf
 @click.argument('task')
 @click.argument('run')
 @click.argument('image_space')
+@click.argument('image_path', type=click.Path(dir_okay=False, file_okay=True))
 @click.argument('bids_dir', type=click.Path(dir_okay=True, file_okay=False))
 @click.argument('subject_out_dir', type=click.Path(dir_okay=True, file_okay=False))
 @click.argument('working_dir', type=click.Path(dir_okay=True, file_okay=False))
