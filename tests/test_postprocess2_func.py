@@ -14,5 +14,5 @@ def test_postprocess_fmriprep_dir(clpipe_fmriprep_dir, artifact_dir, helpers, re
 
 
     with pytest.raises(SystemExit):
-        postprocess_fmriprep_dir(config_file=config, fmriprep_dir=fmriprep_dir, bids_dir=bids_dir,
+        postprocess_subjects_controller(config_file=config, fmriprep_dir=fmriprep_dir, bids_dir=bids_dir,
             output_dir=postproc_dir, log_dir=log_dir)

@@ -217,10 +217,10 @@ def build_and_run_image_workflow(postprocessing_config, subject_id, task, run, i
 
     image_file_name = image_path.stem
 
-    name = f"subject_{subject_id}_task_{task}"
+    pipeline_name = f"subject_{subject_id}_task_{task}"
     if run: name += f"_run_{run}"
 
-    logger = _get_logger(f"postprocess_image_{name}")
+    logger = _get_logger(f"postprocess_image_{pipeline_name}")
 
     bids:BIDSLayout = _get_bids(bids_dir, database_path=pybids_db_path, fmriprep_dir=fmriprep_dir)
 
@@ -237,7 +237,28 @@ def build_and_run_image_workflow(postprocessing_config, subject_id, task, run, i
             sys.exit(1)
 
     mask_image = _get_mask(bids, subject_id, task, run, image_space, logger)
-    tr = _get_tr(bids, subject_id, task, run)
+    tr = _get_tr(bids, subject_id, task, run, logger)
+    confounds = _get_confounds(bids, subject_id, task, run, logger)
+
+    wf = _setup_workflow(postprocessing_config, pipeline_name, image_file_name, image_path,
+        tr, subject_out_dir, working_dir, log_dir, logger, mask_image=mask_image,
+        confounds=confounds, mixing_file=mixing_file, noise_file=noise_file)
+
+    logger.info(f"Running postprocessing workflow for image: {image_file_name}")
+    wf.run()
+    logger.info(f"Postprocessing workflow complete for image: {image_file_name}")
+
+    if confounds is not None and postprocessing_config["ConfoundOptions"]["Include"]:
+        confounds_wf = _setup_confounds_wf(postprocessing_config, pipeline_name, tr, confounds,
+            subject_out_dir, working_dir, log_dir, logger, mixing_file=mixing_file, noise_file=noise_file)
+
+        logger.info("Postprocessing confounds")
+        confounds_wf.run()
+        logger.info("Confounds postprocessing completed")
+
+    elif postprocessing_config["ConfoundOptions"]["Include"]:
+        logger.warn(f"Confounds processing was requested but skipped because the confounds file could not be found")
+
 
 def _get_mixing_file(bids, subject_id, task, run, logger):
     logger.info("Searching for MELODIC mixing file")
@@ -252,6 +273,7 @@ def _get_mixing_file(bids, subject_id, task, run, logger):
     except IndexError:
         raise MixingFileNotFoundError(f"MELODIC mixing file for sub-{subject_id} task-{task} not found.")
 
+
 def _get_noise_file(bids, subject_id, task, run, logger):
     logger.info("Searching for AROMA noise ICs file")
     try:
@@ -262,6 +284,7 @@ def _get_noise_file(bids, subject_id, task, run, logger):
         logger.info(f"AROMA noise ICs file found: {noise_file}")
     except IndexError:
         raise NoiseFileNotFoundError(f"AROMA noise ICs file for sub-{subject_id} task-{task} not found.")
+
 
 def _get_mask(bids, subject_id, task, run, image_space, logger):
     # Find the subject's mask file
@@ -278,21 +301,99 @@ def _get_mask(bids, subject_id, task, run, image_space, logger):
         logger.warn(f"Mask image for subject {subject_id} task-{task} not found.")
         return None
 
-def _get_tr(bids, subject_id, task):
+def _get_tr(bids, subject_id, task, run, logger):
     # To get the TR, we do another, similar query to get the sidecar and open it as a dict, because indexing metadata in
     # pybids is too slow to be worth just having the TR available
     # This can probably be done in just one query combined with the above
-    
+
     #TODO - include run in this query?
     image_to_process_json = bids.get(
-        subject=subject_id, task=task, extension=".json", datatype="func", 
+        subject=subject_id, task=task, run=run, extension=".json", datatype="func", 
         suffix="bold", desc="preproc", scope="derivatives", return_type="filename")[0]
+
+    logger.info(f"Looking up TR in file: {image_to_process_json}")
 
     with open(image_to_process_json) as sidecar_file:
         sidecar_data = json.load(sidecar_file)
         tr = sidecar_data["RepetitionTime"]
 
+        logger.info(f"Found TR: {tr}")
+
         return tr
+
+def _get_confounds(bids, subject_id, task, run, logger):
+    # Find the subject's confounds file
+    
+    logger.info("Searching for confounds file")
+    try:
+        confounds = bids.get(
+            subject=subject_id, task=task, run=run, return_type="filename", extension=".tsv",
+                desc="confounds", scope="derivatives"
+        )[0]
+        logger.info(f"Confound file found: {confounds}")
+
+        return confounds
+    except IndexError:
+        logger.warn(f"Confound file for sub-{subject_id} task-{task} run-{run} not found.")
+
+
+def _setup_workflow(postprocessing_config, pipeline_name, image_file_name, image_path, 
+    tr, out_dir, working_dir, log_dir, logger, mask_image=None, confounds=None, 
+    mixing_file=None, noise_file=None):
+
+    # Calculate the output file name
+    base, image_name, exstension = split_filename(image_file_name)
+    out_stem = image_name + '_postproccessed.nii.gz'
+    out_file = os.path.abspath(os.path.join(out_dir, out_stem))
+
+    logger.info(f"Building postprocessing workflow for: {pipeline_name}")
+    wf = build_postprocessing_workflow(postprocessing_config, in_file=image_path, out_file=out_file,
+        name=f"{pipeline_name}_Postprocessing_Pipeline",
+        mask_file=mask_image, confound_file = confounds,
+        mixing_file=mixing_file, noise_file=noise_file,
+        tr=tr, 
+        base_dir=working_dir, crashdump_dir=log_dir)
+    
+    # Draw the workflow's process graph if requested in config
+    if postprocessing_config["WriteProcessGraph"]:
+        graph_image_path = out_dir / "processing_plan.dot"
+        logger.info(f"Drawing workflow graph: {graph_image_path}")
+        wf.write_graph(dotfilename = graph_image_path, graph2use="colored")
+
+    return wf
+
+
+def _setup_confounds_wf(postprocessing_config, pipeline_name, tr, confounds, out_dir, 
+    working_dir, log_dir, logger, mixing_file=None, noise_file=None):
+
+    # TODO: Run this async or batch
+    logger.info(f"Building confounds workflow for {pipeline_name}")
+    
+    confound_suffix = postprocessing_config["ConfoundOptions"]["ProcessedConfoundsSuffix"]
+
+    # Calculate the output file name
+    base, image_name, exstension = split_filename(confounds)
+    out_stem = image_name + '_' + confound_suffix + '.tsv'
+    confound_out_file = os.path.abspath(os.path.join(out_dir, out_stem))
+    
+    logger.info(f"Postprocessed confound out file: {confound_out_file}")
+
+    try:
+        confounds_wf = build_confound_postprocessing_workflow(postprocessing_config, confound_file = confounds,
+            out_file=confound_out_file, tr=tr,
+            name=f"{pipeline_name}_Confound_Postprocessing_Pipeline",
+            mixing_file=mixing_file, noise_file=noise_file,
+            base_dir=working_dir, crashdump_dir=log_dir)
+
+        # Draw the confound workflow's process graph if requested in config
+        if postprocessing_config["WriteProcessGraph"]:
+            graph_image_path = out_dir / "confounds_processsing_plan.dot"
+            logger.info(f"Drawing confounds workflow graph: {graph_image_path}")
+            confounds_wf.write_graph(dotfilename = graph_image_path, graph2use="colored")
+    except ValueError as ve:
+        logger.warn(ve)
+        logger.warn("Skipping confounds processing")
+
 
 def _submit_jobs(batch_manager, submission_strings, logger, submit=True):
     num_jobs = len(submission_strings)
