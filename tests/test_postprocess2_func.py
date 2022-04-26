@@ -1,7 +1,7 @@
 import pytest
 from pathlib import Path
 
-from clpipe.fmri_postprocess2_func import *
+from clpipe.fmri_postprocess2 import *
 
 def test_postprocess_fmriprep_dir(clpipe_fmriprep_dir, artifact_dir, helpers, request):
     fmriprep_dir = clpipe_fmriprep_dir / "data_fmriprep" / "fmriprep"

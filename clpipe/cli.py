@@ -1,6 +1,6 @@
 import click
 
-from .fmri_postprocess2_func import postprocess_image_controller, postprocess_subject_controller, postprocess_subjects_controller
+from .fmri_postprocess2 import postprocess_image_controller, postprocess_subject_controller, postprocess_subjects_controller
 
 @click.command()
 @click.argument('subjects', nargs=-1, required=False, default=None)
