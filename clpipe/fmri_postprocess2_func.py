@@ -58,7 +58,7 @@ def postprocess_subjects_controller(subjects=None, config_file=None, bids_dir=No
         pybids_db_path = Path(config["ProjectDirectory"]) / "bids_index"
     pybids_db_path = Path(pybids_db_path)
 
-    logger = _get_logger("process_subjects")
+    logger = _get_logger("postprocess_subjects_controller")
 
     # Setup Logging
     if debug: 
@@ -91,7 +91,9 @@ def postprocess_subjects_controller(subjects=None, config_file=None, bids_dir=No
 
 
 def postprocess_subject_controller(subject_id, bids_dir, fmriprep_dir, output_dir, config_file, index_dir, batch, submit, log_dir):
-    print(f"Processing subject: {subject_id}")
+    logger = _get_logger("postprocess_subject_controller")
+    
+    logger.info(f"Processing subject: {subject_id}")
 
     config = _parse_config(config_file)
     config_file = Path(config_file)
@@ -102,7 +104,7 @@ def postprocess_subject_controller(subject_id, bids_dir, fmriprep_dir, output_di
     if batch:
         slurm_log_dir = log_dir / Path(f"sub-{subject_id}") / "slurm_out"
         if not slurm_log_dir.exists():
-            LOG.info(f"Creating subject slurm log directory: {slurm_log_dir}")
+            logger.info(f"Creating subject slurm log directory: {slurm_log_dir}")
             slurm_log_dir.mkdir(exist_ok=True, parents=True)
         batch_manager = _setup_batch_manager(config, slurm_log_dir)
 
@@ -122,7 +124,9 @@ def postprocess_subject_controller(subject_id, bids_dir, fmriprep_dir, output_di
 def postprocess_image_controller(config_file, subject_id, task, run, image_space, image_path, bids_dir, fmriprep_dir, 
     pybids_db_path, subject_out_dir, working_dir, log_dir):
 
-    print(f"Processing image: {image_path}")
+    logger = _get_logger("postprocess_image_controller")
+
+    logger.info(f"Processing image: {image_path}")
 
     config = _parse_config(config_file)
     config_file = Path(config_file)
@@ -138,7 +142,7 @@ def postprocess_image_controller(config_file, subject_id, task, run, image_space
 def distribute_subject_jobs(bids_dir, fmriprep_dir, output_dir: os.PathLike, config_file: os.PathLike, submit=False, batch_manager=None,
         subjects_to_process=None, log_dir: os.PathLike=None, pybids_db_path: os.PathLike=None, refresh_index=False):
 
-    logger = _get_logger("process_subjects")
+    logger = _get_logger("distribute_subject_jobs")
     _add_file_handler(logger, log_dir, 'postprocess.log')
 
     # Create the root output directory for all subject postprocessing results, if it doesn't yet exist.
@@ -158,7 +162,7 @@ def distribute_subject_jobs(bids_dir, fmriprep_dir, output_dir: os.PathLike, con
 def distribute_image_jobs(subject_id: str, bids_dir: os.PathLike, fmriprep_dir: os.PathLike, out_dir: os.PathLike, postprocessing_config: dict,
     config_file: os.PathLike, pybids_db_path: os.PathLike=None, submit=False, batch_manager=None, log_dir: os.PathLike=None):
 
-    logger = _get_logger(f"process_subject_{subject_id}")
+    logger = _get_logger(f"distribute_image_jobs_sub-{subject_id}")
     
     bids_dir = Path(bids_dir)
     pybids_db_path = Path(pybids_db_path)
@@ -215,7 +219,7 @@ def build_and_run_image_workflow(postprocessing_config, subject_id, task, run, i
     name = f"subject_{subject_id}_task_{task}"
     if run: name += f"_run_{run}"
 
-    logger = _get_logger(f"process_image_{name}")
+    logger = _get_logger(f"postprocess_image_{name}")
 
     bids:BIDSLayout = _get_bids(bids_dir, database_path=pybids_db_path, fmriprep_dir=fmriprep_dir)
 
@@ -262,7 +266,7 @@ def _submit_jobs(batch_manager, submission_strings, logger, submit=True):
     if batch_manager:
         _populate_batch_manager(batch_manager, submission_strings, logger)
         if submit:
-            logger.info(f"Running {num_jobs} image jobs in batch mode")
+            logger.info(f"Running {num_jobs} job(s) in batch mode")
             batch_manager.submit_jobs()
         else:
             batch_manager.print_jobs()
@@ -368,7 +372,8 @@ def _get_bids(bids_dir: os.PathLike, validate=False, database_path: os.PathLike=
             else:
                 return BIDSLayout(bids_dir, validate=validate, indexer=indexer, database_path=database_path, reset_database=refresh)
     except FileNotFoundError as fne:
-        LOG.error(fne)
+        if logger:
+            logger.error(fne)
         raise fne
 
 
@@ -378,7 +383,6 @@ def _get_subjects(bids_dir: BIDSLayout, subjects):
         subjects = bids_dir.get_subjects(scope='derivatives')
         if len(subjects) == 0:
             no_subjects_found_str = f"No subjects found to parse at: {bids_dir.root}"
-            LOG.error(no_subjects_found_str)
             raise NoSubjectsFoundError(no_subjects_found_str)
 
     return subjects
