@@ -235,6 +235,8 @@ def build_and_run_image_workflow(postprocessing_config, subject_id, task, run, i
             logger.error(nfnfe)
             sys.exit(1)
 
+    mask_image = _get_mask(bids, subject_id, task, run, image_space, logger)
+
 def _get_mixing_file(bids, subject_id, task, run, logger):
     logger.info("Searching for MELODIC mixing file")
     try:
@@ -259,6 +261,20 @@ def _get_noise_file(bids, subject_id, task, run, logger):
     except IndexError:
         raise NoiseFileNotFoundError(f"AROMA noise ICs file for sub-{subject_id} task-{task} not found.")
 
+def _get_mask(bids, subject_id, task, run, image_space, logger):
+    # Find the subject's mask file
+    logger.info("Searching for mask file")
+    try:
+        mask_image = bids.get(
+            subject=subject_id, task=task, run=run, space=image_space, suffix="mask", extension=".nii.gz", datatype="func", return_type="filename",
+                desc="brain", scope="derivatives"
+        )[0]
+        logger.info(f"Mask file found: {mask_image}")
+
+        return mask_image
+    except IndexError:
+        logger.warn(f"Mask image for subject {subject_id} task-{task} not found.")
+        return None
 
 def _submit_jobs(batch_manager, submission_strings, logger, submit=True):
     num_jobs = len(submission_strings)
