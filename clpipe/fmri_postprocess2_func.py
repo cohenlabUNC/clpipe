@@ -16,10 +16,6 @@ from .postprocutils.workflows import build_postprocessing_workflow, build_confou
 from .error_handler import exception_handler
 from .errors import *
 
-#logging.basicConfig(level=logging.INFO)
-#LOG = logging.getLogger(__name__)
-LOG = None
-
 """
 Controller Functions - Serve as a middle layer between the front-end (CLI) and distribution / workflow setup functions. Handles sanitization, 
     configuration parsing, batch manager initialization, and is the last layer of exception catching
@@ -76,7 +72,7 @@ def postprocess_subjects_controller(subjects=None, config_file=None, bids_dir=No
     if batch:
         slurm_log_dir = log_dir / "slurm_out"
         if not slurm_log_dir.exists():
-            LOG.info(f"Creating slurm log directory: {slurm_log_dir}")
+            logger.info(f"Creating slurm log directory: {slurm_log_dir}")
             slurm_log_dir.mkdir(exist_ok=True, parents=True)
         batch_manager = _setup_batch_manager(config, slurm_log_dir, non_processing=True)
 
