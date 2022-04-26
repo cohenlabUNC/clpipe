@@ -2,6 +2,7 @@ import sys
 import os
 import logging
 import warnings
+import json
 from pathlib import Path
 
 # This hides a pybids future warning
@@ -236,6 +237,7 @@ def build_and_run_image_workflow(postprocessing_config, subject_id, task, run, i
             sys.exit(1)
 
     mask_image = _get_mask(bids, subject_id, task, run, image_space, logger)
+    tr = _get_tr(bids, subject_id, task, run)
 
 def _get_mixing_file(bids, subject_id, task, run, logger):
     logger.info("Searching for MELODIC mixing file")
@@ -275,6 +277,22 @@ def _get_mask(bids, subject_id, task, run, image_space, logger):
     except IndexError:
         logger.warn(f"Mask image for subject {subject_id} task-{task} not found.")
         return None
+
+def _get_tr(bids, subject_id, task):
+    # To get the TR, we do another, similar query to get the sidecar and open it as a dict, because indexing metadata in
+    # pybids is too slow to be worth just having the TR available
+    # This can probably be done in just one query combined with the above
+    
+    #TODO - include run in this query?
+    image_to_process_json = bids.get(
+        subject=subject_id, task=task, extension=".json", datatype="func", 
+        suffix="bold", desc="preproc", scope="derivatives", return_type="filename")[0]
+
+    with open(image_to_process_json) as sidecar_file:
+        sidecar_data = json.load(sidecar_file)
+        tr = sidecar_data["RepetitionTime"]
+
+        return tr
 
 def _submit_jobs(batch_manager, submission_strings, logger, submit=True):
     num_jobs = len(submission_strings)
