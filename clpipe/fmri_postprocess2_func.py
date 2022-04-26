@@ -4,10 +4,8 @@ import logging
 import warnings
 from pathlib import Path
 
-from click import command
-
+# This hides a pybids future warning
 with warnings.catch_warnings():
-    # This hides a pybids future warning
     warnings.filterwarnings("ignore", category=FutureWarning)
     from bids import BIDSLayout, BIDSLayoutIndexer, config as bids_config
 
@@ -18,26 +16,31 @@ from .postprocutils.workflows import build_postprocessing_workflow, build_confou
 from .error_handler import exception_handler
 from .errors import *
 
-logging.basicConfig(level=logging.INFO)
-LOG = logging.getLogger(__name__)
+#logging.basicConfig(level=logging.INFO)
+#LOG = logging.getLogger(__name__)
+LOG = None
+
+"""
+Controller Functions - Serve as a middle layer between the front-end (CLI) and distribution / workflow setup functions. Handles sanitization, 
+    configuration parsing, batch manager initialization, and is the last layer of exception catching
+
+    - postprocess_subjects_controller
+    - postprocess_subject_controller
+    - postprocess_image_controller
+
+Distributor Functions - Create and submit child job processes
+    - distribute_subject_jobs
+    - distribute_image_jobs
+
+Workflow Builder & Runner - handles the creation and running of an image processing workflow
+    - build_and_run_image_workflow
+"""
 
 def postprocess_subjects_controller(subjects=None, config_file=None, bids_dir=None, fmriprep_dir=None, output_dir=None, 
     batch=False, submit=False, log_dir=None, pybids_db_path=None, refresh_index=False, debug=False):
 
     config = _parse_config(config_file)
     config_file = Path(config_file)
-
-    # Get postprocessing configuration from general config
-    try:
-        if not config_file:
-            raise ValueError("No config file provided")
-        else:
-            configParser = ClpipeConfigParser()
-            configParser.config_updater(config_file)
-            config = configParser.config
-            config_file = Path(config_file)
-    except ValueError:
-        sys.exit()
 
     if not fmriprep_dir:
         fmriprep_dir = Path(config["FMRIPrepOptions"]["OutputDirectory"]) / "fmriprep"
@@ -59,13 +62,14 @@ def postprocess_subjects_controller(subjects=None, config_file=None, bids_dir=No
         pybids_db_path = Path(config["ProjectDirectory"]) / "bids_index"
     pybids_db_path = Path(pybids_db_path)
 
+    logger = _get_logger("process_subjects")
+
     # Setup Logging
     if debug: 
-        LOG.setLevel(logging.DEBUG)
+        logger.setLevel(logging.DEBUG)
     else:
         sys.excepthook = exception_handler
-    LOG.debug(f"Preparing postprocessing job targeting: {str(fmriprep_dir)}")
-    print(f"Preparing postprocessing job targeting: {str(fmriprep_dir)}")
+    logger.info(f"Preparing postprocessing job targeting: {str(fmriprep_dir)}")
 
     # Setup batch jobs if indicated
     batch_manager = None
@@ -79,7 +83,7 @@ def postprocess_subjects_controller(subjects=None, config_file=None, bids_dir=No
     # Create jobs based on subjects given for processing
     # TODO: PYBIDS_DB_PATH should have config arg
     try:
-        process_subjects(bids_dir, fmriprep_dir, output_dir, config_file, submit=submit, batch_manager=batch_manager,
+        distribute_subject_jobs(bids_dir, fmriprep_dir, output_dir, config_file, submit=submit, batch_manager=batch_manager,
             subjects_to_process=subjects, log_dir=log_dir, pybids_db_path=pybids_db_path, 
             refresh_index=refresh_index)
     except NoSubjectsFoundError:
@@ -95,6 +99,8 @@ def postprocess_subject_controller(subject_id, bids_dir, fmriprep_dir, output_di
 
     config = _parse_config(config_file)
     config_file = Path(config_file)
+    
+    postprocessing_config = config["PostProcessingOptions2"]
 
     batch_manager = None
     if batch:
@@ -105,7 +111,7 @@ def postprocess_subject_controller(subject_id, bids_dir, fmriprep_dir, output_di
         batch_manager = _setup_batch_manager(config, slurm_log_dir)
 
     try:
-        process_subject(subject_id, bids_dir, fmriprep_dir, output_dir, config_file, pybids_db_path=index_dir, submit=submit,
+        distribute_image_jobs(subject_id, bids_dir, fmriprep_dir, output_dir, postprocessing_config, config_file, pybids_db_path=index_dir, submit=submit,
             batch_manager=batch_manager, log_dir=log_dir)
     except SubjectNotFoundError:
         sys.exit()
@@ -117,18 +123,23 @@ def postprocess_subject_controller(subject_id, bids_dir, fmriprep_dir, output_di
     sys.exit()
 
 
-def postprocess_image_controller(config_file, subject_id, task, run, image_space, image_path, bids_dir, subject_out_dir, working_dir, log_dir):
+def postprocess_image_controller(config_file, subject_id, task, run, image_space, image_path, bids_dir, fmriprep_dir, 
+    pybids_db_path, subject_out_dir, working_dir, log_dir):
+
     print(f"Processing image: {image_path}")
 
     config = _parse_config(config_file)
     config_file = Path(config_file)
 
-    process_image(config_file, subject_id, task, run, image_space, image_path, bids_dir, subject_out_dir, working_dir, log_dir)
+    postprocessing_config = config["PostProcessingOptions2"]
+
+    build_and_run_image_workflow(postprocessing_config, subject_id, task, run, image_space, image_path, bids_dir, fmriprep_dir, pybids_db_path,
+        subject_out_dir, working_dir, log_dir)
    
     sys.exit()
     
 
-def process_subjects(bids_dir, fmriprep_dir, output_dir: os.PathLike, config_file: os.PathLike, submit=False, batch_manager=None,
+def distribute_subject_jobs(bids_dir, fmriprep_dir, output_dir: os.PathLike, config_file: os.PathLike, submit=False, batch_manager=None,
         subjects_to_process=None, log_dir: os.PathLike=None, pybids_db_path: os.PathLike=None, refresh_index=False):
 
     logger = _get_logger("process_subjects")
@@ -148,7 +159,7 @@ def process_subjects(bids_dir, fmriprep_dir, output_dir: os.PathLike, config_fil
     _submit_jobs(batch_manager, submission_strings, logger, submit=submit)
 
 
-def process_subject(subject_id: str, bids_dir: os.PathLike, fmriprep_dir: os.PathLike, out_dir: os.PathLike, 
+def distribute_image_jobs(subject_id: str, bids_dir: os.PathLike, fmriprep_dir: os.PathLike, out_dir: os.PathLike, postprocessing_config: dict,
     config_file: os.PathLike, pybids_db_path: os.PathLike=None, submit=False, batch_manager=None, log_dir: os.PathLike=None):
 
     logger = _get_logger(f"process_subject_{subject_id}")
@@ -159,12 +170,6 @@ def process_subject(subject_id: str, bids_dir: os.PathLike, fmriprep_dir: os.Pat
     log_dir=Path(log_dir)
     out_dir = Path(out_dir)
     config_file = Path(config_file)
-
-    logger.info(f"Ingesting configuration: {config_file}")
-    configParser = ClpipeConfigParser()
-    configParser.config_updater(config_file)
-    
-    postprocessing_config = configParser.config["PostProcessingOptions2"]
     
     # Create a subject folder for this subject's postprocessing output, if one doesn't already exist
     subject_out_dir = out_dir / ("sub-" + subject_id) / "func"
@@ -195,13 +200,64 @@ def process_subject(subject_id: str, bids_dir: os.PathLike, fmriprep_dir: os.Pat
     bids:BIDSLayout = _get_bids(bids_dir, database_path=pybids_db_path, fmriprep_dir=fmriprep_dir)
     _validate_subject_exists(bids, subject_id, logger)
 
-    submission_strings = _create_image_submission_strings(subject_id, bids, bids_dir, subject_out_dir, working_dir, postprocessing_config, 
-        config_file, log_dir, logger)
+    submission_strings = _create_image_submission_strings(subject_id, bids, bids_dir, fmriprep_dir, pybids_db_path, 
+        subject_out_dir, working_dir, postprocessing_config, config_file, log_dir, logger)
 
     _submit_jobs(batch_manager, submission_strings, logger, submit=submit)
 
-def process_image(config_file, subject_id, task, run, image_space, image_path, bids_dir, subject_out_dir, working_dir, log_dir):
-    pass
+
+def build_and_run_image_workflow(postprocessing_config, subject_id, task, run, image_space, image_path, bids_dir, fmriprep_dir, 
+    pybids_db_path, subject_out_dir, working_dir, log_dir):
+    
+    image_path = Path(image_path)
+    working_dir = Path(working_dir)
+    log_dir = Path(log_dir)
+    subject_out_dir = Path(subject_out_dir)
+
+    image_file_name = image_path.stem
+
+    name = f"subject_{subject_id}_task_{task}"
+    if run: name += f"_run_{run}"
+
+    logger = _get_logger(f"process_image_{name}")
+
+    bids:BIDSLayout = _get_bids(bids_dir, database_path=pybids_db_path, fmriprep_dir=fmriprep_dir)
+
+    mixing_file, noise_file = None, None
+    if "AROMARegression" in postprocessing_config["ProcessingSteps"]:
+        try:
+            mixing_file = _get_mixing_file(bids, subject_id, task, run, logger)
+            noise_file = _get_noise_file(bids, subject_id, task, run, logger)
+        except MixingFileNotFoundError as mfnfe:
+            logger.error(mfnfe)
+            sys.exit(1)
+        except NoiseFileNotFoundError as nfnfe:
+            logger.error(nfnfe)
+            sys.exit(1)
+
+def _get_mixing_file(bids, subject_id, task, run, logger):
+    logger.info("Searching for MELODIC mixing file")
+    try:
+        mixing_file = bids.get(
+            subject=subject_id, task=task, run=run, suffix="mixing", extension=".tsv", return_type="filename",
+                desc="MELODIC", scope="derivatives"
+        )[0]
+        logger.info(f"MELODIC mixing file found: {mixing_file}")
+
+        return mixing_file
+    except IndexError:
+        raise MixingFileNotFoundError(f"MELODIC mixing file for sub-{subject_id} task-{task} not found.")
+
+def _get_noise_file(bids, subject_id, task, run, logger):
+    logger.info("Searching for AROMA noise ICs file")
+    try:
+        noise_file = bids.get(
+            subject=subject_id, task=task, run=run, suffix="AROMAnoiseICs", extension=".csv", return_type="filename",
+                scope="derivatives"
+        )[0]
+        logger.info(f"AROMA noise ICs file found: {noise_file}")
+    except IndexError:
+        raise NoiseFileNotFoundError(f"AROMA noise ICs file for sub-{subject_id} task-{task} not found.")
 
 
 def _submit_jobs(batch_manager, submission_strings, logger, submit=True):
@@ -223,7 +279,7 @@ def _submit_jobs(batch_manager, submission_strings, logger, submit=True):
                 print(submission_strings[key])
 
 
-def _create_image_submission_strings(subject_id, bids, bids_dir, subject_out_dir, working_dir, postprocessing_config, config_file, log_dir, logger):
+def _create_image_submission_strings(subject_id, bids, bids_dir, fmriprep_dir, pybids_db_path, subject_out_dir, working_dir, postprocessing_config, config_file, log_dir, logger):
     logger.info(f"Searching for images to process")
     
     # Find the subject's images to run post_proc on
@@ -242,16 +298,17 @@ def _create_image_submission_strings(subject_id, bids, bids_dir, subject_out_dir
         logger.info(f"Building image jobs")
 
         submission_strings = {}
-        SUBMISSION_STRING_TEMPLATE = """postprocess_image {config_file} {subject_id} {task} {run} {image_space} {image_path} {bids_dir} {subject_out_dir} {working_dir} {log_dir}"""
+        SUBMISSION_STRING_TEMPLATE = ("postprocess_image {config_file} {subject_id} {task} {image_space} "
+            "{image_path} {bids_dir} {fmriprep_dir} {pybids_db_path} {subject_out_dir} {working_dir} {log_dir} {run}")
         
         logger.info("Creating submission strings")
         for image in images_to_process:
             image_entities = image.get_entities()
             task = image_entities['task']
             try:
-                run = image_entities['run']
+                run = f"-run {image_entities['run']}"
             except KeyError:
-                run = None
+                run = ""
 
             key = f"Postprocessing_{str(Path(image.path).stem)}"
             
@@ -262,6 +319,8 @@ def _create_image_submission_strings(subject_id, bids, bids_dir, subject_out_dir
                                                             image_space=image_space,
                                                             image_path=image.path,
                                                             bids_dir=bids_dir,
+                                                            fmriprep_dir=fmriprep_dir,
+                                                            pybids_db_path=pybids_db_path,
                                                             subject_out_dir=subject_out_dir,
                                                             working_dir=working_dir,
                                                             log_dir=log_dir)
@@ -292,18 +351,20 @@ def _parse_config(config_file):
     return config
 
 def _get_bids(bids_dir: os.PathLike, validate=False, database_path: os.PathLike=None, fmriprep_dir: os.PathLike=None, 
-                index_metadata=False, refresh=False) -> BIDSLayout:
+                index_metadata=False, refresh=False, logger=None) -> BIDSLayout:
     try:
         database_path = Path(database_path)
         
         # Use an existing pybids database, and user did not request an index refresh
         if database_path.exists() and not refresh:
-            LOG.info(f"Using existing BIDS index: {database_path}")
+            if logger:
+                logger.info(f"Using existing BIDS index: {database_path}")
             return BIDSLayout(database_path=database_path)
         # Index from scratch (slow)
         else:
             indexer = BIDSLayoutIndexer(validate=validate, index_metadata=index_metadata)
-            LOG.info(f"Indexing BIDS directory: {bids_dir}")
+            if logger:
+                logger.info(f"Indexing BIDS directory: {bids_dir}")
             print("Indexing BIDS directory - this can take a few minutes...")
 
             if fmriprep_dir:
@@ -389,7 +450,7 @@ def _get_logger(name):
     c_handler.setLevel(logging.INFO)
 
     # Create log formatter to add to handler
-    c_format = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    c_format = logging.Formatter('%(asctime)s - %(levelname)s: %(name)s - %(message)s')
     c_handler.setFormatter(c_format)
     
     # Add handler to logger
@@ -404,7 +465,7 @@ def _add_file_handler(logger, log_dir, f_name):
     f_handler.setLevel(logging.DEBUG)
     
     # Create log format
-    f_format = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    f_format = logging.Formatter('%(asctime)s - %(levelname)s: %(name)s - %(message)s')
     f_handler.setFormatter(f_format)
 
     # Add handler to the logger

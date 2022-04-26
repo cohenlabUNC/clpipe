@@ -42,12 +42,15 @@ def postprocess_subject_cli(subject_id, bids_dir, fmriprep_dir, output_dir, conf
 @click.argument('config_file', type=click.Path(dir_okay=False, file_okay=True))
 @click.argument('subject_id')
 @click.argument('task')
-@click.argument('run')
 @click.argument('image_space')
 @click.argument('image_path', type=click.Path(dir_okay=False, file_okay=True))
 @click.argument('bids_dir', type=click.Path(dir_okay=True, file_okay=False))
+@click.argument('fmriprep_dir', type=click.Path(dir_okay=True, file_okay=False))
+@click.argument('index_dir', type=click.Path(dir_okay=True, file_okay=False))
 @click.argument('subject_out_dir', type=click.Path(dir_okay=True, file_okay=False))
 @click.argument('working_dir', type=click.Path(dir_okay=True, file_okay=False))
 @click.argument('log_dir', type=click.Path(dir_okay=True, file_okay=False))
-def postprocess_image_cli(config_file, subject_id, task, run, image_space, image_path, bids_dir, subject_out_dir, working_dir, log_dir):
-    postprocess_image_controller(config_file, subject_id, task, run, image_space, image_path, bids_dir, subject_out_dir, working_dir, log_dir)
+@click.option('-run', required=False, help='Optional run number')
+def postprocess_image_cli(config_file, subject_id, task, run, image_space, image_path, bids_dir, fmriprep_dir, index_dir, subject_out_dir, working_dir, log_dir):
+    postprocess_image_controller(config_file, subject_id, task, run, image_space, image_path, bids_dir, fmriprep_dir, 
+    index_dir, subject_out_dir, working_dir, log_dir)
