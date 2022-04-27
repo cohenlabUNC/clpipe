@@ -20,6 +20,7 @@ from .error_handler import exception_handler
 from .errors import *
 
 DEFAULT_PROCESSING_STREAM_NAME = "smooth-filter-normalize"
+PROCESSING_DESCRIPTION_FILE_NAME = "processing_description.json"
 
 """
 Controller Functions - Serve as a middle layer between the front-end (CLI) and distribution / workflow setup functions. Handles sanitization, 
@@ -86,10 +87,12 @@ def postprocess_subjects_controller(subjects=None, config_file=None, bids_dir=No
     try:
         distribute_subject_jobs(bids_dir, fmriprep_dir, output_dir, config_file, submit=submit, batch_manager=batch_manager,
             subjects_to_process=subjects, log_dir=log_dir, pybids_db_path=pybids_db_path, 
-            refresh_index=refresh_index)
-    except NoSubjectsFoundError:
+            refresh_index=refresh_index, processing_stream=processing_stream)
+    except NoSubjectsFoundError as nsfe:
+        logger.error(nsfe)
         sys.exit()
-    except FileNotFoundError:
+    except FileNotFoundError as fnfe:
+        logger.error(fnfe)
         sys.exit()
 
     sys.exit()
@@ -105,7 +108,7 @@ def postprocess_subject_controller(subject_id, bids_dir, fmriprep_dir, output_di
     config = _parse_config(config_file)
     config_file = Path(config_file)
     
-    postprocessing_config = config["PostProcessingOptions2"]
+    postprocessing_config = _get_postprocessing_config(config)
 
     batch_manager = None
     if batch:
@@ -116,8 +119,8 @@ def postprocess_subject_controller(subject_id, bids_dir, fmriprep_dir, output_di
         batch_manager = _setup_batch_manager(config, slurm_log_dir)
 
     try:
-        distribute_image_jobs(subject_id, bids_dir, fmriprep_dir, output_dir, processing_stream, postprocessing_config, config_file, 
-            pybids_db_path=index_dir, submit=submit, batch_manager=batch_manager, log_dir=log_dir)
+        distribute_image_jobs(subject_id, bids_dir, fmriprep_dir, output_dir, postprocessing_config, config_file, 
+            pybids_db_path=index_dir, submit=submit, batch_manager=batch_manager, log_dir=log_dir, processing_stream=processing_stream)
     except SubjectNotFoundError:
         sys.exit()
     except ValueError:
@@ -138,27 +141,32 @@ def postprocess_image_controller(config_file, subject_id, task, run, image_space
     config = _parse_config(config_file)
     config_file = Path(config_file)
 
-    postprocessing_config = config["PostProcessingOptions2"]
-
-    if processing_stream:
-        processing_streams = config["ProcessingStreams"]
-        
-        stream_options = None
-
-        # Iterate through the available processing streams and see if one matches the one requested
-        # The default processing stream name won't be in this list - it refers to the base PostProcessingOptions
-        for stream in processing_streams:
-            stream_options = stream["PostProcessingOptions"]
-
-            if stream["ProcessingStream"] == processing_stream:
-                # Use deep update to impart the processing stream options into the postprocessing config
-                postprocessing_config = pydantic.utils.deep_update(postprocessing_config, stream_options)
+    postprocessing_config = _get_postprocessing_config(config)
+    _postprocessing_config_apply_processing_stream(config, processing_stream)
 
     build_and_run_image_workflow(postprocessing_config, subject_id, task, run, image_space, image_path, bids_dir, fmriprep_dir, pybids_db_path,
         subject_out_dir, working_dir, log_dir)
    
     sys.exit()
-    
+
+
+def _write_processing_description_file(postprocessing_config: dict, output_dir: os.PathLike):
+    processing_description_file = output_dir / PROCESSING_DESCRIPTION_FILE_NAME
+
+    processing_steps = postprocessing_config["ProcessingSteps"]
+    processing_step_options = postprocessing_config["ProcessingStepOptions"]
+    processing_step_options_reference = processing_step_options.copy()
+    confound_options = postprocessing_config["ConfoundOptions"]
+
+    # Remove processing options not used
+    for step_option in processing_step_options_reference.keys():
+        if step_option not in processing_steps:
+            processing_step_options.pop(step_option)
+    if not confound_options["Include"]:
+        postprocessing_config.pop('ConfoundOptions')
+
+    with open(processing_description_file, 'w') as file_to_write:
+        json.dump(postprocessing_config, file_to_write, indent=4)
 
 def distribute_subject_jobs(bids_dir, fmriprep_dir, output_dir: os.PathLike, config_file: os.PathLike, processing_stream:str=DEFAULT_PROCESSING_STREAM_NAME,
     submit=False, batch_manager=None,subjects_to_process=None, log_dir: os.PathLike=None, pybids_db_path: os.PathLike=None, refresh_index=False):
@@ -166,9 +174,19 @@ def distribute_subject_jobs(bids_dir, fmriprep_dir, output_dir: os.PathLike, con
     logger = _get_logger("distribute_subject_jobs")
     _add_file_handler(logger, log_dir, 'postprocess.log')
 
-    # Create the root output directory for all subject postprocessing results, if it doesn't yet exist.
-    if not output_dir.exists():
-        output_dir.mkdir()
+    config = _parse_config(config_file)
+
+    output_dir = Path(output_dir) / processing_stream
+
+    # Don't create any files/directories unless the user is submitting
+    if submit:
+        # Create the root output directory for all subject postprocessing results, if it doesn't yet exist.
+        if not output_dir.exists():
+            output_dir.mkdir()
+
+        postprocessing_config = _get_postprocessing_config(config)
+        _postprocessing_config_apply_processing_stream(config, processing_stream)
+        _write_processing_description_file(postprocessing_config, output_dir)
 
     bids:BIDSLayout = _get_bids(bids_dir, database_path=pybids_db_path, fmriprep_dir=fmriprep_dir, refresh=refresh_index)
 
@@ -180,8 +198,9 @@ def distribute_subject_jobs(bids_dir, fmriprep_dir, output_dir: os.PathLike, con
     _submit_jobs(batch_manager, submission_strings, logger, submit=submit)
 
 
-def distribute_image_jobs(subject_id: str, bids_dir: os.PathLike, fmriprep_dir: os.PathLike, out_dir: os.PathLike, processing_stream, postprocessing_config: dict,
-    config_file: os.PathLike, pybids_db_path: os.PathLike=None, submit=False, batch_manager=None, log_dir: os.PathLike=None):
+def distribute_image_jobs(subject_id: str, bids_dir: os.PathLike, fmriprep_dir: os.PathLike, out_dir: os.PathLike, postprocessing_config: dict,
+    config_file: os.PathLike, pybids_db_path: os.PathLike=None, submit=False, batch_manager=None, log_dir: os.PathLike=None, 
+    processing_stream=DEFAULT_PROCESSING_STREAM_NAME):
 
     logger = _get_logger(f"distribute_image_jobs_sub-{subject_id}")
     
@@ -413,6 +432,33 @@ def _setup_confounds_wf(postprocessing_config, pipeline_name, tr, confounds, out
     except ValueError as ve:
         logger.warn(ve)
         logger.warn("Skipping confounds processing")
+
+
+def _postprocessing_config_apply_processing_stream(config: dict, processing_stream:str=DEFAULT_PROCESSING_STREAM_NAME):
+
+    postprocessing_config = _get_postprocessing_config(config)
+    processing_streams = _get_processing_streams(config)
+    
+    # If using the default stream, no need to update postprocessing config
+    if processing_stream == DEFAULT_PROCESSING_STREAM_NAME:
+        return
+
+    # Iterate through the available processing streams and see if one matches the one requested
+    # The default processing stream name won't be in this list - it refers to the base PostProcessingOptions
+    for stream in processing_streams:
+        stream_options = stream["PostProcessingOptions"]
+
+        if stream["ProcessingStream"] == processing_stream:
+            # Use deep update to impart the processing stream options into the postprocessing config
+            postprocessing_config = pydantic.utils.deep_update(postprocessing_config, stream_options)
+
+
+def _get_postprocessing_config(config: dict):
+    return config["PostProcessingOptions2"]
+
+
+def _get_processing_streams(config: dict):
+    return config["ProcessingStreams"]
 
 
 def _submit_jobs(batch_manager, submission_strings, logger, submit=True):
