@@ -25,7 +25,8 @@ setup(name='clpipe',
                         'nipype',
                         'pybids>=0.14.0',
                         'templateflow',
-                        'deepdiff'],
+                        'deepdiff',
+                        "pydantic"],
       package_data={'clpipe': ['R_scripts/*.R']},
       entry_points='''
       [console_scripts]

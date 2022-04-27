@@ -152,17 +152,7 @@
 	},
 	"ProcessingStreams": [
 		{
-			"ProcessingStream": "smooth-filter-normalize",
-			"PostProcessingOptions": {
-				"ProcessingSteps": [
-					"SpatialSmoothing",
-					"TemporalFiltering",
-					"IntensityNormalization"
-				]
-			}
-		},
-		{
-			"ProcessingStream": "smooth-aroma_regress-filter-normalize",
+			"ProcessingStream": "smooth_aroma-regress_filter_normalize",
 			"PostProcessingOptions": {
 				"ProcessingSteps": [
 					"SpatialSmoothing",
@@ -173,7 +163,7 @@
 			}
 		},
 		{
-			"ProcessingStream": "filter-confound_regress",
+			"ProcessingStream": "filter_confound-regress",
 			"PostProcessingOptions": {
 				"ProcessingSteps": [
 					"TemporalFiltering",
@@ -182,7 +172,7 @@
 			}
 		},
 		{
-			"ProcessingStream": "smooth-aroma-filter-normalize-fwhm-8",
+			"ProcessingStream": "smooth_aroma-regress_filter_normalize_fwhm-8",
 			"PostProcessingOptions": {
 				"ProcessingSteps": [
 					"SpatialSmoothing",
@@ -190,12 +180,13 @@
 					"TemporalFiltering",
 					"IntensityNormalization"
 				],
-				"SpatialSmoothing": {
-					"FWHM": 8
+				"ProcessingStepOptions": {
+					"SpatialSmoothing": {
+						"FWHM": 8
+					}
 				}
 			}
 		}
-
 	],
 	"ROIExtractionOptions": {
 		"TargetDirectory": "",

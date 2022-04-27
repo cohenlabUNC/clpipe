@@ -5,6 +5,8 @@ import warnings
 import json
 from pathlib import Path
 
+import pydantic
+
 # This hides a pybids future warning
 with warnings.catch_warnings():
     warnings.filterwarnings("ignore", category=FutureWarning)
@@ -123,7 +125,7 @@ def postprocess_subject_controller(subject_id, bids_dir, fmriprep_dir, output_di
 
 
 def postprocess_image_controller(config_file, subject_id, task, run, image_space, image_path, bids_dir, fmriprep_dir, 
-    pybids_db_path, subject_out_dir, working_dir, log_dir):
+    pybids_db_path, subject_out_dir, working_dir, log_dir, processing_stream=None):
 
     logger = _get_logger("postprocess_image_controller")
 
@@ -133,6 +135,19 @@ def postprocess_image_controller(config_file, subject_id, task, run, image_space
     config_file = Path(config_file)
 
     postprocessing_config = config["PostProcessingOptions2"]
+
+    if processing_stream:
+        processing_streams = config["ProcessingStreams"]
+        
+        stream_options = None
+
+        # Iterate through the available processing streams and see if one matches the one requested
+        for stream in processing_streams:
+            stream_options = stream["PostProcessingOptions"]
+
+            if stream["ProcessingStream"] == processing_stream:
+                # Use deep update to impart the processing stream options into the postprocessing config
+                postprocessing_config = pydantic.utils.deep_update(postprocessing_config, stream_options)
 
     build_and_run_image_workflow(postprocessing_config, subject_id, task, run, image_space, image_path, bids_dir, fmriprep_dir, pybids_db_path,
         subject_out_dir, working_dir, log_dir)
