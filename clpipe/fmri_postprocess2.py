@@ -395,9 +395,10 @@ def _setup_workflow(postprocessing_config, pipeline_name, image_file_name, image
     
     # Draw the workflow's process graph if requested in config
     if postprocessing_config["WriteProcessGraph"]:
-        graph_image_path = out_dir / "processing_plan.dot"
-        logger.info(f"Drawing workflow graph: {graph_image_path}")
-        wf.write_graph(dotfilename = graph_image_path, graph2use="colored")
+        # Hacky way to get the processing graph at level of stream directory
+        # TODO: come up with a better way to do this
+        stream_level_dir = Path(out_dir).parent.parent
+        _draw_graph(wf, "processsing_graph", stream_level_dir, logger=logger)
 
     return wf
 
@@ -426,12 +427,22 @@ def _setup_confounds_wf(postprocessing_config, pipeline_name, tr, confounds, out
 
         # Draw the confound workflow's process graph if requested in config
         if postprocessing_config["WriteProcessGraph"]:
-            graph_image_path = out_dir / "confounds_processsing_plan.dot"
-            logger.info(f"Drawing confounds workflow graph: {graph_image_path}")
-            confounds_wf.write_graph(dotfilename = graph_image_path, graph2use="colored")
+            stream_level_dir = Path(out_dir).parent.parent
+            _draw_graph(confounds_wf, "confounds_processsing_graph", stream_level_dir, logger=logger)
+            
     except ValueError as ve:
         logger.warn(ve)
         logger.warn("Skipping confounds processing")
+
+
+def _draw_graph(wf, graph_name, out_dir, graph_style="colored", logger=None):
+    graph_image_path = out_dir / f"{graph_name}.dot"
+    if logger:
+        logger.info(f"Drawing confounds workflow graph: {graph_image_path}")
+    wf.write_graph(dotfilename = graph_image_path, graph2use=graph_style)
+
+    # Delete the unessecary dot file
+    graph_image_path.unlink()
 
 
 def _postprocessing_config_apply_processing_stream(config: dict, processing_stream:str=DEFAULT_PROCESSING_STREAM_NAME):
