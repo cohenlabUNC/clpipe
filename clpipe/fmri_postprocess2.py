@@ -142,7 +142,7 @@ def postprocess_image_controller(config_file, subject_id, task, run, image_space
     config_file = Path(config_file)
 
     postprocessing_config = _get_postprocessing_config(config)
-    _postprocessing_config_apply_processing_stream(config, processing_stream)
+    postprocessing_config = _postprocessing_config_apply_processing_stream(config, processing_stream)
 
     build_and_run_image_workflow(postprocessing_config, subject_id, task, run, image_space, image_path, bids_dir, fmriprep_dir, pybids_db_path,
         subject_out_dir, working_dir, log_dir)
@@ -168,6 +168,7 @@ def _write_processing_description_file(postprocessing_config: dict, output_dir: 
     with open(processing_description_file, 'w') as file_to_write:
         json.dump(postprocessing_config, file_to_write, indent=4)
 
+
 def distribute_subject_jobs(bids_dir, fmriprep_dir, output_dir: os.PathLike, config_file: os.PathLike, processing_stream:str=DEFAULT_PROCESSING_STREAM_NAME,
     submit=False, batch_manager=None,subjects_to_process=None, log_dir: os.PathLike=None, pybids_db_path: os.PathLike=None, refresh_index=False):
 
@@ -185,7 +186,7 @@ def distribute_subject_jobs(bids_dir, fmriprep_dir, output_dir: os.PathLike, con
             output_dir.mkdir()
 
         postprocessing_config = _get_postprocessing_config(config)
-        _postprocessing_config_apply_processing_stream(config, processing_stream)
+        postprocessing_config = _postprocessing_config_apply_processing_stream(config, processing_stream)
         _write_processing_description_file(postprocessing_config, output_dir)
 
     bids:BIDSLayout = _get_bids(bids_dir, database_path=pybids_db_path, fmriprep_dir=fmriprep_dir, refresh=refresh_index)
@@ -462,6 +463,8 @@ def _postprocessing_config_apply_processing_stream(config: dict, processing_stre
         if stream["ProcessingStream"] == processing_stream:
             # Use deep update to impart the processing stream options into the postprocessing config
             postprocessing_config = pydantic.utils.deep_update(postprocessing_config, stream_options)
+
+    return postprocessing_config
 
 
 def _get_postprocessing_config(config: dict):
