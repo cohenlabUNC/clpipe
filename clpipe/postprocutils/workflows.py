@@ -98,15 +98,21 @@ def build_postprocessing_workflow(postprocessing_config: dict, in_file: os.PathL
 
             column_names = postprocessing_config["ProcessingStepOptions"]["ConfoundRegression"]["Columns"]
 
-            # Build a confounds postprocessing workflow to prep confounds for regression
-            confounds_postproc_wf = build_confound_postprocessing_workflow(postprocessing_config,
-                processing_steps=processing_steps, column_names=column_names,
-                confound_file=confound_file, mixing_file=mixing_file, noise_file=noise_file, tr=tr,
-                base_dir=base_dir, crashdump_dir=crashdump_dir)
+            try:
+                current_wf = confound_regression_algorithm(mask_file=mask_file, base_dir=postproc_wf.base_dir, crashdump_dir=crashdump_dir)
 
-            current_wf = confound_regression_algorithm(mask_file=mask_file, base_dir=postproc_wf.base_dir, crashdump_dir=crashdump_dir)
+                # Build a confounds postprocessing workflow to prep confounds for regression
+                confounds_postproc_wf = build_confound_postprocessing_workflow(postprocessing_config,
+                    processing_steps=processing_steps, column_names=column_names,
+                    confound_file=confound_file, mixing_file=mixing_file, noise_file=noise_file, tr=tr,
+                    base_dir=base_dir, crashdump_dir=crashdump_dir)
 
-            postproc_wf.connect(confounds_postproc_wf, "outputnode.out_file", current_wf, "inputnode.ort")
+                postproc_wf.connect(confounds_postproc_wf, "outputnode.out_file", current_wf, "inputnode.ort")
+            
+            # This is the case that no operations need to be performed on the confounds file
+            except ValueError:
+                current_wf = confound_regression_algorithm(mask_file=mask_file, confound_file=confound_file, base_dir=postproc_wf.base_dir, crashdump_dir=crashdump_dir)
+
         
         elif step == "Resample":
             reference_image = postprocessing_config["ProcessingStepOptions"][step]["ReferenceImage"]
