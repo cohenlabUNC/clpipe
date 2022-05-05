@@ -73,6 +73,7 @@
 		"WorkingDirectory": "",
 		"WriteProcessGraph": true,
 		"TargetImageSpace": "MNI152NLin2009cAsym",
+		"TargetTasks": [],
 		"ProcessingSteps": [
 			"SpatialSmoothing",
 			"TemporalFiltering",

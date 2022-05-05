@@ -501,15 +501,33 @@ def _create_image_submission_strings(subject_id, bids, bids_dir, fmriprep_dir, p
     
     # Find the subject's images to run post_proc on
     try:
+        images_to_process = []
+
         image_space = postprocessing_config["TargetImageSpace"]
         logger.info(f"Target image space: {image_space}")
 
-        images_to_process = bids.get(
-            subject=subject_id, extension="nii.gz", datatype="func", 
-            suffix="bold", desc="preproc", scope="derivatives", space=image_space)
+        try:
+            tasks = postprocessing_config["TargetTasks"]
+        except KeyError:
+            logger.warn("Postprocessing configuration setting 'TargetTasks' not set. Defaulting to all tasks.")
+            tasks = None
+        # If the list is empty, assume we are processing all tasks
+        if not tasks:
+            tasks = "ALL"
+            logger.info(f"Targeting all available tasks.")
+
+            images_to_process = bids.get(
+                subject=subject_id, extension="nii.gz", datatype="func", 
+                suffix="bold", desc="preproc", scope="derivatives", space=image_space)
+        else:
+            logger.info(f"Targeting task(s): {tasks}")
+
+            images_to_process = bids.get(
+                    subject=subject_id, task=tasks, extension="nii.gz", datatype="func", 
+                    suffix="bold", desc="preproc", scope="derivatives", space=image_space)
 
         if len(images_to_process) == 0:
-            raise NoImagesFoundError(f"No preproc BOLD images found for sub-{subject_id} in space {image_space}.")
+            raise NoImagesFoundError(f"No preproc BOLD images found for sub-{subject_id} in space {image_space}, task(s): {str(tasks)}.")
 
         logger.info(f"Found images: {len(images_to_process)}")
         logger.info(f"Building image jobs")
