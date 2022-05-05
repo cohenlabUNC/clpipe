@@ -21,9 +21,11 @@ RESCALING_100_VOXELMEAN = "voxelmean_100"
 NORMALIZATION_METHODS = (RESCALING_10000_GLOBALMEDIAN, RESCALING_100_VOXELMEAN)
 CONFOUND_STEPS = {"TemporalFiltering", "AROMARegression"}
 
+
 class AlgorithmNotFoundError(ValueError):
     pass
-    
+
+
 def build_postprocessing_workflow(postprocessing_config: dict, in_file: os.PathLike=None, out_file:os.PathLike=None,
     name:str = "Postprocessing_Pipeline", processing_steps: list=None, mask_file: os.PathLike=None, mixing_file: os.PathLike=None, 
     noise_file: os.PathLike=None, confound_file: os.PathLike = None, tr: int = None,
@@ -140,6 +142,7 @@ def build_postprocessing_workflow(postprocessing_config: dict, in_file: os.PathL
 
     return postproc_wf
 
+
 def build_confound_postprocessing_workflow(postprocessing_config: dict, confound_file: os.PathLike=None, 
     out_file: os.PathLike=None, mixing_file: os.PathLike=None, noise_file: os.PathLike=None, tr: int = None,
     name:str = "Confound_Postprocessing_Pipeline", processing_steps: list=None, column_names: list=None,
@@ -208,6 +211,7 @@ def build_confound_postprocessing_workflow(postprocessing_config: dict, confound
 
     return confounds_wf
 
+
 def _tsv_select_columns(tsv_file, column_names):
     # Imports must be in function for running as node
     import pandas as pd
@@ -223,6 +227,7 @@ def _tsv_select_columns(tsv_file, column_names):
     df.to_csv(tsv_subset_file, sep="\t", index=False)
 
     return str(tsv_subset_file.absolute())
+
 
 def _tsv_replace_nas_with_column_mean(tsv_file):
     # Imports must be in function for running as node
@@ -280,6 +285,7 @@ def _tsv_to_nii(tsv_file):
 
     return str(nii_path.absolute())
 
+
 def _nii_to_tsv(nii_file, tsv_file):
     # Imports must be in function for running as node
     import numpy as np
@@ -304,6 +310,7 @@ def _nii_to_tsv(nii_file, tsv_file):
     np.savetxt(tsv_file, transposed_matrix, delimiter='\t')
     return tsv_file
 
+
 def _getTemporalFilterAlgorithm(algorithmName):
     if algorithmName == "Butterworth":
         return build_butterworth_filter_workflow
@@ -312,17 +319,20 @@ def _getTemporalFilterAlgorithm(algorithmName):
     else:
         raise AlgorithmNotFoundError(f"Temporal filtering algorithm not found: {algorithmName}")
 
+
 def _getIntensityNormalizationAlgorithm(algorithmName):
     if algorithmName == "10000_GlobalMedian":
         return build_10000_global_median_workflow
     else:
         raise AlgorithmNotFoundError(f"Intensity normalization algorithm not found: {algorithmName}")
 
+
 def _getSpatialSmoothingAlgorithm(algorithmName):
     if algorithmName == "SUSAN":
         return build_SUSAN_workflow
     else:
         raise AlgorithmNotFoundError(f"Spatial smoothing algorithm not found: {algorithmName}")
+
 
 def _getAROMARegressionAlgorithm(algorithmName):
     if algorithmName == "fsl_regfilt":
@@ -332,6 +342,7 @@ def _getAROMARegressionAlgorithm(algorithmName):
     else:
         raise AlgorithmNotFoundError(f"AROMA regression algorithm not found: {algorithmName}")
 
+
 def _getConfoundRegressionAlgorithm(algorithmName):
     if algorithmName == "fsl_glm":
         return build_confound_regression_fsl_glm_workflow
@@ -339,6 +350,7 @@ def _getConfoundRegressionAlgorithm(algorithmName):
         return build_confound_regression_afni_3dTproject
     else:
         raise AlgorithmNotFoundError(f"Confound regression algorithm not found: {algorithmName}")
+
 
 def build_10000_global_median_workflow(in_file: os.PathLike=None, out_file:os.PathLike=None,
         mask_file: os.PathLike=None, base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None):
@@ -382,6 +394,7 @@ def build_10000_global_median_workflow(in_file: os.PathLike=None, out_file:os.Pa
     
     return workflow
 
+
 def build_100_voxel_mean_workflow(in_file: os.PathLike=None, out_file: os.PathLike=None, base_dir: os.PathLike=None,
     crashdump_dir: os.PathLike=None):
     """Perform intensity normalization using the 100 voxel mean method.
@@ -415,6 +428,7 @@ def build_100_voxel_mean_workflow(in_file: os.PathLike=None, out_file: os.PathLi
     workflow.connect(mean_node, "out_file",  div_mean_node, "operand_file")
 
     return workflow
+
 
 def build_SUSAN_workflow(in_file: os.PathLike=None, mask_path: os.PathLike=None, fwhm_mm: int=6, out_file: os.PathLike=None, 
     base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None):
@@ -489,11 +503,14 @@ def build_SUSAN_workflow(in_file: os.PathLike=None, mask_path: os.PathLike=None,
         
     return workflow
     
+
 def _calc_susan_threshold(median_intensity, p2_intensity):
     return (median_intensity - p2_intensity) * .75
 
+
 def _setup_usans_input(tmean_image, susan_threshold):
     return [(tmean_image, susan_threshold)]
+
 
 def build_butterworth_filter_workflow(hp: float, lp: float, tr: float, order: float=None, in_file: os.PathLike=None, 
     out_file: os.PathLike=None, base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None):
@@ -519,6 +536,7 @@ def build_butterworth_filter_workflow(hp: float, lp: float, tr: float, order: fl
     workflow.connect(butterworth_node, "out_file", output_node, "out_file")
 
     return workflow
+
 
 def build_fslmath_temporal_filter(hp: float, lp: float, tr: float, order: float=None, in_file: os.PathLike=None, 
     out_file: os.PathLike=None, base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None):
@@ -558,6 +576,7 @@ def build_fslmath_temporal_filter(hp: float, lp: float, tr: float, order: float=
 
     return workflow
 
+
 def build_confound_regression_fsl_glm_workflow(in_file: os.PathLike=None, out_file: os.PathLike=None, confound_file: os.PathLike=None, mask_file: os.PathLike=None,
     base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None):
     #TODO: This function currently returns an empy image
@@ -588,6 +607,7 @@ def build_confound_regression_fsl_glm_workflow(in_file: os.PathLike=None, out_fi
         workflow.connect(input_node, "mask_file", regressor_node, "mask")
 
     return workflow
+
 
 def build_confound_regression_afni_3dTproject(in_file: os.PathLike=None, out_file: os.PathLike=None, confound_file: os.PathLike=None, mask_file: os.PathLike=None,
     base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None):
@@ -661,6 +681,7 @@ def build_aroma_workflow_fsl_regfilt(in_file: os.PathLike=None, out_file: os.Pat
 
     return workflow
 
+
 def build_aroma_workflow_fsl_regfilt_R(in_file: os.PathLike=None, out_file: os.PathLike=None, mixing_file: os.PathLike=None, noise_file: os.PathLike=None,  
     mask_file=None, base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None):
 
@@ -694,6 +715,7 @@ def build_aroma_workflow_fsl_regfilt_R(in_file: os.PathLike=None, out_file: os.P
 
     return workflow
 
+
 def build_resample_workflow(reference_image:os.PathLike=None, in_file: os.PathLike=None, 
     out_file: os.PathLike=None, base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None):
     
@@ -721,6 +743,7 @@ def build_resample_workflow(reference_image:os.PathLike=None, in_file: os.PathLi
     workflow.connect(resample_node, "out_file", output_node, "out_file")
 
     return workflow
+
 
 def _csv_to_list(csv_file):
     # Imports must be in function for running as node
