@@ -286,7 +286,7 @@ def _tsv_to_nii(tsv_file):
     return str(nii_path.absolute())
 
 
-def _nii_to_tsv(nii_file, tsv_file):
+def _nii_to_tsv(nii_file, tsv_file=None):
     # Imports must be in function for running as node
     import numpy as np
     import nibabel as nib
