@@ -107,8 +107,8 @@ def postprocess_subject_controller(subject_id, bids_dir, fmriprep_dir, output_di
 
     config = _parse_config(config_file)
     config_file = Path(config_file)
-    
-    postprocessing_config = _get_postprocessing_config(config)
+
+    postprocessing_config = _fetch_postprocessing_stream_config(config, output_dir, processing_stream=processing_stream)
 
     batch_manager = None
     if batch:
@@ -141,32 +141,12 @@ def postprocess_image_controller(config_file, subject_id, task, run, image_space
     config = _parse_config(config_file)
     config_file = Path(config_file)
 
-    postprocessing_config = _get_postprocessing_config(config)
-    postprocessing_config = _postprocessing_config_apply_processing_stream(config, processing_stream)
+    postprocessing_config = _fetch_postprocessing_stream_config(config, Path(subject_out_dir).parent.parent, processing_stream=processing_stream)
 
     build_and_run_image_workflow(postprocessing_config, subject_id, task, run, image_space, image_path, bids_dir, fmriprep_dir, pybids_db_path,
         subject_out_dir, working_dir, log_dir)
    
     sys.exit()
-
-
-def _write_processing_description_file(postprocessing_config: dict, output_dir: os.PathLike):
-    processing_description_file = output_dir / PROCESSING_DESCRIPTION_FILE_NAME
-
-    processing_steps = postprocessing_config["ProcessingSteps"]
-    processing_step_options = postprocessing_config["ProcessingStepOptions"]
-    processing_step_options_reference = processing_step_options.copy()
-    confound_options = postprocessing_config["ConfoundOptions"]
-
-    # Remove processing options not used
-    for step_option in processing_step_options_reference.keys():
-        if step_option not in processing_steps:
-            processing_step_options.pop(step_option)
-    if not confound_options["Include"]:
-        postprocessing_config.pop('ConfoundOptions')
-
-    with open(processing_description_file, 'w') as file_to_write:
-        json.dump(postprocessing_config, file_to_write, indent=4)
 
 
 def distribute_subject_jobs(bids_dir, fmriprep_dir, output_dir: os.PathLike, config_file: os.PathLike, processing_stream:str=DEFAULT_PROCESSING_STREAM_NAME,
@@ -446,8 +426,44 @@ def _draw_graph(wf, graph_name, out_dir, graph_style="colored", logger=None):
     graph_image_path.unlink()
 
 
-def _postprocessing_config_apply_processing_stream(config: dict, processing_stream:str=DEFAULT_PROCESSING_STREAM_NAME):
+def _fetch_postprocessing_stream_config(config: dict, output_dir: os.PathLike, processing_stream:str=DEFAULT_PROCESSING_STREAM_NAME):
+    """
+    The postprocessing stream config is a subset of the main configuration's postprocessing config, based on
+    selections made in the processing streams config.
 
+    This stream postprocessing config is saved as a seperate configuration file at the level of the output folder / stream folder and
+    is referred to by the workflow builders.
+    """
+    
+    postprocessing_description_file = Path(output_dir) / PROCESSING_DESCRIPTION_FILE_NAME
+    if not postprocessing_description_file.exists():
+        postprocessing_config = _postprocessing_config_apply_processing_stream(config, processing_stream=processing_stream)
+        _write_processing_description_file(postprocessing_config, postprocessing_description_file, output_dir)
+    else:
+        with open(postprocessing_description_file) as stream_config:
+            postprocessing_config = json.load(stream_config)
+
+    return postprocessing_config
+
+
+def _write_processing_description_file(postprocessing_config: dict, processing_description_file: os.PathLike, output_dir: os.PathLike):
+    processing_steps = postprocessing_config["ProcessingSteps"]
+    processing_step_options = postprocessing_config["ProcessingStepOptions"]
+    processing_step_options_reference = processing_step_options.copy()
+    confound_options = postprocessing_config["ConfoundOptions"]
+
+    # Remove processing options not used
+    for step_option in processing_step_options_reference.keys():
+        if step_option not in processing_steps:
+            processing_step_options.pop(step_option)
+    if not confound_options["Include"]:
+        postprocessing_config.pop('ConfoundOptions')
+
+    with open(processing_description_file, 'w') as file_to_write:
+        json.dump(postprocessing_config, file_to_write, indent=4)
+
+
+def _postprocessing_config_apply_processing_stream(config: dict, processing_stream:str=DEFAULT_PROCESSING_STREAM_NAME):
     postprocessing_config = _get_postprocessing_config(config)
     processing_streams = _get_processing_streams(config)
     
