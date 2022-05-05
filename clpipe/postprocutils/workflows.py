@@ -146,8 +146,9 @@ def build_confound_postprocessing_workflow(postprocessing_config: dict, confound
     base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None):
     
     # Force use of the R variant of fsl_regfilt for confounds
-    postprocessing_config = copy.deepcopy(postprocessing_config)
-    postprocessing_config["ProcessingStepOptions"]["AROMARegression"]["Algorithm"] = "fsl_regfilt_R"
+    if "AROMARegression" in postprocessing_config["ProcessingSteps"]:
+        postprocessing_config = copy.deepcopy(postprocessing_config)
+        postprocessing_config["ProcessingStepOptions"]["AROMARegression"]["Algorithm"] = "fsl_regfilt_R"
 
     confounds_wf = pe.Workflow(name=name, base_dir=base_dir)
     if crashdump_dir is not None:
