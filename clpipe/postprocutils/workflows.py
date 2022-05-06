@@ -178,7 +178,8 @@ def build_confound_postprocessing_workflow(postprocessing_config: dict, confound
     tsv_select_node = pe.Node(Function(input_names=["tsv_file", "column_names"], output_names=["tsv_subset_file"], function=_tsv_select_columns), name="tsv_select_columns")
     tsv_replace_nas_node = pe.Node(Function(input_names=["tsv_file"], output_names=["tsv_no_na"], function=_tsv_replace_nas_with_column_mean), name="tsv_replace_nas")
     tsv_to_nii_node = pe.Node(Function(input_names=["tsv_file"], output_names=["nii_file"], function=_tsv_to_nii), name="tsv_to_nii")
-    nii_to_tsv_node = pe.Node(Function(input_names=["nii_file", "tsv_file"], output_names=["tsv_file"], function=_nii_to_tsv), name="nii_to_tsv")
+    select_headers_node = pe.Node(Function(input_names=["tsv_file"], output_names=["headers"], function=_tsv_select_headers), name="tsv_select_headers")
+    nii_to_tsv_node = pe.Node(Function(input_names=["nii_file", "tsv_file", "headers"], output_names=["tsv_file"], function=_nii_to_tsv), name="nii_to_tsv")
 
     # Build the inner postprocessing workflow
     postproc_wf = build_postprocessing_workflow(postprocessing_config, processing_steps=confounds_processing_steps, name="Confounds_Apply_Postprocessing", 
@@ -199,12 +200,17 @@ def build_confound_postprocessing_workflow(postprocessing_config: dict, confound
     # Select desired columns from input tsv, replace n/a values with column mean, and convert it to a .nii file
     confounds_wf.connect(tsv_select_node, "tsv_subset_file", tsv_replace_nas_node, "tsv_file")
     confounds_wf.connect(tsv_replace_nas_node, "tsv_no_na", tsv_to_nii_node, "tsv_file")
+    # Grab the headers
+    confounds_wf.connect(tsv_replace_nas_node, "tsv_no_na", select_headers_node, "tsv_file")
     
     # Input the .nii file into the postprocessing workflow
     confounds_wf.connect(tsv_to_nii_node, "nii_file", postproc_wf, "inputnode.in_file")
 
     # Convert the output of the postprocessing workflow back to .tsv format
     confounds_wf.connect(postproc_wf, "outputnode.out_file", nii_to_tsv_node, "nii_file")
+
+    # Reattach the headers
+    confounds_wf.connect(select_headers_node, "headers", nii_to_tsv_node, "headers")
     
     # Setup output
     confounds_wf.connect(nii_to_tsv_node, "tsv_file", output_node, "out_file")
@@ -252,6 +258,14 @@ def _tsv_replace_nas_with_column_mean(tsv_file):
     return str(tsv_subset_file.absolute())
 
 
+def _tsv_select_headers(tsv_file):
+    import pandas as pd
+
+    df = pd.read_csv(tsv_file, sep="\t")
+    
+    return list(df.columns)
+
+
 def _tsv_to_nii(tsv_file):
     # Imports must be in function for running as node
     import pandas as pd
@@ -286,9 +300,10 @@ def _tsv_to_nii(tsv_file):
     return str(nii_path.absolute())
 
 
-def _nii_to_tsv(nii_file, tsv_file=None):
+def _nii_to_tsv(nii_file, tsv_file=None, headers=None):
     # Imports must be in function for running as node
     import numpy as np
+    import pandas as pd
     import nibabel as nib
     from pathlib import Path
 
@@ -307,7 +322,9 @@ def _nii_to_tsv(nii_file, tsv_file=None):
         tsv_file = Path(path_stem + ".tsv")
         tsv_file = str(tsv_file.absolute())
 
-    np.savetxt(tsv_file, transposed_matrix, delimiter='\t')
+    transposed_df = pd.DataFrame(transposed_matrix, columns=headers)
+    transposed_df.to_csv(tsv_file, sep="\t", index=False)
+    
     return tsv_file
 
 
