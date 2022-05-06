@@ -456,12 +456,8 @@ def _fetch_postprocessing_stream_config(config: dict, output_dir: os.PathLike, p
     """
     
     postprocessing_description_file = Path(output_dir) / PROCESSING_DESCRIPTION_FILE_NAME
-    if not postprocessing_description_file.exists():
-        postprocessing_config = _postprocessing_config_apply_processing_stream(config, processing_stream=processing_stream)
-        _write_processing_description_file(postprocessing_config, postprocessing_description_file, output_dir)
-    else:
-        with open(postprocessing_description_file) as stream_config:
-            postprocessing_config = json.load(stream_config)
+    postprocessing_config = _postprocessing_config_apply_processing_stream(config, processing_stream=processing_stream)
+    _write_processing_description_file(postprocessing_config, postprocessing_description_file, output_dir)
 
     return postprocessing_config
 
@@ -476,8 +472,6 @@ def _write_processing_description_file(postprocessing_config: dict, processing_d
     for step_option in processing_step_options_reference.keys():
         if step_option not in processing_steps:
             processing_step_options.pop(step_option)
-    if not confound_options["Include"]:
-        postprocessing_config.pop('ConfoundOptions')
 
     with open(processing_description_file, 'w') as file_to_write:
         json.dump(postprocessing_config, file_to_write, indent=4)
