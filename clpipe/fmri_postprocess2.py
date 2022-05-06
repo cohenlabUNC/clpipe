@@ -40,6 +40,9 @@ Workflow Builder & Runner - handles the creation and running of an image process
 
 def postprocess_subjects_controller(subjects=None, config_file=None, bids_dir=None, fmriprep_dir=None, output_dir=None, 
     processing_stream=DEFAULT_PROCESSING_STREAM_NAME, batch=False, submit=False, log_dir=None, pybids_db_path=None, refresh_index=False, debug=False):
+    """
+    Parse configuration and sanitize inputs in preparation for subject job distribution. 
+    """
 
     config = _parse_config(config_file)
     config_file = Path(config_file)
@@ -100,6 +103,9 @@ def postprocess_subjects_controller(subjects=None, config_file=None, bids_dir=No
 
 def postprocess_subject_controller(subject_id, bids_dir, fmriprep_dir, output_dir, config_file, index_dir, batch, submit, 
     log_dir, processing_stream=DEFAULT_PROCESSING_STREAM_NAME):
+    """
+    Parse configuration and (TODO) sanitize inputs for image job distribution.
+    """
     
     logger = _get_logger("postprocess_subject_controller")
     
@@ -133,6 +139,9 @@ def postprocess_subject_controller(subject_id, bids_dir, fmriprep_dir, output_di
 
 def postprocess_image_controller(config_file, subject_id, task, run, image_space, image_path, bids_dir, fmriprep_dir, 
     pybids_db_path, subject_out_dir, working_dir, log_dir, processing_stream=DEFAULT_PROCESSING_STREAM_NAME):
+    """
+    Parse configuration and (TODO) sanitize inputs for the workflow builder.
+    """
 
     logger = _get_logger("postprocess_image_controller")
 
@@ -151,6 +160,9 @@ def postprocess_image_controller(config_file, subject_id, task, run, image_space
 
 def distribute_subject_jobs(bids_dir, fmriprep_dir, output_dir: os.PathLike, config_file: os.PathLike, processing_stream:str=DEFAULT_PROCESSING_STREAM_NAME,
     submit=False, batch_manager=None,subjects_to_process=None, log_dir: os.PathLike=None, pybids_db_path: os.PathLike=None, refresh_index=False):
+    """
+    Prepare arguments to be passed to the subject submission string creator.
+    """
 
     logger = _get_logger("distribute_subject_jobs")
     _add_file_handler(logger, log_dir, 'postprocess.log')
@@ -165,6 +177,8 @@ def distribute_subject_jobs(bids_dir, fmriprep_dir, output_dir: os.PathLike, con
         if not output_dir.exists():
             output_dir.mkdir()
 
+        # TODO
+        # I think this is replaceable by _fetch_postprocessing_stream_config
         postprocessing_config = _get_postprocessing_config(config)
         postprocessing_config = _postprocessing_config_apply_processing_stream(config, processing_stream)
         _write_processing_description_file(postprocessing_config, output_dir)
@@ -182,6 +196,9 @@ def distribute_subject_jobs(bids_dir, fmriprep_dir, output_dir: os.PathLike, con
 def distribute_image_jobs(subject_id: str, bids_dir: os.PathLike, fmriprep_dir: os.PathLike, out_dir: os.PathLike, postprocessing_config: dict,
     config_file: os.PathLike, pybids_db_path: os.PathLike=None, submit=False, batch_manager=None, log_dir: os.PathLike=None, 
     processing_stream=DEFAULT_PROCESSING_STREAM_NAME):
+    """
+    Sanitize paramters before passing into image submission string creator.
+    """
 
     logger = _get_logger(f"distribute_image_jobs_sub-{subject_id}")
     
@@ -229,6 +246,9 @@ def distribute_image_jobs(subject_id: str, bids_dir: os.PathLike, fmriprep_dir: 
 
 def build_and_run_image_workflow(postprocessing_config, subject_id, task, run, image_space, image_path, bids_dir, fmriprep_dir, 
     pybids_db_path, subject_out_dir, working_dir, log_dir):
+    """
+    Setup the workflows specified in the postprocessing configuration.
+    """
     
     image_path = Path(image_path)
     working_dir = Path(working_dir)
