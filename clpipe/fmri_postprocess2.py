@@ -114,7 +114,7 @@ def postprocess_subject_controller(subject_id, bids_dir, fmriprep_dir, output_di
     config = _parse_config(config_file)
     config_file = Path(config_file)
 
-    postprocessing_config = _fetch_postprocessing_stream_config(config, output_dir, processing_stream=processing_stream)
+    postprocessing_config = _fetch_postprocessing_stream_config(config, Path(output_dir) / processing_stream, processing_stream=processing_stream)
 
     batch_manager = None
     if batch:
@@ -289,12 +289,17 @@ def build_and_run_image_workflow(postprocessing_config, subject_id, task, run, i
     logger.info(f"Postprocessing workflow complete for image: {image_file_name}")
 
     if confounds is not None and postprocessing_config["ConfoundOptions"]["Include"]:
-        confounds_wf = _setup_confounds_wf(postprocessing_config, pipeline_name, tr, confounds,
-            subject_out_dir, working_dir, log_dir, logger, mixing_file=mixing_file, noise_file=noise_file)
-
         logger.info("Postprocessing confounds")
-        confounds_wf.run()
-        logger.info("Confounds postprocessing completed")
+
+        try:
+            confounds_wf = _setup_confounds_wf(postprocessing_config, pipeline_name, tr, confounds,
+                subject_out_dir, working_dir, log_dir, logger, mixing_file=mixing_file, noise_file=noise_file)
+            confounds_wf.run()
+            logger.info("Confounds postprocessing completed")
+        except ValueError as ve:
+            logger.warn(ve)
+            logger.warn("Skipping confounds processing")
+            
 
     elif postprocessing_config["ConfoundOptions"]["Include"]:
         logger.warn(f"Confounds processing was requested but skipped because the confounds file could not be found")
@@ -419,21 +424,18 @@ def _setup_confounds_wf(postprocessing_config, pipeline_name, tr, confounds, out
     
     logger.info(f"Postprocessed confound out file: {confound_out_file}")
 
-    try:
-        confounds_wf = build_confound_postprocessing_workflow(postprocessing_config, confound_file = confounds,
-            out_file=confound_out_file, tr=tr,
-            name=f"{pipeline_name}_Confound_Postprocessing_Pipeline",
-            mixing_file=mixing_file, noise_file=noise_file,
-            base_dir=working_dir, crashdump_dir=log_dir)
+    confounds_wf = build_confound_postprocessing_workflow(postprocessing_config, confound_file = confounds,
+        out_file=confound_out_file, tr=tr,
+        name=f"{pipeline_name}_Confound_Postprocessing_Pipeline",
+        mixing_file=mixing_file, noise_file=noise_file,
+        base_dir=working_dir, crashdump_dir=log_dir)
 
-        # Draw the confound workflow's process graph if requested in config
-        if postprocessing_config["WriteProcessGraph"]:
-            stream_level_dir = Path(out_dir).parent.parent
-            _draw_graph(confounds_wf, "confounds_processsing_graph", stream_level_dir, logger=logger)
-            
-    except ValueError as ve:
-        logger.warn(ve)
-        logger.warn("Skipping confounds processing")
+    # Draw the confound workflow's process graph if requested in config
+    if postprocessing_config["WriteProcessGraph"]:
+        stream_level_dir = Path(out_dir).parent.parent
+        _draw_graph(confounds_wf, "confounds_processsing_graph", stream_level_dir, logger=logger)
+
+    return confounds_wf
 
 
 def _draw_graph(wf, graph_name, out_dir, graph_style="colored", logger=None):
