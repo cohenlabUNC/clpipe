@@ -13,13 +13,13 @@ from nipype.interfaces.fsl import SUSAN, FLIRT
 from nipype.interfaces.utility import Function, Merge, IdentityInterface
 import nipype.pipeline.engine as pe
 
-from .nodes import build_input_node, build_output_node, ButterworthFilter, RegressAromaR
+from .nodes import build_input_node, build_output_node, ButterworthFilter, RegressAromaR, ImageSlice
 import clpipe.postprocutils.r_setup
 
 RESCALING_10000_GLOBALMEDIAN = "globalmedian_10000"
 RESCALING_100_VOXELMEAN = "voxelmean_100"
 NORMALIZATION_METHODS = (RESCALING_10000_GLOBALMEDIAN, RESCALING_100_VOXELMEAN)
-CONFOUND_STEPS = {"TemporalFiltering", "AROMARegression"}
+CONFOUND_STEPS = {"TemporalFiltering", "AROMARegression", "DropTimepoints"}
 
 
 class AlgorithmNotFoundError(ValueError):
@@ -115,6 +115,12 @@ def build_postprocessing_workflow(postprocessing_config: dict, in_file: os.PathL
             except ValueError:
                 current_wf = confound_regression_algorithm(mask_file=mask_file, confound_file=confound_file, base_dir=postproc_wf.base_dir, crashdump_dir=crashdump_dir)
 
+        elif step == "DropTimepoints":
+            drop_from_beginning = postprocessing_config["ProcessingStepOptions"][step]["FromEnd"]
+            drop_from_end = postprocessing_config["ProcessingStepOptions"][step]["FromBeginning"]
+
+            current_wf = build_drop_timepoints_workflow(drop_from_beginning=drop_from_beginning, drop_from_end=drop_from_end, 
+                base_dir=postproc_wf.base_dir, crashdump_dir=crashdump_dir)
         
         elif step == "Resample":
             reference_image = postprocessing_config["ProcessingStepOptions"][step]["ReferenceImage"]
@@ -729,6 +735,31 @@ def build_aroma_workflow_fsl_regfilt_R(in_file: os.PathLike=None, out_file: os.P
     workflow.connect(input_node, "mixing_file", regfilt_R_node, "mixing_file")
     workflow.connect(input_node, "noise_file", regfilt_R_node, "noise_file")
     workflow.connect(regfilt_R_node, "out_file", output_node, "out_file")
+
+    return workflow
+
+
+def build_drop_timepoints_workflow(in_file: os.PathLike=None, 
+    out_file: os.PathLike=None, drop_from_beginning=None, drop_from_end=None, base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None):
+    workflow = pe.Workflow(name="Drop_Timepoints", base_dir=base_dir)
+    if crashdump_dir is not None:
+        workflow.config['execution']['crashdump_dir'] = crashdump_dir
+
+    # Setup identity (pass through) input/output nodes
+    input_node = build_input_node()
+    output_node = build_output_node()
+
+    slicer_node = pe.Node(ImageSlice(drop_from_beginning=drop_from_beginning, drop_from_end=drop_from_end), name="slicer_node")
+    
+    # Set WF inputs and outputs
+    if in_file:
+        input_node.inputs.in_file = in_file
+    if out_file:
+        input_node.inputs.out_file = out_file
+
+    workflow.connect(input_node, "in_file", slicer_node, "in_file")
+    workflow.connect(input_node, "out_file", slicer_node, "out_file")
+    workflow.connect(slicer_node, "out_file", output_node, "out_file")
 
     return workflow
 
