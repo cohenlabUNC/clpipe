@@ -115,11 +115,11 @@ def build_postprocessing_workflow(postprocessing_config: dict, in_file: os.PathL
             except ValueError:
                 current_wf = confound_regression_algorithm(mask_file=mask_file, confound_file=confound_file, base_dir=postproc_wf.base_dir, crashdump_dir=crashdump_dir)
 
-        elif step == "DropTimepoints":
-            drop_from_beginning = postprocessing_config["ProcessingStepOptions"][step]["FromEnd"]
-            drop_from_end = postprocessing_config["ProcessingStepOptions"][step]["FromBeginning"]
+        elif step == "TrimTimepoints":
+            trim_from_beginning = postprocessing_config["ProcessingStepOptions"][step]["FromEnd"]
+            trim_from_end = postprocessing_config["ProcessingStepOptions"][step]["FromBeginning"]
 
-            current_wf = build_drop_timepoints_workflow(drop_from_beginning=drop_from_beginning, drop_from_end=drop_from_end, 
+            current_wf = build_trim_timepoints_workflow(trim_from_beginning=trim_from_beginning, trim_from_end=trim_from_end, 
                 base_dir=postproc_wf.base_dir, crashdump_dir=crashdump_dir)
         
         elif step == "Resample":
@@ -739,9 +739,9 @@ def build_aroma_workflow_fsl_regfilt_R(in_file: os.PathLike=None, out_file: os.P
     return workflow
 
 
-def build_drop_timepoints_workflow(in_file: os.PathLike=None, 
-    out_file: os.PathLike=None, drop_from_beginning=None, drop_from_end=None, base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None):
-    workflow = pe.Workflow(name="Drop_Timepoints", base_dir=base_dir)
+def build_trim_timepoints_workflow(in_file: os.PathLike=None, 
+    out_file: os.PathLike=None, trim_from_beginning=None, trim_from_end=None, base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None):
+    workflow = pe.Workflow(name="Trim_Timepoints", base_dir=base_dir)
     if crashdump_dir is not None:
         workflow.config['execution']['crashdump_dir'] = crashdump_dir
 
@@ -749,7 +749,7 @@ def build_drop_timepoints_workflow(in_file: os.PathLike=None,
     input_node = build_input_node()
     output_node = build_output_node()
 
-    slicer_node = pe.Node(ImageSlice(drop_from_beginning=drop_from_beginning, drop_from_end=drop_from_end), name="slicer_node")
+    slicer_node = pe.Node(ImageSlice(trim_from_beginning=trim_from_beginning, trim_from_end=trim_from_end), name="slicer_node")
     
     # Set WF inputs and outputs
     if in_file:

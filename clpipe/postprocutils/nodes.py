@@ -84,9 +84,9 @@ class RegressAromaR(CommandLine):
 
 class ImageSliceInputSpec(BaseInterfaceInputSpec):
     in_file = File(exists=True, desc='Image to be sliced', mandatory=False)
-    drop_from_beginning = traits.Int(desc='Number of volumes to crop from beginning of timeseries.',
+    trim_from_beginning = traits.Int(desc='Number of volumes to crop from beginning of timeseries.',
                              mandatory=False, default_value=0)
-    drop_from_end = traits.Int(desc='Number of volumes to crop from end of timeseries.',
+    trim_from_end = traits.Int(desc='Number of volumes to crop from end of timeseries.',
                              mandatory=False, default_value=0)
     out_file = File(mandatory=False)
 
@@ -102,7 +102,7 @@ class ImageSlice(BaseInterface):
         img = nb.load(fname)
 
         # If user asked to drop first 5 volumes, we drop indexes 0:4, so we want to start on volume 5
-        start_index=self.inputs.drop_from_beginning
+        start_index=self.inputs.trim_from_beginning
         # Convert to a negative index to get last N volumes. If users wants to drop last 5 volumes, we'd drop indexes
         #   (last - 5):last
         #
@@ -111,7 +111,7 @@ class ImageSlice(BaseInterface):
         #   last 7 indexes: 50, 51, 52, 53, 54, 55, 56, 57
         #   after drop: 50, 51, 52
         #   calculation of new end index: (5 * -1) = -5, 57 - 5 = 52
-        end_index=self.inputs.drop_from_end * -1
+        end_index=self.inputs.trim_from_end * -1
 
         # Not using drop_from_beginning will work with a start_index of 0, 
         #   however end_index as 0 will not work the same way, so it must be omitted from the slice
