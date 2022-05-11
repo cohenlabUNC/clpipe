@@ -99,6 +99,10 @@
 			"Resample":{
 				"ReferenceImage": "SET REFERENCE IMAGE"
 			},
+			"TrimTimepoints": {
+				"FromEnd": 0,
+				"FromBeginning": 0
+			},
 			"ConfoundRegression": {
 				"Algorithm": "afni_3dTproject",
 				"Columns": ["csf", "csf_derivative1", "white_matter", "white_matter_derivative1"],
