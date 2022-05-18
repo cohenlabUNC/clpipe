@@ -112,6 +112,14 @@
 		"ConfoundOptions": {
 			"Include": false,
 			"Columns": ["csf", "csf_derivative1", "white_matter", "white_matter_derivative1"],
+			"MotionOutliers": {
+				"Include": true,
+				"ScrubVar": "framewise_displacement",
+				"Threshold": 0.9,
+				"ScrubAhead": 0,
+				"ScrubBehind": 0,
+				"ScrubContiguous": 0
+			},
 			"ProcessedConfoundsSuffix": "postprocessed"
 		},
 		"BatchOptions": {
