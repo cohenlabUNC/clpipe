@@ -15,11 +15,11 @@ import nipype.pipeline.engine as pe
 
 from .nodes import build_input_node, build_output_node, ButterworthFilter, RegressAromaR, ImageSlice
 import clpipe.postprocutils.r_setup
+from clpipe.postprocutils.confounds_workflows import build_confound_postprocessing_workflow
 
 RESCALING_10000_GLOBALMEDIAN = "globalmedian_10000"
 RESCALING_100_VOXELMEAN = "voxelmean_100"
 NORMALIZATION_METHODS = (RESCALING_10000_GLOBALMEDIAN, RESCALING_100_VOXELMEAN)
-CONFOUND_STEPS = {"TemporalFiltering", "AROMARegression", "DropTimepoints"}
 
 
 class AlgorithmNotFoundError(ValueError):
@@ -28,7 +28,7 @@ class AlgorithmNotFoundError(ValueError):
 
 def build_postprocessing_workflow(postprocessing_config: dict, in_file: os.PathLike=None, out_file:os.PathLike=None,
     name:str = "Postprocessing_Pipeline", processing_steps: list=None, mask_file: os.PathLike=None, mixing_file: os.PathLike=None, 
-    noise_file: os.PathLike=None, confound_file: os.PathLike = None, tr: int = None,
+    noise_file: os.PathLike=None, confound_file: os.PathLike = None, tr: float = None,
     base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None):
     
     postproc_wf = pe.Workflow(name=name, base_dir=base_dir)
@@ -147,191 +147,6 @@ def build_postprocessing_workflow(postprocessing_config: dict, in_file: os.PathL
         prev_wf = current_wf
 
     return postproc_wf
-
-
-def build_confound_postprocessing_workflow(postprocessing_config: dict, confound_file: os.PathLike=None, 
-    out_file: os.PathLike=None, mixing_file: os.PathLike=None, noise_file: os.PathLike=None, tr: int = None,
-    name:str = "Confound_Postprocessing_Pipeline", processing_steps: list=None, column_names: list=None,
-    base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None):
-    
-    # Force use of the R variant of fsl_regfilt for confounds
-    if "AROMARegression" in postprocessing_config["ProcessingSteps"]:
-        postprocessing_config = copy.deepcopy(postprocessing_config)
-        postprocessing_config["ProcessingStepOptions"]["AROMARegression"]["Algorithm"] = "fsl_regfilt_R"
-
-    confounds_wf = pe.Workflow(name=name, base_dir=base_dir)
-    if crashdump_dir is not None:
-        confounds_wf.config['execution']['crashdump_dir'] = crashdump_dir
-    
-    if processing_steps is None:
-        processing_steps = postprocessing_config["ProcessingSteps"]
-    if column_names is None:
-        column_names = postprocessing_config["ConfoundOptions"]["Columns"]
-
-    # Select steps that apply to confounds
-    confounds_processing_steps = []
-    for step in processing_steps:
-        if step in CONFOUND_STEPS:
-            confounds_processing_steps.append(step)
-
-    # Reject if no processing steps are applicable to confounds
-    if len(list(confounds_processing_steps)) < 1:
-        raise ValueError("The confounds PostProcess workflow requires at least 1 processing step.") 
-
-    input_node = pe.Node(IdentityInterface(fields=['in_file', 'out_file', 'columns', 'mixing_file', 'noise_file', 'mask_file'], mandatory_inputs=False), name="inputnode")
-    output_node = pe.Node(IdentityInterface(fields=['out_file'], mandatory_inputs=True), name="outputnode")
-
-    tsv_select_node = pe.Node(Function(input_names=["tsv_file", "column_names"], output_names=["tsv_subset_file"], function=_tsv_select_columns), name="tsv_select_columns")
-    tsv_replace_nas_node = pe.Node(Function(input_names=["tsv_file"], output_names=["tsv_no_na"], function=_tsv_replace_nas_with_column_mean), name="tsv_replace_nas")
-    tsv_to_nii_node = pe.Node(Function(input_names=["tsv_file"], output_names=["nii_file"], function=_tsv_to_nii), name="tsv_to_nii")
-    select_headers_node = pe.Node(Function(input_names=["tsv_file"], output_names=["headers"], function=_tsv_select_headers), name="tsv_select_headers")
-    nii_to_tsv_node = pe.Node(Function(input_names=["nii_file", "tsv_file", "headers"], output_names=["tsv_file"], function=_nii_to_tsv), name="nii_to_tsv")
-
-    # Build the inner postprocessing workflow
-    postproc_wf = build_postprocessing_workflow(postprocessing_config, processing_steps=confounds_processing_steps, name="Confounds_Apply_Postprocessing", 
-        mixing_file=mixing_file, noise_file=noise_file, tr=tr)
-
-    if confound_file:
-        input_node.inputs.in_file = confound_file
-    if out_file:
-        input_node.inputs.out_file = out_file
-
-    input_node.inputs.column_names = column_names
-
-    # Setup input connections
-    confounds_wf.connect(input_node, "in_file", tsv_select_node, "tsv_file")
-    confounds_wf.connect(input_node, "column_names", tsv_select_node, "column_names")
-    confounds_wf.connect(input_node, "out_file", nii_to_tsv_node, "tsv_file")
-
-    # Select desired columns from input tsv, replace n/a values with column mean, and convert it to a .nii file
-    confounds_wf.connect(tsv_select_node, "tsv_subset_file", tsv_replace_nas_node, "tsv_file")
-    confounds_wf.connect(tsv_replace_nas_node, "tsv_no_na", tsv_to_nii_node, "tsv_file")
-    # Grab the headers
-    confounds_wf.connect(tsv_replace_nas_node, "tsv_no_na", select_headers_node, "tsv_file")
-    
-    # Input the .nii file into the postprocessing workflow
-    confounds_wf.connect(tsv_to_nii_node, "nii_file", postproc_wf, "inputnode.in_file")
-
-    # Convert the output of the postprocessing workflow back to .tsv format
-    confounds_wf.connect(postproc_wf, "outputnode.out_file", nii_to_tsv_node, "nii_file")
-
-    # Reattach the headers
-    confounds_wf.connect(select_headers_node, "headers", nii_to_tsv_node, "headers")
-    
-    # Setup output
-    confounds_wf.connect(nii_to_tsv_node, "tsv_file", output_node, "out_file")
-
-    return confounds_wf
-
-
-def _tsv_select_columns(tsv_file, column_names):
-    # Imports must be in function for running as node
-    import pandas as pd
-    from pathlib import Path
-
-    df = pd.read_csv(tsv_file, sep="\t")
-    df = df[column_names]
-
-    # Build the output path
-    tsv_file = Path(tsv_file).stem
-    tsv_subset_file = Path(tsv_file + "_subset.tsv")
-
-    df.to_csv(tsv_subset_file, sep="\t", index=False)
-
-    return str(tsv_subset_file.absolute())
-
-
-def _tsv_replace_nas_with_column_mean(tsv_file):
-    # Imports must be in function for running as node
-    import pandas as pd
-    from pathlib import Path
-
-    df = pd.read_csv(tsv_file, sep="\t")
-
-    # Get all of the columns with n/a values
-    na_columns = df.columns[df.isna().any()].tolist()
-
-    # Replace n/a values with column mean
-    for column in na_columns:
-        df[column] = df[column].fillna(df[column].mean())
-
-    # Build the output path
-    tsv_file = Path(tsv_file).stem
-    tsv_subset_file = Path(tsv_file + "_replace-nas.tsv")
-
-    df.to_csv(tsv_subset_file, sep="\t", index=False)
-
-    return str(tsv_subset_file.absolute())
-
-
-def _tsv_select_headers(tsv_file):
-    import pandas as pd
-
-    df = pd.read_csv(tsv_file, sep="\t")
-    
-    return list(df.columns)
-
-
-def _tsv_to_nii(tsv_file):
-    # Imports must be in function for running as node
-    import pandas as pd
-    import numpy as np
-    import nibabel as nib
-    from pathlib import Path
-
-    # Read in the confound tsv
-    # skiprows=1 skips the header row
-    df = pd.read_csv(tsv_file, sep="\t")
-    matrix = df.to_numpy()
-
-    # Transpose the matrix so that time is on axis 1
-    transposed_matrix = np.swapaxes(matrix, 0, 1)
-
-    # Pad the input matrix with two extra dimensions so that the confounds are on the
-    # 1st dimension (x) and time is on the 4th dimension - NIFTI standard
-    padded_tensor = np.expand_dims(transposed_matrix, (1, 2))
-
-    # Build an identity affine
-    affine = np.eye(4)
-
-    # Build the output path
-    tsv_file = Path(tsv_file)
-    path_stem = tsv_file.stem
-    nii_path = Path(path_stem + ".nii")
-
-    # Build wrapper NIFTI image
-    image = nib.Nifti1Image(padded_tensor, affine)
-    nib.save(image, nii_path)
-
-    return str(nii_path.absolute())
-
-
-def _nii_to_tsv(nii_file, tsv_file=None, headers=None):
-    # Imports must be in function for running as node
-    import numpy as np
-    import pandas as pd
-    import nibabel as nib
-    from pathlib import Path
-
-    nii_img = nib.load(nii_file)
-    img_data = nii_img.get_fdata()
-
-    # remove the y and z dimension for conversion back to x, time matrix
-    squeezed_img_data = np.squeeze(img_data, (1, 2))
-    # transpose the data back
-    transposed_matrix = np.swapaxes(squeezed_img_data, 0, 1)
-
-    if not tsv_file:
-        # Build the output path
-        nii_file = Path(nii_file)
-        path_stem = nii_file.stem
-        tsv_file = Path(path_stem + ".tsv")
-        tsv_file = str(tsv_file.absolute())
-
-    transposed_df = pd.DataFrame(transposed_matrix, columns=headers)
-    transposed_df.to_csv(tsv_file, sep="\t", index=False)
-    
-    return tsv_file
 
 
 def _getTemporalFilterAlgorithm(algorithmName):
