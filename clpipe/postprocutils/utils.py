@@ -59,6 +59,7 @@ def scrub_setup(fdts, fd_thres=.3, fd_behind=1, fd_ahead=1, fd_contig=3):
     # Populate the 0 vector with 1s representing scrub targets
     scrubVect = [1 if i in scrubTargets else 0 for i, e in enumerate(scrubVect)]
 
+    # Ensure fd_config number of consecutive points
     if fd_contig > 0:
         target = [0] * fd_contig
         contigSets = find_sub_list(target, scrubVect)
