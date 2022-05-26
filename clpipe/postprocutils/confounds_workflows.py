@@ -5,13 +5,12 @@ from typing import List
 from nipype.interfaces.utility import Function, IdentityInterface
 import nipype.pipeline.engine as pe
 
-from clpipe.postprocutils.workflows import build_postprocessing_workflow
-
+from .workflows import build_postprocessing_workflow
 # The list of temporal-based processing steps applicable to confounds
 CONFOUND_STEPS = {"TemporalFiltering", "AROMARegression", "DropTimepoints"}
 
 
-def build_confound_processing_workflow(postprocessing_config: dict, confound_file: os.PathLike=None, 
+def build_confounds_processing_workflow(postprocessing_config: dict, confound_file: os.PathLike=None, 
     out_file: os.PathLike=None, mixing_file: os.PathLike=None, noise_file: os.PathLike=None, tr: float = None,
     name:str = "Confounds_Processing_Pipeline", processing_steps: list=None, column_names: list=None,
     base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None):
