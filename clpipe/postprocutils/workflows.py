@@ -15,7 +15,6 @@ import nipype.pipeline.engine as pe
 
 from .nodes import build_input_node, build_output_node, ButterworthFilter, RegressAromaR, ImageSlice
 import clpipe.postprocutils.r_setup
-from clpipe.postprocutils.confounds_workflows import build_confound_postprocessing_workflow
 
 RESCALING_10000_GLOBALMEDIAN = "globalmedian_10000"
 RESCALING_100_VOXELMEAN = "voxelmean_100"
@@ -103,13 +102,14 @@ def build_postprocessing_workflow(postprocessing_config: dict, in_file: os.PathL
             try:
                 current_wf = confound_regression_algorithm(mask_file=mask_file, base_dir=postproc_wf.base_dir, crashdump_dir=crashdump_dir)
 
+                # TODO: Need to rework this step to operate off independent confounds_postproc_wf, instead of an internal one here
                 # Build a confounds postprocessing workflow to prep confounds for regression
-                confounds_postproc_wf = build_confound_postprocessing_workflow(postprocessing_config,
-                    processing_steps=processing_steps, column_names=column_names,
-                    confound_file=confound_file, mixing_file=mixing_file, noise_file=noise_file, tr=tr,
-                    base_dir=base_dir, crashdump_dir=crashdump_dir)
+                # confounds_postproc_wf = build_confound_postprocessing_workflow(postprocessing_config,
+                #     processing_steps=processing_steps, column_names=column_names,
+                #     confound_file=confound_file, mixing_file=mixing_file, noise_file=noise_file, tr=tr,
+                #     base_dir=base_dir, crashdump_dir=crashdump_dir)
 
-                postproc_wf.connect(confounds_postproc_wf, "outputnode.out_file", current_wf, "inputnode.ort")
+                # postproc_wf.connect(confounds_postproc_wf, "outputnode.out_file", current_wf, "inputnode.ort")
             
             # This is the case that no operations need to be performed on the confounds file
             except ValueError:
