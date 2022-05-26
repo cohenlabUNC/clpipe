@@ -15,7 +15,8 @@ with warnings.catch_warnings():
 from .config_json_parser import ClpipeConfigParser, GLMConfigParser
 from .batch_manager import BatchManager, Job
 from nipype.utils.filemanip import split_filename
-from .postprocutils.workflows import build_postprocessing_workflow, build_confound_postprocessing_workflow
+from .postprocutils.workflows import build_postprocessing_workflow
+from .postprocutils.confounds_workflows import build_confounds_processing_workflow
 from .error_handler import exception_handler
 from .errors import *
 
@@ -245,7 +246,7 @@ def distribute_image_jobs(subject_id: str, bids_dir: os.PathLike, fmriprep_dir: 
 
 
 def build_and_run_image_workflow(postprocessing_config, subject_id, task, run, image_space, image_path, bids_dir, fmriprep_dir, 
-    pybids_db_path, subject_out_dir, working_dir, log_dir):
+    pybids_db_path, subject_out_dir, working_dir, log_dir, confounds_only=True):
     """
     Setup the workflows specified in the postprocessing configuration.
     """
@@ -280,13 +281,14 @@ def build_and_run_image_workflow(postprocessing_config, subject_id, task, run, i
     tr = _get_tr(bids, subject_id, task, run, logger)
     confounds = _get_confounds(bids, subject_id, task, run, logger)
 
-    wf = _setup_workflow(postprocessing_config, pipeline_name, image_file_name, image_path,
-        tr, subject_out_dir, working_dir, log_dir, logger, mask_image=mask_image,
-        confounds=confounds, mixing_file=mixing_file, noise_file=noise_file)
+    if not confounds_only:
+        wf = _setup_workflow(postprocessing_config, pipeline_name, image_file_name, image_path,
+            tr, subject_out_dir, working_dir, log_dir, logger, mask_image=mask_image,
+            confounds=confounds, mixing_file=mixing_file, noise_file=noise_file)
 
-    logger.info(f"Running postprocessing workflow for image: {image_file_name}")
-    wf.run()
-    logger.info(f"Postprocessing workflow complete for image: {image_file_name}")
+        logger.info(f"Running postprocessing workflow for image: {image_file_name}")
+        wf.run()
+        logger.info(f"Postprocessing workflow complete for image: {image_file_name}")
 
     if confounds is not None and postprocessing_config["ConfoundOptions"]["Include"]:
         logger.info("Postprocessing confounds")
@@ -424,7 +426,7 @@ def _setup_confounds_wf(postprocessing_config, pipeline_name, tr, confounds, out
     
     logger.info(f"Postprocessed confound out file: {confound_out_file}")
 
-    confounds_wf = build_confound_postprocessing_workflow(postprocessing_config, confound_file = confounds,
+    confounds_wf = build_confounds_processing_workflow(postprocessing_config, confound_file = confounds,
         out_file=confound_out_file, tr=tr,
         name=f"{pipeline_name}_Confound_Postprocessing_Pipeline",
         mixing_file=mixing_file, noise_file=noise_file,
