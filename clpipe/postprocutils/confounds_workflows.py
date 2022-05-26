@@ -10,7 +10,7 @@ from .workflows import build_postprocessing_workflow
 CONFOUND_STEPS = {"TemporalFiltering", "AROMARegression", "DropTimepoints"}
 
 
-def build_confounds_processing_workflow(postprocessing_config: dict, confound_file: os.PathLike=None, 
+def build_confounds_processing_workflow(postprocessing_config: dict, confounds_file: os.PathLike=None, 
     out_file: os.PathLike=None, mixing_file: os.PathLike=None, noise_file: os.PathLike=None, tr: float = None,
     name:str = "Confounds_Processing_Pipeline", processing_steps: list=None, column_names: list=None,
     base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None):
@@ -55,11 +55,21 @@ def build_confounds_processing_workflow(postprocessing_config: dict, confound_fi
     input_node = pe.Node(IdentityInterface(fields=['in_file', 'out_file', 'columns', 'mixing_file', 'noise_file', 'mask_file'], mandatory_inputs=False), name="inputnode")
     output_node = pe.Node(IdentityInterface(fields=['out_file'], mandatory_inputs=True), name="outputnode")
 
+    # Set WF inputs and outputs
+    if confounds_file:
+        input_node.inputs.in_file = confounds_file
+    if out_file:
+        input_node.inputs.out_file = out_file
+
     # Select any of the postprocessing steps that apply to confounds
     confounds_processing_steps = []
     for step in processing_steps:
         if step in CONFOUND_STEPS:
             confounds_processing_steps.append(step)
+
+    # Setup the confounds file prep workflow
+    current_wf = build_confounds_prep_workflow(column_names, base_dir=base_dir, crashdump_dir=crashdump_dir)
+    confounds_wf.connect(input_node, "in_file", current_wf, "inputnode.in_file")
 
     # Setup postprocessing workflow if any relevant postprocessing steps are included
     if confounds_processing_steps:
@@ -78,6 +88,8 @@ def build_confounds_processing_workflow(postprocessing_config: dict, confound_fi
     else:
         confounds_wf.connect(select_headers_node, "headers", nii_to_tsv_node, "headers")
         confounds_wf.connect(nii_to_tsv_node, "tsv_file", output_node, "out_file")
+
+    confounds_wf.connect(current_wf, "outputnode.out_file", output_node, "out_file")
 
     return confounds_wf
 

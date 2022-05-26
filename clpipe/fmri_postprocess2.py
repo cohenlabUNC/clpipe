@@ -426,7 +426,7 @@ def _setup_confounds_wf(postprocessing_config, pipeline_name, tr, confounds, out
     
     logger.info(f"Postprocessed confound out file: {confound_out_file}")
 
-    confounds_wf = build_confounds_processing_workflow(postprocessing_config, confound_file = confounds,
+    confounds_wf = build_confounds_processing_workflow(postprocessing_config, confounds_file = confounds,
         out_file=confound_out_file, tr=tr,
         name=f"{pipeline_name}_Confound_Postprocessing_Pipeline",
         mixing_file=mixing_file, noise_file=noise_file,
