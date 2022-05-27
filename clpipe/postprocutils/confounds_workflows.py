@@ -3,15 +3,16 @@ import copy
 from typing import List
 
 from nipype.interfaces.utility import Function, IdentityInterface
+from nipype.interfaces.io import ExportFile
 import nipype.pipeline.engine as pe
 
 from .workflows import build_postprocessing_workflow
 # The list of temporal-based processing steps applicable to confounds
-CONFOUND_STEPS = {"TemporalFiltering", "AROMARegression", "DropTimepoints"}
+CONFOUND_STEPS = {"TemporalFiltering", "AROMARegression", "TrimTimepoints"}
 
 
 def build_confounds_processing_workflow(postprocessing_config: dict, confounds_file: os.PathLike=None, 
-    out_file: os.PathLike=None, mixing_file: os.PathLike=None, noise_file: os.PathLike=None, tr: float = None,
+    export_file: os.PathLike=None, mixing_file: os.PathLike=None, noise_file: os.PathLike=None, tr: float = None,
     name:str = "Confounds_Processing_Pipeline", processing_steps: list=None, column_names: list=None,
     base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None):
     """ Builds a processing workflow specifically for a given confounds file. If any temporal postprocessing
@@ -52,14 +53,14 @@ def build_confounds_processing_workflow(postprocessing_config: dict, confounds_f
     if crashdump_dir is not None:
         confounds_wf.config['execution']['crashdump_dir'] = crashdump_dir
        
-    input_node = pe.Node(IdentityInterface(fields=['in_file', 'out_file', 'columns', 'mixing_file', 'noise_file', 'mask_file'], mandatory_inputs=False), name="inputnode")
+    input_node = pe.Node(IdentityInterface(fields=['in_file', 'out_file', 'export_file', 'columns', 'mixing_file', 'noise_file', 'mask_file'], mandatory_inputs=False), name="inputnode")
     output_node = pe.Node(IdentityInterface(fields=['out_file'], mandatory_inputs=True), name="outputnode")
 
     # Set WF inputs and outputs
     if confounds_file:
         input_node.inputs.in_file = confounds_file
-    if out_file:
-        input_node.inputs.out_file = out_file
+    if export_file:
+        input_node.inputs.export_file = export_file
 
     # Select any of the postprocessing steps that apply to confounds
     confounds_processing_steps = []
@@ -73,7 +74,10 @@ def build_confounds_processing_workflow(postprocessing_config: dict, confounds_f
 
     # Setup postprocessing workflow if any relevant postprocessing steps are included
     if confounds_processing_steps:
-       pass
+        prev_wf = current_wf
+        current_wf = build_confounds_postprocessing_workflow(postprocessing_config, confounds_processing_steps, mixing_file, tr,
+            noise_file, base_dir=base_dir, crashdump_dir=crashdump_dir)
+        confounds_wf.connect(prev_wf, "outputnode.out_file", current_wf, "inputnode.in_file")
 
     # Provide motion outlier columns if requested
     if motion_outliers:
@@ -84,18 +88,20 @@ def build_confounds_processing_workflow(postprocessing_config: dict, confounds_f
         scrub_behind = postprocessing_config["ConfoundOptions"]["MotionOutliers"]["ScrubBehind"]
         scrub_contiguous = postprocessing_config["ConfoundOptions"]["MotionOutliers"]["ScrubContiguous"]
 
-        
-    else:
-        confounds_wf.connect(select_headers_node, "headers", nii_to_tsv_node, "headers")
-        confounds_wf.connect(nii_to_tsv_node, "tsv_file", output_node, "out_file")
-
+    confounds_wf.connect(input_node, "out_file", current_wf, "inputnode.out_file")
     confounds_wf.connect(current_wf, "outputnode.out_file", output_node, "out_file")
+
+    if export_file:
+        export_node = pe.Node(ExportFile(out_file=export_file, clobber=True), name="export")
+        confounds_wf.connect(current_wf, "outputnode.out_file", export_node, "in_file")
+    
 
     return confounds_wf
 
 
 def build_confounds_prep_workflow(column_names: List, in_file: os.PathLike=None, out_file: os.PathLike=None, 
     base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None):
+
     """ Prepares a confound file for processing by selecting a subset of columns and replacing NAs with 
     the column mean.
 
@@ -156,13 +162,14 @@ def build_confounds_postprocessing_workflow(postprocessing_config: dict, confoun
     if crashdump_dir is not None:
         workflow.config['execution']['crashdump_dir'] = crashdump_dir
 
-    # TODO: Replace
     input_node = pe.Node(IdentityInterface(fields=['in_file', 'out_file', 'mixing_file', 'noise_file'], mandatory_inputs=False), name="inputnode")
     output_node = pe.Node(IdentityInterface(fields=['out_file'], mandatory_inputs=True), name="outputnode")
 
+    if in_file:
+        input_node.inputs.in_file = in_file
     if out_file:
         input_node.inputs.out_file = out_file
-
+    
     tsv_to_nii_node = pe.Node(Function(input_names=["tsv_file"], output_names=["nii_file"], function=_tsv_to_nii), name="tsv_to_nii")
     nii_to_tsv_node = pe.Node(Function(input_names=["nii_file", "tsv_file", "headers"], output_names=["tsv_file"], function=_nii_to_tsv), name="nii_to_tsv")
     select_headers_node = pe.Node(Function(input_names=["tsv_file"], output_names=["headers"], function=_tsv_select_headers), name="tsv_select_headers")
@@ -171,11 +178,23 @@ def build_confounds_postprocessing_workflow(postprocessing_config: dict, confoun
     postproc_wf = build_postprocessing_workflow(postprocessing_config, processing_steps=confounds_processing_steps, name="Confounds_Apply_Postprocessing", 
         mixing_file=mixing_file, noise_file=noise_file, tr=tr)
 
+    workflow.connect(input_node, "in_file", tsv_to_nii_node, "tsv_file")
+
+    # Grab the tsv headers, to add back after postprocessing
+    workflow.connect(input_node, "in_file", select_headers_node, "tsv_file")
+
     # Input the .nii file into the postprocessing workflow
     workflow.connect(tsv_to_nii_node, "nii_file", postproc_wf, "inputnode.in_file")
 
     # Convert the output of the postprocessing workflow back to .tsv format
     workflow.connect(postproc_wf, "outputnode.out_file", nii_to_tsv_node, "nii_file")
+    # Include the headers in the new tsv file
+    workflow.connect(select_headers_node, "headers", nii_to_tsv_node, "headers")
+    
+    workflow.connect(input_node, "out_file", nii_to_tsv_node, "tsv_file")
+    workflow.connect(nii_to_tsv_node, "tsv_file", output_node, "out_file")
+
+    return workflow
 
 
 def build_confounds_add_motion_outliers_workflow(threshold, scrub_var, scrub_ahead, scrub_behind, scrub_contiguous, 
@@ -184,9 +203,13 @@ def build_confounds_add_motion_outliers_workflow(threshold, scrub_var, scrub_ahe
     if crashdump_dir is not None:
         workflow.config['execution']['crashdump_dir'] = crashdump_dir
 
-    # TODO: Replace
     input_node = pe.Node(IdentityInterface(fields=['in_file', 'out_file', 'columns'], mandatory_inputs=False), name="inputnode")
     output_node = pe.Node(IdentityInterface(fields=['out_file', 'headers'], mandatory_inputs=True), name="outputnode")
+
+    if in_file:
+        input_node.inputs.in_file = in_file
+    if out_file:
+        input_node.inputs.out_file = out_file
 
     add_motion_outliers_node = pe.Node(Function(input_names=["confounds_file", "scrub_var", "threshold", "scrub_ahead", "scrub_behind", "scrub_contiguous"], 
             output_names=["out_file"], function=_add_motion_outliers), name="add_motion_outliers")
@@ -204,6 +227,8 @@ def build_confounds_add_motion_outliers_workflow(threshold, scrub_var, scrub_ahe
     workflow.connect(add_motion_outliers_node, "out_file", combine_confounds_node, "append_file")
 
     workflow.connect(combine_confounds_node, "out_file", output_node, "out_file")
+
+    return workflow
 
 
 def _add_motion_outliers(confounds_file, scrub_var, threshold, scrub_ahead, scrub_behind, scrub_contiguous):
