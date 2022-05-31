@@ -94,7 +94,6 @@ def build_confounds_processing_workflow(postprocessing_config: dict, confounds_f
         confounds_wf.connect(input_node, "in_file", current_wf, "inputnode.raw_confounds_file")
         confounds_wf.connect(prev_wf, "outputnode.out_file", current_wf, "inputnode.in_file")
 
-    confounds_wf.connect(input_node, "out_file", current_wf, "inputnode.out_file")
     confounds_wf.connect(current_wf, "outputnode.out_file", output_node, "out_file")
 
     if export_file:
