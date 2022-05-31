@@ -110,7 +110,6 @@
 			}
 		},
 		"ConfoundOptions": {
-			"Include": false,
 			"Columns": ["csf", "csf_derivative1", "white_matter", "white_matter_derivative1"],
 			"MotionOutliers": {
 				"Include": true,

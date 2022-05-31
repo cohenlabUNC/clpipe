@@ -281,16 +281,7 @@ def build_and_run_image_workflow(postprocessing_config, subject_id, task, run, i
     tr = _get_tr(bids, subject_id, task, run, logger)
     confounds = _get_confounds(bids, subject_id, task, run, logger)
 
-    if not confounds_only:
-        wf = _setup_workflow(postprocessing_config, pipeline_name, image_file_name, image_path,
-            tr, subject_out_dir, working_dir, log_dir, logger, mask_image=mask_image,
-            confounds=confounds, mixing_file=mixing_file, noise_file=noise_file)
-
-        logger.info(f"Running postprocessing workflow for image: {image_file_name}")
-        wf.run()
-        logger.info(f"Postprocessing workflow complete for image: {image_file_name}")
-
-    if confounds is not None and postprocessing_config["ConfoundOptions"]["Include"]:
+    if confounds is not None:
         logger.info("Postprocessing confounds")
 
         try:
@@ -301,6 +292,17 @@ def build_and_run_image_workflow(postprocessing_config, subject_id, task, run, i
         except ValueError as ve:
             logger.warn(ve)
             logger.warn("Skipping confounds processing")
+
+    if not confounds_only:
+        wf = _setup_workflow(postprocessing_config, pipeline_name, image_file_name, image_path,
+            tr, subject_out_dir, working_dir, log_dir, logger, mask_image=mask_image,
+            confounds=confounds, mixing_file=mixing_file, noise_file=noise_file)
+
+        logger.info(f"Running postprocessing workflow for image: {image_file_name}")
+        wf.run()
+        logger.info(f"Postprocessing workflow complete for image: {image_file_name}")
+
+    
             
 
     elif postprocessing_config["ConfoundOptions"]["Include"]:
