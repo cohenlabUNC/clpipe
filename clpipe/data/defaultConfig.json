@@ -81,20 +81,20 @@
 		],
 		"ProcessingStepOptions": {
 			"TemporalFiltering": {
-				"Algorithm":"Butterworth",
+				"Implementation":"Butterworth",
 				"FilteringHighPass": 0.008,
 				"FilteringLowPass": -1,
 				"FilteringOrder": 2
 			}, 
 			"IntensityNormalization": {
-				"Algorithm": "10000_GlobalMedian"
+				"Implementation": "10000_GlobalMedian"
 			}, 
 			"SpatialSmoothing": {
-				"Algorithm": "SUSAN",
+				"Implementation": "SUSAN",
       			"FWHM": 6
 			},
 			"AROMARegression":{
-				"Algorithm": "fsl_regfilt"
+				"Implementation": "fsl_regfilt"
 			},
 			"Resample":{
 				"ReferenceImage": "SET REFERENCE IMAGE"
@@ -104,7 +104,7 @@
 				"FromBeginning": 0
 			},
 			"ConfoundRegression": {
-				"Algorithm": "afni_3dTproject",
+				"Implementation": "afni_3dTproject",
 				"Columns": ["csf", "csf_derivative1", "white_matter", "white_matter_derivative1"],
 				"ConfoundFileName" : "confound_regressors.txt"
 			}

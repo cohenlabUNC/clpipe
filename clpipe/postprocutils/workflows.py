@@ -22,13 +22,13 @@ RESCALING_100_VOXELMEAN = "voxelmean_100"
 NORMALIZATION_METHODS = (RESCALING_10000_GLOBALMEDIAN, RESCALING_100_VOXELMEAN)
 
 
-class AlgorithmNotFoundError(ValueError):
+class ImplementationNotFoundError(ValueError):
     pass
 
 
 def build_postprocessing_workflow(postprocessing_config: dict, in_file: os.PathLike=None, export_file:os.PathLike=None,
     name:str = "Postprocessing_Pipeline", processing_steps: list=None, mask_file: os.PathLike=None, mixing_file: os.PathLike=None, 
-    noise_file: os.PathLike=None, confound_file: os.PathLike = None, tr: float = None,
+    noise_file: os.PathLike=None, confound_file: os.PathLike = None, tr: float = None, confounds_wf = None,
     base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None):
     
     postproc_wf = pe.Workflow(name=name, base_dir=base_dir)
@@ -62,44 +62,44 @@ def build_postprocessing_workflow(postprocessing_config: dict, in_file: os.PathL
             hp = postprocessing_config["ProcessingStepOptions"][step]["FilteringHighPass"]
             lp = postprocessing_config["ProcessingStepOptions"][step]["FilteringLowPass"]
             order = postprocessing_config["ProcessingStepOptions"][step]["FilteringOrder"]
-            algorithm_name = postprocessing_config["ProcessingStepOptions"][step]["Algorithm"]
+            implementation_name = postprocessing_config["ProcessingStepOptions"][step]["Implementation"]
 
-            temporal_filter_algorithm = _getTemporalFilterAlgorithm(algorithm_name)
+            temporal_filter_implementation = _getTemporalFilterImplementation(implementation_name)
 
-            current_wf = temporal_filter_algorithm(hp=hp,lp=lp, tr=tr, order=order, base_dir=postproc_wf.base_dir, crashdump_dir=crashdump_dir)
+            current_wf = temporal_filter_implementation(hp=hp,lp=lp, tr=tr, order=order, base_dir=postproc_wf.base_dir, crashdump_dir=crashdump_dir)
         
         elif step == "IntensityNormalization":
-            algorithm_name = postprocessing_config["ProcessingStepOptions"][step]["Algorithm"]
+            implementation_name = postprocessing_config["ProcessingStepOptions"][step]["Implementation"]
 
-            intensity_normalization_algorithm = _getIntensityNormalizationAlgorithm(algorithm_name)
+            intensity_normalization_implementation = _getIntensityNormalizationImplementation(implementation_name)
 
-            current_wf = intensity_normalization_algorithm(base_dir=postproc_wf.base_dir, mask_file=mask_file, crashdump_dir=crashdump_dir)
+            current_wf = intensity_normalization_implementation(base_dir=postproc_wf.base_dir, mask_file=mask_file, crashdump_dir=crashdump_dir)
         
         elif step == "SpatialSmoothing":
             fwhm_mm= postprocessing_config["ProcessingStepOptions"][step]["FWHM"]
             #brightness_threshold = postprocessing_config["ProcessingStepOptions"][step]["BrightnessThreshold"]
-            algorithm_name = postprocessing_config["ProcessingStepOptions"][step]["Algorithm"]
+            implementation_name = postprocessing_config["ProcessingStepOptions"][step]["Implementation"]
 
-            spatial_smoothing_algorithm = _getSpatialSmoothingAlgorithm(algorithm_name)
+            spatial_smoothing_implementation = _getSpatialSmoothingImplementation(implementation_name)
 
-            current_wf = spatial_smoothing_algorithm(base_dir=postproc_wf.base_dir, mask_path=mask_file, fwhm_mm=fwhm_mm, crashdump_dir=crashdump_dir)
+            current_wf = spatial_smoothing_implementation(base_dir=postproc_wf.base_dir, mask_path=mask_file, fwhm_mm=fwhm_mm, crashdump_dir=crashdump_dir)
 
         elif step == "AROMARegression":
-            algorithm_name = postprocessing_config["ProcessingStepOptions"][step]["Algorithm"]
+            implementation_name = postprocessing_config["ProcessingStepOptions"][step]["Implementation"]
 
-            apply_aroma_agorithm = _getAROMARegressionAlgorithm(algorithm_name)
+            apply_aroma_implementation = _getAROMARegressionImplementation(implementation_name)
 
-            current_wf = apply_aroma_agorithm(mixing_file=mixing_file, noise_file=noise_file, mask_file=mask_file, base_dir=postproc_wf.base_dir, crashdump_dir=crashdump_dir)
+            current_wf = apply_aroma_implementation(mixing_file=mixing_file, noise_file=noise_file, mask_file=mask_file, base_dir=postproc_wf.base_dir, crashdump_dir=crashdump_dir)
 
         elif step == "ConfoundRegression":
-            algorithm_name = postprocessing_config["ProcessingStepOptions"][step]["Algorithm"]
+            implementation_name = postprocessing_config["ProcessingStepOptions"][step]["Implementation"]
 
-            confound_regression_algorithm = _getConfoundRegressionAlgorithm(algorithm_name)
+            confound_regression_implementation = _getConfoundRegressionImplementation(implementation_name)
 
             column_names = postprocessing_config["ProcessingStepOptions"]["ConfoundRegression"]["Columns"]
 
             try:
-                current_wf = confound_regression_algorithm(mask_file=mask_file, base_dir=postproc_wf.base_dir, crashdump_dir=crashdump_dir)
+                current_wf = confound_regression_implementation(mask_file=mask_file, base_dir=postproc_wf.base_dir, crashdump_dir=crashdump_dir)
 
                 # TODO: Need to rework this step to operate off independent confounds_postproc_wf, instead of an internal one here
                 # Build a confounds postprocessing workflow to prep confounds for regression
@@ -112,7 +112,7 @@ def build_postprocessing_workflow(postprocessing_config: dict, in_file: os.PathL
             
             # This is the case that no operations need to be performed on the confounds file
             except ValueError:
-                current_wf = confound_regression_algorithm(mask_file=mask_file, confound_file=confound_file, base_dir=postproc_wf.base_dir, crashdump_dir=crashdump_dir)
+                current_wf = confound_regression_implementation(mask_file=mask_file, confound_file=confound_file, base_dir=postproc_wf.base_dir, crashdump_dir=crashdump_dir)
 
         elif step == "TrimTimepoints":
             trim_from_beginning = postprocessing_config["ProcessingStepOptions"][step]["FromEnd"]
@@ -148,45 +148,45 @@ def build_postprocessing_workflow(postprocessing_config: dict, in_file: os.PathL
     return postproc_wf
 
 
-def _getTemporalFilterAlgorithm(algorithmName):
-    if algorithmName == "Butterworth":
+def _getTemporalFilterImplementation(implementationName):
+    if implementationName == "Butterworth":
         return build_butterworth_filter_workflow
-    elif algorithmName == "fslmaths":
+    elif implementationName == "fslmaths":
         return build_fslmath_temporal_filter
     else:
-        raise AlgorithmNotFoundError(f"Temporal filtering algorithm not found: {algorithmName}")
+        raise ImplementationNotFoundError(f"Temporal filtering implementation not found: {implementationName}")
 
 
-def _getIntensityNormalizationAlgorithm(algorithmName):
-    if algorithmName == "10000_GlobalMedian":
+def _getIntensityNormalizationImplementation(implementationName):
+    if implementationName == "10000_GlobalMedian":
         return build_10000_global_median_workflow
     else:
-        raise AlgorithmNotFoundError(f"Intensity normalization algorithm not found: {algorithmName}")
+        raise ImplementationNotFoundError(f"Intensity normalization implementation not found: {implementationName}")
 
 
-def _getSpatialSmoothingAlgorithm(algorithmName):
-    if algorithmName == "SUSAN":
+def _getSpatialSmoothingImplementation(implementationName):
+    if implementationName == "SUSAN":
         return build_SUSAN_workflow
     else:
-        raise AlgorithmNotFoundError(f"Spatial smoothing algorithm not found: {algorithmName}")
+        raise ImplementationNotFoundError(f"Spatial smoothing implementation not found: {implementationName}")
 
 
-def _getAROMARegressionAlgorithm(algorithmName):
-    if algorithmName == "fsl_regfilt":
+def _getAROMARegressionImplementation(implementationName):
+    if implementationName == "fsl_regfilt":
         return build_aroma_workflow_fsl_regfilt
-    if algorithmName == "fsl_regfilt_R":
+    if implementationName == "fsl_regfilt_R":
         return build_aroma_workflow_fsl_regfilt_R
     else:
-        raise AlgorithmNotFoundError(f"AROMA regression algorithm not found: {algorithmName}")
+        raise ImplementationNotFoundError(f"AROMA regression implementation not found: {implementationName}")
 
 
-def _getConfoundRegressionAlgorithm(algorithmName):
-    if algorithmName == "fsl_glm":
+def _getConfoundRegressionImplementation(implementationName):
+    if implementationName == "fsl_glm":
         return build_confound_regression_fsl_glm_workflow
-    elif algorithmName == "afni_3dTproject":
+    elif implementationName == "afni_3dTproject":
         return build_confound_regression_afni_3dTproject
     else:
-        raise AlgorithmNotFoundError(f"Confound regression algorithm not found: {algorithmName}")
+        raise ImplementationNotFoundError(f"Confound regression implementation not found: {implementationName}")
 
 
 def build_10000_global_median_workflow(in_file: os.PathLike=None, out_file:os.PathLike=None,
