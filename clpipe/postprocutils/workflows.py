@@ -96,7 +96,7 @@ def build_postprocessing_workflow(postprocessing_config: dict, in_file: os.PathL
 
             confound_regression_implementation = _getConfoundRegressionImplementation(implementation_name)
 
-            column_names = postprocessing_config["ProcessingStepOptions"]["ConfoundRegression"]["Columns"]
+            column_names = postprocessing_config["ConfoundOptions"]["Columns"]
 
             try:
                 current_wf = confound_regression_implementation(mask_file=mask_file, base_dir=postproc_wf.base_dir, crashdump_dir=crashdump_dir)
