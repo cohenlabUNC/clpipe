@@ -302,12 +302,6 @@ def build_and_run_image_workflow(postprocessing_config, subject_id, task, run, i
         wf.run()
         logger.info(f"Postprocessing workflow complete for image: {image_file_name}")
 
-    
-            
-
-    elif postprocessing_config["ConfoundOptions"]["Include"]:
-        logger.warn(f"Confounds processing was requested but skipped because the confounds file could not be found")
-
 
 def _get_mixing_file(bids, subject_id, task, run, logger):
     logger.info("Searching for MELODIC mixing file")
