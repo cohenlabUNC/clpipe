@@ -7,7 +7,8 @@ from nipype.interfaces.io import ExportFile
 import nipype.pipeline.engine as pe
 
 from .workflows import build_postprocessing_workflow
-# The list of temporal-based processing steps applicable to confounds
+
+# A list of the temporal-based processing steps applicable to confounds
 CONFOUND_STEPS = {"TemporalFiltering", "AROMARegression", "TrimTimepoints"}
 
 
@@ -101,7 +102,6 @@ def build_confounds_processing_workflow(postprocessing_config: dict, confounds_f
 
 def build_confounds_prep_workflow(column_names: List, in_file: os.PathLike=None, out_file: os.PathLike=None, 
     base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None):
-
     """ Prepares a confound file for processing by selecting a subset of columns and replacing NAs with 
     the column mean.
 
@@ -155,8 +155,10 @@ def build_confounds_postprocessing_workflow(postprocessing_config: dict, confoun
         noise_file (os.PathLike): The AROMA noise file. Defaults to None.
         in_file (os.PathLike, optional): The confounds file. Defaults to None.
         out_file (os.PathLike, optional): The postprocessed confounds file. Defaults to None.
-    """
 
+    Returns:
+        pe.Workflow: A confounds postprocessing workflow.
+    """
 
     workflow = pe.Workflow(name="Confounds_Postprocessing", base_dir=base_dir)
     if crashdump_dir is not None:
@@ -197,8 +199,23 @@ def build_confounds_postprocessing_workflow(postprocessing_config: dict, confoun
     return workflow
 
 
-def build_confounds_add_motion_outliers_workflow(threshold, scrub_var, scrub_ahead, scrub_behind, scrub_contiguous, 
-    in_file=None, out_file=None, base_dir=None, crashdump_dir=None):
+def build_confounds_add_motion_outliers_workflow(threshold: float, scrub_var: str, scrub_ahead: int, scrub_behind: int, scrub_contiguous: int, 
+    in_file: os.PathLike=None, out_file: os.PathLike=None, base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None):
+    """Builds a confounds workflow which calculates motion outliers and appends them as spike regressor columns to the given confounds.
+
+    Args:
+        threshold (float): Cutoff value in reference to scrub_var, which when exceeded, marks the timepoint as an outlier.
+        scrub_var (str): The target confound for scurbbing, usually framewise_displacement
+        scrub_ahead (int): Scrub this many volumes ahead of an outlier.
+        scrub_behind (int): Scurb this many volumes behind an outlier.
+        scrub_contiguous (int): Ensure this number of contiguous volumes.
+        in_file (os.PathLike, optional): The confounds file. Defaults to None.
+        out_file (os.PathLike, optional): The confounds file with outlier spike regressors appended. Defaults to None.
+
+    Returns:
+        pe.Workflow: A workflow which attaches spike regressors to a confounds file.
+    """
+
     workflow = pe.Workflow(name="Confounds_Add_Motion_Outliers", base_dir=base_dir)
     if crashdump_dir is not None:
         workflow.config['execution']['crashdump_dir'] = crashdump_dir
@@ -231,7 +248,7 @@ def build_confounds_add_motion_outliers_workflow(threshold, scrub_var, scrub_ahe
     return workflow
 
 
-def _add_motion_outliers(confounds_file, scrub_var, threshold, scrub_ahead, scrub_behind, scrub_contiguous):
+def _add_motion_outliers(confounds_file: os.PathLike, scrub_var: str, threshold: float, scrub_ahead: int, scrub_behind: int, scrub_contiguous: int):
     from pathlib import Path
     import pandas as pd
     from clpipe.postprocutils.utils import scrub_setup
