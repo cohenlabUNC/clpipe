@@ -104,9 +104,7 @@
 				"FromBeginning": 0
 			},
 			"ConfoundRegression": {
-				"Implementation": "afni_3dTproject",
-				"Columns": ["csf", "csf_derivative1", "white_matter", "white_matter_derivative1"],
-				"ConfoundFileName" : "confound_regressors.txt"
+				"Implementation": "afni_3dTproject"
 			}
 		},
 		"ConfoundOptions": {
