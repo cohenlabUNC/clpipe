@@ -246,7 +246,7 @@ def distribute_image_jobs(subject_id: str, bids_dir: os.PathLike, fmriprep_dir: 
 
 
 def build_and_run_image_workflow(postprocessing_config, subject_id, task, run, image_space, image_path, bids_dir, fmriprep_dir, 
-    pybids_db_path, subject_out_dir, working_dir, log_dir, confounds_only=True):
+    pybids_db_path, subject_out_dir, working_dir, log_dir, confounds_only=False):
     """
     Setup the workflows specified in the postprocessing configuration.
     """
@@ -389,12 +389,13 @@ def _setup_workflow(postprocessing_config, pipeline_name, image_file_name, image
     mixing_file=None, noise_file=None):
 
     # Calculate the output file name
+    # TODO: change this to be like desc-postproc_bold instead of desc-preproc_bold_postprocessed
     base, image_name, exstension = split_filename(image_file_name)
     out_stem = image_name + '_postproccessed.nii.gz'
-    out_file = os.path.abspath(os.path.join(out_dir, out_stem))
+    export_file = os.path.abspath(os.path.join(out_dir, out_stem))
 
     logger.info(f"Building postprocessing workflow for: {pipeline_name}")
-    wf = build_postprocessing_workflow(postprocessing_config, in_file=image_path, out_file=out_file,
+    wf = build_postprocessing_workflow(postprocessing_config, in_file=image_path, export_file=export_file,
         name=f"{pipeline_name}_Postprocessing_Pipeline",
         mask_file=mask_image, confound_file = confounds,
         mixing_file=mixing_file, noise_file=noise_file,

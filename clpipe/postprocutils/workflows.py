@@ -11,6 +11,7 @@ from nipype.interfaces.afni import TProject
 from nipype.interfaces.fsl.model import GLM
 from nipype.interfaces.fsl import SUSAN, FLIRT
 from nipype.interfaces.utility import Function, Merge, IdentityInterface
+from nipype.interfaces.io import ExportFile
 import nipype.pipeline.engine as pe
 
 from .nodes import build_input_node, build_output_node, ButterworthFilter, RegressAromaR, ImageSlice
@@ -25,7 +26,7 @@ class AlgorithmNotFoundError(ValueError):
     pass
 
 
-def build_postprocessing_workflow(postprocessing_config: dict, in_file: os.PathLike=None, out_file:os.PathLike=None,
+def build_postprocessing_workflow(postprocessing_config: dict, in_file: os.PathLike=None, export_file:os.PathLike=None,
     name:str = "Postprocessing_Pipeline", processing_steps: list=None, mask_file: os.PathLike=None, mixing_file: os.PathLike=None, 
     noise_file: os.PathLike=None, confound_file: os.PathLike = None, tr: float = None,
     base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None):
@@ -42,14 +43,12 @@ def build_postprocessing_workflow(postprocessing_config: dict, in_file: os.PathL
     if step_count < 1:
         raise ValueError("The PostProcess workflow requires at least 1 processing step.")
 
-    input_node = pe.Node(IdentityInterface(fields=['in_file', 'out_file'], mandatory_inputs=False), name="inputnode")
+    input_node = pe.Node(IdentityInterface(fields=['in_file', 'export_file'], mandatory_inputs=False), name="inputnode")
     output_node = pe.Node(IdentityInterface(fields=['out_file'], mandatory_inputs=True), name="outputnode")
 
     # Set WF inputs and outputs
     if in_file:
         input_node.inputs.in_file = in_file
-    if out_file:
-        input_node.inputs.out_file = out_file
 
     current_wf = None
     prev_wf = None
@@ -135,16 +134,16 @@ def build_postprocessing_workflow(postprocessing_config: dict, in_file: os.PathL
         # Connect previous wf to current wf
         elif step_count > 1:
             postproc_wf.connect(prev_wf, "outputnode.out_file", current_wf, "inputnode.in_file")
-
-        # Direct the last workflow's output to postproc workflow's output
-        if index == step_count - 1:
-            # Set output file name by passing out_file name into input of last node
-            postproc_wf.connect(input_node, "out_file", current_wf, "inputnode.out_file")
-            postproc_wf.connect(current_wf, "outputnode.out_file", output_node, "out_file")
             
-
         # Keep a reference to current_wf as "prev_wf" for the next loop
         prev_wf = current_wf
+
+    # Connect the output of the last node to postproc workflow's output node
+    postproc_wf.connect(prev_wf, "outputnode.out_file", output_node, "out_file")
+    if export_file:
+        # TODO: Update the postproc workflow to make extension guarentees
+        export_node = pe.Node(ExportFile(out_file=export_file, clobber=True, check_extension=False), name="export")
+        postproc_wf.connect(current_wf, "outputnode.out_file", export_node, "in_file")
 
     return postproc_wf
 
