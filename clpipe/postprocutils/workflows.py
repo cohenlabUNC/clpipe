@@ -46,8 +46,8 @@ def build_postprocessing_workflow(image_wf: pe.Workflow=None, confounds_wf: pe.W
     # Setup inputs
     postproc_wf.connect(input_node, "in_file", image_wf, "inputnode.in_file")
     postproc_wf.connect(input_node, "confounds_file", confounds_wf, "inputnode.in_file")
-    postproc_wf.connect(input_node, "image_export_path", image_wf, "inputnode.export_file")
-    postproc_wf.connect(input_node, "confounds_export_path", confounds_wf, "inputnode.in_file")
+    #postproc_wf.connect(input_node, "image_export_path", image_wf, "inputnode.export_file")
+    #postproc_wf.connect(input_node, "confounds_export_path", confounds_wf, "inputnode.in_file")
 
     # Setup outputs
     postproc_wf.connect(image_wf, "outputnode.out_file", output_node, "out_file")
