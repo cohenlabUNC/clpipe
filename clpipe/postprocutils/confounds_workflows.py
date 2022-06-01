@@ -6,7 +6,7 @@ from nipype.interfaces.utility import Function, IdentityInterface
 from nipype.interfaces.io import ExportFile
 import nipype.pipeline.engine as pe
 
-from .workflows import build_postprocessing_workflow
+from .workflows import build_image_postprocessing_workflow
 
 # A list of the temporal-based processing steps applicable to confounds
 CONFOUND_STEPS = {"TemporalFiltering", "AROMARegression", "TrimTimepoints"}
@@ -180,7 +180,7 @@ def build_confounds_postprocessing_workflow(postprocessing_config: dict, confoun
     select_headers_node = pe.Node(Function(input_names=["tsv_file"], output_names=["headers"], function=_tsv_select_headers), name="tsv_select_headers")
 
     # Build the inner postprocessing workflow
-    postproc_wf = build_postprocessing_workflow(postprocessing_config, processing_steps=confounds_processing_steps, name="Confounds_Apply_Postprocessing", 
+    postproc_wf = build_image_postprocessing_workflow(postprocessing_config, processing_steps=confounds_processing_steps, name="Confounds_Apply_Postprocessing", 
         mixing_file=mixing_file, noise_file=noise_file, tr=tr)
 
     workflow.connect(input_node, "in_file", tsv_to_nii_node, "tsv_file")

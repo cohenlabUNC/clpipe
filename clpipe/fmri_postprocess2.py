@@ -15,7 +15,7 @@ with warnings.catch_warnings():
 from .config_json_parser import ClpipeConfigParser
 from .batch_manager import BatchManager, Job
 from nipype.utils.filemanip import split_filename
-from .postprocutils.workflows import build_image_postprocessing_workflow
+from .postprocutils.workflows import build_image_postprocessing_workflow, build_postprocessing_workflow
 from .postprocutils.confounds_workflows import build_confounds_processing_workflow
 from .error_handler import exception_handler
 from .errors import *
@@ -298,9 +298,13 @@ def build_and_run_postprocessing_workflow(postprocessing_config, subject_id, tas
             tr, subject_out_dir, working_dir, log_dir, logger, mask_image=mask_image,
             confounds=confounds, mixing_file=mixing_file, noise_file=noise_file)
 
-    postproc_wf = build_postprocessing_wf(image_wf=image_wf, confounds_wf=confounds_wf)
+    postproc_wf = build_postprocessing_workflow(image_wf=image_wf, confounds_wf=confounds_wf)
     stream_level_dir = Path(subject_out_dir).parent.parent
     _draw_graph(postproc_wf, f"{pipeline_name}_Postprocessing_Pipeline", stream_level_dir, logger=logger)
+
+    postproc_wf.inputs.inputnode.in_file = image_path
+    postproc_wf.inputs.inputnode.confounds_file = confounds
+
     postproc_wf.run()
 
     
