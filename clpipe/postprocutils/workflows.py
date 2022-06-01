@@ -28,7 +28,7 @@ class ImplementationNotFoundError(ValueError):
 
 def build_postprocessing_workflow(postprocessing_config: dict, in_file: os.PathLike=None, export_file:os.PathLike=None,
     name:str = "Postprocessing_Pipeline", processing_steps: list=None, mask_file: os.PathLike=None, mixing_file: os.PathLike=None, 
-    noise_file: os.PathLike=None, confound_file: os.PathLike = None, tr: float = None, confounds_wf = None,
+    noise_file: os.PathLike=None, confound_file: os.PathLike = None, tr: float = None,
     base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None):
     
     postproc_wf = pe.Workflow(name=name, base_dir=base_dir)
@@ -43,7 +43,7 @@ def build_postprocessing_workflow(postprocessing_config: dict, in_file: os.PathL
     if step_count < 1:
         raise ValueError("The PostProcess workflow requires at least 1 processing step.")
 
-    input_node = pe.Node(IdentityInterface(fields=['in_file', 'export_file'], mandatory_inputs=False), name="inputnode")
+    input_node = pe.Node(IdentityInterface(fields=['in_file', 'export_file', 'processed_confounds_file'], mandatory_inputs=False), name="inputnode")
     output_node = pe.Node(IdentityInterface(fields=['out_file'], mandatory_inputs=True), name="outputnode")
 
     # Set WF inputs and outputs
@@ -96,19 +96,9 @@ def build_postprocessing_workflow(postprocessing_config: dict, in_file: os.PathL
 
             confound_regression_implementation = _getConfoundRegressionImplementation(implementation_name)
 
-            column_names = postprocessing_config["ConfoundOptions"]["Columns"]
-
             try:
                 current_wf = confound_regression_implementation(mask_file=mask_file, base_dir=postproc_wf.base_dir, crashdump_dir=crashdump_dir)
-
-                # TODO: Need to rework this step to operate off independent confounds_postproc_wf, instead of an internal one here
-                # Build a confounds postprocessing workflow to prep confounds for regression
-                # confounds_postproc_wf = build_confound_postprocessing_workflow(postprocessing_config,
-                #     processing_steps=processing_steps, column_names=column_names,
-                #     confound_file=confound_file, mixing_file=mixing_file, noise_file=noise_file, tr=tr,
-                #     base_dir=base_dir, crashdump_dir=crashdump_dir)
-
-                # postproc_wf.connect(confounds_postproc_wf, "outputnode.out_file", current_wf, "inputnode.ort")
+                postproc_wf.connect(input_node, "processed_confounds_file", current_wf, "inputnode.confounds_file")
             
             # This is the case that no operations need to be performed on the confounds file
             except ValueError:
@@ -446,7 +436,7 @@ def build_confound_regression_fsl_glm_workflow(in_file: os.PathLike=None, out_fi
     return workflow
 
 
-def build_confound_regression_afni_3dTproject(in_file: os.PathLike=None, out_file: os.PathLike=None, confound_file: os.PathLike=None, mask_file: os.PathLike=None,
+def build_confound_regression_afni_3dTproject(in_file: os.PathLike=None, out_file: os.PathLike=None, confounds_file: os.PathLike=None, mask_file: os.PathLike=None,
     base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None):
 
     # Referenc command
@@ -458,7 +448,7 @@ def build_confound_regression_afni_3dTproject(in_file: os.PathLike=None, out_fil
     if crashdump_dir is not None:
         workflow.config['execution']['crashdump_dir'] = crashdump_dir
 
-    input_node = pe.Node(IdentityInterface(fields=['in_file', 'out_file', 'ort', 'mask_file'], mandatory_inputs=False), name="inputnode")
+    input_node = pe.Node(IdentityInterface(fields=['in_file', 'out_file', 'confounds_file', 'mask_file'], mandatory_inputs=False), name="inputnode")
     output_node = pe.Node(IdentityInterface(fields=['out_file'], mandatory_inputs=True), name="outputnode")
 
     # Set WF inputs and outputs
@@ -466,14 +456,14 @@ def build_confound_regression_afni_3dTproject(in_file: os.PathLike=None, out_fil
         input_node.inputs.in_file = in_file
     if out_file:
         input_node.inputs.out_file = out_file
-    if confound_file:
-        input_node.inputs.ort = confound_file
+    if confounds_file:
+        input_node.inputs.confounds_file = confounds_file
 
     regressor_node = pe.Node(TProject(polort=0), name="3dTproject")
 
     workflow.connect(input_node, "in_file", regressor_node, "in_file")
     workflow.connect(input_node, "out_file", regressor_node, "out_file")
-    workflow.connect(input_node, "ort", regressor_node, "ort")
+    workflow.connect(input_node, "confounds_file", regressor_node, "ort")
     workflow.connect(regressor_node, "out_file", output_node, "out_file")
 
     if mask_file:
