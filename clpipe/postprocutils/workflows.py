@@ -14,15 +14,12 @@ from nipype.interfaces.io import ExportFile
 import nipype.pipeline.engine as pe
 
 from .nodes import build_input_node, build_output_node, ButterworthFilter, RegressAromaR, ImageSlice
+from ..errors import ImplementationNotFoundError
 import clpipe.postprocutils.r_setup
 
 RESCALING_10000_GLOBALMEDIAN = "globalmedian_10000"
 RESCALING_100_VOXELMEAN = "voxelmean_100"
 NORMALIZATION_METHODS = (RESCALING_10000_GLOBALMEDIAN, RESCALING_100_VOXELMEAN)
-
-
-class ImplementationNotFoundError(ValueError):
-    pass
 
 
 def build_postprocessing_workflow(postprocessing_config: dict, in_file: os.PathLike=None, export_file:os.PathLike=None,
