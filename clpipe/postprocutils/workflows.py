@@ -22,7 +22,44 @@ RESCALING_100_VOXELMEAN = "voxelmean_100"
 NORMALIZATION_METHODS = (RESCALING_10000_GLOBALMEDIAN, RESCALING_100_VOXELMEAN)
 
 
-def build_postprocessing_workflow(postprocessing_config: dict, in_file: os.PathLike=None, export_file:os.PathLike=None,
+def build_postprocessing_workflow(image_wf: pe.Workflow=None, confounds_wf: pe.Workflow=None, name: str="Postprocessing_Pipeline", confound_regression: bool=False, 
+    base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None):
+    """ Creates a top-level postprocessing workflow which combines the image and confounds processing workflows
+
+    Args:
+        image_wf (pe.Workflow, optional): An image processing workflow. Defaults to None.
+        confounds_wf (pe.Workflow, optional): A confound processing workflow. Defaults to None.
+        name (str, optional): The name for the constructed workflow. Defaults to "Postprocessing_Pipeline".
+        confound_regression (bool, optional): Should the processed confounds be passed to the image workflow for regression? Defaults to False.
+
+    Returns:
+        pe.Workflow: A complete postprocessing workflow.
+    """
+
+    input_node = pe.Node(IdentityInterface(fields=['in_file', 'confounds_file', 'image_export_path', 'confounds_export_path'], mandatory_inputs=False), name="inputnode")
+    output_node = pe.Node(IdentityInterface(fields=['out_file', 'processed_confounds_file'], mandatory_inputs=False), name="outputnode")
+
+    postproc_wf = pe.Workflow(name=name, base_dir=base_dir)
+    if crashdump_dir is not None:
+        postproc_wf.config['execution']['crashdump_dir'] = crashdump_dir
+
+    # Setup inputs
+    postproc_wf.connect(input_node, "in_file", image_wf, "inputnode.in_file")
+    postproc_wf.connect(input_node, "confounds_file", confounds_wf, "inputnode.in_file")
+    postproc_wf.connect(input_node, "image_export_path", image_wf, "inputnode.export_file")
+    postproc_wf.connect(input_node, "confounds_export_path", confounds_wf, "inputnode.in_file")
+
+    # Setup outputs
+    postproc_wf.connect(image_wf, "outputnode.out_file", output_node, "out_file")
+    postproc_wf.connect(confounds_wf, "outputnode.out_file", output_node, "processed_confounds_file")
+
+    if confound_regression:
+        postproc_wf.connect(confounds_wf, "outputnode.out_file", image_wf, "inputnode.processed_confounds_file")
+
+    return postproc_wf
+
+
+def build_image_postprocessing_workflow(postprocessing_config: dict, in_file: os.PathLike=None, export_file:os.PathLike=None,
     name:str = "Postprocessing_Pipeline", processing_steps: list=None, mask_file: os.PathLike=None, mixing_file: os.PathLike=None, 
     noise_file: os.PathLike=None, confound_file: os.PathLike = None, tr: float = None,
     base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None):

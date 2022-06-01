@@ -12,10 +12,10 @@ with warnings.catch_warnings():
     warnings.filterwarnings("ignore", category=FutureWarning)
     from bids import BIDSLayout, BIDSLayoutIndexer, config as bids_config
 
-from .config_json_parser import ClpipeConfigParser, GLMConfigParser
+from .config_json_parser import ClpipeConfigParser
 from .batch_manager import BatchManager, Job
 from nipype.utils.filemanip import split_filename
-from .postprocutils.workflows import build_postprocessing_workflow
+from .postprocutils.workflows import build_image_postprocessing_workflow
 from .postprocutils.confounds_workflows import build_confounds_processing_workflow
 from .error_handler import exception_handler
 from .errors import *
@@ -153,7 +153,7 @@ def postprocess_image_controller(config_file, subject_id, task, run, image_space
 
     postprocessing_config = _fetch_postprocessing_stream_config(config, Path(subject_out_dir).parent.parent, processing_stream=processing_stream)
 
-    build_and_run_image_workflow(postprocessing_config, subject_id, task, run, image_space, image_path, bids_dir, fmriprep_dir, pybids_db_path,
+    build_and_run_postprocessing_workflow(postprocessing_config, subject_id, task, run, image_space, image_path, bids_dir, fmriprep_dir, pybids_db_path,
         subject_out_dir, working_dir, log_dir)
    
     sys.exit()
@@ -245,7 +245,7 @@ def distribute_image_jobs(subject_id: str, bids_dir: os.PathLike, fmriprep_dir: 
     _submit_jobs(batch_manager, submission_strings, logger, submit=submit)
 
 
-def build_and_run_image_workflow(postprocessing_config, subject_id, task, run, image_space, image_path, bids_dir, fmriprep_dir, 
+def build_and_run_postprocessing_workflow(postprocessing_config, subject_id, task, run, image_space, image_path, bids_dir, fmriprep_dir, 
     pybids_db_path, subject_out_dir, working_dir, log_dir, confounds_only=False):
     """
     Setup the workflows specified in the postprocessing configuration.
@@ -281,28 +281,29 @@ def build_and_run_image_workflow(postprocessing_config, subject_id, task, run, i
     tr = _get_tr(bids, subject_id, task, run, logger)
     confounds = _get_confounds(bids, subject_id, task, run, logger)
 
-    if confounds is not None:
-        logger.info("Postprocessing confounds")
+    image_wf = None
+    confounds_wf = None
 
+    if confounds is not None:
         try:
             confounds_wf = _setup_confounds_wf(postprocessing_config, pipeline_name, tr, confounds,
                 subject_out_dir, working_dir, log_dir, logger, mixing_file=mixing_file, noise_file=noise_file)
-            confounds_wf.run()
-            logger.info("Confounds postprocessing completed")
+            
         except ValueError as ve:
             logger.warn(ve)
             logger.warn("Skipping confounds processing")
 
     if not confounds_only:
-        wf = _setup_workflow(postprocessing_config, pipeline_name, image_file_name, image_path,
+        image_wf = _setup_image_workflow(postprocessing_config, pipeline_name, image_file_name, image_path,
             tr, subject_out_dir, working_dir, log_dir, logger, mask_image=mask_image,
             confounds=confounds, mixing_file=mixing_file, noise_file=noise_file)
 
-        logger.info(f"Running postprocessing workflow for image: {image_file_name}")
-        wf.run()
-        logger.info(f"Postprocessing workflow complete for image: {image_file_name}")
+    postproc_wf = build_postprocessing_wf(image_wf=image_wf, confounds_wf=confounds_wf)
+    stream_level_dir = Path(subject_out_dir).parent.parent
+    _draw_graph(postproc_wf, f"{pipeline_name}_Postprocessing_Pipeline", stream_level_dir, logger=logger)
+    postproc_wf.run()
 
-
+    
 def _get_mixing_file(bids, subject_id, task, run, logger):
     logger.info("Searching for MELODIC mixing file")
     try:
@@ -380,8 +381,8 @@ def _get_confounds(bids, subject_id, task, run, logger):
         logger.warn(f"Confound file for sub-{subject_id} task-{task} run-{run} not found.")
 
 
-def _setup_workflow(postprocessing_config, pipeline_name, image_file_name, image_path, 
-    tr, out_dir, working_dir, log_dir, logger, mask_image=None, confounds=None, 
+def _setup_image_workflow(postprocessing_config, pipeline_name, image_file_name, image_path, 
+    tr, out_dir, working_dir, log_dir, logger, mask_image=None, confounds=None,
     mixing_file=None, noise_file=None):
 
     # Calculate the output file name
@@ -391,11 +392,11 @@ def _setup_workflow(postprocessing_config, pipeline_name, image_file_name, image
     export_file = os.path.abspath(os.path.join(out_dir, out_stem))
 
     logger.info(f"Building postprocessing workflow for: {pipeline_name}")
-    wf = build_postprocessing_workflow(postprocessing_config, in_file=image_path, export_file=export_file,
-        name=f"{pipeline_name}_Postprocessing_Pipeline",
+    wf = build_image_postprocessing_workflow(postprocessing_config, in_file=image_path, export_file=export_file,
+        name=f"{pipeline_name}_Image_Postprocessing_Pipeline",
         mask_file=mask_image, confound_file = confounds,
         mixing_file=mixing_file, noise_file=noise_file,
-        tr=tr, 
+        tr=tr,
         base_dir=working_dir, crashdump_dir=log_dir)
     
     # Draw the workflow's process graph if requested in config
@@ -425,7 +426,7 @@ def _setup_confounds_wf(postprocessing_config, pipeline_name, tr, confounds, out
 
     confounds_wf = build_confounds_processing_workflow(postprocessing_config, confounds_file = confounds,
         export_file=confound_out_file, tr=tr,
-        name=f"{pipeline_name}_Confound_Postprocessing_Pipeline",
+        name=f"{pipeline_name}_Confounds_Postprocessing_Pipeline",
         mixing_file=mixing_file, noise_file=noise_file,
         base_dir=working_dir, crashdump_dir=log_dir)
 

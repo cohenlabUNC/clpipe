@@ -100,7 +100,6 @@ def build_confounds_processing_workflow(postprocessing_config: dict, confounds_f
         export_node = pe.Node(ExportFile(out_file=export_file, clobber=True), name="export")
         confounds_wf.connect(current_wf, "outputnode.out_file", export_node, "in_file")
     
-
     return confounds_wf
 
 
