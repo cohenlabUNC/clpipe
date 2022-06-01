@@ -1,16 +1,15 @@
 import os
 
 from math import sqrt, log
-import copy
 import pkg_resources
 
 #TODO: import these without specifying, to help with code readability
-from nipype.interfaces.fsl.maths import MeanImage, BinaryMaths, MedianImage, ApplyMask, TemporalFilter
+from nipype.interfaces.fsl.maths import MeanImage, BinaryMaths, ApplyMask, TemporalFilter
 from nipype.interfaces.fsl.utils import ImageStats, FilterRegressor
 from nipype.interfaces.afni import TProject
 from nipype.interfaces.fsl.model import GLM
 from nipype.interfaces.fsl import SUSAN, FLIRT
-from nipype.interfaces.utility import Function, Merge, IdentityInterface
+from nipype.interfaces.utility import Function, IdentityInterface
 from nipype.interfaces.io import ExportFile
 import nipype.pipeline.engine as pe
 
