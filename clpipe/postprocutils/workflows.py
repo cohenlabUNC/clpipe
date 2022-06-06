@@ -59,9 +59,9 @@ def build_postprocessing_workflow(image_wf: pe.Workflow=None, confounds_wf: pe.W
     return postproc_wf
 
 
-def build_image_postprocessing_workflow(postprocessing_config: dict, in_file: os.PathLike=None, export_file:os.PathLike=None,
+def build_image_postprocessing_workflow(postprocessing_config: dict, in_file: os.PathLike=None, export_path:os.PathLike=None,
     name:str = "Postprocessing_Pipeline", processing_steps: list=None, mask_file: os.PathLike=None, mixing_file: os.PathLike=None, 
-    noise_file: os.PathLike=None, confound_file: os.PathLike = None, tr: float = None,
+    noise_file: os.PathLike=None, confounds_file: os.PathLike = None, tr: float = None,
     base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None):
     
     postproc_wf = pe.Workflow(name=name, base_dir=base_dir)
@@ -76,12 +76,24 @@ def build_image_postprocessing_workflow(postprocessing_config: dict, in_file: os
     if step_count < 1:
         raise ValueError("The PostProcess workflow requires at least 1 processing step.")
 
-    input_node = pe.Node(IdentityInterface(fields=['in_file', 'export_file', 'processed_confounds_file'], mandatory_inputs=False), name="inputnode")
+    input_node = pe.Node(IdentityInterface(fields=['in_file', 'export_path', 'confounds_file', 'mask_file', 'mixing_file', 'noise_file', 'tr'], mandatory_inputs=False), name="inputnode")
     output_node = pe.Node(IdentityInterface(fields=['out_file'], mandatory_inputs=True), name="outputnode")
 
-    # Set WF inputs and outputs
+    # Set WF inputs
     if in_file:
         input_node.inputs.in_file = in_file
+    if export_path:
+        input_node.inputs.export_file = export_path
+    if confounds_file:
+        input_node.inputs.confounds_file = confounds_file
+    if mask_file:
+        input_node.inputs.mask_file = mask_file
+    if mixing_file:
+        input_node.inputs.mixing_file = mixing_file
+    if noise_file:
+        input_node.inputs.noise_file = noise_file
+    if tr:
+        input_node.inputs.tr = tr
 
     current_wf = None
     prev_wf = None
@@ -129,14 +141,11 @@ def build_image_postprocessing_workflow(postprocessing_config: dict, in_file: os
 
             confound_regression_implementation = _getConfoundRegressionImplementation(implementation_name)
 
-            try:
-                current_wf = confound_regression_implementation(mask_file=mask_file, base_dir=postproc_wf.base_dir, crashdump_dir=crashdump_dir)
-                postproc_wf.connect(input_node, "processed_confounds_file", current_wf, "inputnode.confounds_file")
-            
-            # This is the case that no operations need to be performed on the confounds file
-            except ValueError:
-                current_wf = confound_regression_implementation(mask_file=mask_file, confound_file=confound_file, base_dir=postproc_wf.base_dir, crashdump_dir=crashdump_dir)
+            current_wf = confound_regression_implementation(base_dir=postproc_wf.base_dir, crashdump_dir=crashdump_dir)
 
+            postproc_wf.connect(input_node, "processed_confounds_file", current_wf, "inputnode.confounds_file")
+            postproc_wf.connect(input_node, "mask_file", current_wf, "inputnode.mask_file")
+            
         elif step == "TrimTimepoints":
             trim_from_beginning = postprocessing_config["ProcessingStepOptions"][step]["FromEnd"]
             trim_from_end = postprocessing_config["ProcessingStepOptions"][step]["FromBeginning"]
@@ -163,9 +172,9 @@ def build_image_postprocessing_workflow(postprocessing_config: dict, in_file: os
 
     # Connect the output of the last node to postproc workflow's output node
     postproc_wf.connect(prev_wf, "outputnode.out_file", output_node, "out_file")
-    if export_file:
+    if export_path:
         # TODO: Update the postproc workflow to make extension guarentees
-        export_node = pe.Node(ExportFile(out_file=export_file, clobber=True, check_extension=False), name="export")
+        export_node = pe.Node(ExportFile(out_file=export_path, clobber=True, check_extension=False), name="export_image")
         postproc_wf.connect(current_wf, "outputnode.out_file", export_node, "in_file")
 
     return postproc_wf
