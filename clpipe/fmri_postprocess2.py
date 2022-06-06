@@ -1,3 +1,22 @@
+"""Postprocessing Pipeline Workflow Builder and Distributer.
+
+Based on user input, builds and runs a postprocessing pipeline for a set of subjects, distributing the workload across a cluster if requested.
+
+Controller Functions - Serve as a middle layer between the front-end (CLI) and distribution / workflow setup functions. Handles sanitization, 
+    configuration parsing, batch manager initialization, and is the last layer of exception catching
+
+    - postprocess_subjects_controller
+    - postprocess_subject_controller
+    - postprocess_image_controller
+
+Distributor Functions - Create and submit child job processes
+    - distribute_subject_jobs
+    - distribute_image_jobs
+
+Workflow Builder & Runner - handles the creation and running of an image processing workflow
+    - build_and_run_image_workflow
+"""
+
 import sys
 import os
 import logging
@@ -23,21 +42,6 @@ from .errors import *
 DEFAULT_PROCESSING_STREAM_NAME = "smooth-filter-normalize"
 PROCESSING_DESCRIPTION_FILE_NAME = "processing_description.json"
 
-"""
-Controller Functions - Serve as a middle layer between the front-end (CLI) and distribution / workflow setup functions. Handles sanitization, 
-    configuration parsing, batch manager initialization, and is the last layer of exception catching
-
-    - postprocess_subjects_controller
-    - postprocess_subject_controller
-    - postprocess_image_controller
-
-Distributor Functions - Create and submit child job processes
-    - distribute_subject_jobs
-    - distribute_image_jobs
-
-Workflow Builder & Runner - handles the creation and running of an image processing workflow
-    - build_and_run_image_workflow
-"""
 
 def postprocess_subjects_controller(subjects=None, config_file=None, bids_dir=None, fmriprep_dir=None, output_dir=None, 
     processing_stream=DEFAULT_PROCESSING_STREAM_NAME, batch=False, submit=False, log_dir=None, pybids_db_path=None, refresh_index=False, debug=False):

@@ -1,3 +1,9 @@
+"""Workflow Builder Functions.
+
+Contains a collection of image processing workflow builders used to create a
+postprocessing pipeline.
+"""
+
 import os
 
 from math import sqrt, log
@@ -180,7 +186,7 @@ def build_image_postprocessing_workflow(postprocessing_config: dict, in_file: os
     return postproc_wf
 
 
-def _getTemporalFilterImplementation(implementationName):
+def _getTemporalFilterImplementation(implementationName: str):
     if implementationName == "Butterworth":
         return build_butterworth_filter_workflow
     elif implementationName == "fslmaths":
@@ -189,21 +195,21 @@ def _getTemporalFilterImplementation(implementationName):
         raise ImplementationNotFoundError(f"Temporal filtering implementation not found: {implementationName}")
 
 
-def _getIntensityNormalizationImplementation(implementationName):
+def _getIntensityNormalizationImplementation(implementationName: str):
     if implementationName == "10000_GlobalMedian":
         return build_10000_global_median_workflow
     else:
         raise ImplementationNotFoundError(f"Intensity normalization implementation not found: {implementationName}")
 
 
-def _getSpatialSmoothingImplementation(implementationName):
+def _getSpatialSmoothingImplementation(implementationName: str):
     if implementationName == "SUSAN":
         return build_SUSAN_workflow
     else:
         raise ImplementationNotFoundError(f"Spatial smoothing implementation not found: {implementationName}")
 
 
-def _getAROMARegressionImplementation(implementationName):
+def _getAROMARegressionImplementation(implementationName: str):
     if implementationName == "fsl_regfilt":
         return build_aroma_workflow_fsl_regfilt
     if implementationName == "fsl_regfilt_R":
@@ -212,7 +218,7 @@ def _getAROMARegressionImplementation(implementationName):
         raise ImplementationNotFoundError(f"AROMA regression implementation not found: {implementationName}")
 
 
-def _getConfoundRegressionImplementation(implementationName):
+def _getConfoundRegressionImplementation(implementationName: str):
     if implementationName == "fsl_glm":
         return build_confound_regression_fsl_glm_workflow
     elif implementationName == "afni_3dTproject":
@@ -271,6 +277,9 @@ def build_100_voxel_mean_workflow(in_file: os.PathLike=None, out_file: os.PathLi
     Args:
         in_path (str): A path to an input .nii to normalize.
         out_path (str): A path to save the normalized image.
+
+    Returns:
+        pe.Workflow: A 100 voxel mean workflow.
     """
     
     if in_file != None:
@@ -301,6 +310,17 @@ def build_100_voxel_mean_workflow(in_file: os.PathLike=None, out_file: os.PathLi
 
 def build_SUSAN_workflow(in_file: os.PathLike=None, mask_path: os.PathLike=None, fwhm_mm: int=6, out_file: os.PathLike=None, 
     base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None):
+    """Builds a workflow to perform SUSAN smoothing.
+
+    Args:
+        in_file (os.PathLike, optional): The input image to smooth. Defaults to None.
+        mask_path (os.PathLike, optional): A mask file specifying voxels not to use. Defaults to None.
+        fwhm_mm (int, optional): Full width at half maximum in millimeters. Defaults to 6.
+        out_file (os.PathLike, optional): An output path for the smoothed image. Defaults to None.
+
+    Returns:
+        pe.Workflow: A SUSAN smoothing workflow.
+    """
     
     workflow = pe.Workflow(name="SUSAN", base_dir=base_dir)
     if crashdump_dir is not None:
@@ -373,11 +393,31 @@ def build_SUSAN_workflow(in_file: os.PathLike=None, mask_path: os.PathLike=None,
     return workflow
     
 
-def _calc_susan_threshold(median_intensity, p2_intensity):
+def _calc_susan_threshold(median_intensity: float, p2_intensity: float):
+    """Calculates the SUSAN threshold for a given image's median intensity
+    and 2nd percentile.
+
+    Args:
+        median_intensity (float): The median value of the image.
+        p2_intensity (float): The second percentile value of an image.
+
+    Returns:
+        float: The calculcated SUSAN threshold.
+    """
     return (median_intensity - p2_intensity) * .75
 
 
-def _setup_usans_input(tmean_image, susan_threshold):
+def _setup_usans_input(tmean_image, susan_threshold: float):
+    """Sets up the usans input for the SUSAN command.
+
+    Args:
+        tmean_image (os.PathLike): The mean image.
+        susan_threshold (float): The calculated SUSAN threshold.
+
+    Returns:
+        List: A list containing the tuple (mean image, SUSAN threshold), the
+        necessary format for input into SUSAN's usans parameter.
+    """
     return [(tmean_image, susan_threshold)]
 
 

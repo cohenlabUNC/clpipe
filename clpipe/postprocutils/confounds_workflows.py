@@ -1,3 +1,9 @@
+"""Confounds Workflow Builder Functions.
+
+Contains a collection of processing workflow builders specifically for fMRIPrep
+confound file processing.
+"""
+
 import os
 import copy
 from typing import List
@@ -306,7 +312,6 @@ def _combine_confounds_files(base_confounds_file, append_confounds_file):
         base_confounds_df.to_csv(out_file, sep="\t", index=False)
 
     return str(out_file.absolute())
-
 
 
 def _tsv_select_columns(tsv_file, column_names):
