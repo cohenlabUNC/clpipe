@@ -401,12 +401,12 @@ def _setup_image_workflow(postprocessing_config, pipeline_name, image_file_name,
     # TODO: change this to be like desc-postproc_bold instead of desc-preproc_bold_postprocessed
     base, image_name, exstension = split_filename(image_file_name)
     out_stem = image_name + '_postproccessed.nii.gz'
-    export_file = os.path.abspath(os.path.join(out_dir, out_stem))
+    export_path = os.path.abspath(os.path.join(out_dir, out_stem))
 
     logger.info(f"Building postprocessing workflow for: {pipeline_name}")
-    wf = build_image_postprocessing_workflow(postprocessing_config, export_file=export_file,
+    wf = build_image_postprocessing_workflow(postprocessing_config, export_path=export_path,
         name=f"{pipeline_name}_Image_Postprocessing_Pipeline",
-        mask_file=mask_image, confound_file = confounds,
+        mask_file=mask_image, confounds_file = confounds,
         mixing_file=mixing_file, noise_file=noise_file,
         tr=tr,
         base_dir=working_dir, crashdump_dir=log_dir)

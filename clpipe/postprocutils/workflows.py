@@ -60,7 +60,7 @@ def build_postprocessing_workflow(image_wf: pe.Workflow=None, confounds_wf: pe.W
     postproc_wf.connect(confounds_wf, "outputnode.out_file", output_node, "processed_confounds_file")
 
     if confound_regression:
-        postproc_wf.connect(confounds_wf, "outputnode.out_file", image_wf, "inputnode.processed_confounds_file")
+        postproc_wf.connect(confounds_wf, "outputnode.out_file", image_wf, "inputnode.confounds_file")
 
     return postproc_wf
 
@@ -149,7 +149,7 @@ def build_image_postprocessing_workflow(postprocessing_config: dict, in_file: os
 
             current_wf = confound_regression_implementation(base_dir=postproc_wf.base_dir, crashdump_dir=crashdump_dir)
 
-            postproc_wf.connect(input_node, "processed_confounds_file", current_wf, "inputnode.confounds_file")
+            postproc_wf.connect(input_node, "confounds_file", current_wf, "inputnode.confounds_file")
             postproc_wf.connect(input_node, "mask_file", current_wf, "inputnode.mask_file")
             
         elif step == "TrimTimepoints":
