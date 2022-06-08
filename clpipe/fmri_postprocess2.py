@@ -331,6 +331,8 @@ def _get_noise_file(bids, subject_id, task, run, logger):
                 scope="derivatives"
         )[0]
         logger.info(f"AROMA noise ICs file found: {noise_file}")
+
+        return noise_file
     except IndexError:
         raise NoiseFileNotFoundError(f"AROMA noise ICs file for sub-{subject_id} task-{task} not found.")
 
