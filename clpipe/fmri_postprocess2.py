@@ -513,6 +513,12 @@ def _write_processing_description_file(postprocessing_config: dict, processing_d
         if step_option not in processing_steps:
             processing_step_options.pop(step_option)
 
+    # Create the processing file's path if it doesn't exist
+    processing_description_file_parent = Path(processing_description_file).parent
+    if not processing_description_file_parent.exists:
+        processing_description_file_parent.mkdir(parents=True)
+
+    # Write the processing file
     with open(processing_description_file, 'w') as file_to_write:
         json.dump(postprocessing_config, file_to_write, indent=4)
 
