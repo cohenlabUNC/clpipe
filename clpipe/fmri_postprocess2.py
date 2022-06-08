@@ -473,10 +473,9 @@ def _plot_image_sample(image_path: os.PathLike):
 
     main_image = load_img(image_path)
     # Grab a slice from the midpoint
-    image_slice = index_img(main_image, main_image.shape[3] / 2)
+    image_slice = index_img(main_image, int(main_image.shape[3] / 2))
 
-    output_stem = image_path.stem
-    output_path = image_path.with_name(output_stem + ".png")
+    output_path = Path(image_path).parent / "image_sample.png"
 
     _ = plotting.plot_epi(image_slice, title="plot_epi", output_file=output_path, display_mode='mosaic')
 
