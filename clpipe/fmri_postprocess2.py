@@ -291,8 +291,10 @@ def build_and_run_postprocessing_workflow(postprocessing_config, subject_id, tas
             logger.warn("Skipping confounds processing")
 
     if not confounds_only:
-        image_wf = _setup_image_workflow(postprocessing_config, pipeline_name, image_file_name, image_path,
-            tr, subject_out_dir, subject_working_dir, log_dir, logger, mask_image=mask_image,
+        export_path = _build_image_export_path(image_file_name, subject_out_dir)
+
+        image_wf = _setup_image_workflow(postprocessing_config, pipeline_name,
+            tr, subject_out_dir, export_path, subject_working_dir, log_dir, logger, mask_image=mask_image,
             confounds=confounds, mixing_file=mixing_file, noise_file=noise_file)
 
     confound_regression = "ConfoundRegression" in postprocessing_config["ProcessingSteps"]
@@ -307,6 +309,9 @@ def build_and_run_postprocessing_workflow(postprocessing_config, subject_id, tas
     postproc_wf.inputs.inputnode.confounds_file = confounds
 
     postproc_wf.run()
+
+    if not confounds_only:
+        _plot_image_sample(export_path)
 
     
 def _get_mixing_file(bids, subject_id, task, run, logger):
@@ -388,15 +393,9 @@ def _get_confounds(bids, subject_id, task, run, logger):
         logger.warn(f"Confound file for sub-{subject_id} task-{task} run-{run} not found.")
 
 
-def _setup_image_workflow(postprocessing_config, pipeline_name, image_file_name, image_path, 
-    tr, out_dir, working_dir, log_dir, logger, mask_image=None, confounds=None,
+def _setup_image_workflow(postprocessing_config, pipeline_name,
+    tr, out_dir, export_path, working_dir, log_dir, logger, mask_image=None, confounds=None,
     mixing_file=None, noise_file=None):
-
-    # Calculate the output file name
-    # TODO: change this to be like desc-postproc_bold instead of desc-preproc_bold_postprocessed
-    base, image_name, exstension = split_filename(image_file_name)
-    out_stem = image_name + '_postproccessed.nii.gz'
-    export_path = os.path.abspath(os.path.join(out_dir, out_stem))
 
     logger.info(f"Building postprocessing workflow for: {pipeline_name}")
     wf = build_image_postprocessing_workflow(postprocessing_config, export_path=export_path,
@@ -414,6 +413,24 @@ def _setup_image_workflow(postprocessing_config, pipeline_name, image_file_name,
         _draw_graph(wf, "image_processsing_graph", stream_level_dir, logger=logger)
 
     return wf
+
+
+def _build_image_export_path(image_file_name: str, subject_out_dir: os.PathLike):
+    """Builds a new name for a processed image.
+
+    Args:
+        image_file_name (str): The name of the original image file.
+        subject_out_dir (os.PathLike): The destination directory.
+
+    Returns:
+        os.PathLike: Save path for an image file.
+    """
+    # TODO: change this to be like desc-postproc_bold instead of desc-preproc_bold_postprocessed
+    base, image_name, exstension = split_filename(image_file_name)
+    out_stem = image_name + '_postproccessed.nii.gz'
+    export_path = os.path.abspath(os.path.join(subject_out_dir, out_stem))
+
+    return export_path
 
 
 def _setup_confounds_wf(postprocessing_config, pipeline_name, tr, confounds, out_dir, 
@@ -453,6 +470,20 @@ def _draw_graph(wf, graph_name, out_dir, graph_style="colored", logger=None):
 
     # Delete the unessecary dot file
     graph_image_path.unlink()
+
+
+def _plot_image_sample(image_path: os.PathLike):
+    from nilearn import plotting
+    from nilearn.image import load_img, index_img
+
+    main_image = load_img(image_path)
+    # Grab a slice from the midpoint
+    image_slice = index_img(main_image, main_image.shape[3] / 2)
+
+    output_stem = image_path.stem
+    output_path = image_path.with_name(output_stem + ".png")
+
+    _ = plotting.plot_epi(image_slice, title="plot_epi", output_file=output_path, display_mode='mosaic')
 
 
 def _fetch_postprocessing_stream_config(config: dict, output_dir: os.PathLike, processing_stream:str=DEFAULT_PROCESSING_STREAM_NAME):
