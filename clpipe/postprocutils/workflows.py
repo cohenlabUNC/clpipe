@@ -152,6 +152,9 @@ def build_image_postprocessing_workflow(postprocessing_config: dict, in_file: os
             postproc_wf.connect(input_node, "confounds_file", current_wf, "inputnode.confounds_file")
             postproc_wf.connect(input_node, "mask_file", current_wf, "inputnode.mask_file")
             
+        elif step == "ApplyMask":
+            current_wf = build_apply_mask_workflow(mask_file=mask_file, base_dir=postproc_wf.base_dir, crashdump_dir=crashdump_dir)
+
         elif step == "TrimTimepoints":
             trim_from_beginning = postprocessing_config["ProcessingStepOptions"][step]["FromEnd"]
             trim_from_end = postprocessing_config["ProcessingStepOptions"][step]["FromBeginning"]
@@ -621,6 +624,32 @@ def build_aroma_workflow_fsl_regfilt_R(in_file: os.PathLike=None, out_file: os.P
     workflow.connect(input_node, "mixing_file", regfilt_R_node, "mixing_file")
     workflow.connect(input_node, "noise_file", regfilt_R_node, "noise_file")
     workflow.connect(regfilt_R_node, "out_file", output_node, "out_file")
+
+    return workflow
+
+
+def build_apply_mask_workflow(in_file: os.PathLike=None, 
+    out_file: os.PathLike=None, mask_file:os.PathLike=None, base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None):
+
+    workflow = pe.Workflow(name="Apply_Mask", base_dir=base_dir)
+    if crashdump_dir is not None:
+        workflow.config['execution']['crashdump_dir'] = crashdump_dir
+
+    input_node = pe.Node(IdentityInterface(fields=['in_file', 'out_file', 'mask_file'], mandatory_inputs=False), name="inputnode")
+    output_node = pe.Node(IdentityInterface(fields=['out_file'], mandatory_inputs=True), name="outputnode")
+
+    if in_file:
+        input_node.inputs.in_file = in_file
+    if out_file:
+        input_node.inputs.out_file = out_file
+    if mask_file:
+        input_node.inputs.mask_file = mask_file
+
+    mask_apply_node = pe.Node(BinaryMaths(operation = 'mul'), name="mask_apply")
+
+    workflow.connect(input_node, "in_file", mask_apply_node, "in_file")
+    workflow.connect(input_node, "mask_file", mask_apply_node, "operand_file")
+    workflow.connect(mask_apply_node, "out_file", output_node, "out_file")
 
     return workflow
 
