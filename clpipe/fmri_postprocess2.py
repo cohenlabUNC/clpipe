@@ -119,7 +119,7 @@ def postprocess_subject_controller(subject_id, bids_dir, fmriprep_dir, output_di
     config = _parse_config(config_file)
     config_file = Path(config_file)
 
-    postprocessing_config = _fetch_postprocessing_stream_config(config, Path(output_dir) / processing_stream, processing_stream=processing_stream)
+    postprocessing_config = _fetch_postprocessing_stream_config(config, output_dir, processing_stream=processing_stream)
 
     batch_manager = None
     if batch:
@@ -177,19 +177,14 @@ def distribute_subject_jobs(bids_dir, fmriprep_dir, output_dir: os.PathLike, con
 
     config = _parse_config(config_file)
 
-    output_dir = Path(output_dir) / processing_stream
-
+    output_dir = Path(output_dir)
     # Don't create any files/directories unless the user is submitting
     if submit:
         # Create the root output directory for all subject postprocessing results, if it doesn't yet exist.
         if not output_dir.exists():
             output_dir.mkdir()
 
-        # TODO
-        # I think this is replaceable by _fetch_postprocessing_stream_config
-        postprocessing_config = _get_postprocessing_config(config)
-        postprocessing_config = _postprocessing_config_apply_processing_stream(config, processing_stream)
-        _write_processing_description_file(postprocessing_config, output_dir)
+        _fetch_postprocessing_stream_config(config, output_dir, processing_stream)
 
     bids:BIDSLayout = _get_bids(bids_dir, database_path=pybids_db_path, fmriprep_dir=fmriprep_dir, refresh=refresh_index)
 
@@ -218,7 +213,7 @@ def distribute_image_jobs(subject_id: str, bids_dir: os.PathLike, fmriprep_dir: 
     config_file = Path(config_file)
     
     # Create a subject folder for this subject's postprocessing output, if one doesn't already exist
-    subject_out_dir = out_dir / ("sub-" + subject_id) / "func"
+    subject_out_dir = out_dir / processing_stream / ("sub-" + subject_id) / "func"
     if not subject_out_dir.exists():
         logger.info(f"Creating subject directory: {subject_out_dir}")
         subject_out_dir.mkdir(exist_ok=True, parents=True)
@@ -494,15 +489,18 @@ def _fetch_postprocessing_stream_config(config: dict, output_dir: os.PathLike, p
     This stream postprocessing config is saved as a seperate configuration file at the level of the output folder / stream folder and
     is referred to by the workflow builders.
     """
-    
-    postprocessing_description_file = Path(output_dir) / PROCESSING_DESCRIPTION_FILE_NAME
+    stream_output_dir = Path(output_dir) / processing_stream
+    if not stream_output_dir.exists():
+        stream_output_dir.mkdir()
+
+    postprocessing_description_file = Path(stream_output_dir) / PROCESSING_DESCRIPTION_FILE_NAME
     postprocessing_config = _postprocessing_config_apply_processing_stream(config, processing_stream=processing_stream)
-    _write_processing_description_file(postprocessing_config, postprocessing_description_file, output_dir)
+    _write_processing_description_file(postprocessing_config, postprocessing_description_file)
 
     return postprocessing_config
 
 
-def _write_processing_description_file(postprocessing_config: dict, processing_description_file: os.PathLike, output_dir: os.PathLike):
+def _write_processing_description_file(postprocessing_config: dict, processing_description_file: os.PathLike):
     processing_steps = postprocessing_config["ProcessingSteps"]
     processing_step_options = postprocessing_config["ProcessingStepOptions"]
     processing_step_options_reference = processing_step_options.copy()
@@ -512,11 +510,6 @@ def _write_processing_description_file(postprocessing_config: dict, processing_d
     for step_option in processing_step_options_reference.keys():
         if step_option not in processing_steps:
             processing_step_options.pop(step_option)
-
-    # Create the processing file's path if it doesn't exist
-    processing_description_file_parent = Path(processing_description_file).parent
-    if not processing_description_file_parent.exists:
-        processing_description_file_parent.mkdir(parents=True)
 
     # Write the processing file
     with open(processing_description_file, 'w') as file_to_write:
