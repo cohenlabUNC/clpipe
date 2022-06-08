@@ -298,7 +298,8 @@ def build_and_run_postprocessing_workflow(postprocessing_config, subject_id, tas
         confound_regression=confound_regression, base_dir=subject_working_dir, crashdump_dir=log_dir)
     
     stream_level_dir = Path(subject_out_dir).parent.parent
-    _draw_graph(postproc_wf, "processing_graph", stream_level_dir, logger=logger)
+    if postprocessing_config["WriteProcessGraph"]:
+        _draw_graph(postproc_wf, "processing_graph", stream_level_dir, logger=logger)
 
     postproc_wf.inputs.inputnode.in_file = image_path
     postproc_wf.inputs.inputnode.confounds_file = confounds
@@ -401,11 +402,11 @@ def _setup_image_workflow(postprocessing_config, pipeline_name,
         base_dir=working_dir, crashdump_dir=log_dir)
     
     # Draw the workflow's process graph if requested in config
-    if postprocessing_config["WriteProcessGraph"]:
-        # Hacky way to get the processing graph at level of stream directory
-        # TODO: come up with a better way to do this
-        stream_level_dir = Path(out_dir).parent.parent
-        _draw_graph(wf, "image_processsing_graph", stream_level_dir, logger=logger)
+    # if postprocessing_config["WriteProcessGraph"]:
+    #     # Hacky way to get the processing graph at level of stream directory
+    #     # TODO: come up with a better way to do this
+    #     stream_level_dir = Path(out_dir).parent.parent
+    #     _draw_graph(wf, "image_processsing_graph", stream_level_dir, logger=logger)
 
     return wf
 
@@ -450,9 +451,9 @@ def _setup_confounds_wf(postprocessing_config, pipeline_name, tr, confounds, out
         base_dir=working_dir, crashdump_dir=log_dir)
 
     # Draw the confound workflow's process graph if requested in config
-    if postprocessing_config["WriteProcessGraph"]:
-        stream_level_dir = Path(out_dir).parent.parent
-        _draw_graph(confounds_wf, "confounds_processsing_graph", stream_level_dir, logger=logger)
+    # if postprocessing_config["WriteProcessGraph"]:
+    #     stream_level_dir = Path(out_dir).parent.parent
+    #     _draw_graph(confounds_wf, "confounds_processsing_graph", stream_level_dir, logger=logger)
 
     return confounds_wf
 
