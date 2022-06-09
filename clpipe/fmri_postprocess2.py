@@ -25,6 +25,8 @@ import json
 from pathlib import Path
 
 import pydantic
+from nilearn import plotting
+from nilearn.image import load_img, index_img
 
 # This hides a pybids future warning
 with warnings.catch_warnings():
@@ -41,6 +43,7 @@ from .errors import *
 
 DEFAULT_PROCESSING_STREAM_NAME = "smooth-filter-normalize"
 PROCESSING_DESCRIPTION_FILE_NAME = "processing_description.json"
+IMAGE_TIME_DIMENSION_INDEX = 3
 
 
 def postprocess_subjects_controller(subjects=None, config_file=None, bids_dir=None, fmriprep_dir=None, output_dir=None, 
@@ -307,7 +310,7 @@ def build_and_run_postprocessing_workflow(postprocessing_config, subject_id, tas
     postproc_wf.run()
 
     if not confounds_only:
-        _plot_image_sample(export_path)
+        _plot_image_sample(export_path, title=pipeline_name)
 
     
 def _get_mixing_file(bids, subject_id, task, run, logger):
@@ -468,17 +471,25 @@ def _draw_graph(wf, graph_name, out_dir, graph_style="colored", logger=None):
     graph_image_path.unlink()
 
 
-def _plot_image_sample(image_path: os.PathLike):
-    from nilearn import plotting
-    from nilearn.image import load_img, index_img
+def _plot_image_sample(image_path: os.PathLike, title: str= "image_sample.png", display_mode: str="mosaic"):
+    """Plots a sample volume from the midpoint of the given 4D image to allow quick
+    visual inspection of the fidelity of processing results.
+
+    Args:
+        image_path (os.PathLike): Path to the 4D image to plot.
+        title (str, optional): The title for the plot. Defaults to "image_sample.png".
+        display_mode (str, optional): Method for displaying the plot. Defaults to "mosaic".
+    """
 
     main_image = load_img(image_path)
+
     # Grab a slice from the midpoint
-    image_slice = index_img(main_image, int(main_image.shape[3] / 2))
+    image_slice = index_img(main_image, int(main_image.shape[IMAGE_TIME_DIMENSION_INDEX] / 2))
 
-    output_path = Path(image_path).parent / "image_sample.png"
+    # Create a save path in the same directory as the image_path
+    output_path = Path(image_path).parent / title
 
-    _ = plotting.plot_epi(image_slice, title="plot_epi", output_file=output_path, display_mode='mosaic')
+    plotting.plot_epi(image_slice, title=title, output_file=output_path, display_mode=display_mode)
 
 
 def _fetch_postprocessing_stream_config(config: dict, output_dir: os.PathLike, processing_stream:str=DEFAULT_PROCESSING_STREAM_NAME):
