@@ -161,7 +161,8 @@ def postprocess_image_controller(config_file, subject_id, task, run, image_space
     config = _parse_config(config_file)
     config_file = Path(config_file)
 
-    postprocessing_config = _fetch_postprocessing_stream_config(config, Path(subject_out_dir).parent.parent, processing_stream=processing_stream)
+    # TODO: Probably need to pass in top level output dir to avoid this hacky code
+    postprocessing_config = _fetch_postprocessing_stream_config(config, Path(subject_out_dir).parent.parent.parent, processing_stream=processing_stream)
 
     build_and_run_postprocessing_workflow(postprocessing_config, subject_id, task, run, image_space, image_path, bids_dir, fmriprep_dir, pybids_db_path,
         subject_out_dir, subject_working_dir, log_dir)
@@ -178,16 +179,12 @@ def distribute_subject_jobs(bids_dir, fmriprep_dir, output_dir: os.PathLike, con
     logger = _get_logger("distribute_subject_jobs")
     _add_file_handler(logger, log_dir, 'postprocess.log')
 
-    config = _parse_config(config_file)
-
     output_dir = Path(output_dir)
     # Don't create any files/directories unless the user is submitting
     if submit:
         # Create the root output directory for all subject postprocessing results, if it doesn't yet exist.
         if not output_dir.exists():
             output_dir.mkdir()
-
-        _fetch_postprocessing_stream_config(config, output_dir, processing_stream)
 
     bids:BIDSLayout = _get_bids(bids_dir, database_path=pybids_db_path, fmriprep_dir=fmriprep_dir, refresh=refresh_index)
 
