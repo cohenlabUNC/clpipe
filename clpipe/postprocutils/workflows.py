@@ -147,10 +147,9 @@ def build_image_postprocessing_workflow(postprocessing_config: dict, in_file: os
 
             confound_regression_implementation = _getConfoundRegressionImplementation(implementation_name)
 
-            current_wf = confound_regression_implementation(base_dir=postproc_wf.base_dir, crashdump_dir=crashdump_dir)
+            current_wf = confound_regression_implementation(mask_file=mask_file, base_dir=postproc_wf.base_dir, crashdump_dir=crashdump_dir)
 
             postproc_wf.connect(input_node, "confounds_file", current_wf, "inputnode.confounds_file")
-            postproc_wf.connect(input_node, "mask_file", current_wf, "inputnode.mask_file")
             
         elif step == "ApplyMask":
             current_wf = build_apply_mask_workflow(mask_file=mask_file, base_dir=postproc_wf.base_dir, crashdump_dir=crashdump_dir)
@@ -544,7 +543,7 @@ def build_confound_regression_afni_3dTproject(in_file: os.PathLike=None, out_fil
     if confounds_file:
         input_node.inputs.confounds_file = confounds_file
 
-    regressor_node = pe.Node(TProject(polort=0), name="3dTproject")
+    regressor_node = pe.Node(TProject(polort=0, outputtype="NIFTI_GZ"), name="3dTproject")
 
     workflow.connect(input_node, "in_file", regressor_node, "in_file")
     workflow.connect(input_node, "out_file", regressor_node, "out_file")
