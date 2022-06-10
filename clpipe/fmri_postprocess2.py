@@ -421,10 +421,9 @@ def _build_image_export_path(image_file_name: str, subject_out_dir: os.PathLike)
     Returns:
         os.PathLike: Save path for an image file.
     """
-    # TODO: change this to be like desc-postproc_bold instead of desc-preproc_bold_postprocessed
-    base, image_name, exstension = split_filename(image_file_name)
-    out_stem = image_name + '_postproccessed.nii.gz'
-    export_path = os.path.abspath(os.path.join(subject_out_dir, out_stem))
+    outstem = image_file_name.replace("preproc", "postproc")
+
+    export_path = os.path.abspath(os.path.join(subject_out_dir, outstem))
 
     return export_path
 
