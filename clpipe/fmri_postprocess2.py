@@ -41,6 +41,7 @@ from .postprocutils.confounds_workflows import build_confounds_processing_workfl
 from .error_handler import exception_handler
 from .errors import *
 
+DEFAULT_LOG_FILE_NAME = "postprocess.log"
 DEFAULT_PROCESSING_STREAM_NAME = "smooth-filter-normalize"
 PROCESSING_DESCRIPTION_FILE_NAME = "processing_description.json"
 IMAGE_TIME_DIMENSION_INDEX = 3
@@ -177,7 +178,7 @@ def distribute_subject_jobs(bids_dir, fmriprep_dir, output_dir: os.PathLike, con
     """
 
     logger = _get_logger("distribute_subject_jobs")
-    _add_file_handler(logger, log_dir, 'postprocess.log')
+    _add_file_handler(logger, log_dir, DEFAULT_LOG_FILE_NAME)
 
     output_dir = Path(output_dir)
     # Don't create any files/directories unless the user is submitting
@@ -431,7 +432,7 @@ def _setup_confounds_wf(postprocessing_config, pipeline_name, tr, confounds, out
     # TODO: maybe add 'postproc' to name if postprocessing is applied
     # For now just keep the base name
     base, image_name, exstension = split_filename(confounds)
-    confound_out_file = os.path.abspath(os.path.join(out_dir, image_name))
+    confound_out_file = os.path.abspath(os.path.join(out_dir, image_name + exstension))
     
     logger.info(f"Postprocessed confound out file: {confound_out_file}")
 
@@ -526,8 +527,9 @@ def _postprocessing_config_apply_processing_stream(config: dict, processing_stre
         if stream["ProcessingStream"] == processing_stream:
             # Use deep update to impart the processing stream options into the postprocessing config
             postprocessing_config = pydantic.utils.deep_update(postprocessing_config, stream_options)
+            return postprocessing_config
 
-    return postprocessing_config
+    raise ValueError(f"No stream found in configuration with name: {processing_stream}")
 
 
 def _get_postprocessing_config(config: dict):
@@ -759,7 +761,10 @@ def _get_logger(name):
     return logger
 
 
-def _add_file_handler(logger, log_dir, f_name):
+def _add_file_handler(logger: logging.Logger, log_dir: Path, f_name: str):
+    if not log_dir.exists():
+        log_dir.mkdir(parents=True)
+
     # Create log handler
     f_handler = logging.FileHandler(log_dir / f_name)
     f_handler.setLevel(logging.DEBUG)
