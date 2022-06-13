@@ -400,13 +400,6 @@ def _setup_image_workflow(postprocessing_config, pipeline_name,
         mixing_file=mixing_file, noise_file=noise_file,
         tr=tr,
         base_dir=working_dir, crashdump_dir=log_dir)
-    
-    # Draw the workflow's process graph if requested in config
-    # if postprocessing_config["WriteProcessGraph"]:
-    #     # Hacky way to get the processing graph at level of stream directory
-    #     # TODO: come up with a better way to do this
-    #     stream_level_dir = Path(out_dir).parent.parent
-    #     _draw_graph(wf, "image_processsing_graph", stream_level_dir, logger=logger)
 
     return wf
 
@@ -433,13 +426,12 @@ def _setup_confounds_wf(postprocessing_config, pipeline_name, tr, confounds, out
 
     # TODO: Run this async or batch
     logger.info(f"Building confounds workflow for {pipeline_name}")
-    
-    confound_suffix = postprocessing_config["ConfoundOptions"]["ProcessedConfoundsSuffix"]
 
     # Calculate the output file name
+    # TODO: maybe add 'postproc' to name if postprocessing is applied
+    # For now just keep the base name
     base, image_name, exstension = split_filename(confounds)
-    out_stem = image_name + '_' + confound_suffix + '.tsv'
-    confound_out_file = os.path.abspath(os.path.join(out_dir, out_stem))
+    confound_out_file = os.path.abspath(os.path.join(out_dir, image_name))
     
     logger.info(f"Postprocessed confound out file: {confound_out_file}")
 
@@ -448,11 +440,6 @@ def _setup_confounds_wf(postprocessing_config, pipeline_name, tr, confounds, out
         name=f"{pipeline_name}_Confounds_Postprocessing_Pipeline",
         mixing_file=mixing_file, noise_file=noise_file,
         base_dir=working_dir, crashdump_dir=log_dir)
-
-    # Draw the confound workflow's process graph if requested in config
-    # if postprocessing_config["WriteProcessGraph"]:
-    #     stream_level_dir = Path(out_dir).parent.parent
-    #     _draw_graph(confounds_wf, "confounds_processsing_graph", stream_level_dir, logger=logger)
 
     return confounds_wf
 

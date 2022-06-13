@@ -116,8 +116,7 @@
 				"ScrubAhead": 0,
 				"ScrubBehind": 0,
 				"ScrubContiguous": 0
-			},
-			"ProcessedConfoundsSuffix": "postprocessed"
+			}
 		},
 		"BatchOptions": {
 			"MemoryUsage": "20000",
