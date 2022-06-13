@@ -249,10 +249,8 @@ def build_and_run_postprocessing_workflow(postprocessing_config, subject_id, tas
     log_dir = Path(log_dir)
     subject_out_dir = Path(subject_out_dir)
 
-    image_file_name = image_path.stem
-
     pipeline_name = f"subject_{subject_id}_task_{task}"
-    if run: name += f"_run_{run}"
+    if run: pipeline_name += f"_run_{run}"
 
     logger = _get_logger(f"postprocess_image_{pipeline_name}")
 
@@ -272,14 +270,16 @@ def build_and_run_postprocessing_workflow(postprocessing_config, subject_id, tas
 
     mask_image = _get_mask(bids, subject_id, task, run, image_space, logger)
     tr = _get_tr(bids, subject_id, task, run, logger)
-    confounds = _get_confounds(bids, subject_id, task, run, logger)
+    confounds_path = _get_confounds(bids, subject_id, task, run, logger)
 
     image_wf = None
     confounds_wf = None
 
-    if confounds is not None:
+    if confounds_path is not None:
         try:
-            confounds_wf = _setup_confounds_wf(postprocessing_config, pipeline_name, tr, confounds,
+            confounds_export_path = _build_export_path(confounds_path, subject_id, fmriprep_dir, subject_out_dir)
+
+            confounds_wf = _setup_confounds_wf(postprocessing_config, pipeline_name, tr, confounds_export_path,
                 subject_out_dir, subject_working_dir, log_dir, logger, mixing_file=mixing_file, noise_file=noise_file)
             
         except ValueError as ve:
@@ -287,11 +287,11 @@ def build_and_run_postprocessing_workflow(postprocessing_config, subject_id, tas
             logger.warn("Skipping confounds processing")
 
     if not confounds_only:
-        export_path = _build_image_export_path(image_file_name, subject_out_dir)
+        image_export_path = _build_export_path(image_path, subject_id, fmriprep_dir, subject_out_dir)
 
         image_wf = _setup_image_workflow(postprocessing_config, pipeline_name,
-            tr, subject_out_dir, export_path, subject_working_dir, log_dir, logger, mask_image=mask_image,
-            confounds=confounds, mixing_file=mixing_file, noise_file=noise_file)
+            tr, subject_out_dir, image_export_path, subject_working_dir, log_dir, logger, mask_image=mask_image,
+            confounds=confounds_export_path, mixing_file=mixing_file, noise_file=noise_file)
 
     confound_regression = "ConfoundRegression" in postprocessing_config["ProcessingSteps"]
 
@@ -303,12 +303,12 @@ def build_and_run_postprocessing_workflow(postprocessing_config, subject_id, tas
         _draw_graph(postproc_wf, "processing_graph", stream_level_dir, logger=logger)
 
     postproc_wf.inputs.inputnode.in_file = image_path
-    postproc_wf.inputs.inputnode.confounds_file = confounds
+    postproc_wf.inputs.inputnode.confounds_file = confounds_path
 
     postproc_wf.run()
 
     if not confounds_only:
-        _plot_image_sample(export_path, title=pipeline_name)
+        _plot_image_sample(image_export_path, title=pipeline_name)
 
     
 def _get_mixing_file(bids, subject_id, task, run, logger):
@@ -405,39 +405,35 @@ def _setup_image_workflow(postprocessing_config, pipeline_name,
     return wf
 
 
-def _build_image_export_path(image_file_name: str, subject_out_dir: os.PathLike):
+def _build_export_path(image_path: os.PathLike, subject_id: str, fmriprep_dir: os.PathLike, subject_out_dir: os.PathLike):
     """Builds a new name for a processed image.
 
     Args:
-        image_file_name (str): The name of the original image file.
+        image_path (os.PathLike): The path to the original image file.
         subject_out_dir (os.PathLike): The destination directory.
 
     Returns:
         os.PathLike: Save path for an image file.
     """
-    outstem = image_file_name.replace("preproc", "postproc")
+    out_path = Path(image_path).relative_to(Path(fmriprep_dir) / ("sub-" + subject_id))
 
-    export_path = os.path.abspath(os.path.join(subject_out_dir, outstem))
+    export_path = Path(subject_out_dir) / str(out_path).replace("preproc", "postproc")
+
+    print(f"Export path: {export_path}")
 
     return export_path
 
 
-def _setup_confounds_wf(postprocessing_config, pipeline_name, tr, confounds, out_dir, 
+def _setup_confounds_wf(postprocessing_config, pipeline_name, tr, export_file, out_dir, 
     working_dir, log_dir, logger, mixing_file=None, noise_file=None):
 
     # TODO: Run this async or batch
     logger.info(f"Building confounds workflow for {pipeline_name}")
-
-    # Calculate the output file name
-    # TODO: maybe add 'postproc' to name if postprocessing is applied
-    # For now just keep the base name
-    base, image_name, exstension = split_filename(confounds)
-    confound_out_file = os.path.abspath(os.path.join(out_dir, image_name + exstension))
     
-    logger.info(f"Postprocessed confound out file: {confound_out_file}")
+    logger.info(f"Postprocessed confound out file: {export_file}")
 
     confounds_wf = build_confounds_processing_workflow(postprocessing_config,
-        export_file=confound_out_file, tr=tr,
+        export_file=export_file, tr=tr,
         name=f"{pipeline_name}_Confounds_Postprocessing_Pipeline",
         mixing_file=mixing_file, noise_file=noise_file,
         base_dir=working_dir, crashdump_dir=log_dir)
