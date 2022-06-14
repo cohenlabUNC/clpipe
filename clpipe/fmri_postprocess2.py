@@ -241,8 +241,10 @@ def distribute_image_jobs(subject_id: str, bids_dir: os.PathLike, fmriprep_dir: 
         logger.warn("Postprocessing configuration setting 'TargetTasks' not set. Defaulting to all tasks.")
         tasks = None
 
-    submission_strings = _create_image_submission_strings(subject_id, image_space, bids, bids_dir, fmriprep_dir, pybids_db_path, 
-        out_dir, subject_out_dir, processing_stream, subject_working_dir, config_file, log_dir, logger, tasks=tasks)
+    images_to_process = _get_images_to_process(subject_id, image_space, bids, logger, tasks=tasks)
+
+    submission_strings = _create_image_submission_strings(images_to_process, subject_id, image_space, bids_dir, fmriprep_dir, pybids_db_path, 
+        out_dir, subject_out_dir, processing_stream, subject_working_dir, config_file, log_dir, logger)
 
     _submit_jobs(batch_manager, submission_strings, logger, submit=submit)
 
@@ -573,37 +575,37 @@ def _submit_jobs(batch_manager, submission_strings, logger, submit=True):
                 print(submission_strings[key])
 
 
-def _create_image_submission_strings(subject_id, image_space, bids, bids_dir, fmriprep_dir, pybids_db_path, out_dir, subject_out_dir, processing_stream,
-    subject_working_dir, config_file, log_dir, logger, tasks=None):
-    
+def _get_images_to_process(subject_id, image_space, bids, logger, tasks=None):
     logger.info(f"Searching for images to process")
     logger.info(f"Target image space: {image_space}")
     
-    # Find the subject's images to run post_proc on
+    # Find the subject's preproc images
     try:
         images_to_process = []
-        
-        # TODO: test out making an args list instead of making lots of switches
-        # If the list is empty, assume we are processing all tasks
-        if not tasks:
-            tasks = "ALL"
-            logger.info(f"Targeting all available tasks.")
 
-            images_to_process = bids.get(
-                subject=subject_id, extension="nii.gz", datatype="func", 
-                suffix="bold", desc="preproc", scope="derivatives", space=image_space)
-        else:
+        search_args = {"subject": subject_id, "extension": "nii.gz", "datatype": "func", 
+                "suffix": "bold", "desc": "preproc", "scope": "derivatives", "space": image_space}
+        if tasks:
+            search_args["task"] = tasks
             logger.info(f"Targeting task(s): {tasks}")
-
-            images_to_process = bids.get(
-                    subject=subject_id, task=tasks, extension="nii.gz", datatype="func", 
-                    suffix="bold", desc="preproc", scope="derivatives", space=image_space)
+        else:
+            logger.info(f"Targeting all available tasks.")
+        
+        images_to_process = bids.get(**search_args)
 
         if len(images_to_process) == 0:
             raise NoImagesFoundError(f"No preproc BOLD images found for sub-{subject_id} in space {image_space}, task(s): {str(tasks)}.")
 
         logger.info(f"Found images: {len(images_to_process)}")
-        logger.info(f"Building image jobs")
+        return images_to_process
+    except IndexError:
+        raise NoImagesFoundError(f"No preproc BOLD image for subject {subject_id} found.")
+
+
+def _create_image_submission_strings(images_to_process, subject_id, image_space, bids_dir, fmriprep_dir, pybids_db_path, out_dir, subject_out_dir, processing_stream,
+    subject_working_dir, config_file, log_dir, logger):
+    
+        logger.info(f"Building image job submission strings")
 
         submission_strings = {}
         SUBMISSION_STRING_TEMPLATE = ("postprocess_image {config_file} {subject_id} {task} {image_space} "
@@ -611,6 +613,8 @@ def _create_image_submission_strings(subject_id, image_space, bids, bids_dir, fm
         
         logger.info("Creating submission strings")
         for image in images_to_process:
+            #TODO: can this image entity search be moved to image processing step, removing need to pass task, run, space, etc,
+            # and instead just storing it in the image path?
             image_entities = image.get_entities()
             task = image_entities['task']
             try:
@@ -635,9 +639,6 @@ def _create_image_submission_strings(subject_id, image_space, bids, bids_dir, fm
                                                             subject_working_dir=subject_working_dir,
                                                             log_dir=log_dir)
         return submission_strings
-
-    except IndexError:
-        raise NoImagesFoundError(f"No preproc BOLD image for subject {subject_id} found.")
 
 
 def _validate_subject_exists(bids, subject_id, logger):
