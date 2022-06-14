@@ -284,7 +284,7 @@ def build_and_run_postprocessing_workflow(postprocessing_config, subject_id, tas
             confounds_export_path = _build_export_path(confounds_path, subject_id, fmriprep_dir, subject_out_dir)
 
             confounds_wf = _setup_confounds_wf(postprocessing_config, pipeline_name, tr, confounds_export_path,
-                subject_out_dir, subject_working_dir, log_dir, logger, mixing_file=mixing_file, noise_file=noise_file)
+                subject_working_dir, log_dir, logger, mixing_file=mixing_file, noise_file=noise_file)
             
         except ValueError as ve:
             logger.warn(ve)
@@ -294,7 +294,7 @@ def build_and_run_postprocessing_workflow(postprocessing_config, subject_id, tas
         image_export_path = _build_export_path(image_path, subject_id, fmriprep_dir, subject_out_dir)
 
         image_wf = _setup_image_workflow(postprocessing_config, pipeline_name,
-            tr, subject_out_dir, image_export_path, subject_working_dir, log_dir, logger, mask_image=mask_image,
+            tr, image_export_path, subject_working_dir, log_dir, logger, mask_image=mask_image,
             confounds=confounds_export_path, mixing_file=mixing_file, noise_file=noise_file)
 
     confound_regression = "ConfoundRegression" in postprocessing_config["ProcessingSteps"]
@@ -395,7 +395,7 @@ def _get_confounds(bids, subject_id, task, run, logger):
 
 
 def _setup_image_workflow(postprocessing_config, pipeline_name,
-    tr, out_dir, export_path, working_dir, log_dir, logger, mask_image=None, confounds=None,
+    tr, export_path, working_dir, log_dir, logger, mask_image=None, confounds=None,
     mixing_file=None, noise_file=None):
 
     logger.info(f"Building postprocessing workflow for: {pipeline_name}")
@@ -435,7 +435,7 @@ def _build_export_path(image_path: os.PathLike, subject_id: str, fmriprep_dir: o
     return export_path
 
 
-def _setup_confounds_wf(postprocessing_config, pipeline_name, tr, export_file, out_dir, 
+def _setup_confounds_wf(postprocessing_config, pipeline_name, tr, export_file, 
     working_dir, log_dir, logger, mixing_file=None, noise_file=None):
 
     # TODO: Run this async or batch
