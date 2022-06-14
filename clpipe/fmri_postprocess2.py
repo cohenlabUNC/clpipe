@@ -234,8 +234,15 @@ def distribute_image_jobs(subject_id: str, bids_dir: os.PathLike, fmriprep_dir: 
     bids:BIDSLayout = _get_bids(bids_dir, database_path=pybids_db_path, fmriprep_dir=fmriprep_dir)
     _validate_subject_exists(bids, subject_id, logger)
 
-    submission_strings = _create_image_submission_strings(subject_id, bids, bids_dir, fmriprep_dir, pybids_db_path, 
-        out_dir, subject_out_dir, processing_stream, subject_working_dir, postprocessing_config, config_file, log_dir, logger)
+    image_space = postprocessing_config["TargetImageSpace"]
+    try:
+        tasks = postprocessing_config["TargetTasks"]
+    except KeyError:
+        logger.warn("Postprocessing configuration setting 'TargetTasks' not set. Defaulting to all tasks.")
+        tasks = None
+
+    submission_strings = _create_image_submission_strings(subject_id, image_space, bids, bids_dir, fmriprep_dir, pybids_db_path, 
+        out_dir, subject_out_dir, processing_stream, subject_working_dir, config_file, log_dir, logger, tasks=tasks)
 
     _submit_jobs(batch_manager, submission_strings, logger, submit=submit)
 
@@ -566,23 +573,16 @@ def _submit_jobs(batch_manager, submission_strings, logger, submit=True):
                 print(submission_strings[key])
 
 
-def _create_image_submission_strings(subject_id, bids, bids_dir, fmriprep_dir, pybids_db_path, out_dir, subject_out_dir, processing_stream,
-    subject_working_dir, postprocessing_config, config_file, log_dir, logger):
+def _create_image_submission_strings(subject_id, image_space, bids, bids_dir, fmriprep_dir, pybids_db_path, out_dir, subject_out_dir, processing_stream,
+    subject_working_dir, config_file, log_dir, logger, tasks=None):
     
     logger.info(f"Searching for images to process")
+    logger.info(f"Target image space: {image_space}")
     
     # Find the subject's images to run post_proc on
     try:
         images_to_process = []
-
-        image_space = postprocessing_config["TargetImageSpace"]
-        logger.info(f"Target image space: {image_space}")
-
-        try:
-            tasks = postprocessing_config["TargetTasks"]
-        except KeyError:
-            logger.warn("Postprocessing configuration setting 'TargetTasks' not set. Defaulting to all tasks.")
-            tasks = None
+        
         # TODO: test out making an args list instead of making lots of switches
         # If the list is empty, assume we are processing all tasks
         if not tasks:
