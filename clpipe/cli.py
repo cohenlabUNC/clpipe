@@ -45,9 +45,6 @@ def postprocess_subject_cli(subject_id, bids_dir, fmriprep_dir, output_dir, proc
 
 @click.command()
 @click.argument('config_file', type=click.Path(dir_okay=False, file_okay=True))
-@click.argument('subject_id')
-@click.argument('task')
-@click.argument('image_space')
 @click.argument('image_path', type=click.Path(dir_okay=False, file_okay=True))
 @click.argument('bids_dir', type=click.Path(dir_okay=True, file_okay=False))
 @click.argument('fmriprep_dir', type=click.Path(dir_okay=True, file_okay=False))
@@ -57,9 +54,8 @@ def postprocess_subject_cli(subject_id, bids_dir, fmriprep_dir, output_dir, proc
 @click.argument('processing_stream', default=DEFAULT_PROCESSING_STREAM_NAME)
 @click.argument('subject_working_dir', type=click.Path(dir_okay=True, file_okay=False))
 @click.argument('log_dir', type=click.Path(dir_okay=True, file_okay=False))
-@click.option('-run', required=False, help='Optional run number')
-def postprocess_image_cli(config_file, subject_id, task, run, image_space, image_path, bids_dir, fmriprep_dir, index_dir, 
+def postprocess_image_cli(config_file, image_path, bids_dir, fmriprep_dir, index_dir, 
     out_dir, subject_out_dir, processing_stream, subject_working_dir, log_dir):
     
-    postprocess_image_controller(config_file, subject_id, task, run, image_space, image_path, bids_dir, fmriprep_dir, 
+    postprocess_image_controller(config_file, image_path, bids_dir, fmriprep_dir, 
     index_dir, out_dir, subject_out_dir, subject_working_dir, log_dir, processing_stream=processing_stream)

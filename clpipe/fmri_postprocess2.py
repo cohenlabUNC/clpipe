@@ -32,6 +32,7 @@ from nilearn.image import load_img, index_img
 with warnings.catch_warnings():
     warnings.filterwarnings("ignore", category=FutureWarning)
     from bids import BIDSLayout, BIDSLayoutIndexer, config as bids_config
+    from bids.layout import BIDSFile
 
 from .config_json_parser import ClpipeConfigParser
 from .batch_manager import BatchManager, Job
@@ -150,7 +151,7 @@ def postprocess_subject_controller(subject_id, bids_dir, fmriprep_dir, output_di
     sys.exit()
 
 
-def postprocess_image_controller(config_file, subject_id, task, run, image_space, image_path, bids_dir, fmriprep_dir, 
+def postprocess_image_controller(config_file, image_path, bids_dir, fmriprep_dir, 
     pybids_db_path, out_dir, subject_out_dir, subject_working_dir, log_dir, processing_stream=DEFAULT_PROCESSING_STREAM_NAME):
     """
     Parse configuration and (TODO) sanitize inputs for the workflow builder.
@@ -167,7 +168,7 @@ def postprocess_image_controller(config_file, subject_id, task, run, image_space
 
     stream_dir = Path(out_dir) / processing_stream
 
-    build_and_run_postprocessing_workflow(postprocessing_config, subject_id, task, run, image_space, image_path, bids_dir, fmriprep_dir, pybids_db_path,
+    build_and_run_postprocessing_workflow(postprocessing_config, image_path, bids_dir, fmriprep_dir, pybids_db_path,
         stream_dir, subject_out_dir, subject_working_dir, log_dir)
    
     sys.exit()
@@ -248,13 +249,13 @@ def distribute_image_jobs(subject_id: str, bids_dir: os.PathLike, fmriprep_dir: 
 
     images_to_process = _get_images_to_process(subject_id, image_space, bids, logger, tasks=tasks, acquisitions=acquisitions)
 
-    submission_strings = _create_image_submission_strings(images_to_process, subject_id, image_space, bids_dir, fmriprep_dir, pybids_db_path, 
+    submission_strings = _create_image_submission_strings(images_to_process, bids_dir, fmriprep_dir, pybids_db_path, 
         out_dir, subject_out_dir, processing_stream, subject_working_dir, config_file, log_dir, logger)
 
     _submit_jobs(batch_manager, submission_strings, logger, submit=submit)
 
 
-def build_and_run_postprocessing_workflow(postprocessing_config, subject_id, task, run, image_space, image_path, bids_dir, fmriprep_dir, 
+def build_and_run_postprocessing_workflow(postprocessing_config, image_path, bids_dir, fmriprep_dir, 
     pybids_db_path, stream_dir, subject_out_dir, subject_working_dir, log_dir, confounds_only=False):
     """
     Setup the workflows specified in the postprocessing configuration.
@@ -273,29 +274,40 @@ def build_and_run_postprocessing_workflow(postprocessing_config, subject_id, tas
     logger = _get_logger(f"postprocess_image_{file_name_no_extensions}")
 
     bids:BIDSLayout = _get_bids(bids_dir, database_path=pybids_db_path, fmriprep_dir=fmriprep_dir)
+    # Lookup the BIDSFile with the image path
+    bids_image:BIDSFile = bids.get_file(image_path)
+    # Fetch the image's entities
+    image_entities = bids_image.get_entities()
+    # Create a sub dict of the entities we will need to query on
+    query_params = {k: image_entities[k] for k in image_entities.keys() & {"session", "subject", "task", "run", "acquisition", "space"}}
+    # Create a specific dict for searching non-image files
+    non_image_query_params = query_params.copy()
+    non_image_query_params.pop("space")
 
     mixing_file, noise_file = None, None
     if "AROMARegression" in postprocessing_config["ProcessingSteps"]:
         try:
-            mixing_file = _get_mixing_file(bids, subject_id, task, run, logger)
-            noise_file = _get_noise_file(bids, subject_id, task, run, logger)
+            #TODO: update these for image entities
+            mixing_file = _get_mixing_file(bids, non_image_query_params, logger)
+            noise_file = _get_noise_file(bids, non_image_query_params, logger)
         except MixingFileNotFoundError as mfnfe:
             logger.error(mfnfe)
+            #TODO: this should raise the error for the controller to handle
             sys.exit(1)
         except NoiseFileNotFoundError as nfnfe:
             logger.error(nfnfe)
             sys.exit(1)
 
-    mask_image = _get_mask(bids, subject_id, task, run, image_space, logger)
-    tr = _get_tr(bids, subject_id, task, run, logger)
-    confounds_path = _get_confounds(bids, subject_id, task, run, logger)
+    mask_image = _get_mask(bids, query_params, logger)
+    tr = _get_tr(bids, query_params, logger)
+    confounds_path = _get_confounds(bids, non_image_query_params, logger)
 
     image_wf = None
     confounds_wf = None
 
     if confounds_path is not None:
         try:
-            confounds_export_path = _build_export_path(confounds_path, subject_id, fmriprep_dir, subject_out_dir)
+            confounds_export_path = _build_export_path(confounds_path, query_params["subject"], fmriprep_dir, subject_out_dir)
 
             confounds_wf = _setup_confounds_wf(postprocessing_config, pipeline_name, tr, confounds_export_path,
                 subject_working_dir, log_dir, logger, mixing_file=mixing_file, noise_file=noise_file)
@@ -305,7 +317,7 @@ def build_and_run_postprocessing_workflow(postprocessing_config, subject_id, tas
             logger.warn("Skipping confounds processing")
 
     if not confounds_only:
-        image_export_path = _build_export_path(image_path, subject_id, fmriprep_dir, subject_out_dir)
+        image_export_path = _build_export_path(image_path, query_params["subject"], fmriprep_dir, subject_out_dir)
 
         image_wf = _setup_image_workflow(postprocessing_config, pipeline_name,
             tr, image_export_path, subject_working_dir, log_dir, logger, mask_image=mask_image,
@@ -329,57 +341,56 @@ def build_and_run_postprocessing_workflow(postprocessing_config, subject_id, tas
     #     _plot_image_sample(image_export_path, title=pipeline_name)
 
     
-def _get_mixing_file(bids, subject_id, task, run, logger):
+def _get_mixing_file(bids, query_params, logger):
     logger.info("Searching for MELODIC mixing file")
     try:
         mixing_file = bids.get(
-            subject=subject_id, task=task, run=run, suffix="mixing", extension=".tsv", return_type="filename",
+            **query_params, suffix="mixing", extension=".tsv", return_type="filename",
                 desc="MELODIC", scope="derivatives"
         )[0]
         logger.info(f"MELODIC mixing file found: {mixing_file}")
 
         return mixing_file
     except IndexError:
-        raise MixingFileNotFoundError(f"MELODIC mixing file for sub-{subject_id} task-{task} not found.")
+        raise MixingFileNotFoundError(f"MELODIC mixing file for query {query_params} not found.")
 
 
-def _get_noise_file(bids, subject_id, task, run, logger):
+def _get_noise_file(bids, query_params, logger):
     logger.info("Searching for AROMA noise ICs file")
     try:
         noise_file = bids.get(
-            subject=subject_id, task=task, run=run, suffix="AROMAnoiseICs", extension=".csv", return_type="filename",
+            **query_params, suffix="AROMAnoiseICs", extension=".csv", return_type="filename",
                 scope="derivatives"
         )[0]
         logger.info(f"AROMA noise ICs file found: {noise_file}")
 
         return noise_file
     except IndexError:
-        raise NoiseFileNotFoundError(f"AROMA noise ICs file for sub-{subject_id} task-{task} not found.")
+        raise NoiseFileNotFoundError(f"AROMA noise ICs file for query {query_params} not found.")
 
 
-def _get_mask(bids, subject_id, task, run, image_space, logger):
+def _get_mask(bids, query_params, logger):
     # Find the subject's mask file
     logger.info("Searching for mask file")
     try:
         mask_image = bids.get(
-            subject=subject_id, task=task, run=run, space=image_space, suffix="mask", extension=".nii.gz", datatype="func", return_type="filename",
+            **query_params, suffix="mask", extension=".nii.gz", datatype="func", return_type="filename",
                 desc="brain", scope="derivatives"
         )[0]
         logger.info(f"Mask file found: {mask_image}")
 
         return mask_image
     except IndexError:
-        logger.warn(f"Mask image for subject {subject_id} task-{task} not found.")
+        logger.warn(f"Mask image for search query: {query_params} not found")
         return None
 
-def _get_tr(bids, subject_id, task, run, logger):
+def _get_tr(bids, query_params, logger):
     # To get the TR, we do another, similar query to get the sidecar and open it as a dict, because indexing metadata in
     # pybids is too slow to be worth just having the TR available
     # This can probably be done in just one query combined with the above
 
-    #TODO - include run in this query?
     image_to_process_json = bids.get(
-        subject=subject_id, task=task, run=run, extension=".json", datatype="func", 
+        **query_params, extension=".json", datatype="func", 
         suffix="bold", desc="preproc", scope="derivatives", return_type="filename")[0]
 
     logger.info(f"Looking up TR in file: {image_to_process_json}")
@@ -392,20 +403,20 @@ def _get_tr(bids, subject_id, task, run, logger):
 
         return tr
 
-def _get_confounds(bids, subject_id, task, run, logger):
+def _get_confounds(bids, query_params, logger):
     # Find the subject's confounds file
     
     logger.info("Searching for confounds file")
     try:
         confounds = bids.get(
-            subject=subject_id, task=task, run=run, return_type="filename", extension=".tsv",
+            **query_params, return_type="filename", extension=".tsv",
                 desc="confounds", scope="derivatives"
         )[0]
         logger.info(f"Confound file found: {confounds}")
 
         return confounds
     except IndexError:
-        logger.warn(f"Confound file for sub-{subject_id} task-{task} run-{run} not found.")
+        logger.warn(f"Confound file for query {query_params} not found.")
 
 
 def _setup_image_workflow(postprocessing_config, pipeline_name,
@@ -613,33 +624,20 @@ def _get_images_to_process(subject_id, image_space, bids, logger, tasks=None, ac
         raise NoImagesFoundError(f"No preproc BOLD image for subject {subject_id} found.")
 
 
-def _create_image_submission_strings(images_to_process, subject_id, image_space, bids_dir, fmriprep_dir, pybids_db_path, out_dir, subject_out_dir, processing_stream,
+def _create_image_submission_strings(images_to_process, bids_dir, fmriprep_dir, pybids_db_path, out_dir, subject_out_dir, processing_stream,
     subject_working_dir, config_file, log_dir, logger):
     
         logger.info(f"Building image job submission strings")
 
         submission_strings = {}
-        SUBMISSION_STRING_TEMPLATE = ("postprocess_image {config_file} {subject_id} {task} {image_space} "
-            "{image_path} {bids_dir} {fmriprep_dir} {pybids_db_path} {out_dir} {subject_out_dir} {processing_stream} {subject_working_dir} {log_dir} {run}")
+        SUBMISSION_STRING_TEMPLATE = ("postprocess_image {config_file} "
+            "{image_path} {bids_dir} {fmriprep_dir} {pybids_db_path} {out_dir} {subject_out_dir} {processing_stream} {subject_working_dir} {log_dir}")
         
         logger.info("Creating submission strings")
         for image in images_to_process:
-            #TODO: can this image entity search be moved to image processing step, removing need to pass task, run, space, etc,
-            # and instead just storing it in the image path?
-            image_entities = image.get_entities()
-            task = image_entities['task']
-            try:
-                run = f"-run {image_entities['run']}"
-            except KeyError:
-                run = ""
-
             key = f"Postprocessing_{str(Path(image.path).stem)}"
             
             submission_strings[key] = SUBMISSION_STRING_TEMPLATE.format(config_file=config_file,
-                                                            subject_id=subject_id,
-                                                            task=task,
-                                                            run=run,
-                                                            image_space=image_space,
                                                             image_path=image.path,
                                                             bids_dir=bids_dir,
                                                             fmriprep_dir=fmriprep_dir,
