@@ -240,8 +240,13 @@ def distribute_image_jobs(subject_id: str, bids_dir: os.PathLike, fmriprep_dir: 
     except KeyError:
         logger.warn("Postprocessing configuration setting 'TargetTasks' not set. Defaulting to all tasks.")
         tasks = None
+    try:
+        acquisitions = postprocessing_config["TargetAcquisitions"]
+    except KeyError:
+        logger.warn("Postprocessing configuration setting 'TargetAcquisitions' not set. Defaulting to all acquisitions.")
+        acquisitions = None
 
-    images_to_process = _get_images_to_process(subject_id, image_space, bids, logger, tasks=tasks)
+    images_to_process = _get_images_to_process(subject_id, image_space, bids, logger, tasks=tasks, acquisitions=acquisitions)
 
     submission_strings = _create_image_submission_strings(images_to_process, subject_id, image_space, bids_dir, fmriprep_dir, pybids_db_path, 
         out_dir, subject_out_dir, processing_stream, subject_working_dir, config_file, log_dir, logger)
@@ -575,7 +580,7 @@ def _submit_jobs(batch_manager, submission_strings, logger, submit=True):
                 print(submission_strings[key])
 
 
-def _get_images_to_process(subject_id, image_space, bids, logger, tasks=None):
+def _get_images_to_process(subject_id, image_space, bids, logger, tasks=None, acquisitions=None):
     logger.info(f"Searching for images to process")
     logger.info(f"Target image space: {image_space}")
     
@@ -590,6 +595,12 @@ def _get_images_to_process(subject_id, image_space, bids, logger, tasks=None):
             logger.info(f"Targeting task(s): {tasks}")
         else:
             logger.info(f"Targeting all available tasks.")
+
+        if acquisitions:
+            search_args["acquisition"] = acquisitions
+            logger.info(f"Targeting acquisition(s): {acquisitions}")
+        else:
+            logger.info(f"Targeting all available acquisitions.")
         
         images_to_process = bids.get(**search_args)
 

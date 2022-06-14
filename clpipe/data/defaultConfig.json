@@ -74,6 +74,7 @@
 		"WriteProcessGraph": true,
 		"TargetImageSpace": "MNI152NLin2009cAsym",
 		"TargetTasks": [],
+		"TargetAcquisitions": [],
 		"ProcessingSteps": [
 			"SpatialSmoothing",
 			"TemporalFiltering",
