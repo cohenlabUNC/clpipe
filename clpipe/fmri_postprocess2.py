@@ -36,6 +36,7 @@ with warnings.catch_warnings():
 from .config_json_parser import ClpipeConfigParser
 from .batch_manager import BatchManager, Job
 from nipype.utils.filemanip import split_filename
+import nipype.pipeline.engine as pe
 from .postprocutils.workflows import build_image_postprocessing_workflow, build_postprocessing_workflow
 from .postprocutils.confounds_workflows import build_confounds_processing_workflow
 from .error_handler import exception_handler
@@ -150,7 +151,7 @@ def postprocess_subject_controller(subject_id, bids_dir, fmriprep_dir, output_di
 
 
 def postprocess_image_controller(config_file, subject_id, task, run, image_space, image_path, bids_dir, fmriprep_dir, 
-    pybids_db_path, subject_out_dir, subject_working_dir, log_dir, processing_stream=DEFAULT_PROCESSING_STREAM_NAME):
+    pybids_db_path, out_dir, subject_out_dir, subject_working_dir, log_dir, processing_stream=DEFAULT_PROCESSING_STREAM_NAME):
     """
     Parse configuration and (TODO) sanitize inputs for the workflow builder.
     """
@@ -162,11 +163,12 @@ def postprocess_image_controller(config_file, subject_id, task, run, image_space
     config = _parse_config(config_file)
     config_file = Path(config_file)
 
-    # TODO: Probably need to pass in top level output dir to avoid this hacky code
-    postprocessing_config = _fetch_postprocessing_stream_config(config, Path(subject_out_dir).parent.parent.parent, processing_stream=processing_stream)
+    postprocessing_config = _fetch_postprocessing_stream_config(config, out_dir, processing_stream=processing_stream)
+
+    stream_dir = Path(out_dir) / processing_stream
 
     build_and_run_postprocessing_workflow(postprocessing_config, subject_id, task, run, image_space, image_path, bids_dir, fmriprep_dir, pybids_db_path,
-        subject_out_dir, subject_working_dir, log_dir)
+        stream_dir, subject_out_dir, subject_working_dir, log_dir)
    
     sys.exit()
 
@@ -214,7 +216,7 @@ def distribute_image_jobs(subject_id: str, bids_dir: os.PathLike, fmriprep_dir: 
     config_file = Path(config_file)
     
     # Create a subject folder for this subject's postprocessing output, if one doesn't already exist
-    subject_out_dir = out_dir / processing_stream / ("sub-" + subject_id) / "func"
+    subject_out_dir = out_dir / processing_stream / ("sub-" + subject_id)
     if not subject_out_dir.exists():
         logger.info(f"Creating subject directory: {subject_out_dir}")
         subject_out_dir.mkdir(exist_ok=True, parents=True)
@@ -233,13 +235,13 @@ def distribute_image_jobs(subject_id: str, bids_dir: os.PathLike, fmriprep_dir: 
     _validate_subject_exists(bids, subject_id, logger)
 
     submission_strings = _create_image_submission_strings(subject_id, bids, bids_dir, fmriprep_dir, pybids_db_path, 
-        subject_out_dir, processing_stream, subject_working_dir, postprocessing_config, config_file, log_dir, logger)
+        out_dir, subject_out_dir, processing_stream, subject_working_dir, postprocessing_config, config_file, log_dir, logger)
 
     _submit_jobs(batch_manager, submission_strings, logger, submit=submit)
 
 
 def build_and_run_postprocessing_workflow(postprocessing_config, subject_id, task, run, image_space, image_path, bids_dir, fmriprep_dir, 
-    pybids_db_path, subject_out_dir, subject_working_dir, log_dir, confounds_only=False):
+    pybids_db_path, stream_dir, subject_out_dir, subject_working_dir, log_dir, confounds_only=False):
     """
     Setup the workflows specified in the postprocessing configuration.
     """
@@ -249,10 +251,12 @@ def build_and_run_postprocessing_workflow(postprocessing_config, subject_id, tas
     log_dir = Path(log_dir)
     subject_out_dir = Path(subject_out_dir)
 
-    pipeline_name = f"subject_{subject_id}_task_{task}"
-    if run: pipeline_name += f"_run_{run}"
+    # Grab only the image file name in a way that works on both .nii and .nii.gz
+    file_name_no_extensions = Path(str(image_path).rstrip(''.join(image_path.suffixes))).stem
+    # Remove hyphens to allow use as a pipeline name
+    pipeline_name = file_name_no_extensions.replace('-', "_")
 
-    logger = _get_logger(f"postprocess_image_{pipeline_name}")
+    logger = _get_logger(f"postprocess_image_{file_name_no_extensions}")
 
     bids:BIDSLayout = _get_bids(bids_dir, database_path=pybids_db_path, fmriprep_dir=fmriprep_dir)
 
@@ -298,17 +302,17 @@ def build_and_run_postprocessing_workflow(postprocessing_config, subject_id, tas
     postproc_wf = build_postprocessing_workflow(image_wf=image_wf, confounds_wf=confounds_wf, name=f"{pipeline_name}_Postprocessing_Pipeline",
         confound_regression=confound_regression, base_dir=subject_working_dir, crashdump_dir=log_dir)
     
-    stream_level_dir = Path(subject_out_dir).parent.parent
     if postprocessing_config["WriteProcessGraph"]:
-        _draw_graph(postproc_wf, "processing_graph", stream_level_dir, logger=logger)
+        _draw_graph(postproc_wf, "processing_graph", stream_dir, logger=logger)
 
     postproc_wf.inputs.inputnode.in_file = image_path
     postproc_wf.inputs.inputnode.confounds_file = confounds_path
 
     postproc_wf.run()
 
-    if not confounds_only:
-        _plot_image_sample(image_export_path, title=pipeline_name)
+    # Disabled until this plotting works with .nii.gz
+    # if not confounds_only:
+    #     _plot_image_sample(image_export_path, title=pipeline_name)
 
     
 def _get_mixing_file(bids, subject_id, task, run, logger):
@@ -396,7 +400,7 @@ def _setup_image_workflow(postprocessing_config, pipeline_name,
 
     logger.info(f"Building postprocessing workflow for: {pipeline_name}")
     wf = build_image_postprocessing_workflow(postprocessing_config, export_path=export_path,
-        name=f"{pipeline_name}_Image_Postprocessing_Pipeline",
+        name=f"Image_Postprocessing_Pipeline",
         mask_file=mask_image, confounds_file = confounds,
         mixing_file=mixing_file, noise_file=noise_file,
         tr=tr,
@@ -415,7 +419,14 @@ def _build_export_path(image_path: os.PathLike, subject_id: str, fmriprep_dir: o
     Returns:
         os.PathLike: Save path for an image file.
     """
+    # Copy the directory structure following the subject-id from the fmriprep dir
     out_path = Path(image_path).relative_to(Path(fmriprep_dir) / ("sub-" + subject_id))
+    export_path = Path(subject_out_dir) / str(out_path)
+    export_folder = export_path.parent
+
+    # Create the output folder if it doesn't exist
+    if not export_folder.exists():
+        export_folder.mkdir(parents=True)
 
     export_path = Path(subject_out_dir) / str(out_path).replace("preproc", "postproc")
 
@@ -434,14 +445,14 @@ def _setup_confounds_wf(postprocessing_config, pipeline_name, tr, export_file, o
 
     confounds_wf = build_confounds_processing_workflow(postprocessing_config,
         export_file=export_file, tr=tr,
-        name=f"{pipeline_name}_Confounds_Postprocessing_Pipeline",
+        name=f"Confounds_Processing_Pipeline",
         mixing_file=mixing_file, noise_file=noise_file,
         base_dir=working_dir, crashdump_dir=log_dir)
 
     return confounds_wf
 
 
-def _draw_graph(wf, graph_name, out_dir, graph_style="colored", logger=None):
+def _draw_graph(wf: pe.Workflow, graph_name, out_dir, graph_style="colored", logger=None):
     graph_image_path = out_dir / f"{graph_name}.dot"
     if logger:
         logger.info(f"Drawing confounds workflow graph: {graph_image_path}")
@@ -555,7 +566,7 @@ def _submit_jobs(batch_manager, submission_strings, logger, submit=True):
                 print(submission_strings[key])
 
 
-def _create_image_submission_strings(subject_id, bids, bids_dir, fmriprep_dir, pybids_db_path, subject_out_dir, processing_stream,
+def _create_image_submission_strings(subject_id, bids, bids_dir, fmriprep_dir, pybids_db_path, out_dir, subject_out_dir, processing_stream,
     subject_working_dir, postprocessing_config, config_file, log_dir, logger):
     
     logger.info(f"Searching for images to process")
@@ -572,6 +583,7 @@ def _create_image_submission_strings(subject_id, bids, bids_dir, fmriprep_dir, p
         except KeyError:
             logger.warn("Postprocessing configuration setting 'TargetTasks' not set. Defaulting to all tasks.")
             tasks = None
+        # TODO: test out making an args list instead of making lots of switches
         # If the list is empty, assume we are processing all tasks
         if not tasks:
             tasks = "ALL"
@@ -595,7 +607,7 @@ def _create_image_submission_strings(subject_id, bids, bids_dir, fmriprep_dir, p
 
         submission_strings = {}
         SUBMISSION_STRING_TEMPLATE = ("postprocess_image {config_file} {subject_id} {task} {image_space} "
-            "{image_path} {bids_dir} {fmriprep_dir} {pybids_db_path} {subject_out_dir} {processing_stream} {subject_working_dir} {log_dir} {run}")
+            "{image_path} {bids_dir} {fmriprep_dir} {pybids_db_path} {out_dir} {subject_out_dir} {processing_stream} {subject_working_dir} {log_dir} {run}")
         
         logger.info("Creating submission strings")
         for image in images_to_process:
@@ -617,6 +629,7 @@ def _create_image_submission_strings(subject_id, bids, bids_dir, fmriprep_dir, p
                                                             bids_dir=bids_dir,
                                                             fmriprep_dir=fmriprep_dir,
                                                             pybids_db_path=pybids_db_path,
+                                                            out_dir=out_dir,
                                                             subject_out_dir=subject_out_dir,
                                                             processing_stream=processing_stream,
                                                             subject_working_dir=subject_working_dir,
