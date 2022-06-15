@@ -1,4 +1,8 @@
 pytest
 wheel
-matplotlib
+
+# Documentation builder tools
+sphinx
+myst-parser
+sphinx-jsonschema
 -e .

@@ -21,8 +21,11 @@ import sys
 @click.option('-session', required = False, help = 'A session  to convert using the supplied configuration file.  Use in combination with -subject to convert single subject/sessions, else leave empty')
 @click.option('-longitudinal', is_flag = True, default = False, help = 'Convert all subjects/sessions into individual pseudo-subjects. Use if you do not want T1w averaged across sessions during FMRIprep')
 @click.option('-submit', is_flag=True, default=False, help = 'Submit jobs to HPC')
+def convert2bids_cli(dicom_dir, dicom_dir_format, bids_dir, conv_config_file, config_file, overwrite, log_dir, subject, session, longitudinal, submit):
+    convert2bids(dicom_dir=dicom_dir, dicom_dir_format=dicom_dir_format, bids_dir=bids_dir, conv_config_file=conv_config_file, config_file=config_file, overwrite=overwrite,
+        log_dir=log_dir, subject=subject, session=session, longitudinal=longitudinal, submit=submit)
 
-def convert2bids(dicom_dir=None, dicom_dir_format=None, bids_dir = None, conv_config_file = None, config_file = None, overwrite = None, log_dir = None, subject =None, session = None, longitudinal = False, submit = None):
+def convert2bids(dicom_dir=None, dicom_dir_format=None, bids_dir=None, conv_config_file=None, config_file=None, overwrite=None, log_dir=None, subject=None, session=None, longitudinal=False, submit=None):
     config = ClpipeConfigParser()
     config.config_updater(config_file)
     config.setup_dcm2bids(dicom_dir,
@@ -31,13 +34,16 @@ def convert2bids(dicom_dir=None, dicom_dir_format=None, bids_dir = None, conv_co
                           dicom_dir_format,
                           log_dir)
 
-    if not all([config.config['DICOMToBIDSOptions']['DICOMDirectory'],
-            config.config['DICOMToBIDSOptions']['BIDSDirectory'],
-            config.config['DICOMToBIDSOptions']['ConversionConfig'],
-            config.config['DICOMToBIDSOptions']['DICOMFormatString'],
-            config.config['DICOMToBIDSOptions']['LogDirectory']]):
-        raise ValueError('DICOM directory, BIDS directory, conversion config, log directory and/or format string are not specified.')
-
+    if not config.config['DICOMToBIDSOptions']['DICOMDirectory']:
+        raise ValueError('DICOM directory not specified.')
+    if not config.config['DICOMToBIDSOptions']['BIDSDirectory']:
+        raise ValueError('BIDS directory not specified.')
+    if not config.config['DICOMToBIDSOptions']['ConversionConfig']:
+        raise ValueError('Conversion config not specified.')
+    if not config.config['DICOMToBIDSOptions']['DICOMFormatString']:
+        raise ValueError('Format string not specified.')
+    if not config.config['DICOMToBIDSOptions']['LogDirectory']:
+        raise ValueError('Log directory not specified.')
 
 
     dicom_dir = config.config['DICOMToBIDSOptions']['DICOMDirectory']

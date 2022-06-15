@@ -66,6 +66,7 @@ class ClpipeConfigParser:
                             os.path.join(self.config['ProjectDirectory'], 'conversion_config.json'),
                             os.path.join(self.config['ProjectDirectory'], 'data_BIDS'),
                             None)
+        self.setup_bids_validation(None)
         self.setup_fmriprep_directories(os.path.join(self.config['ProjectDirectory'], 'data_BIDS'),
                                         None, os.path.join(self.config['ProjectDirectory'], 'data_fmriprep'))
         self.setup_postproc(os.path.join(self.config['FMRIPrepOptions']['OutputDirectory'], 'fmriprep'),
@@ -188,6 +189,20 @@ class ClpipeConfigParser:
         else:
             self.config['DICOMToBIDSOptions']['LogDirectory'] = os.path.join(self.config['ProjectDirectory'], 'logs', 'DCM2BIDS_logs')
         os.makedirs(self.config['DICOMToBIDSOptions']['LogDirectory'], exist_ok=True)
+
+        # Create a default .bidsignore file
+        bids_ignore_path = os.path.join(self.config['DICOMToBIDSOptions']['BIDSDirectory'], ".bidsignore")
+        if not os.path.exists(bids_ignore_path):
+            with open(bids_ignore_path, 'w') as bids_ignore_file:
+                # Ignore dcm2bid's auto-generated directory
+                bids_ignore_file.write("tmp_dcm2bids")
+
+    def setup_bids_validation(self, log_dir=None):
+        if log_dir is not None:
+            self.config['BIDSValidationOptions']['LogDirectory'] = os.path.abspath(log_dir)
+        else:
+            self.config['BIDSValidationOptions']['LogDirectory'] = os.path.join(self.config['ProjectDirectory'], 'logs', 'bids_validation_logs')
+        os.makedirs(self.config['BIDSValidationOptions']['LogDirectory'], exist_ok=True)
 
     def setup_roiextract(self, target_dir, target_suffix, output_dir, log_dir = None):
         if target_dir is not None:

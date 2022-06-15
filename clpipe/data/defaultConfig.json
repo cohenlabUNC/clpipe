@@ -14,12 +14,16 @@
         "CoreUsage": "2",
         "LogDirectory": ""
 	},
+	"BIDSValidationOptions": {
+		"LogDirectory": ""
+	},
 	"FMRIPrepOptions": {
 		"BIDSDirectory": "",
 		"WorkingDirectory": "",
 		"OutputDirectory": "",
 		"FMRIPrepPath": "/proj/hng/singularity_imgs/fmriprep-20.2.1.simg",
 		"FreesurferLicensePath": "/proj/hng/singularity_imgs/license.txt",
+		"UseAROMA": false,
 		"CommandLineOpts": "",
 		"TemplateFlowToggle": true,
 		"TemplateFlowPath": "",

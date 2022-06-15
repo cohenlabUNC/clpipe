@@ -67,8 +67,8 @@ clpipe has a convenient function for determining which scans successfully made i
     Options:
       -config_file FILE  The configuration file for the current data processing
                         setup.  [required]
-      -output_file TEXT  Path and name of the output archive. Defaults to current
-                        working directory and "Report_Archive.zip"
+      -output_file TEXT  Path and name of the output CSV. Defaults to config
+                        file directory and "Checker-Output.csv"
       -debug            Print traceback and detailed processing messages.
       --help            Show this message and exit.
 

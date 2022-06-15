@@ -21,6 +21,9 @@ from .error_handler import exception_handler
               help='Where to put HPC output files (such as SLURM output files)')
 @click.option('-submit', is_flag=True, default=False, help='Flag to submit commands to the HPC')
 @click.option('-debug', is_flag=True, help='Flag to enable detailed error messages and traceback')
+def fmriprep_process_cli(bids_dir, working_dir, output_dir, config_file, subjects, log_dir, submit, debug):
+    fmriprep_process(bids_dir=bids_dir, working_dir=working_dir, output_dir=output_dir, config_file=config_file, subjects=subjects,log_dir=log_dir,submit=submit, debug=debug)
+
 def fmriprep_process(bids_dir=None, working_dir=None, output_dir=None, config_file=None, subjects=None,log_dir=None,submit=False, debug=False):
     """This command runs a BIDS formatted dataset through fMRIprep. Specify subject IDs to run specific subjects. If left blank, runs all subjects."""
 
@@ -39,13 +42,13 @@ def fmriprep_process(bids_dir=None, working_dir=None, output_dir=None, config_fi
         raise ValueError(
             'Please make sure the BIDS, working and output directories are specified in either the configfile or in the command. At least one is not specified.')
     singularity_string = '''unset PYTHONPATH; {templateflow1} singularity run -B {templateflow2}{bindPaths} {batchcommands} {fmriprepInstance} {bids_dir} {output_dir} participant ''' \
-                         '''--participant-label {participantLabels} -w {working_dir} --fs-license-file {fslicense} {threads} {otheropts}'''
+                         '''--participant-label {participantLabels} -w {working_dir} --fs-license-file {fslicense} {threads} {useAROMA} {otheropts}'''
 
     docker_string =  '''docker run --rm -ti'''\
                      '''-v {fslicense}:/opt/freesurfer/license.txt:ro '''\
                      '''-v {bids_dir}:/data:ro -v {output_dir}:/out ''' \
                      '''-v {working_dir}:/work ''' \
-                     '''{docker_fmriprep} /data /out participant -w /work {threads} {otheropts} --participant-label {participantLabels}'''
+                     '''{docker_fmriprep} /data /out participant -w /work {threads} {useAROMA} {otheropts} --participant-label {participantLabels}'''
 
 
     if config.config['FMRIPrepOptions']['TemplateFlowToggle']:
@@ -54,6 +57,13 @@ def fmriprep_process(bids_dir=None, working_dir=None, output_dir=None, config_fi
     else:
         template1 = ""
         template2 = ""
+
+    otherOpts = config.config['FMRIPrepOptions']['CommandLineOpts']
+    useAROMA = ""
+    if config.config['FMRIPrepOptions']['UseAROMA']:
+        # Check to make sure '--use-aroma' isn't already specified in otherOpts, to prevent duplicating the option
+        if "--use-aroma" not in otherOpts:
+            useAROMA = "--use-aroma"
 
     if not subjects:
         subjectstring = "ALL"
@@ -84,7 +94,8 @@ def fmriprep_process(bids_dir=None, working_dir=None, output_dir=None, config_fi
                 participantLabels=sub,
                 fslicense=config.config['FMRIPrepOptions']['FreesurferLicensePath'],
                 threads= threads,
-                otheropts=config.config['FMRIPrepOptions']['CommandLineOpts']
+                useAROMA=useAROMA,
+                otheropts=otherOpts
             )))
         else:
             batch_manager.addjob(Job("sub-" + sub + "_fmriprep", singularity_string.format(
@@ -98,8 +109,9 @@ def fmriprep_process(bids_dir=None, working_dir=None, output_dir=None, config_fi
                 participantLabels=sub,
                 fslicense=config.config['FMRIPrepOptions']['FreesurferLicensePath'],
                 threads= threads,
+                useAROMA=useAROMA,
                 bindPaths=batch_manager.config['SingularityBindPaths'],
-                otheropts=config.config['FMRIPrepOptions']['CommandLineOpts']
+                otheropts=otherOpts
             )))
 
     batch_manager.compilejobstrings()
