@@ -18,23 +18,48 @@ def find_sub_list(sl, l):
 
 
 def scrub_setup(fdts, fd_thres=.3, fd_behind=1, fd_ahead=1, fd_contig=3):
+    """Given a vector of timepoints for scrubbing, create a list of indexes representing
+    scrub targets based given behind, ahead, and contigous selections.
+
+    Args:
+        fdts (_type_): the input vector, a timeseries to scrub
+        fd_thres (float, optional): the cutoff threshold for inclusion
+        fd_behind (int, optional):
+        fd_ahead (int, optional):
+        fd_contig (int, optional):
+
+    Returns:
+        _type_: the fully prepared scrub target vector
+    """
+
+    # index all timepoints that exceed the threshold as the base scrub targets
     scrubTargets = [i for i, e in enumerate(fdts) if e > fd_thres]
 
+    # Generate scrub indexes behind the base targets
     for t in numpy.arange(0, fd_behind + 1):
         scrubTargetsAdd = scrubTargets - t
         scrubTargets.extend(scrubTargetsAdd)
 
+    # Generate scrub indexes ahead of the base targets
     for t in numpy.arange(0, fd_ahead + 1):
         scrubTargetsAdd = scrubTargets + t
         scrubTargets.extend(scrubTargetsAdd)
 
+    # Remove duplicates by converting to a set temporarily
     scrubTargets = list(set(scrubTargets))
+    # Remove negatives
     scrubTargets = [e for i, e in enumerate(scrubTargets) if e >= 0]
+    # Remove items outside the bounds of the original set of indexes
     scrubTargets = [e for i, e in enumerate(scrubTargets) if e <= len(fdts) - 1]
+    # Convert to a set again 
+    # TODO: is this necessary? Duplicates already removed above
     scrubTargets = set(scrubTargets)
+    # Create a vector of 0s representing points not to scrub
     scrubVect = [0] * len(fdts)
+    # Populate the 0 vector with 1s representing scrub targets
     scrubVect = [1 if i in scrubTargets else 0 for i, e in enumerate(scrubVect)]
 
+    # Ensure fd_config number of consecutive points
     if fd_contig > 0:
         target = [0] * fd_contig
         contigSets = find_sub_list(target, scrubVect)

@@ -3,7 +3,6 @@ import click
 from .config_json_parser import ClpipeConfigParser
 from pkg_resources import resource_stream
 import json
-from .template_flow import _templateflow_setup
 
 @click.command()
 @click.option('-project_title', required=True, default=None)

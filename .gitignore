@@ -9,6 +9,7 @@ build/
 dist/
 clpipe.egg-info/
 Test_BIDS/
+dist/
 # if you remove the above rule, at least ignore the following:
 
 # User-specific stuff:
@@ -63,6 +64,7 @@ tests/artifacts
 
 # vscode
 *.code-workspace
+.vscode
 
 # pytest
 .pytest_cache

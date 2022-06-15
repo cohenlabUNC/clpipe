@@ -1,10 +1,10 @@
 from setuptools import setup, find_packages
 
 setup(name='clpipe',
-      version='1.4.2',
+      version='1.5.0',
       description='clpipe: MRI processing pipeline for high performance clusters',
       url='https://github.com/cohenlabUNC/clpipe',
-      author='Maintainer: Teague Henry, Contributor: Deepak Melwani',
+      author='Maintainer: Teague Henry, Contributor: Will Asciutto, Contributor: Deepak Melwani',
       author_email='trhenry@email.unc.edu',
       license='MIT',
       python_requires='>=3.6',
@@ -23,11 +23,18 @@ setup(name='clpipe',
                         'nilearn',
                         'dcm2bids',
                         'nipype',
+                        'pybids>=0.14.0',
                         'templateflow',
-                        'deepdiff'],
+                        'deepdiff',
+                        "pydantic"],
+      package_data={'clpipe': ['R_scripts/*.R']},
       entry_points='''
       [console_scripts]
-      fmriprep_process=clpipe.fmri_preprocess:fmriprep_process_cli
+      fmriprep_process=clpipe.fmri_preprocess:fmriprep_process
+      fmri_postprocess2=clpipe.fmri_postprocess2:postprocess_subjects_cli
+      postprocess_subjects=clpipe.cli:postprocess_subjects_cli
+      postprocess_subject=clpipe.cli:postprocess_subject_cli
+      postprocess_image=clpipe.cli:postprocess_image_cli
       dicom_to_nifti_to_bids_converter_setup=clpipe.dicom_to_bids_converter:dicom_to_nifti_to_bids_converter_setup
       dicom_to_nifti_to_bids_converter=clpipe.dicom_to_bids_converter:dicom_to_nifti_to_bids_converter
       bids_validate=clpipe.bids_validator:bids_validate_cli

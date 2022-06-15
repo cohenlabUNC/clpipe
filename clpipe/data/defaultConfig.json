@@ -73,6 +73,62 @@
 		"BIDSValidatorImage": "/proj/hng/singularity_imgs/validator.simg",
         "LogDirectory": ""
 	},
+	"PostProcessingOptions2": {
+		"WorkingDirectory": "",
+		"WriteProcessGraph": true,
+		"TargetImageSpace": "MNI152NLin2009cAsym",
+		"TargetTasks": [],
+		"TargetAcquisitions": [],
+		"ProcessingSteps": [
+			"SpatialSmoothing",
+			"TemporalFiltering",
+			"IntensityNormalization"
+		],
+		"ProcessingStepOptions": {
+			"TemporalFiltering": {
+				"Implementation":"Butterworth",
+				"FilteringHighPass": 0.008,
+				"FilteringLowPass": -1,
+				"FilteringOrder": 2
+			}, 
+			"IntensityNormalization": {
+				"Implementation": "10000_GlobalMedian"
+			}, 
+			"SpatialSmoothing": {
+				"Implementation": "SUSAN",
+      			"FWHM": 6
+			},
+			"AROMARegression":{
+				"Implementation": "fsl_regfilt"
+			},
+			"Resample":{
+				"ReferenceImage": "SET REFERENCE IMAGE"
+			},
+			"TrimTimepoints": {
+				"FromEnd": 0,
+				"FromBeginning": 0
+			},
+			"ConfoundRegression": {
+				"Implementation": "afni_3dTproject"
+			}
+		},
+		"ConfoundOptions": {
+			"Columns": ["csf", "csf_derivative1", "white_matter", "white_matter_derivative1"],
+			"MotionOutliers": {
+				"Include": true,
+				"ScrubVar": "framewise_displacement",
+				"Threshold": 0.9,
+				"ScrubAhead": 0,
+				"ScrubBehind": 0,
+				"ScrubContiguous": 0
+			}
+		},
+		"BatchOptions": {
+			"MemoryUsage": "20000",
+			"TimeUsage": "2:0:0",
+			"NThreads": "1"
+		}	
+	},
 	"BetaSeriesOptions": {
 		"TargetDirectory": "",
 		"TargetSuffix": "preproc_bold.nii.gz",
@@ -110,36 +166,41 @@
 	},
 	"ProcessingStreams": [
 		{
-			"ProcessingStream": "noGSR",
+			"ProcessingStream": "smooth_aroma-regress_filter_normalize",
 			"PostProcessingOptions": {
-				"GlobalSignalRegression": false,
-				"OutputDirectory": "",
-				"OutputSuffix": ""
-			},
-			"BetaSeriesOptions": {
-				"GlobalSignalRegression": false,
-				"OutputDirectory": "",
-				"OutputSuffix": ""
-			},
-			"SUSANOptions": {
-				"OutputSuffix": "preproc_susan250.nii.gz",
-				"BrightnessThreshold": 250
+				"ProcessingSteps": [
+					"SpatialSmoothing",
+					"AROMARegression",
+					"TemporalFiltering",
+					"IntensityNormalization"
+				]
 			}
 		},
 		{
-			"ProcessingStream": "noScrub",
+			"ProcessingStream": "filter_confound-regress",
 			"PostProcessingOptions": {
-				"Scrubbing": false,
-				"OutputDirectory": "",
-				"OutputSuffix": ""
-			},
-			"BetaSeriesOptions":{
-
-			},
-			"SUSANOptions": {
+				"ProcessingSteps": [
+					"TemporalFiltering",
+					"ConfoundRegression"
+				]
+			}
+		},
+		{
+			"ProcessingStream": "smooth_aroma-regress_filter_normalize_fwhm-8",
+			"PostProcessingOptions": {
+				"ProcessingSteps": [
+					"SpatialSmoothing",
+					"AROMARegression",
+					"TemporalFiltering",
+					"IntensityNormalization"
+				],
+				"ProcessingStepOptions": {
+					"SpatialSmoothing": {
+						"FWHM": 8
+					}
+				}
 			}
 		}
-
 	],
 	"ROIExtractionOptions": {
 		"TargetDirectory": "",
