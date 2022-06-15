@@ -477,14 +477,18 @@ def _setup_confounds_wf(postprocessing_config, pipeline_name, tr, export_file,
     return confounds_wf
 
 
-def _draw_graph(wf: pe.Workflow, graph_name, out_dir, graph_style="colored", logger=None):
+def _draw_graph(wf: pe.Workflow, graph_name: str, out_dir: Path, graph_style: str="colored", logger: logging.Logger=None):
     graph_image_path = out_dir / f"{graph_name}.dot"
     if logger:
         logger.info(f"Drawing confounds workflow graph: {graph_image_path}")
-    wf.write_graph(dotfilename = graph_image_path, graph2use=graph_style)
-
+    
+        wf.write_graph(dotfilename = graph_image_path, graph2use=graph_style)
+    
     # Delete the unessecary dot file
-    graph_image_path.unlink()
+    # Due to parallel compute, an exists check guards the unlink incase it is deleted early by another process
+    if graph_image_path.exists():
+        graph_image_path.unlink()
+    
 
 
 def _plot_image_sample(image_path: os.PathLike, title: str= "image_sample.png", display_mode: str="mosaic"):
