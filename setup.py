@@ -31,8 +31,7 @@ setup(name='clpipe',
       entry_points='''
       [console_scripts]
       fmriprep_process=clpipe.fmri_preprocess:fmriprep_process
-      fmri_postprocess2=clpipe.fmri_postprocess2:postprocess_subjects_cli
-      postprocess_subjects=clpipe.cli:postprocess_subjects_cli
+      fmri_postprocess2=clpipe.cli:postprocess_subjects_cli
       postprocess_subject=clpipe.cli:postprocess_subject_cli
       postprocess_image=clpipe.cli:postprocess_image_cli
       dicom_to_nifti_to_bids_converter_setup=clpipe.dicom_to_bids_converter:dicom_to_nifti_to_bids_converter_setup
