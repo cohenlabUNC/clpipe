@@ -69,6 +69,7 @@ from clpipe.glm_setup import glm_setup as glm_setup_logic
 from clpipe.glm_l1 import glm_l1_preparefsf as glm_l1_preparefsf_logic
 from clpipe.glm_l2 import glm_l2_preparefsf as glm_l2_preparefsf_logic
 from clpipe.fsl_onset_extract import fsl_onset_extract as fsl_onset_extract_logic
+from clpipe.outliers_report import get_study_outliers, get_image_confounds
 
 @click.group(invoke_without_command=True)
 @click.pass_context
@@ -149,6 +150,7 @@ def fmriprep_process(bids_dir, working_dir, output_dir, config_file, subjects, l
     """Submit BIDS-formatted images to fMRIPrep"""
     fmriprep_process_logic(bids_dir=bids_dir, working_dir=working_dir, output_dir=output_dir, config_file=config_file, subjects=subjects,log_dir=log_dir,submit=submit, debug=debug)
 
+
 @cli.command()
 @click.argument('subjects', nargs=-1, required=False, default=None)
 @click.option('-config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True), default=None, required = True,
@@ -207,3 +209,17 @@ def glm_apply_mumford_workaround(glm_config_file, l1_feat_folders_path):
 def glm_onset_extract(config_file, glm_config_file, debug):
     """Convert onset files to FSL's 3 column format"""
     fsl_onset_extract_logic(config_file=config_file, glm_config_file = glm_config_file, debug = debug)
+
+
+@cli.command()
+@click.option('--confounds_dir', type=click.Path(exists=True, dir_okay=True, file_okay=False), help="Path to a directory containing subjects and confounds files.")
+@click.option('--confounds_file', type=click.Path(exists=True, dir_okay=False, file_okay=True), help="Path to confounds file")
+@click.option('--output_file', type=click.Path(dir_okay=False, file_okay=True), help="Path to save outlier count results.")
+@click.option('--confound_suffix', help="Confound file to search for, like 'confounds.tsv'", default='confounds.tsv')
+def report_outliers(confounds_dir, confounds_file, output_file, confound_suffix):
+    """Generate a confound outliers report."""
+    
+    if confounds_dir:
+        get_study_outliers(confounds_dir, output_file, confound_suffix)
+    else:
+        get_image_confounds(confounds_file)
