@@ -1,19 +1,13 @@
 import os
 import glob
 import logging
-import click
 from .config_json_parser import ClpipeConfigParser, GLMConfigParser
 import sys
 from .error_handler import exception_handler
 import nibabel as nib
 
-@click.command()
-@click.option('-glm_config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True), default=None, required = True,
-              help='Use a given GLM configuration file.')
-@click.option('-l1_name',  default=None, required = True,
-              help='Name for a given L1 model')
-@click.option('-debug', is_flag=True, help='Flag to enable detailed error messages and traceback')
-def glm_l1_preparefsf(glm_config_file, l1_name, debug):
+
+def glm_l1_preparefsf(glm_config_file=None, l1_name=None, debug=None):
     if not debug:
         sys.excepthook = exception_handler
         logging.basicConfig(level=logging.INFO)
@@ -31,10 +25,7 @@ def glm_l1_preparefsf(glm_config_file, l1_name, debug):
     _glm_l1_propagate(l1_block, glm_setup_options)
 
 
-
 def _glm_l1_propagate(l1_block, glm_setup_options):
-
-
     with open(l1_block['FSFPrototype']) as f:
         fsf_file_template=f.readlines()
 

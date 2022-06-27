@@ -7,17 +7,6 @@ from .batch_manager import BatchManager, Job
 from .config_json_parser import ClpipeConfigParser
 
 
-@click.command()
-@click.argument('bids_dir', type=click.Path(exists=True, dir_okay=True, file_okay=False), required=False)
-@click.option('-config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True), default=None, help = 'Uses a given configuration file')
-@click.option('-log_dir', type=click.Path(exists=True, dir_okay=False, file_okay=True), default=None, help = 'Set the log output path.')
-@click.option('-verbose', is_flag = True, default=False, help = 'Creates verbose validator output. Use if you want to see ALL files with errors/warnings.')
-@click.option('-submit', is_flag = True, help = 'Submit command to HPC.')
-@click.option('-interactive', is_flag = True, default=False, help = 'Run in an interactive session. Only use in an interactive compute session.')
-@click.option('-debug', is_flag=True, help = 'Produce detailed debug and traceback.')
-def bids_validate_cli(bids_dir, config_file, log_dir, interactive, submit, verbose, debug):
-    bids_validate(bids_dir=bids_dir, config_file=config_file, log_dir=log_dir, interactive=interactive, submit=submit, verbose=verbose, debug=debug)
-
 def bids_validate(bids_dir=None, config_file=None, log_dir=None, interactive=False, submit=True, verbose=False, debug=False):
     """Runs the BIDS-Validator program on a dataset. If a configuration file has a BIDSDirectory specified, you do not need to provide a BIDS directory in the command."""
     if not debug:
