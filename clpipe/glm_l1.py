@@ -1,3 +1,13 @@
+"""
+Design
+
+Step 1: Load in prototype, identify all needed lines
+Step 2: Load in paths for all image files, exclude/include as needed
+Step 3: Run through all required image files, construct the file changes
+Step 3a: Change prototype and spit out into fsf output folder
+Step 4: Launch a feat job for each fsf
+"""
+
 import os
 import glob
 import logging
@@ -203,14 +213,3 @@ def _run_jobs(batch_manager, submission_strings, submit=True):
             batch_manager.submit_jobs()
         else:
             batch_manager.print_jobs()
-
-
-
-
-#Design
-
-#Step 1: Load in prototype, identify all needed lines
-#Step 2: Load in paths for all image files, exclude/include as needed
-#Step 3: run through all required image files, construct the file changes
-#Step 3a: Change prototype and spit out into fsf output folder
-
