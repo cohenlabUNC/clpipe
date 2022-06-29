@@ -11,9 +11,7 @@ Step 4: Launch a feat job for each fsf
 import os
 import glob
 import logging
-from typing import List
-from xmlrpc.client import Boolean
-from .config_json_parser import ClpipeConfigParser, GLMConfigParser
+from .config_json_parser import GLMConfigParser
 import sys
 from .error_handler import exception_handler
 from pathlib import Path
