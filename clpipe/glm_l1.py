@@ -1,6 +1,7 @@
 import os
 import glob
 import logging
+from typing import List
 from xmlrpc.client import Boolean
 from .config_json_parser import ClpipeConfigParser, GLMConfigParser
 import sys
@@ -112,7 +113,7 @@ def _get_ev_confound_mat(file_name, l1_block):
 
 
 def glm_l1_launch_controller(glm_config_file: str=None, l1_name: str=None,
-                             debug: bool=None):
+                             submit: bool=True, debug: bool=None):
     if not debug:
         sys.excepthook = exception_handler
         logging.basicConfig(level=logging.INFO)
@@ -125,7 +126,7 @@ def glm_l1_launch_controller(glm_config_file: str=None, l1_name: str=None,
 
     memory_usage = batch_options["MemoryUsage"]
     time_usage = batch_options["TimeUsage"]
-    n_threads = batch_options["NThreads"]
+    n_threads = int(batch_options["NThreads"])
     batch_config_path = batch_options["BatchConfig"]
     email = batch_options["Email"]
 
@@ -135,7 +136,7 @@ def glm_l1_launch_controller(glm_config_file: str=None, l1_name: str=None,
     batch_manager = _setup_batch_manager(memory_usage, time_usage, n_threads,
                                          email, batch_config_path, log_dir)
 
-    glm_l1_launch(fsf_dir, batch_manager, log_dir)
+    glm_l1_launch(fsf_dir, batch_manager, submit)
 
 
 def _fetch_glm_setup_options_by_model(glm_config: dict, l1_name: str):
@@ -145,7 +146,7 @@ def _fetch_glm_setup_options_by_model(glm_config: dict, l1_name: str):
         raise ValueError("L1 model not found, or multiple entries found.")
 
     l1_block = l1_block[0]
-    return glm_config.config['GLMSetupOptions']
+    return l1_block
 
 
 def _setup_batch_manager(memory_usage: str, time_usage: str, n_threads: int, 
@@ -159,25 +160,52 @@ def _setup_batch_manager(memory_usage: str, time_usage: str, n_threads: int,
     return batch_manager
 
 
-def glm_l1_launch(fsf_dir: str, batch_manager: BatchManager):
+def glm_l1_launch(fsf_dir: str, batch_manager: BatchManager, submit: bool):
     submission_strings = _create_l1_submission_strings(fsf_dir)
+    _run_jobs(batch_manager, submission_strings, submit)
 
  
-def _create_l1_submission_strings(fsf_files, logger):
-    
-        logger.info(f"Building feat job submission strings")
+def _create_l1_submission_strings(fsf_files: os.PathLike):
+        logging.info(f"Building feat job submission strings")
 
         submission_strings = {}
-        SUBMISSION_STRING_TEMPLATE = ("EXPORT PYTHONPATH = ; feat {fsf_file} ")
+        # "EXPORT PYTHONPATH = ; 
+        SUBMISSION_STRING_TEMPLATE = ("feat {fsf_file}")
         
-        logger.info("Creating submission strings")
-        for fsf in fsf_files:
-            key = f"Postprocessing_{str(Path(fsf.path).stem)}"
+        logging.info("Creating submission strings")
+        for fsf in Path(fsf_files).iterdir():
+            key = f"{str(fsf.stem)}"
             
             submission_strings[key] = SUBMISSION_STRING_TEMPLATE.format(
                 fsf_file=fsf
             )
         return submission_strings
+
+
+def _populate_batch_manager(batch_manager: BatchManager, 
+                            submission_strings: dict):
+    logging.info("Setting up batch manager with jobs to run.")
+
+    for key in submission_strings.keys():
+        batch_manager.addjob(Job(key, submission_strings[key]))
+
+    batch_manager.createsubmissionhead()
+    batch_manager.compilejobstrings()
+
+
+def _run_jobs(batch_manager, submission_strings, submit=True):
+    num_jobs = len(submission_strings)
+
+    if batch_manager:
+        _populate_batch_manager(batch_manager, submission_strings)
+        if submit:
+            logging.info(f"Running {num_jobs} job(s) in batch mode")
+            batch_manager.submit_jobs()
+        else:
+            batch_manager.print_jobs()
+
+
+
 
 #Design
 
