@@ -30,7 +30,6 @@ setup(name='clpipe',
       package_data={'clpipe': ['R_scripts/*.R']},
       entry_points='''
       [console_scripts]
-      fmriprep_process=clpipe.fmri_preprocess:fmriprep_process
       fmri_postprocess2=clpipe.cli:postprocess_subjects_cli
       postprocess_subject=clpipe.cli:postprocess_subject_cli
       postprocess_image=clpipe.cli:postprocess_image_cli
