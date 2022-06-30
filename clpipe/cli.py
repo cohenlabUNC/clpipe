@@ -185,6 +185,22 @@ def glm_l1_preparefsf(glm_config_file, l1_name, debug):
 
 
 @cli.command()
+@click.option('-glm_config_file', type=click.Path(exists=True, dir_okay=False, 
+              file_okay=True), default=None, required = True,
+              help='Use a given GLM configuration file.')
+@click.option('-l1_name',  default=None, required = True,
+              help='Name for a given L1 model')
+@click.option('-submit', is_flag=True,
+              help='Flag to submit commands to the HPC.')
+@click.option('-debug', is_flag=True, 
+              help='Flag to enable detailed error messages and traceback')
+def glm_l1_launch(glm_config_file, l1_name, submit, debug):
+    """Launch all prepared .fsf files for L1 GLM analysis"""
+    glm_l1_launch_controller(glm_config_file=glm_config_file, l1_name=l1_name,
+                            submit=submit, debug=debug)
+
+
+@cli.command()
 @click.option('-glm_config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True), default=None, required = True,
               help='Use a given GLM configuration file.')
 @click.option('-l2_name',  default=None, required = True,
