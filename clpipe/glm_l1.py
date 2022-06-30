@@ -1,10 +1,30 @@
+"""
+Design
+
+Step 1: Load in prototype, identify all needed lines
+Step 2: Load in paths for all image files, exclude/include as needed
+Step 3: Run through all required image files, construct the file changes
+Step 3a: Change prototype and spit out into fsf output folder
+Step 4: Launch a feat job for each fsf
+"""
+
 import os
 import glob
 import logging
-from .config_json_parser import ClpipeConfigParser, GLMConfigParser
+
+from numpy import outer
+from .config_json_parser import GLMConfigParser
 import sys
 from .error_handler import exception_handler
+from pathlib import Path
 import nibabel as nib
+
+from .batch_manager import BatchManager, Job
+
+DEFAULT_L1_MEMORY_USAGE = "10G"
+DEFAULT_L1_TIME_USAGE = "10:00:00"
+DEFAULT_L1_N_THREADS = "4"
+DEFAULT_BATCH_CONFIG_PATH = "slurmUNCConfig.json"
 
 
 def glm_l1_preparefsf(glm_config_file=None, l1_name=None, debug=None):
@@ -107,11 +127,120 @@ def _get_ev_confound_mat(file_name, l1_block):
     return {"EVs": EV_files}
 
 
+def glm_l1_launch_controller(glm_config_file: str=None, l1_name: str=None,
+                             test_one: bool=False, submit: bool=True, 
+                             debug: bool=None):
+    if not debug:
+        sys.excepthook = exception_handler
+        logging.basicConfig(level=logging.INFO)
+    else:
+        logging.basicConfig(level=logging.DEBUG)
+    glm_config = GLMConfigParser(glm_config_file)
 
-#Design
+    glm_setup_options = _fetch_glm_setup_options_by_model(glm_config, l1_name)
+    
+    try:
+        batch_options = glm_setup_options["BatchOptions"]
 
-#Step 1: Load in prototype, identify all needed lines
-#Step 2: Load in paths for all image files, exclude/include as needed
-#Step 3: run through all required image files, construct the file changes
-#Step 3a: Change prototype and spit out into fsf output folder
+        memory_usage = batch_options["MemoryUsage"]
+        time_usage = batch_options["TimeUsage"]
+        n_threads = int(batch_options["NThreads"])
+        batch_config_path = batch_options["BatchConfig"]
+        email = batch_options["Email"]
+    except KeyError:
+        memory_usage = DEFAULT_L1_MEMORY_USAGE
+        time_usage = DEFAULT_L1_TIME_USAGE
+        n_threads = DEFAULT_L1_N_THREADS
+        batch_config_path = DEFAULT_BATCH_CONFIG_PATH
+        email = None
 
+    fsf_dir = glm_setup_options["FSFDir"]
+    out_dir = glm_setup_options["OutputDir"]
+
+    try:
+        log_dir = glm_setup_options["LogDir"]
+    except KeyError:
+        log_dir = out_dir
+
+    batch_manager = _setup_batch_manager(
+        batch_config_path, log_dir,
+        memory_usage=memory_usage, time_usage=time_usage, n_threads=n_threads,
+        email=email)
+
+    glm_l1_launch(fsf_dir, batch_manager, test_one=test_one, submit=submit)
+
+
+def _fetch_glm_setup_options_by_model(glm_config: dict, l1_name: str):
+    l1_block = [x for x in glm_config.config['Level1Setups'] \
+        if x['ModelName'] == str(l1_name)]
+    if len(l1_block) is not 1:
+        raise ValueError("L1 model not found, or multiple entries found.")
+
+    l1_block = l1_block[0]
+    return l1_block
+
+
+def _setup_batch_manager(batch_config_path: str, log_dir: str, 
+                         memory_usage: str = None, time_usage: str = None, 
+                         n_threads: int = None, email: str = None, ):
+    batch_manager = BatchManager(batch_config_path, log_dir)
+    if memory_usage:
+        batch_manager.update_mem_usage(memory_usage)
+    if time_usage:
+        batch_manager.update_time(time_usage)
+    if n_threads:
+        batch_manager.update_nthreads(n_threads)
+    if email:
+        batch_manager.update_email(email)
+
+    return batch_manager
+
+
+def glm_l1_launch(fsf_dir: str, batch_manager: BatchManager, 
+                  test_one:bool=False, submit: bool=False):
+    submission_strings = _create_l1_submission_strings(
+        fsf_dir, test_one=test_one)
+    _run_jobs(batch_manager, submission_strings, submit)
+
+ 
+def _create_l1_submission_strings(fsf_files: os.PathLike, test_one:bool=False):
+        logging.info(f"Building feat job submission strings")
+
+        submission_strings = {}
+        # "EXPORT PYTHONPATH = ; 
+        SUBMISSION_STRING_TEMPLATE = ("feat {fsf_file}")
+        
+        logging.info("Creating submission strings")
+        for fsf in Path(fsf_files).iterdir():
+            key = f"{str(fsf.stem)}"
+            
+            submission_strings[key] = SUBMISSION_STRING_TEMPLATE.format(
+                fsf_file=fsf
+            )
+
+            if test_one:
+                break
+        return submission_strings
+
+
+def _populate_batch_manager(batch_manager: BatchManager, 
+                            submission_strings: dict):
+    logging.info("Setting up batch manager with jobs to run.")
+
+    for key in submission_strings.keys():
+        batch_manager.addjob(Job(key, submission_strings[key]))
+
+    batch_manager.createsubmissionhead()
+    batch_manager.compilejobstrings()
+
+
+def _run_jobs(batch_manager, submission_strings, submit=True):
+    num_jobs = len(submission_strings)
+
+    if batch_manager:
+        _populate_batch_manager(batch_manager, submission_strings)
+        if submit:
+            logging.info(f"Running {num_jobs} job(s) in batch mode")
+            batch_manager.submit_jobs()
+        else:
+            batch_manager.print_jobs()

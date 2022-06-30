@@ -55,6 +55,7 @@ setup(name='clpipe',
       fmap_cleanup=clpipe.fmap_cleanup:fmap_cleanup
       glm_setup=clpipe.cli:glm_setup
       glm_l1_preparefsf=clpipe.cli:glm_l1_preparefsf
+      glm_l1_launch=clpipe.cli:glm_l1_launch
       glm_l2_preparefsf=clpipe.cli:glm_l2_preparefsf
       fsl_onset_extract=clpipe.cli:glm_onset_extract
       reho_extract=clpipe.reho_extract:reho_extract

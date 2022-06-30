@@ -10,7 +10,8 @@ from .dcm2bids_wrapper import convert2bids as convert2bids_logic
 from .bids_validator import bids_validate as bids_validate_logic
 from .fmri_preprocess import fmriprep_process as fmriprep_process_logic
 from .glm_setup import glm_setup as glm_setup_logic
-from .glm_l1 import glm_l1_preparefsf as glm_l1_preparefsf_logic
+from .glm_l1 import glm_l1_preparefsf as glm_l1_preparefsf_logic,\
+    glm_l1_launch_controller
 from .glm_l2 import glm_l2_preparefsf as glm_l2_preparefsf_logic
 from .fsl_onset_extract import fsl_onset_extract as fsl_onset_extract_logic
 
@@ -72,15 +73,7 @@ def postprocess_image_cli(config_file, image_path, bids_dir, fmriprep_dir, index
     
     postprocess_image_controller(config_file, image_path, bids_dir, fmriprep_dir, 
     index_dir, out_dir, subject_out_dir, subject_working_dir, log_dir, processing_stream=processing_stream)
-from clpipe.project_setup import project_setup as project_setup_logic
-from clpipe.dcm2bids_wrapper import convert2bids as convert2bids_logic
-from clpipe.bids_validator import bids_validate as bids_validate_logic
-from clpipe.fmri_preprocess import fmriprep_process as fmriprep_process_logic
-from clpipe.glm_setup import glm_setup as glm_setup_logic
-from clpipe.glm_l1 import glm_l1_preparefsf as glm_l1_preparefsf_logic
-from clpipe.glm_l2 import glm_l2_preparefsf as glm_l2_preparefsf_logic
-from clpipe.fsl_onset_extract import fsl_onset_extract as fsl_onset_extract_logic
-from clpipe.outliers_report import get_study_outliers, get_image_confounds
+
 
 @click.group(invoke_without_command=True)
 @click.pass_context
@@ -190,6 +183,24 @@ def glm_setup(subjects, config_file, glm_config_file, submit, batch, debug, drop
 def glm_l1_preparefsf(glm_config_file, l1_name, debug):
     """Propagate an .fsf file template for L1 GLM analysis"""
     glm_l1_preparefsf_logic(glm_config_file=glm_config_file, l1_name=l1_name, debug=debug)
+
+
+@cli.command()
+@click.option('-glm_config_file', type=click.Path(exists=True, dir_okay=False, 
+              file_okay=True), default=None, required = True,
+              help='Use a given GLM configuration file.')
+@click.option('-l1_name',  default=None, required = True,
+              help='Name for a given L1 model')
+@click.option('-test_one', is_flag=True,
+              help='Only submit one job for testing purposes.')
+@click.option('-submit', is_flag=True,
+              help='Flag to submit commands to the HPC.')
+@click.option('-debug', is_flag=True, 
+              help='Flag to enable detailed error messages and traceback')
+def glm_l1_launch(glm_config_file, l1_name, test_one, submit, debug):
+    """Launch all prepared .fsf files for L1 GLM analysis"""
+    glm_l1_launch_controller(glm_config_file=glm_config_file, l1_name=l1_name,
+                             test_one=test_one, submit=submit, debug=debug)
 
 
 @cli.command()
