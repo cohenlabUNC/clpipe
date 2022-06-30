@@ -121,7 +121,8 @@ def _get_ev_confound_mat(file_name, l1_block):
 
 
 def glm_l1_launch_controller(glm_config_file: str=None, l1_name: str=None,
-                             submit: bool=True, debug: bool=None):
+                             test_one: bool=False, submit: bool=True, 
+                             debug: bool=None):
     if not debug:
         sys.excepthook = exception_handler
         logging.basicConfig(level=logging.INFO)
@@ -144,7 +145,7 @@ def glm_l1_launch_controller(glm_config_file: str=None, l1_name: str=None,
     batch_manager = _setup_batch_manager(memory_usage, time_usage, n_threads,
                                          email, batch_config_path, log_dir)
 
-    glm_l1_launch(fsf_dir, batch_manager, submit)
+    glm_l1_launch(fsf_dir, batch_manager, test_one=test_one, submit=submit)
 
 
 def _fetch_glm_setup_options_by_model(glm_config: dict, l1_name: str):
@@ -168,12 +169,14 @@ def _setup_batch_manager(memory_usage: str, time_usage: str, n_threads: int,
     return batch_manager
 
 
-def glm_l1_launch(fsf_dir: str, batch_manager: BatchManager, submit: bool):
-    submission_strings = _create_l1_submission_strings(fsf_dir)
+def glm_l1_launch(fsf_dir: str, batch_manager: BatchManager, 
+                  test_one:bool=False, submit: bool=False):
+    submission_strings = _create_l1_submission_strings(
+        fsf_dir, test_one=test_one)
     _run_jobs(batch_manager, submission_strings, submit)
 
  
-def _create_l1_submission_strings(fsf_files: os.PathLike):
+def _create_l1_submission_strings(fsf_files: os.PathLike, test_one:bool=False):
         logging.info(f"Building feat job submission strings")
 
         submission_strings = {}
@@ -187,6 +190,9 @@ def _create_l1_submission_strings(fsf_files: os.PathLike):
             submission_strings[key] = SUBMISSION_STRING_TEMPLATE.format(
                 fsf_file=fsf
             )
+
+            if test_one:
+                break
         return submission_strings
 
 

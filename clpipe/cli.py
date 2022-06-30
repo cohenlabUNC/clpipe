@@ -190,14 +190,16 @@ def glm_l1_preparefsf(glm_config_file, l1_name, debug):
               help='Use a given GLM configuration file.')
 @click.option('-l1_name',  default=None, required = True,
               help='Name for a given L1 model')
+@click.option('-test_one', is_flag=True,
+              help='Only submit one job for testing purposes.')
 @click.option('-submit', is_flag=True,
               help='Flag to submit commands to the HPC.')
 @click.option('-debug', is_flag=True, 
               help='Flag to enable detailed error messages and traceback')
-def glm_l1_launch(glm_config_file, l1_name, submit, debug):
+def glm_l1_launch(glm_config_file, l1_name, test_one, submit, debug):
     """Launch all prepared .fsf files for L1 GLM analysis"""
     glm_l1_launch_controller(glm_config_file=glm_config_file, l1_name=l1_name,
-                            submit=submit, debug=debug)
+                             test_one=test_one, submit=submit, debug=debug)
 
 
 @cli.command()
