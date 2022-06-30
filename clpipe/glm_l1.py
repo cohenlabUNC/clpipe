@@ -142,8 +142,10 @@ def glm_l1_launch_controller(glm_config_file: str=None, l1_name: str=None,
     fsf_dir = glm_setup_options["FSFDir"]
     log_dir = glm_setup_options["LogDir"]
 
-    batch_manager = _setup_batch_manager(memory_usage, time_usage, n_threads,
-                                         email, batch_config_path, log_dir)
+    batch_manager = _setup_batch_manager(
+        batch_config_path, log_dir,
+        memory_usage=memory_usage, time_usage=time_usage, n_threads=n_threads,
+        email=email)
 
     glm_l1_launch(fsf_dir, batch_manager, test_one=test_one, submit=submit)
 
@@ -158,13 +160,18 @@ def _fetch_glm_setup_options_by_model(glm_config: dict, l1_name: str):
     return l1_block
 
 
-def _setup_batch_manager(memory_usage: str, time_usage: str, n_threads: int, 
-                         email: str, batch_config_path: str, log_dir):
+def _setup_batch_manager(batch_config_path: str, log_dir: str, 
+                         memory_usage: str = None, time_usage: str = None, 
+                         n_threads: int = None, email: str = None, ):
     batch_manager = BatchManager(batch_config_path, log_dir)
-    batch_manager.update_mem_usage(memory_usage)
-    batch_manager.update_time(time_usage)
-    batch_manager.update_nthreads(n_threads)
-    batch_manager.update_email(email)
+    if memory_usage:
+        batch_manager.update_mem_usage(memory_usage)
+    if time_usage:
+        batch_manager.update_time(time_usage)
+    if n_threads:
+        batch_manager.update_nthreads(n_threads)
+    if email:
+        batch_manager.update_email(email)
 
     return batch_manager
 
