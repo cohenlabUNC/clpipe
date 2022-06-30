@@ -77,6 +77,7 @@ def convert2bids(dicom_dir, dicom_dir_format, bids_dir, conv_config_file, config
 @click.option('-interactive', is_flag = True, default=False, help = 'Run in an interactive session. Only use in an interactive compute session.')
 @click.option('-debug', is_flag=True, help = 'Produce detailed debug and traceback.')
 def bids_validate(bids_dir, config_file, log_dir, interactive, submit, verbose, debug):
+    """Check that the given directory conforms to the BIDS standard"""
     bids_validate_logic(bids_dir=bids_dir, config_file=config_file, log_dir=log_dir, interactive=interactive, submit=submit, verbose=verbose, debug=debug)
 
 
