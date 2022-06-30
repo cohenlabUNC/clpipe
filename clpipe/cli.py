@@ -32,6 +32,7 @@ def cli(ctx, version):
             click.echo(ctx.get_help())
             ctx.exit()
 
+
 @cli.command()
 @click.option('-project_title', required=True, default=None)
 @click.option('-project_dir', required = True ,type=click.Path(exists=False, dir_okay=True, file_okay=True), default=None,
@@ -47,6 +48,7 @@ def project_setup(project_title = None, project_dir = None, source_data = None, 
     """Set up a clpipe project"""
     project_setup_logic(project_title = project_title, project_dir = project_dir, source_data = source_data, move_source_data = move_source_data,
                   symlink_source_data = symlink_source_data)
+
 
 @cli.command()
 @click.option('-config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True), default = None, help = 'The configuration file for the study, use if you have a custom batch configuration.')
