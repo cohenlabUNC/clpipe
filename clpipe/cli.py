@@ -14,6 +14,7 @@ from .glm_l1 import glm_l1_preparefsf as glm_l1_preparefsf_logic,\
     glm_l1_launch_controller
 from .glm_l2 import glm_l2_preparefsf as glm_l2_preparefsf_logic
 from .fsl_onset_extract import fsl_onset_extract as fsl_onset_extract_logic
+from .outliers_report import get_study_outliers, get_image_confounds
 
 
 @click.group(invoke_without_command=True)
