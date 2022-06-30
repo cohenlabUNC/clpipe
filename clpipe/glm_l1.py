@@ -11,6 +11,8 @@ Step 4: Launch a feat job for each fsf
 import os
 import glob
 import logging
+
+from numpy import outer
 from .config_json_parser import GLMConfigParser
 import sys
 from .error_handler import exception_handler
@@ -18,6 +20,11 @@ from pathlib import Path
 import nibabel as nib
 
 from .batch_manager import BatchManager, Job
+
+DEFAULT_L1_MEMORY_USAGE = "10G"
+DEFAULT_L1_TIME_USAGE = "10:00:00"
+DEFAULT_L1_N_THREADS = "4"
+DEFAULT_BATCH_CONFIG_PATH = "slurmUNCConfig.json"
 
 
 def glm_l1_preparefsf(glm_config_file=None, l1_name=None, debug=None):
@@ -131,16 +138,29 @@ def glm_l1_launch_controller(glm_config_file: str=None, l1_name: str=None,
     glm_config = GLMConfigParser(glm_config_file)
 
     glm_setup_options = _fetch_glm_setup_options_by_model(glm_config, l1_name)
-    batch_options = glm_setup_options["BatchOptions"]
+    
+    try:
+        batch_options = glm_setup_options["BatchOptions"]
 
-    memory_usage = batch_options["MemoryUsage"]
-    time_usage = batch_options["TimeUsage"]
-    n_threads = int(batch_options["NThreads"])
-    batch_config_path = batch_options["BatchConfig"]
-    email = batch_options["Email"]
+        memory_usage = batch_options["MemoryUsage"]
+        time_usage = batch_options["TimeUsage"]
+        n_threads = int(batch_options["NThreads"])
+        batch_config_path = batch_options["BatchConfig"]
+        email = batch_options["Email"]
+    except KeyError:
+        memory_usage = DEFAULT_L1_MEMORY_USAGE
+        time_usage = DEFAULT_L1_TIME_USAGE
+        n_threads = DEFAULT_L1_N_THREADS
+        batch_config_path = DEFAULT_BATCH_CONFIG_PATH
+        email = None
 
     fsf_dir = glm_setup_options["FSFDir"]
-    log_dir = glm_setup_options["LogDir"]
+    out_dir = glm_setup_options["OutputDir"]
+
+    try:
+        log_dir = glm_setup_options["LogDir"]
+    except KeyError:
+        log_dir = out_dir
 
     batch_manager = _setup_batch_manager(
         batch_config_path, log_dir,
