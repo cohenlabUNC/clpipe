@@ -2,7 +2,18 @@ import click
 import pkg_resources
 import sys
 
-from .fmri_postprocess2 import postprocess_image_controller, postprocess_subject_controller, postprocess_subjects_controller, DEFAULT_PROCESSING_STREAM_NAME
+from .fmri_postprocess2 import postprocess_image_controller,\
+    postprocess_subject_controller, postprocess_subjects_controller,\
+    DEFAULT_PROCESSING_STREAM_NAME
+from .project_setup import project_setup as project_setup_logic
+from .dcm2bids_wrapper import convert2bids as convert2bids_logic
+from .bids_validator import bids_validate as bids_validate_logic
+from .fmri_preprocess import fmriprep_process as fmriprep_process_logic
+from .glm_setup import glm_setup as glm_setup_logic
+from .glm_l1 import glm_l1_preparefsf as glm_l1_preparefsf_logic
+from .glm_l2 import glm_l2_preparefsf as glm_l2_preparefsf_logic
+from .fsl_onset_extract import fsl_onset_extract as fsl_onset_extract_logic
+
 
 @click.command()
 @click.argument('subjects', nargs=-1, required=False, default=None)
