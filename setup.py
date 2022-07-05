@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(name='clpipe',
-      version='1.5.0.1',
+      version='1.5.0.2',
       description='clpipe: MRI processing pipeline for high performance clusters',
       url='https://github.com/cohenlabUNC/clpipe',
       author='Maintainer: Teague Henry, Contributor: Will Asciutto, Contributor: Deepak Melwani',
@@ -30,7 +30,7 @@ setup(name='clpipe',
       package_data={'clpipe': ['R_scripts/*.R']},
       entry_points='''
       [console_scripts]
-      fmriprep_process=clpipe.fmri_preprocess:fmriprep_process
+      fmriprep_process=clpipe.fmri_preprocess:fmriprep_process_cli
       fmri_postprocess2=clpipe.cli:postprocess_subjects_cli
       postprocess_subject=clpipe.cli:postprocess_subject_cli
       postprocess_image=clpipe.cli:postprocess_image_cli
