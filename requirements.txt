@@ -8,3 +8,4 @@ sphinx-jsonschema
 -e .
 # Required for .rst indentation to work in HTML5 properly
 docutils==0.16
+sphinx_rtd_theme>=0.5.1
