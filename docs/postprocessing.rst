@@ -130,14 +130,14 @@ for each processing stream.
 
 Available processing steps:
 
-- Temporal Filtering
-- Intensity Normalization
-- Spatial Smoothing
-- AROMA Regression
-- Confound Regression
-- Apply Mask
-- Resample
-- Trim Timepoints
+	- Temporal Filtering
+	- Intensity Normalization
+	- Spatial Smoothing
+	- AROMA Regression
+	- Confound Regression
+	- Apply Mask
+	- Resample
+	- Trim Timepoints
 
 
 .. image:: resources/example_pipeline.png
@@ -220,7 +220,7 @@ Otherwise, this block will be included when running "project setup."
     * ``TargetAcquisitions:`` Which acquisitions to use from your fmriprep output. This is the value that follows "acq-" in the image file names. Leave blank to target all acquisitions.
     * ``ProcessingSteps:`` The default list of processing steps to use. Processing will follow the order of this list.
     * ``ProcessingStepOptions:`` The default processing options for each step.
-	
+
         * ``TemporalFiltering:`` Apply temporal filtering to the image data. Also be applied to confounds.
 
 			* ``Implementation:`` Currently limited to "fslmaths"
@@ -246,6 +246,7 @@ Otherwise, this block will be included when running "project setup."
 
 			* ``Implementation:`` Currently limited to "afni_3dTproject"
     * ``ConfoundOptions:`` The default options to apply to the confounds files.
+	
 		* ``Columns:`` A list containing a subset of confound file columns to use from each image's confound file.
 		* ``MotionOutliers:`` Options specific to motion outliers.
 
