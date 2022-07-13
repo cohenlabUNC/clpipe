@@ -69,5 +69,8 @@ tests/artifacts
 # pytest
 .pytest_cache
 
+# documentation
+docs/_build
+
 # Mac os
 *.DS_Store

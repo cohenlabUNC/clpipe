@@ -2,7 +2,11 @@ pytest
 wheel
 
 # Documentation builder tools
-sphinx
-myst-parser
-sphinx-jsonschema
+markdown-it-py==2.0.1 
+myst-parser==0.16.1 
+sphinx==4.5.0
+sphinx-jsonschema==1.17.2
+
+# Install this package in edit mode
 -e .
+
