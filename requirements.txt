@@ -2,9 +2,10 @@ pytest
 wheel
 
 # Documentation builder tools
+Sphinx>=5.0.2
 myst-parser
 sphinx-jsonschema
+
+# Install this package in edit mode
 -e .
-Sphinx>=4.2.0
-# Required for .rst indentation to work in HTML5 properly
-docutils==0.16
+
