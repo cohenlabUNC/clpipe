@@ -6,7 +6,6 @@ sphinx
 myst-parser
 sphinx-jsonschema
 -e .
-sphinx_rtd_theme>=0.5.1
 Sphinx>=4.2.0
 # Required for .rst indentation to work in HTML5 properly
 docutils==0.16
