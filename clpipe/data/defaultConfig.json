@@ -82,7 +82,8 @@
 		"ProcessingSteps": [
 			"SpatialSmoothing",
 			"TemporalFiltering",
-			"IntensityNormalization"
+			"IntensityNormalization",
+			"ApplyMask"
 		],
 		"ProcessingStepOptions": {
 			"TemporalFiltering": {
