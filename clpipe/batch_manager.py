@@ -2,28 +2,52 @@ import click
 import json
 from pkg_resources import resource_stream
 import os
-import sys
 
-#Todo: We need to update the batch manager to be more flexible, so as to allow for no-quotes, no equals, and to not have various options
+from .utils import get_logger
+
+# TODO: We need to update the batch manager to be more flexible, 
+# so as to allow for no-quotes, no equals, and to not have various options
 # for example, BIAC doesn't have time or number of cores as options.
 
-class BatchManager:
+LOGGER_NAME = "batch-manager"
+OUTPUT_FORMAT_STR = 'Output-{jobid}-jobid-%j.out'
+JOB_ID_FORMAT_STR = '{jobid}'
 
-    def __init__(self, batchsystemConfig, outputDirectory=None):
+
+class BatchManager:
+    """
+    Handles the creation and submission of batch jobs.
+    """
+
+    def __init__(self, batch_system_config: os.PathLike, output_directory=None,
+                 debug=False):
         self.jobs = []
-        if os.path.exists(os.path.abspath(batchsystemConfig)):
-            with os.open(os.path.abspath(batchsystemConfig)) as bat_config:
+        self.logger = get_logger(LOGGER_NAME, debug=debug)
+
+        if os.path.exists(os.path.abspath(batch_system_config)):
+            self.logger.debug(f"Using batch config at: {batch_system_config}")
+            with os.open(os.path.abspath(batch_system_config)) as bat_config:
                 self.config = json.load(bat_config)
         else:
-            with resource_stream(__name__, "batchConfigs/" + batchsystemConfig) as bat_config:
+            with resource_stream(
+                __name__, "batchConfigs/" + batch_system_config
+            ) as bat_config:
                 self.config = json.load(bat_config)
 
-        self.submissionlist = []
-        if outputDirectory is None:
-            outputDirectory = '.'
-        self.outputDir = os.path.abspath(outputDirectory)
-        if not os.path.isdir(outputDirectory):
-            os.makedirs(outputDirectory)
+        self.submission_list = []
+        if output_directory is None:
+            self.logger.warning(
+                ("No output directory provided "
+                 "- defauling to current directory")
+            )
+            output_directory = '.'
+        self.logger.info(f"Batch job output path: {output_directory}")
+        self.output_dir = os.path.abspath(output_directory)
+        if not os.path.isdir(output_directory):
+            os.makedirs(output_directory)
+            self.logger.debug(
+                f"Created batch output directory at: {output_directory}"
+            )
 
     def update_mem_usage(self, mem_use):
         self.config['MemoryDefault'] = mem_use
@@ -44,8 +68,7 @@ class BatchManager:
         header = self.createsubmissionhead()
         for job in self.jobs:
             temp = header.format(jobid=job.jobID, cmdwrap = job.jobString)
-            self.submissionlist.append(temp)
-
+            self.submission_list.append(temp)
 
     def createsubmissionhead(self):
         head = [self.config['SubmissionHead']]
@@ -67,10 +90,11 @@ class BatchManager:
             ))
         if self.config['JobIDCommandActive']:
             head.append(self.config['JobIDCommand'].format(
-                jobid = '{jobid}'))
+                jobid = JOB_ID_FORMAT_STR))
         if self.config['OutputCommandActive']:
             head.append(self.config['OutputCommand'].format(
-                output =os.path.abspath(os.path.join(self.outputDir, 'Output-{jobid}-jobid-%j.out'))))
+                output =os.path.abspath(os.path.join(self.output_dir, 
+                OUTPUT_FORMAT_STR))))
         if self.config["EmailAddress"]:
             head.append(self.config['EmailCommand'].format(
                 email=self.config["EmailAddress"]))
@@ -79,19 +103,27 @@ class BatchManager:
         return " ".join(head)
 
     def submit_jobs(self):
-        for job in self.submissionlist:
+        self.logger.info(f"Submitting {len(self.submission_list)} jobs.")
+        self.logger.debug(f"Memory usage: {self.config['MemoryDefault']}")
+        self.logger.debug(f"Time usage: {self.config['TimeDefault']}")
+        self.logger.debug(f"Number of threads: {self.config['NThreads']}")
+        self.logger.debug(f"Email: {self.config['EmailAddress']}")
+        for job in self.submission_list:
             os.system(job)
 
     def print_jobs(self):
-        for job in self.submissionlist:
-            click.echo(job)
+        output = "Jobs to run:\n"
+        for index, job in enumerate(self.submission_list):
+            output += job
+            if(index != len(self.submission_list) - 1):
+                output += "\n\n"
+        self.logger.info(output)
 
     def get_threads_command(self):
         return [self.config['NThreadsCommand'], self.config['NThreads']]
 
 
 class Job:
-
     def __init__(self, jobID, jobString):
         self.jobID = jobID
         self.jobString = jobString
