@@ -66,11 +66,16 @@ def convert2bids(dicom_dir=None, dicom_dir_format=None, bids_dir=None,
     pstring = os.path.join(dicom_dir, dicom_dir_format+'/')
     logger.debug(f"pstring: {pstring}")
     
+    # Get all folders in the dicom_dir
     folders = glob.glob(os.path.join(dicom_dir, format_str+'/'))
+    # Parse the subject id and/or session id from the folder names
     sub_sess_list = [parse.parse(pstring, x) for x in folders]
+
+    # Create a list of indexes for both subjects and sessions
     sub_inds = [ind for ind, x in enumerate(sub_sess_list)]
     sess_inds = [ind for ind, x in enumerate(sub_sess_list)]
     
+    # Narrow down the index lists to the requested subjects/sessions
     if subject is not None:
         sub_inds = [ind for ind, x in enumerate(sub_sess_list) \
             if x['subject'] == subject]
@@ -78,9 +83,14 @@ def convert2bids(dicom_dir=None, dicom_dir_format=None, bids_dir=None,
         sess_inds = [ind for ind, x in enumerate(sub_sess_list) \
             if x['session'] == session]
 
+    # Find the intersection of subject and session indexes
     sub_sess_inds = list(set(sub_inds) & set(sess_inds))
+
+    # Pick the relevant folders using the remaining indexes
     folders = [folders[i] for i in sub_sess_inds]
+    # Pick the relevant subject sessions using the remaining indexes
     sub_sess_list = [sub_sess_list[i] for i in sub_sess_inds]
+
     if len(sub_sess_list) == 0:
         logger.error((f'There are no subjects/sessions found for format '
                        'string: {format_str}'))
@@ -99,39 +109,36 @@ def convert2bids(dicom_dir=None, dicom_dir_format=None, bids_dir=None,
     batch_manager.update_time(time_usage)
     batch_manager.update_nthreads(n_threads)
 
-    for ind,i in enumerate(sub_sess_list):
-        if session_toggle and not longitudinal:
-            job_id = 'convert_sub-' + i['subject'] + '_ses-' + i['session']
-            job1 = Job(
-                job_id, conv_string.format(
-                    dicom_dir = folders[ind],
-                    subject = i['subject'],
-                    session = i['session'],
-                    conv_config_file = conv_config,
-                    bids_dir = bids_dir
-                )
-            )
-        elif longitudinal:
-            job_id = 'convert_sub-' + i['subject']+ '_ses-' + i['session']
-            job1 = Job(
-                job_id, conv_string.format(
-                    dicom_dir = folders[ind],
-                    subject = i['subject'] + "sess"+ i['session'],
-                    conv_config_file = conv_config,
-                    bids_dir = bids_dir
-                )
-            )
-        else:
-            job_id = 'convert_sub-' + i['subject']
-            job1 = Job(
-                job_id, conv_string.format(
-                    dicom_dir = folders[ind],
-                    subject = i['subject'],
-                    conv_config_file = conv_config,
-                    bids_dir = bids_dir
-                )
-            )
-        batch_manager.addjob(job1)
+    processed_subjects = []
+
+    # Create jobs using the sub/sess list
+    for ind, i in enumerate(sub_sess_list):
+        subject = i['subject']
+
+        # Create a dict of args with which to format conv_string
+        conv_args = {
+            "dicom_dir": folders[ind], 
+            "conv_config_file": conv_config,
+            "bids_dir": bids_dir,
+            "subject": subject
+        }
+        job_id = 'convert_sub-' + subject
+
+        if session_toggle:
+            job_id = 'convert_sub-' + subject + '_ses-' + i['session']
+            
+            if longitudinal:
+                conv_args["subject"] = subject + "sess"+ i['session']
+            else:
+                conv_args["subject"] = subject
+                conv_args["session"] = session
+
+        # Unpack the conv_args
+        submission_string = conv_string.format(**conv_args)
+
+        job = Job(job_id, submission_string)
+        batch_manager.addjob(job)
+        processed_subjects.append(subject)
 
     batch_manager.compilejobstrings()
     if submit:
