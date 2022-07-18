@@ -125,12 +125,11 @@ def convert2bids(dicom_dir=None, dicom_dir_format=None, bids_dir=None,
         job_id = 'convert_sub-' + subject
 
         if session_toggle:
-            job_id = 'convert_sub-' + subject + '_ses-' + i['session']
+            job_id += '_ses-' + i['session']
             
             if longitudinal:
-                conv_args["subject"] = subject + "sess"+ i['session']
+                conv_args["subject"] += "sess"+ i['session']
             else:
-                conv_args["subject"] = subject
                 conv_args["session"] = session
 
         # Unpack the conv_args
