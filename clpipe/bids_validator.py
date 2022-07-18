@@ -1,6 +1,5 @@
 import os
 import sys
-from .error_handler import exception_handler
 from .batch_manager import BatchManager, Job
 from .config_json_parser import ClpipeConfigParser
 
@@ -17,8 +16,6 @@ def bids_validate(bids_dir=None, config_file=None, log_dir=None,
     If a configuration file has a BIDSDirectory specified, 
     you do not need to provide a BIDS directory in the command.
     """
-    if not debug:
-        sys.excepthook = exception_handler
     config = ClpipeConfigParser()
     config.config_updater(config_file)
     config.setup_bids_validation(log_dir)
@@ -35,7 +32,7 @@ def bids_validate(bids_dir=None, config_file=None, log_dir=None,
     if bids_dir is None and config_file is None:
         logger.error(('Specify a BIDS directory in either the '
                       'configuration file, or in the command'))
-        sys.exit()
+        sys.exit(1)
     
     batch_manager = BatchManager(
         batch_config, 
