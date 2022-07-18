@@ -1,4 +1,3 @@
-import click
 import json
 from pkg_resources import resource_stream
 import os
@@ -22,6 +21,7 @@ class BatchManager:
     def __init__(self, batch_system_config: os.PathLike, output_directory=None,
                  debug=False):
         self.jobs = []
+        self.debug=debug
         self.logger = get_logger(LOGGER_NAME, debug=debug)
 
         if os.path.exists(os.path.abspath(batch_system_config)):
@@ -112,11 +112,13 @@ class BatchManager:
             os.system(job)
 
     def print_jobs(self):
-        output = "Jobs to run:\n"
+        output = "Jobs to run:\n\n"
+        job_count = len(self.submission_list)
         for index, job in enumerate(self.submission_list):
-            output += job
-            if(index != len(self.submission_list) - 1):
-                output += "\n\n"
+            output += "\t" + job + "\n\n"
+            if index == 5 and not self.debug:
+                output += (f"\t...and {job_count - 5} more jobs. ")
+                break
         self.logger.info(output)
 
     def get_threads_command(self):
