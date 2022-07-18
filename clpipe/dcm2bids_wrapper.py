@@ -104,7 +104,7 @@ def convert2bids(dicom_dir=None, dicom_dir_format=None, bids_dir=None,
         conv_string = conv_string + " --clobber --forceDcm2niix"
 
     batch_manager = BatchManager(batch_config, log_dir, debug=debug)
-    batch_manager.createsubmissionhead()
+    batch_manager.create_submission_head()
     batch_manager.update_mem_usage(mem_usage)
     batch_manager.update_time(time_usage)
     batch_manager.update_nthreads(n_threads)
@@ -139,7 +139,7 @@ def convert2bids(dicom_dir=None, dicom_dir_format=None, bids_dir=None,
         batch_manager.addjob(job)
         processed_subjects.append(subject)
 
-    batch_manager.compilejobstrings()
+    batch_manager.compile_job_strings()
     if submit:
         batch_manager.submit_jobs()
         config.config_json_dump(os.path.dirname(os.path.abspath(config_file)),
