@@ -64,11 +64,17 @@ class BatchManager:
     def addjob(self, job):
         self.jobs.append(job)
 
+    def add_job(self, job):
+        return self.addjob(job)
+
     def compilejobstrings(self):
         header = self.createsubmissionhead()
         for job in self.jobs:
             temp = header.format(jobid=job.jobID, cmdwrap = job.jobString)
             self.submission_list.append(temp)
+
+    def compile_job_strings(self):
+        return self.compilejobstrings()
 
     def createsubmissionhead(self):
         head = [self.config['SubmissionHead']]
@@ -101,6 +107,9 @@ class BatchManager:
         head.append(self.config['CommandWrapper'])
 
         return " ".join(head)
+
+    def create_submission_head(self):
+        return self.createsubmissionhead()
 
     def submit_jobs(self):
         self.logger.info(f"Submitting {len(self.submission_list)} jobs.")
