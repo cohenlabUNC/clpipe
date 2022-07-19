@@ -6,6 +6,7 @@ import glob
 import sys
 
 from .utils import get_logger, add_file_handler
+from .status import needs_processing, write_record
 
 BASE_CMD = ("dcm2bids -d {dicom_dir} -o {bids_dir} "
             "-p {subject} -c {conv_config_file}")
@@ -13,7 +14,7 @@ BASE_CMD = ("dcm2bids -d {dicom_dir} -o {bids_dir} "
 def convert2bids(dicom_dir=None, dicom_dir_format=None, bids_dir=None, 
                  conv_config_file=None, config_file=None, overwrite=None, 
                  log_dir=None, subject=None, session=None, longitudinal=False, 
-                 submit=None, debug=False):
+                 status_path=None, submit=None, debug=False):
     
     config = ClpipeConfigParser()
     config.config_updater(config_file)
@@ -109,7 +110,7 @@ def convert2bids(dicom_dir=None, dicom_dir_format=None, bids_dir=None,
     batch_manager.update_time(time_usage)
     batch_manager.update_nthreads(n_threads)
 
-    processed_subjects = []
+    subjects_to_process = []
 
     # Create jobs using the sub/sess list
     for ind, i in enumerate(sub_sess_list):
@@ -137,13 +138,19 @@ def convert2bids(dicom_dir=None, dicom_dir_format=None, bids_dir=None,
 
         job = Job(job_id, submission_string)
         batch_manager.addjob(job)
-        processed_subjects.append(subject)
+        subjects_to_process.append(subject)
 
     batch_manager.compile_job_strings()
     if submit:
         batch_manager.submit_jobs()
         config.config_json_dump(os.path.dirname(os.path.abspath(config_file)),
                                 config_file)
+
+        if status_path:
+            # Write submitted subjects to status cache as submitted
+            for subject in subjects_to_process:
+                write_record(subject, cache_path = status_path)
+
     else:
         batch_manager.print_jobs()
         logger.info("Rerun with the '-submit' flag to launch these jobs.")
