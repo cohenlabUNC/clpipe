@@ -98,11 +98,9 @@ def fmriprep_process(bids_dir=None, working_dir=None, output_dir=None,
             useAROMA = USE_AROMA_FLAG
 
     if not subjects:
-        subjectstring = "ALL"
         sublist = [o.replace('sub-', '') for o in os.listdir(bids_dir)
                    if os.path.isdir(os.path.join(bids_dir, o)) and 'sub-' in o]
     else:
-        subjectstring = " , ".join(subjects)
         sublist = subjects
 
     batch_manager = BatchManager(batch_config, log_dir)
