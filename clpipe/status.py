@@ -7,25 +7,26 @@ import datetime
 STATUS_HEADER = [
     "subject", "session", "type", "event", "timestamp", "source", "note"
 ]
+SUB_ID_TYPE = {'subject': 'string'}
+TYPES = {'timestamp': 'datetime64', 'subject': 'string'}
 DEFAULT_CACHE_PATH = "./.pipeline/status_log.csv"
 
 def _load_records(cache_path: os.PathLike) -> pd.DataFrame:
-    records: pd.DataFrame = pd.read_csv(cache_path)
-    records = records.astype(
-        {'date': 'datetime64', 'subject_id': 'string'}
-    )
+    
+    records: pd.DataFrame = pd.read_csv(cache_path, dtype = SUB_ID_TYPE)
+    records = records.astype(TYPES)
     return records
 
 
 def _get_records_latest(records: pd.DataFrame) -> pd.DataFrame:
     latest_records = records.sort_values(
-        'date', ascending=False
+        'timestamp', ascending=False
     ).groupby(
-        ['subject_id', 'type'], dropna=False, as_index=False
+        ['subject', 'type'], dropna=False, as_index=False
     ).agg({
-        'date': 'max',
+        'timestamp': 'max',
         'event': 'first',
-        'notes': 'first'}
+        'note': 'first'}
     )
     return latest_records
 
@@ -39,10 +40,11 @@ def _get_records_by_type(records: pd.DataFrame,
 
 
 def _get_records_by_event(records: pd.DataFrame,
-                          type="submitted") -> pd.DataFrame:
+                          event="submitted") -> pd.DataFrame:
     records_by_event = records.loc[
-        records['event'] == "submitted"
+        records['event'] == event
     ]
+    return records_by_event
 
 
 def needs_processing(subjects: list, cache_path: os.PathLike, 
@@ -55,9 +57,9 @@ def needs_processing(subjects: list, cache_path: os.PathLike,
     latest_records = _get_records_latest(records)
     latest_records_type = _get_records_by_type(latest_records, type=type)
     latest_records_event = _get_records_by_event(
-        latest_records_type, type=type)
+        latest_records_type, event="submitted")
 
-    completed = latest_records_event['subject_id'].tolist()
+    completed = latest_records_event['subject'].tolist()
 
     needs_processing = [x for x in subjects if x not in completed]
     return needs_processing
