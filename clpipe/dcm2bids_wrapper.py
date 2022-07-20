@@ -1,4 +1,4 @@
-from .batch_manager import BatchManager, Job
+from .batch_manager import LOGGER_NAME, BatchManager, Job
 from .config_json_parser import ClpipeConfigParser
 import os
 import parse
@@ -8,6 +8,7 @@ import sys
 from .utils import get_logger, add_file_handler
 from .status import needs_processing, write_record
 
+LOGGER_NAME = "bids-conversion"
 BASE_CMD = ("dcm2bids -d {dicom_dir} -o {bids_dir} "
             "-p {subject} -c {conv_config_file}")
 
@@ -36,7 +37,7 @@ def convert2bids(dicom_dir=None, dicom_dir_format=None, bids_dir=None,
     n_threads = config.config['DICOMToBIDSOptions']['CoreUsage']
 
     add_file_handler(os.path.join(project_dir, "logs"))
-    logger = get_logger("bids-conversion", debug=debug)
+    logger = get_logger(LOGGER_NAME, debug=debug)
 
     if not dicom_dir:
         logger.error('DICOM directory not specified.')
@@ -54,7 +55,8 @@ def convert2bids(dicom_dir=None, dicom_dir_format=None, bids_dir=None,
         logger.error('Log directory not specified.')
         sys.exit(1)
 
-    logger.info(f"Starting bids conversion targeting: {dicom_dir}")
+    logger.info(f"Starting BIDS conversion targeting: {dicom_dir}")
+    logger.debug(f"Using config file: {config_file}")
 
     format_str = dicom_dir_format.replace("{subject}", "*")
     session_toggle = False
