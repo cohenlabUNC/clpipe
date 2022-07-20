@@ -1,19 +1,17 @@
 import os
 import sys
-import logging
 
-from .batch_manager import BatchManager, Job
+from .batch_manager import LOGGER_NAME, BatchManager, Job
 from .config_json_parser import ClpipeConfigParser
-from .error_handler import exception_handler
 from .utils import get_logger, add_file_handler
 
+LOGGER_NAME = "fmriprep-process"
 BASE_SINGULARITY_CMD = (
     "unset PYTHONPATH; {templateflow1} singularity run -B {templateflow2}"
     "{bindPaths} {batchcommands} {fmriprepInstance} {bids_dir} {output_dir} "
     "participant --participant-label {participantLabels} -w {working_dir} "
     "--fs-license-file {fslicense} {threads} {useAROMA} {other_opts}"
 )
-
 BASE_DOCKER_CMD = (
     "docker run --rm -ti "
     "-v {fslicense}:/opt/freesurfer/license.txt:ro "
@@ -22,13 +20,11 @@ BASE_DOCKER_CMD = (
     "{docker_fmriprep} /data /out participant -w /work {threads} {useAROMA} "
     "{other_opts} --participant-label {participantLabels}"
 )
-
 TEMPLATE_1 = "export SINGULARITYENV_TEMPLATEFLOW_HOME={templateflowpath};"
 TEMPLATE_2 = \
     "${{TEMPLATEFLOW_HOME:-$HOME/.cache/templateflow}}:{templateflowpath},"
 USE_AROMA_FLAG = "--use-aroma"
 N_THREADS_FLAG = "--nthreads"
-
 
 
 def fmriprep_process(bids_dir=None, working_dir=None, output_dir=None, 
@@ -47,7 +43,7 @@ def fmriprep_process(bids_dir=None, working_dir=None, output_dir=None,
     )
 
     config = config.config
-    project_dir = config.config["ProjectDirectory"]
+    project_dir = config["ProjectDirectory"]
     bids_dir = config['FMRIPrepOptions']['BIDSDirectory']
     working_dir = config['FMRIPrepOptions']['WorkingDirectory']
     output_dir = config['FMRIPrepOptions']['OutputDirectory']
@@ -58,7 +54,6 @@ def fmriprep_process(bids_dir=None, working_dir=None, output_dir=None,
     time_usage = config['FMRIPrepOptions']['FMRIPrepTimeUsage']
     n_threads = config['FMRIPrepOptions']['NThreads']
     email = config["EmailAddress"]
-    thread_command_active = batch_manager.config['ThreadCommandActive']
     cmd_line_opts = config['FMRIPrepOptions']['CommandLineOpts']
     use_aroma = config['FMRIPrepOptions']['UseAROMA']
     docker_toggle = config['FMRIPrepOptions']['DockerToggle']
@@ -66,12 +61,10 @@ def fmriprep_process(bids_dir=None, working_dir=None, output_dir=None,
         config['FMRIPrepOptions']['DockerFMRIPrepVersion']
     freesurfer_license_path = \
         config['FMRIPrepOptions']['FreesurferLicensePath']
-    batch_commands = batch_manager.config["FMRIPrepBatchCommands"]
-    singularity_bind_paths = batch_manager.config['SingularityBindPaths']
     fmriprep_path = config['FMRIPrepOptions']['FMRIPrepPath']
 
     add_file_handler(os.path.join(project_dir, "logs"))
-    logger = get_logger("fmriprep_process", debug=debug)
+    logger = get_logger(LOGGER_NAME, debug=debug)
 
     if not any([bids_dir, output_dir, working_dir, log_dir]):
         logger.error(
@@ -82,6 +75,7 @@ def fmriprep_process(bids_dir=None, working_dir=None, output_dir=None,
         sys.exit(1)
 
     logger.info(f"Starting fMRIprep job targeting: {bids_dir}")
+    logger.debug(f"Using config file: {config_file}")
 
     template_1 = ""
     template_2 = ""
@@ -95,6 +89,13 @@ def fmriprep_process(bids_dir=None, working_dir=None, output_dir=None,
             templateflowpath = template_flow_path
         )
         
+    if docker_toggle:
+        logger.debug("Using container type: Docker")
+        logger.debug(f"Docker fMRIprep version: {docker_fmriprep_version}")
+    else:
+        logger.debug("Using container type: Singularity")
+        logger.debug(f"Container path: {fmriprep_path}")
+
     other_opts = cmd_line_opts
     use_aroma = ""
     if USE_AROMA_FLAG in other_opts:
@@ -110,11 +111,15 @@ def fmriprep_process(bids_dir=None, working_dir=None, output_dir=None,
         sublist = subjects
     logger.info(f"Targeting subject(s): {', '.join(sublist)}")
 
-    batch_manager = BatchManager(batch_config, log_dir)
+    batch_manager = BatchManager(batch_config, log_dir, debug=debug)
     batch_manager.update_mem_usage(mem_usage)
     batch_manager.update_time(time_usage)
     batch_manager.update_nthreads(n_threads)
     batch_manager.update_email(email)
+
+    thread_command_active = batch_manager.config['ThreadCommandActive']
+    batch_commands = batch_manager.config["FMRIPrepBatchCommands"]
+    singularity_bind_paths = batch_manager.config['SingularityBindPaths']
 
     threads = ''
     if thread_command_active:
@@ -125,7 +130,6 @@ def fmriprep_process(bids_dir=None, working_dir=None, output_dir=None,
         "bids_dir": bids_dir,
         "output_dir": output_dir,
         "working_dir": working_dir,
-        "participant_label": sub,
         "fslicense": freesurfer_license_path,
         "threads": threads,
         "useAROMA": use_aroma,
@@ -133,18 +137,19 @@ def fmriprep_process(bids_dir=None, working_dir=None, output_dir=None,
     }
 
     for sub in sublist:
+        fmriprep_args["participantLabels"] = sub
         if docker_toggle:
-            logger.debug("Using container type: Docker")
-            fmriprep_args["docker_fmriprep"] = docker_fmriprep_version    
+            fmriprep_args["docker_fmriprep"] = docker_fmriprep_version
+
+            submission_string = BASE_DOCKER_CMD.format(**fmriprep_args)    
         else:
-            logger.debug("Using container type: Singularity")
             fmriprep_args["templateflow1"] = template_1
             fmriprep_args["templateflow2"] = template_2
             fmriprep_args["fmriprepInstance"] = fmriprep_path
             fmriprep_args["batchcommands"] = batch_commands
             fmriprep_args["bindPaths"] = singularity_bind_paths
 
-        submission_string = BASE_DOCKER_CMD.format(**fmriprep_args)
+            submission_string = BASE_SINGULARITY_CMD.format(**fmriprep_args)
         batch_manager.addjob(
             Job("sub-" + sub + "_fmriprep", submission_string)
         )
