@@ -110,7 +110,12 @@ def convert2bids(dicom_dir=None, dicom_dir_format=None, bids_dir=None,
     batch_manager.update_time(time_usage)
     batch_manager.update_nthreads(n_threads)
 
-    subjects_to_process = []
+    # TODO: Handle subject/session
+    if status_path:
+        subjects_to_process = [result['subject'] for result in sub_sess_list]
+        subjects_need_processing = needs_processing(
+            subjects_to_process, status_path
+        )
 
     # Create jobs using the sub/sess list
     for ind, i in enumerate(sub_sess_list):
@@ -137,8 +142,13 @@ def convert2bids(dicom_dir=None, dicom_dir_format=None, bids_dir=None,
         submission_string = conv_string.format(**conv_args)
 
         job = Job(job_id, submission_string)
-        batch_manager.addjob(job)
-        subjects_to_process.append(subject)
+
+        # If we are using the status cache, only add job if needed
+        if status_path:
+            if subject in subjects_need_processing:
+                batch_manager.addjob(job)
+        else:
+            batch_manager.addjob(job)
 
     batch_manager.compile_job_strings()
     if submit:
@@ -148,9 +158,11 @@ def convert2bids(dicom_dir=None, dicom_dir_format=None, bids_dir=None,
 
         if status_path:
             # Write submitted subjects to status cache as submitted
-            for subject in subjects_to_process:
-                write_record(subject, cache_path = status_path)
+            if len(subjects_need_processing) > 0:
+                for subject in subjects_need_processing:
+                    write_record(subject, cache_path = status_path)
+            else:
+                logger.info("No subjects need processing.")
 
     else:
         batch_manager.print_jobs()
-        logger.info("Rerun with the '-submit' flag to launch these jobs.")
