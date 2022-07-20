@@ -4,6 +4,7 @@ import sys
 from .batch_manager import LOGGER_NAME, BatchManager, Job
 from .config_json_parser import ClpipeConfigParser
 from .utils import get_logger, add_file_handler
+from .status import needs_processing, write_record
 
 STEP_NAME = "fmriprep-process"
 BASE_SINGULARITY_CMD = (
@@ -29,7 +30,7 @@ N_THREADS_FLAG = "--nthreads"
 
 def fmriprep_process(bids_dir=None, working_dir=None, output_dir=None, 
                      config_file=None, subjects=None, log_dir=None,
-                     status_path=None, submit=False, debug=False):
+                     status_cache=None, submit=False, debug=False):
     """
     This command runs a BIDS formatted dataset through fMRIprep. 
     Specify subject IDs to run specific subjects. If left blank,
@@ -110,8 +111,16 @@ def fmriprep_process(bids_dir=None, working_dir=None, output_dir=None,
     else:
         sublist = subjects
 
-    if status_path:
-        sublist = needs_processing(sublist, status_path, type=STEP_NAME)
+    if status_cache:
+        logger.info(f"Using status log: {status_cache}")
+        sublist = needs_processing(sublist, status_cache, step=STEP_NAME)
+        if len(sublist) == 0:
+            logger.info((
+                "No subjects need processing. If this seems incorrect, "
+                f"you may need to clear 'submitted' {STEP_NAME} entries from "
+                "your status log."
+            ))
+            sys.exit(0)
 
     logger.info(f"Targeting subject(s): {', '.join(sublist)}")
 
@@ -161,5 +170,8 @@ def fmriprep_process(bids_dir=None, working_dir=None, output_dir=None,
     batch_manager.compilejobstrings()
     if submit:
         batch_manager.submit_jobs()
+        if status_cache:
+            for sub in sublist:
+                write_record(sub, cache_path=status_cache, step=STEP_NAME)
     else:
         batch_manager.print_jobs()
