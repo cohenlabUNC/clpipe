@@ -22,14 +22,15 @@ BASE_DOCKER_CMD = (
 )
 
 TEMPLATE_1 = "export SINGULARITYENV_TEMPLATEFLOW_HOME={templateflowpath};"
-TEMPLATE_2 = "${{TEMPLATEFLOW_HOME:-$HOME/.cache/templateflow}}:{templateflowpath},"
+TEMPLATE_2 = \
+    "${{TEMPLATEFLOW_HOME:-$HOME/.cache/templateflow}}:{templateflowpath},"
 USE_AROMA_FLAG = "--use-aroma"
 N_THREADS_FLAG = "--nthreads"
 
 
 def fmriprep_process(bids_dir=None, working_dir=None, output_dir=None, 
-                     config_file=None, subjects=None,log_dir=None,submit=False, 
-                     debug=False):
+                     config_file=None, subjects=None, log_dir=None,
+                     submit=False, debug=False):
     """
     This command runs a BIDS formatted dataset through fMRIprep. 
     Specify subject IDs to run specific subjects. If left blank,
@@ -47,10 +48,31 @@ def fmriprep_process(bids_dir=None, working_dir=None, output_dir=None,
     config.setup_fmriprep_directories(
         bids_dir, working_dir, output_dir, log_dir
     )
-    if not any([config.config['FMRIPrepOptions']['BIDSDirectory'], 
-                config.config['FMRIPrepOptions']['OutputDirectory'],
-                config.config['FMRIPrepOptions']['WorkingDirectory'],
-                config.config['FMRIPrepOptions']['LogDirectory']]):
+
+    config = config.config
+    bids_dir = config['FMRIPrepOptions']['BIDSDirectory']
+    working_dir = config['FMRIPrepOptions']['WorkingDirectory']
+    output_dir = config['FMRIPrepOptions']['OutputDirectory']
+    log_dir = config['FMRIPrepOptions']['LogDirectory']
+    template_flow_path = config["FMRIPrepOptions"]["TemplateFlowPath"]
+    batch_config = config['BatchConfig']
+    mem_usage = config['FMRIPrepOptions']['FMRIPrepMemoryUsage']
+    time_usage = config['FMRIPrepOptions']['FMRIPrepTimeUsage']
+    n_threads = config['FMRIPrepOptions']['NThreads']
+    email = config["EmailAddress"]
+    thread_command_active = batch_manager.config['ThreadCommandActive']
+    cmd_line_opts = config['FMRIPrepOptions']['CommandLineOpts']
+    use_aroma = config['FMRIPrepOptions']['UseAROMA']
+    docker_toggle = config['FMRIPrepOptions']['DockerToggle']
+    docker_fmriprep_version = \
+        config['FMRIPrepOptions']['DockerFMRIPrepVersion']
+    freesurfer_license_path = \
+        config['FMRIPrepOptions']['FreesurferLicensePath']
+    batch_commands = batch_manager.config["FMRIPrepBatchCommands"]
+    singularity_bind_paths = batch_manager.config['SingularityBindPaths']
+    fmriprep_path = config['FMRIPrepOptions']['FMRIPrepPath']
+
+    if not any([bids_dir, output_dir, working_dir, log_dir]):
         raise ValueError(
             'Please make sure the BIDS, working and output directories are '
             'specified in either the configfile or in the command. '
@@ -59,49 +81,49 @@ def fmriprep_process(bids_dir=None, working_dir=None, output_dir=None,
 
     template1 = ""
     template2 = ""
-
-    if config.config['FMRIPrepOptions']['TemplateFlowToggle']:
+    if config['FMRIPrepOptions']['TemplateFlowToggle']:
         template1 = TEMPLATE_1.format(
-            templateflowpath = config.config["FMRIPrepOptions"]["TemplateFlowPath"]
+            templateflowpath = template_flow_path
         )
         template2 = TEMPLATE_2.format(
-            templateflowpath = config.config["FMRIPrepOptions"]["TemplateFlowPath"]
+            templateflowpath = template_flow_path
         )
         
-    otherOpts = config.config['FMRIPrepOptions']['CommandLineOpts']
+    otherOpts = cmd_line_opts
     useAROMA = ""
-    if config.config['FMRIPrepOptions']['UseAROMA']:
-        # Check to make sure '--use-aroma' isn't already specified in otherOpts, to prevent duplicating the option
+    if use_aroma:
+        # Check to make sure '--use-aroma' isn't already specified in 
+        # otherOpts, to prevent duplicating the option
         if USE_AROMA_FLAG not in otherOpts:
             useAROMA = USE_AROMA_FLAG
 
     if not subjects:
         subjectstring = "ALL"
-        sublist = [o.replace('sub-', '') for o in os.listdir(config.config['FMRIPrepOptions']['BIDSDirectory'])
-                   if os.path.isdir(os.path.join(config.config['FMRIPrepOptions']['BIDSDirectory'], o)) and 'sub-' in o]
+        sublist = [o.replace('sub-', '') for o in os.listdir(bids_dir)
+                   if os.path.isdir(os.path.join(bids_dir, o)) and 'sub-' in o]
     else:
         subjectstring = " , ".join(subjects)
         sublist = subjects
 
-    batch_manager = BatchManager(config.config['BatchConfig'], config.config['FMRIPrepOptions']['LogDirectory'])
-    batch_manager.update_mem_usage(config.config['FMRIPrepOptions']['FMRIPrepMemoryUsage'])
-    batch_manager.update_time(config.config['FMRIPrepOptions']['FMRIPrepTimeUsage'])
-    batch_manager.update_nthreads(config.config['FMRIPrepOptions']['NThreads'])
-    batch_manager.update_email(config.config["EmailAddress"])
+    batch_manager = BatchManager(batch_config, log_dir)
+    batch_manager.update_mem_usage(mem_usage)
+    batch_manager.update_time(time_usage)
+    batch_manager.update_nthreads(n_threads)
+    batch_manager.update_email(email)
 
     threads = ''
-    if batch_manager.config['ThreadCommandActive']:
+    if thread_command_active:
         threads = f'{N_THREADS_FLAG} ' + batch_manager.get_threads_command()[1]
         
     for sub in sublist:
-        if config.config['FMRIPrepOptions']['DockerToggle']:     
+        if docker_toggle:     
             submission_string = BASE_DOCKER_CMD.format(
-                docker_fmriprep=config.config['FMRIPrepOptions']['DockerFMRIPrepVersion'],
-                bids_dir=config.config['FMRIPrepOptions']['BIDSDirectory'],
-                output_dir=config.config['FMRIPrepOptions']['OutputDirectory'],
-                working_dir=config.config['FMRIPrepOptions']['WorkingDirectory'],
+                docker_fmriprep=docker_fmriprep_version,
+                bids_dir=bids_dir,
+                output_dir=output_dir,
+                working_dir=working_dir,
                 participantLabels=sub,
-                fslicense=config.config['FMRIPrepOptions']['FreesurferLicensePath'],
+                fslicense=freesurfer_license_path,
                 threads= threads,
                 useAROMA=useAROMA,
                 otheropts=otherOpts
@@ -110,16 +132,16 @@ def fmriprep_process(bids_dir=None, working_dir=None, output_dir=None,
             submission_string = BASE_SINGULARITY_CMD.format(
                 templateflow1 = template1,
                 templateflow2 = template2,
-                fmriprepInstance=config.config['FMRIPrepOptions']['FMRIPrepPath'],
-                bids_dir=config.config['FMRIPrepOptions']['BIDSDirectory'],
-                output_dir=config.config['FMRIPrepOptions']['OutputDirectory'],
-                working_dir=config.config['FMRIPrepOptions']['WorkingDirectory'],
-                batchcommands=batch_manager.config["FMRIPrepBatchCommands"],
+                fmriprepInstance=fmriprep_path,
+                bids_dir=bids_dir,
+                output_dir=output_dir,
+                working_dir=working_dir,
+                batchcommands=batch_commands,
                 participantLabels=sub,
-                fslicense=config.config['FMRIPrepOptions']['FreesurferLicensePath'],
+                fslicense=freesurfer_license_path,
                 threads= threads,
                 useAROMA=useAROMA,
-                bindPaths=batch_manager.config['SingularityBindPaths'],
+                bindPaths=singularity_bind_paths,
                 otheropts=otherOpts
             )
         batch_manager.addjob(
