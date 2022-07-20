@@ -5,7 +5,7 @@ from .batch_manager import LOGGER_NAME, BatchManager, Job
 from .config_json_parser import ClpipeConfigParser
 from .utils import get_logger, add_file_handler
 
-LOGGER_NAME = "fmriprep-process"
+STEP_NAME = "fmriprep-process"
 BASE_SINGULARITY_CMD = (
     "unset PYTHONPATH; {templateflow1} singularity run -B {templateflow2}"
     "{bindPaths} {batchcommands} {fmriprepInstance} {bids_dir} {output_dir} "
@@ -29,7 +29,7 @@ N_THREADS_FLAG = "--nthreads"
 
 def fmriprep_process(bids_dir=None, working_dir=None, output_dir=None, 
                      config_file=None, subjects=None, log_dir=None,
-                     submit=False, debug=False):
+                     status_path=None, submit=False, debug=False):
     """
     This command runs a BIDS formatted dataset through fMRIprep. 
     Specify subject IDs to run specific subjects. If left blank,
@@ -64,7 +64,7 @@ def fmriprep_process(bids_dir=None, working_dir=None, output_dir=None,
     fmriprep_path = config['FMRIPrepOptions']['FMRIPrepPath']
 
     add_file_handler(os.path.join(project_dir, "logs"))
-    logger = get_logger(LOGGER_NAME, debug=debug)
+    logger = get_logger(STEP_NAME, debug=debug)
 
     if not any([bids_dir, output_dir, working_dir, log_dir]):
         logger.error(
@@ -109,6 +109,10 @@ def fmriprep_process(bids_dir=None, working_dir=None, output_dir=None,
                    if os.path.isdir(os.path.join(bids_dir, o)) and 'sub-' in o]
     else:
         sublist = subjects
+
+    if status_path:
+        sublist = needs_processing(sublist, status_path, type=STEP_NAME)
+
     logger.info(f"Targeting subject(s): {', '.join(sublist)}")
 
     batch_manager = BatchManager(batch_config, log_dir, debug=debug)

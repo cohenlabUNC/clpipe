@@ -8,7 +8,7 @@ import sys
 from .utils import get_logger, add_file_handler
 from .status import needs_processing, write_record
 
-LOGGER_NAME = "bids-conversion"
+STEP_NAME = "bids-conversion"
 BASE_CMD = ("dcm2bids -d {dicom_dir} -o {bids_dir} "
             "-p {subject} -c {conv_config_file}")
 

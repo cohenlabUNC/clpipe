@@ -5,7 +5,7 @@ from .config_json_parser import ClpipeConfigParser
 
 from .utils import add_file_handler, get_logger
 
-LOGGER_NAME = "bids-validation"
+STEP_NAME = "bids-validation"
 SINGULARITY_CMD_TEMPLATE = ('singularity run --cleanenv -B {bindPaths} '
                       '{validatorInstance} {bidsDir}')
 
@@ -28,7 +28,7 @@ def bids_validate(bids_dir=None, config_file=None, log_dir=None,
     project_dir = config.config["ProjectDirectory"]
 
     add_file_handler(os.path.join(project_dir, "logs"))
-    logger = get_logger(LOGGER_NAME, debug=debug)
+    logger = get_logger(STEP_NAME, debug=debug)
 
     logger.info(f"Starting BIDS validation targeting: {bids_dir}")
     logger.debug(f"Using config file: {config_file}")

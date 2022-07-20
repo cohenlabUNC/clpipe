@@ -22,7 +22,7 @@ def _get_records_latest(records: pd.DataFrame) -> pd.DataFrame:
     latest_records = records.sort_values(
         'timestamp', ascending=False
     ).groupby(
-        ['subject', 'type'], dropna=False, as_index=False
+        ['subject', 'step'], dropna=False, as_index=False
     ).agg({
         'timestamp': 'max',
         'event': 'first',
@@ -31,12 +31,12 @@ def _get_records_latest(records: pd.DataFrame) -> pd.DataFrame:
     return latest_records
 
 
-def _get_records_by_type(records: pd.DataFrame, 
-                        type="bids_conversion") -> pd.DataFrame:
-    records_by_type = records.loc[
-        records['type'] == type
+def _get_records_by_step(records: pd.DataFrame, 
+                        step="bids_conversion") -> pd.DataFrame:
+    records_by_step = records.loc[
+        records['step'] == type
     ]
-    return records_by_type
+    return records_by_step
 
 
 def _get_records_by_event(records: pd.DataFrame,
@@ -48,14 +48,14 @@ def _get_records_by_event(records: pd.DataFrame,
 
 
 def needs_processing(subjects: list, cache_path: os.PathLike, 
-                     type="bids_conversion"):
+                     step="bids_conversion"):
     try:
         records = _load_records(cache_path)
     except FileNotFoundError:
         return subjects
 
     latest_records = _get_records_latest(records)
-    latest_records_type = _get_records_by_type(latest_records, type=type)
+    latest_records_type = _get_records_by_step(latest_records, type=type)
     latest_records_event = _get_records_by_event(
         latest_records_type, event="submitted")
 
@@ -67,7 +67,7 @@ def needs_processing(subjects: list, cache_path: os.PathLike,
 
 def write_record(subject: str, session: str="", 
                  cache_path: os.PathLike=DEFAULT_CACHE_PATH,
-                 type="bids_conversion", event="submitted",
+                 step="bids_conversion", event="submitted",
                  note="clpipe generated"):
     timestamp = datetime.datetime.now()
     cache_path = Path(cache_path)
@@ -81,5 +81,5 @@ def write_record(subject: str, session: str="",
     with open(cache_path, "a") as cache_file:
         csv_writer = csv.writer(cache_file)
         csv_writer.writerow(
-            [subject, session, type, event, timestamp, "", note]
+            [subject, session, step, event, timestamp, "", note]
         )
