@@ -1,15 +1,17 @@
 import os
 import sys
 import logging
+
 from .batch_manager import BatchManager, Job
 from .config_json_parser import ClpipeConfigParser
 from .error_handler import exception_handler
+from .utils import get_logger, add_file_handler
 
 BASE_SINGULARITY_CMD = (
     "unset PYTHONPATH; {templateflow1} singularity run -B {templateflow2}"
     "{bindPaths} {batchcommands} {fmriprepInstance} {bids_dir} {output_dir} "
     "participant --participant-label {participantLabels} -w {working_dir} "
-    "--fs-license-file {fslicense} {threads} {useAROMA} {otheropts}"
+    "--fs-license-file {fslicense} {threads} {useAROMA} {other_opts}"
 )
 
 BASE_DOCKER_CMD = (
@@ -18,7 +20,7 @@ BASE_DOCKER_CMD = (
     "-v {bids_dir}:/data:ro -v {output_dir}:/out "
     "-v {working_dir}:/work "
     "{docker_fmriprep} /data /out participant -w /work {threads} {useAROMA} "
-    "{otheropts} --participant-label {participantLabels}"
+    "{other_opts} --participant-label {participantLabels}"
 )
 
 TEMPLATE_1 = "export SINGULARITYENV_TEMPLATEFLOW_HOME={templateflowpath};"
@@ -26,6 +28,7 @@ TEMPLATE_2 = \
     "${{TEMPLATEFLOW_HOME:-$HOME/.cache/templateflow}}:{templateflowpath},"
 USE_AROMA_FLAG = "--use-aroma"
 N_THREADS_FLAG = "--nthreads"
+
 
 
 def fmriprep_process(bids_dir=None, working_dir=None, output_dir=None, 
@@ -37,12 +40,6 @@ def fmriprep_process(bids_dir=None, working_dir=None, output_dir=None,
     runs all subjects.
     """
 
-    if not debug:
-        sys.excepthook = exception_handler
-        logging.basicConfig(level=logging.INFO)
-    else:
-        logging.basicConfig(level=logging.DEBUG)
-
     config = ClpipeConfigParser()
     config.config_updater(config_file)
     config.setup_fmriprep_directories(
@@ -50,6 +47,7 @@ def fmriprep_process(bids_dir=None, working_dir=None, output_dir=None,
     )
 
     config = config.config
+    project_dir = config.config["ProjectDirectory"]
     bids_dir = config['FMRIPrepOptions']['BIDSDirectory']
     working_dir = config['FMRIPrepOptions']['WorkingDirectory']
     output_dir = config['FMRIPrepOptions']['OutputDirectory']
@@ -72,36 +70,45 @@ def fmriprep_process(bids_dir=None, working_dir=None, output_dir=None,
     singularity_bind_paths = batch_manager.config['SingularityBindPaths']
     fmriprep_path = config['FMRIPrepOptions']['FMRIPrepPath']
 
+    add_file_handler(os.path.join(project_dir, "logs"))
+    logger = get_logger("fmriprep_process", debug=debug)
+
     if not any([bids_dir, output_dir, working_dir, log_dir]):
-        raise ValueError(
+        logger.error(
             'Please make sure the BIDS, working and output directories are '
             'specified in either the configfile or in the command. '
             'At least one is not specified.'
         )
+        sys.exit(1)
 
-    template1 = ""
-    template2 = ""
+    logger.info(f"Starting fMRIprep job targeting: {bids_dir}")
+
+    template_1 = ""
+    template_2 = ""
     if config['FMRIPrepOptions']['TemplateFlowToggle']:
-        template1 = TEMPLATE_1.format(
+        logger.debug("Template Flow toggle: ON")
+        logger.debug(f"Template Flow path: {template_flow_path}")
+        template_1 = TEMPLATE_1.format(
             templateflowpath = template_flow_path
         )
-        template2 = TEMPLATE_2.format(
+        template_2 = TEMPLATE_2.format(
             templateflowpath = template_flow_path
         )
         
-    otherOpts = cmd_line_opts
-    useAROMA = ""
-    if use_aroma:
-        # Check to make sure '--use-aroma' isn't already specified in 
-        # otherOpts, to prevent duplicating the option
-        if USE_AROMA_FLAG not in otherOpts:
-            useAROMA = USE_AROMA_FLAG
+    other_opts = cmd_line_opts
+    use_aroma = ""
+    if USE_AROMA_FLAG in other_opts:
+        logger.debug("Use AROMA: ON")
+    elif use_aroma:
+        logger.debug("Use AROMA: ON")
+        use_aroma = USE_AROMA_FLAG
 
     if not subjects:
         sublist = [o.replace('sub-', '') for o in os.listdir(bids_dir)
                    if os.path.isdir(os.path.join(bids_dir, o)) and 'sub-' in o]
     else:
         sublist = subjects
+    logger.info(f"Targeting subject(s): {', '.join(sublist)}")
 
     batch_manager = BatchManager(batch_config, log_dir)
     batch_manager.update_mem_usage(mem_usage)
@@ -111,37 +118,33 @@ def fmriprep_process(bids_dir=None, working_dir=None, output_dir=None,
 
     threads = ''
     if thread_command_active:
+        logger.debug("Threads command: ACTIVE")
         threads = f'{N_THREADS_FLAG} ' + batch_manager.get_threads_command()[1]
         
+    fmriprep_args = {
+        "bids_dir": bids_dir,
+        "output_dir": output_dir,
+        "working_dir": working_dir,
+        "participant_label": sub,
+        "fslicense": freesurfer_license_path,
+        "threads": threads,
+        "useAROMA": use_aroma,
+        "other_opts": other_opts
+    }
+
     for sub in sublist:
-        if docker_toggle:     
-            submission_string = BASE_DOCKER_CMD.format(
-                docker_fmriprep=docker_fmriprep_version,
-                bids_dir=bids_dir,
-                output_dir=output_dir,
-                working_dir=working_dir,
-                participantLabels=sub,
-                fslicense=freesurfer_license_path,
-                threads= threads,
-                useAROMA=useAROMA,
-                otheropts=otherOpts
-            )
+        if docker_toggle:
+            logger.debug("Using container type: Docker")
+            fmriprep_args["docker_fmriprep"] = docker_fmriprep_version    
         else:
-            submission_string = BASE_SINGULARITY_CMD.format(
-                templateflow1 = template1,
-                templateflow2 = template2,
-                fmriprepInstance=fmriprep_path,
-                bids_dir=bids_dir,
-                output_dir=output_dir,
-                working_dir=working_dir,
-                batchcommands=batch_commands,
-                participantLabels=sub,
-                fslicense=freesurfer_license_path,
-                threads= threads,
-                useAROMA=useAROMA,
-                bindPaths=singularity_bind_paths,
-                otheropts=otherOpts
-            )
+            logger.debug("Using container type: Singularity")
+            fmriprep_args["templateflow1"] = template_1
+            fmriprep_args["templateflow2"] = template_2
+            fmriprep_args["fmriprepInstance"] = fmriprep_path
+            fmriprep_args["batchcommands"] = batch_commands
+            fmriprep_args["bindPaths"] = singularity_bind_paths
+
+        submission_string = BASE_DOCKER_CMD.format(**fmriprep_args)
         batch_manager.addjob(
             Job("sub-" + sub + "_fmriprep", submission_string)
         )
