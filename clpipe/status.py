@@ -34,7 +34,7 @@ def _get_records_latest(records: pd.DataFrame) -> pd.DataFrame:
 def _get_records_by_step(records: pd.DataFrame, 
                         step="bids_conversion") -> pd.DataFrame:
     records_by_step = records.loc[
-        records['step'] == type
+        records['step'] == step
     ]
     return records_by_step
 
@@ -55,7 +55,7 @@ def needs_processing(subjects: list, cache_path: os.PathLike,
         return subjects
 
     latest_records = _get_records_latest(records)
-    latest_records_type = _get_records_by_step(latest_records, type=type)
+    latest_records_type = _get_records_by_step(latest_records, step=step)
     latest_records_event = _get_records_by_event(
         latest_records_type, event="submitted")
 
