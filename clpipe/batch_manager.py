@@ -11,6 +11,7 @@ from .utils import get_logger
 LOGGER_NAME = "batch-manager"
 OUTPUT_FORMAT_STR = 'Output-{jobid}-jobid-%j.out'
 JOB_ID_FORMAT_STR = '{jobid}'
+MAX_JOB_DISPLAY = 5
 
 
 class BatchManager:
@@ -121,13 +122,18 @@ class BatchManager:
             os.system(job)
 
     def print_jobs(self):
-        output = "Jobs to run:\n\n"
         job_count = len(self.submission_list)
-        for index, job in enumerate(self.submission_list):
-            output += "\t" + job + "\n\n"
-            if index == 5 and not self.debug:
-                output += (f"\t...and {job_count - 5} more jobs. ")
-                break
+
+        if job_count == 0:
+            output = "No jobs to run."
+        else:
+            output = "Jobs to run:\n\n"
+            for index, job in enumerate(self.submission_list):
+                output += "\t" + job + "\n\n"
+                if index == MAX_JOB_DISPLAY - 1 and job_count > MAX_JOB_DISPLAY and not self.debug:
+                    output += (f"\t...and {job_count - 5} more job(s).\n")
+                    break
+            output += "Re-run with the '-submit' flag to launch these jobs."
         self.logger.info(output)
 
     def get_threads_command(self):
