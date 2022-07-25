@@ -11,6 +11,7 @@ from .utils import get_logger
 LOGGER_NAME = "batch-manager"
 OUTPUT_FORMAT_STR = 'Output-{jobid}-jobid-%j.out'
 JOB_ID_FORMAT_STR = '{jobid}'
+MAX_JOB_DISPLAY = 5
 
 
 class BatchManager:
@@ -64,11 +65,17 @@ class BatchManager:
     def addjob(self, job):
         self.jobs.append(job)
 
+    def add_job(self, job):
+        return self.addjob(job)
+
     def compilejobstrings(self):
         header = self.createsubmissionhead()
         for job in self.jobs:
             temp = header.format(jobid=job.jobID, cmdwrap = job.jobString)
             self.submission_list.append(temp)
+
+    def compile_job_strings(self):
+        return self.compilejobstrings()
 
     def createsubmissionhead(self):
         head = [self.config['SubmissionHead']]
@@ -102,6 +109,9 @@ class BatchManager:
 
         return " ".join(head)
 
+    def create_submission_head(self):
+        return self.createsubmissionhead()
+
     def submit_jobs(self):
         self.logger.info(f"Submitting {len(self.submission_list)} jobs.")
         self.logger.debug(f"Memory usage: {self.config['MemoryDefault']}")
@@ -112,13 +122,18 @@ class BatchManager:
             os.system(job)
 
     def print_jobs(self):
-        output = "Jobs to run:\n\n"
         job_count = len(self.submission_list)
-        for index, job in enumerate(self.submission_list):
-            output += "\t" + job + "\n\n"
-            if index == 5 and not self.debug:
-                output += (f"\t...and {job_count - 5} more jobs. ")
-                break
+
+        if job_count == 0:
+            output = "No jobs to run."
+        else:
+            output = "Jobs to run:\n\n"
+            for index, job in enumerate(self.submission_list):
+                output += "\t" + job + "\n\n"
+                if index == MAX_JOB_DISPLAY - 1 and job_count > MAX_JOB_DISPLAY and not self.debug:
+                    output += (f"\t...and {job_count - 5} more job(s).\n")
+                    break
+            output += "Re-run with the '-submit' flag to launch these jobs."
         self.logger.info(output)
 
     def get_threads_command(self):
