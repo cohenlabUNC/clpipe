@@ -4,15 +4,71 @@ import os
 import parse
 import glob
 import sys
+import click
 
 from .utils import get_logger, add_file_handler
 from .status import needs_processing, write_record
+from .config import CLICK_FILE_TYPE_EXISTS, CLICK_DIR_TYPE_EXISTS, \
+    CONFIG_HELP, LOG_DIR_HELP, SUBMIT_HELP, CLICK_FILE_TYPE, STATUS_CACHE_HELP
+from .cli import cli
 
 STEP_NAME = "bids-conversion"
 BASE_CMD = ("dcm2bids -d {dicom_dir} -o {bids_dir} "
             "-p {subject} -c {conv_config_file}")
 
-def convert2bids(dicom_dir=None, dicom_dir_format=None, bids_dir=None, 
+CONVERSION_CONFIG_HELP = (
+    "The configuration file for the study, use if you have a custom "
+    "batch configuration."
+)
+DICOM_DIR_HELP = "The folder where subject dicoms are located."
+DICOM_DIR_FORMAT_HELP = (
+    "Format string for how subjects/sessions are organized within the "
+    "dicom_dir."
+)
+CONVERT2BIDS_BIDS_DIR_HELP = "The dicom info output file name."
+OVERWRITE_HELP = "Overwrite existing BIDS data?"
+CONVERT2BIDS_SUBJECT_HELP = (
+    "A subject  to convert using the supplied configuration file. "
+    "Use to convert single subjects, else leave empty."
+)
+CONVERT2BIDS_SESSION_HELP = (
+    "A session  to convert using the supplied configuration file. Use in "
+    "combination with -subject to convert single subject/sessions, "
+    "else leave empty"
+)
+
+@cli.command()
+@click.option('-config_file', type=CLICK_FILE_TYPE_EXISTS, default=None,
+              help=CONFIG_HELP)
+@click.option('-conv_config_file', type=CLICK_FILE_TYPE_EXISTS, default=None, 
+              help=CONVERSION_CONFIG_HELP)
+@click.option('-dicom_dir', type=CLICK_DIR_TYPE_EXISTS, help=DICOM_DIR_HELP)
+@click.option('-dicom_dir_format', help=DICOM_DIR_FORMAT_HELP)
+@click.option('-BIDS_dir', type=CLICK_DIR_TYPE_EXISTS,
+              help=CONVERT2BIDS_BIDS_DIR_HELP)
+@click.option('-overwrite', is_flag=True, default=False, help=OVERWRITE_HELP)
+@click.option('-log_dir', type=CLICK_DIR_TYPE_EXISTS, help=LOG_DIR_HELP)
+@click.option('-subject', required=False, help=CONVERT2BIDS_SUBJECT_HELP)
+@click.option('-session', required=False, help=CONVERT2BIDS_SESSION_HELP)
+@click.option('-longitudinal', is_flag=True, default=False,
+              help=CONVERT2BIDS_SESSION_HELP)
+@click.option('-submit', is_flag=True, default=False, help=SUBMIT_HELP)
+@click.option('-status_cache', default=None, type=CLICK_FILE_TYPE, 
+              help=STATUS_CACHE_HELP)
+def convert2bids(dicom_dir, dicom_dir_format, bids_dir, conv_config_file,
+                 config_file, overwrite, log_dir, subject, session, 
+                 longitudinal, submit, status_cache):
+    """Convert DICOM files to BIDS format"""
+
+    convert2bids_logic(
+        dicom_dir=dicom_dir, dicom_dir_format=dicom_dir_format, 
+        bids_dir=bids_dir, conv_config_file=conv_config_file, 
+        config_file=config_file, overwrite=overwrite, log_dir=log_dir, 
+        subject=subject, session=session, longitudinal=longitudinal, 
+        submit=submit, status_cache=status_cache)
+
+
+def convert2bids_logic(dicom_dir=None, dicom_dir_format=None, bids_dir=None, 
                  conv_config_file=None, config_file=None, overwrite=None, 
                  log_dir=None, subject=None, session=None, longitudinal=False, 
                  status_cache=None, submit=None, debug=False):
