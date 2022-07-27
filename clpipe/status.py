@@ -10,6 +10,9 @@ STATUS_HEADER = [
 SUB_ID_TYPE = {'subject': 'string'}
 TYPES = {'timestamp': 'datetime64', 'subject': 'string'}
 DEFAULT_CACHE_PATH = "./.pipeline/status_log.csv"
+DEFAULT_STEP = "bids-conversion"
+DEFAULT_EVENT = "submitted"
+DEFAULT_NOTE = "clpipe generated"
 
 def _load_records(cache_path: os.PathLike) -> pd.DataFrame:
     
@@ -32,7 +35,7 @@ def _get_records_latest(records: pd.DataFrame) -> pd.DataFrame:
 
 
 def _get_records_by_step(records: pd.DataFrame, 
-                        step="bids_conversion") -> pd.DataFrame:
+                        step=DEFAULT_STEP) -> pd.DataFrame:
     records_by_step = records.loc[
         records['step'] == step
     ]
@@ -40,7 +43,7 @@ def _get_records_by_step(records: pd.DataFrame,
 
 
 def _get_records_by_event(records: pd.DataFrame,
-                          event="submitted") -> pd.DataFrame:
+                          event=DEFAULT_EVENT) -> pd.DataFrame:
     records_by_event = records.loc[
         records['event'] == event
     ]
@@ -48,7 +51,7 @@ def _get_records_by_event(records: pd.DataFrame,
 
 
 def needs_processing(subjects: list, cache_path: os.PathLike, 
-                     step="bids_conversion"):
+                     step=DEFAULT_STEP):
     try:
         records = _load_records(cache_path)
     except FileNotFoundError:
@@ -57,7 +60,7 @@ def needs_processing(subjects: list, cache_path: os.PathLike,
     latest_records = _get_records_latest(records)
     latest_records_type = _get_records_by_step(latest_records, step=step)
     latest_records_event = _get_records_by_event(
-        latest_records_type, event="submitted")
+        latest_records_type, event=DEFAULT_EVENT)
 
     completed = latest_records_event['subject'].tolist()
 
@@ -67,8 +70,8 @@ def needs_processing(subjects: list, cache_path: os.PathLike,
 
 def write_record(subject: str, session: str="", 
                  cache_path: os.PathLike=DEFAULT_CACHE_PATH,
-                 step="bids_conversion", event="submitted",
-                 note="clpipe generated"):
+                 step=DEFAULT_STEP, event=DEFAULT_EVENT,
+                 note=DEFAULT_NOTE):
     timestamp = datetime.datetime.now()
     cache_path = Path(cache_path)
 
