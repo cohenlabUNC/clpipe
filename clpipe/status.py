@@ -3,16 +3,34 @@ import pandas as pd
 import os
 import csv
 import datetime
+import click
+
+CLICK_FILE_TYPE_EXISTS = click.Path(
+    exists=True, dir_okay=False, file_okay=True)
 
 STATUS_HEADER = [
-    "subject", "session", "type", "event", "timestamp", "source", "note"
+    "subject", "session", "step", "event", "timestamp", "source", "note"
+]
+STEPS = [
+    'ingestion', 'bids-conversion', 'fmriprep-process', 
+    'qa', 'clpipe-preprocessing'
 ]
 SUB_ID_TYPE = {'subject': 'string'}
 TYPES = {'timestamp': 'datetime64', 'subject': 'string'}
 DEFAULT_CACHE_PATH = "./.pipeline/status_log.csv"
-DEFAULT_STEP = "bids-conversion"
+DEFAULT_STEP = STEPS[1]
 DEFAULT_EVENT = "submitted"
 DEFAULT_NOTE = "clpipe generated"
+CACHE_FILE_HELP = "Path to your status cache file."
+
+
+#TODO: Move cli commands back to specific modules to avoid circular import here 
+@click.command()
+@click.option('-cache_file', type=CLICK_FILE_TYPE_EXISTS,
+              help=CACHE_FILE_HELP)
+def status(cache_file):
+    show_latest_by_step(cache_file)
+
 
 def _load_records(cache_path: os.PathLike) -> pd.DataFrame:
     
@@ -48,6 +66,13 @@ def _get_records_by_event(records: pd.DataFrame,
         records['event'] == event
     ]
     return records_by_event
+
+
+def _get_records_pivot(records: pd.DataFrame):
+    latest_events_pivot = records.pivot(
+        index="subject", columns="step", values='event')
+
+    return latest_events_pivot
 
 
 def needs_processing(subjects: list, cache_path: os.PathLike, 
@@ -86,3 +111,23 @@ def write_record(subject: str, session: str="",
         csv_writer.writerow(
             [subject, session, step, event, timestamp, "", note]
         )
+
+
+def get_latest_by_step(cache_path: os.PathLike):
+    records = _load_records(cache_path)
+
+    latest_records = _get_records_latest(records)
+    latest_records_pivot = _get_records_pivot(latest_records)
+
+    present_steps = [x for x in records['step'].unique() if x in STEPS]
+
+    latest_records_pivot_reordered = latest_records_pivot[present_steps]
+    latest_records_pivot_reordered_fillna = \
+        latest_records_pivot_reordered.fillna('pending')
+
+    return latest_records_pivot_reordered_fillna
+
+
+def show_latest_by_step(cache_path: os.PathLike):
+    latest_by_step = get_latest_by_step(cache_path)
+    click.echo(latest_by_step)
