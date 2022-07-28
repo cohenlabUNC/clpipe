@@ -15,6 +15,7 @@ from .glm_l1 import glm_l1_preparefsf_cli, glm_l1_launch_cli
 from .glm_l2 import glm_l2_preparefsf_cli, glm_apply_mumford_workaround_cli
 from .fsl_onset_extract import fsl_onset_extract_cli
 from .outliers_report import report_outliers_cli
+from .status import status_cli
 
 
 @click.group(invoke_without_command=True)
@@ -34,6 +35,7 @@ def cli(ctx, version):
             click.echo(ctx.get_help())
             ctx.exit()
 
+
 @click.group("glm")
 def glm_cli():
     """GLM Commands"""
@@ -45,6 +47,7 @@ cli.add_command(convert2bids_cli)
 cli.add_command(fmriprep_process_cli)
 cli.add_command(fmri_postprocess_cli)
 cli.add_command(fmri_postprocess2_cli)
+cli.add_command(status_cli)
 
 glm_cli.add_command(glm_setup_cli)
 glm_cli.add_command(glm_l1_preparefsf_cli)

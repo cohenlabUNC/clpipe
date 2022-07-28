@@ -78,6 +78,7 @@ def convert2bids(dicom_dir=None, dicom_dir_format=None, bids_dir=None,
                  conv_config_file=None, config_file=None, overwrite=None, 
                  log_dir=None, subject=None, session=None, longitudinal=False, 
                  status_cache=None, submit=None, debug=False):
+    
     config = ClpipeConfigParser()
     config.config_updater(config_file)
     config.setup_dcm2bids(dicom_dir,
@@ -98,7 +99,7 @@ def convert2bids(dicom_dir=None, dicom_dir_format=None, bids_dir=None,
     n_threads = config.config['DICOMToBIDSOptions']['CoreUsage']
 
     add_file_handler(os.path.join(project_dir, "logs"))
-    logger = get_logger(LOGGER_NAME, debug=debug)
+    logger = get_logger(STEP_NAME, debug=debug)
 
     if not dicom_dir:
         logger.error('DICOM directory not specified.')
@@ -173,9 +174,13 @@ def convert2bids(dicom_dir=None, dicom_dir_format=None, bids_dir=None,
     batch_manager.update_time(time_usage)
     batch_manager.update_nthreads(n_threads)
 
-    # TODO: Handle subject/session
+    subjects_to_process = [result['subject'] for result in sub_sess_list]
+
+    # Default to processing all subjects
+    subjects_need_processing = subjects_to_process
+    # Reduce subjects to process based on cache if provided
     if status_cache:
-        subjects_to_process = [result['subject'] for result in sub_sess_list]
+        # TODO: Handle subject/session
         subjects_need_processing = needs_processing(
             subjects_to_process, status_cache
         )
@@ -206,26 +211,24 @@ def convert2bids(dicom_dir=None, dicom_dir_format=None, bids_dir=None,
 
         job = Job(job_id, submission_string)
 
-        # If we are using the status cache, only add job if needed
-        if status_cache:
-            if subject in subjects_need_processing:
-                batch_manager.addjob(job)
-        else:
+        if subject in subjects_need_processing:
             batch_manager.addjob(job)
 
     batch_manager.compile_job_strings()
     if submit:
-        batch_manager.submit_jobs()
-        config.config_json_dump(os.path.dirname(os.path.abspath(config_file)),
-                                config_file)
-
-        if status_cache:
-            # Write submitted subjects to status cache as submitted
-            if len(subjects_need_processing) > 0:
+        if len(subjects_need_processing) > 0:
+            logger.info(
+                f"Converting subject(s): {', '.join(subjects_need_processing)}"
+            )
+            batch_manager.submit_jobs()
+            
+            if status_cache:
                 for subject in subjects_need_processing:
                     write_record(subject, cache_path = status_cache)
-            else:
-                logger.info("No subjects need processing.")
 
+            config.config_json_dump(
+                os.path.dirname(os.path.abspath(config_file)), config_file)
+        else:
+            logger.info("No subjects need processing.")
     else:
         batch_manager.print_jobs()

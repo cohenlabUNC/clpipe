@@ -113,7 +113,7 @@ class BatchManager:
         return self.createsubmissionhead()
 
     def submit_jobs(self):
-        self.logger.info(f"Submitting {len(self.submission_list)} jobs.")
+        self.logger.info(f"Submitting {len(self.submission_list)} job(s).")
         self.logger.debug(f"Memory usage: {self.config['MemoryDefault']}")
         self.logger.debug(f"Time usage: {self.config['TimeDefault']}")
         self.logger.debug(f"Number of threads: {self.config['NThreads']}")
@@ -130,7 +130,9 @@ class BatchManager:
             output = "Jobs to run:\n\n"
             for index, job in enumerate(self.submission_list):
                 output += "\t" + job + "\n\n"
-                if index == MAX_JOB_DISPLAY - 1 and job_count > MAX_JOB_DISPLAY and not self.debug:
+                if index == MAX_JOB_DISPLAY - 1 and job_count \
+                    > MAX_JOB_DISPLAY and not self.debug:
+                    
                     output += (f"\t...and {job_count - 5} more job(s).\n")
                     break
             output += "Re-run with the '-submit' flag to launch these jobs."
