@@ -4,9 +4,8 @@ from .config_json_parser import ClpipeConfigParser
 from pkg_resources import resource_stream
 import json
 
-from cli import cli
-from config import CLICK_DIR_TYPE_NOT_EXIST, CLICK_DIR_TYPE_EXISTS, \
-    DEFAULT_CONFIG_PATH, DEFAULT_CONFIG_FILE_NAME
+from cli import cli, CLICK_DIR_TYPE_NOT_EXIST, CLICK_DIR_TYPE_EXISTS
+from config import DEFAULT_CONFIG_PATH, DEFAULT_CONFIG_FILE_NAME
 
 DEFAULT_DICOM_DIR = 'data_DICOMs'
 DCM2BIDS_SCAFFOLD_TEMPLATE = 'dcm2bids_scaffold -o {}'

@@ -4,6 +4,15 @@ import pkg_resources
 
 from .config import VERSION_HELP
 
+CLICK_FILE_TYPE = click.Path(dir_okay=False, file_okay=True)
+CLICK_FILE_TYPE_EXISTS = click.Path(
+    exists=True, dir_okay=False, file_okay=True)
+CLICK_DIR_TYPE = click.Path(dir_okay=True, file_okay=False)
+CLICK_DIR_TYPE_EXISTS = click.Path(exists=True, dir_okay=True, file_okay=False)
+CLICK_DIR_TYPE_NOT_EXIST = click.Path(
+    exists=False, dir_okay=True, file_okay=False)
+
+
 @click.group(invoke_without_command=True)
 @click.pass_context
 @click.option("-v", "--version", is_flag=True, default=False, 

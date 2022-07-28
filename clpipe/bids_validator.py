@@ -2,12 +2,12 @@ import os
 import sys
 import click
 
-from .batch_manager import LOGGER_NAME, BatchManager, Job
+from .batch_manager import BatchManager, Job
 from .config_json_parser import ClpipeConfigParser
-from .cli import cli
+from .cli import cli, CLICK_FILE_TYPE_EXISTS, CLICK_DIR_TYPE_EXISTS
 from .utils import add_file_handler, get_logger
-from .config import CLICK_FILE_TYPE_EXISTS, CLICK_DIR_TYPE_EXISTS, \
-    CONFIG_HELP, LOG_DIR_HELP, SUBMIT_HELP, INTERACTIVE_HELP, DEBUG_HELP
+from .config import CONFIG_HELP, LOG_DIR_HELP, SUBMIT_HELP, \
+    INTERACTIVE_HELP, DEBUG_HELP
 
 STEP_NAME = "bids-validation"
 SINGULARITY_CMD_TEMPLATE = ('singularity run --cleanenv -B {bindPaths} '
@@ -41,7 +41,8 @@ def bids_validate(bids_dir, config_file, log_dir, interactive, submit,
 
 
 def bids_validate_logic(bids_dir=None, config_file=None, log_dir=None, 
-                  interactive=False, submit=False, verbose=False, debug=False):
+                        interactive=False, submit=False, verbose=False, 
+                        debug=False):
     """
     Runs the BIDS-Validator program on a dataset. 
     If a configuration file has a BIDSDirectory specified, 

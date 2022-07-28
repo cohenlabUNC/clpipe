@@ -8,9 +8,9 @@ import click
 
 from .utils import get_logger, add_file_handler
 from .status import needs_processing, write_record
-from .config import CLICK_FILE_TYPE_EXISTS, CLICK_DIR_TYPE_EXISTS, \
-    CONFIG_HELP, LOG_DIR_HELP, SUBMIT_HELP, CLICK_FILE_TYPE, STATUS_CACHE_HELP
-from .cli import cli
+from .config import CONFIG_HELP, LOG_DIR_HELP, SUBMIT_HELP, CLICK_FILE_TYPE, \
+    STATUS_CACHE_HELP
+from .cli import cli, CLICK_FILE_TYPE_EXISTS, CLICK_DIR_TYPE_EXISTS
 
 STEP_NAME = "bids-conversion"
 BASE_CMD = ("dcm2bids -d {dicom_dir} -o {bids_dir} "
@@ -25,13 +25,13 @@ DICOM_DIR_FORMAT_HELP = (
     "Format string for how subjects/sessions are organized within the "
     "dicom_dir."
 )
-CONVERT2BIDS_BIDS_DIR_HELP = "The dicom info output file name."
+BIDS_DIR_HELP = "The dicom info output file name."
 OVERWRITE_HELP = "Overwrite existing BIDS data?"
-CONVERT2BIDS_SUBJECT_HELP = (
+SUBJECT_HELP = (
     "A subject  to convert using the supplied configuration file. "
     "Use to convert single subjects, else leave empty."
 )
-CONVERT2BIDS_SESSION_HELP = (
+SESSION_HELP = (
     "A session  to convert using the supplied configuration file. Use in "
     "combination with -subject to convert single subject/sessions, "
     "else leave empty"
@@ -45,11 +45,11 @@ CONVERT2BIDS_SESSION_HELP = (
 @click.option('-dicom_dir', type=CLICK_DIR_TYPE_EXISTS, help=DICOM_DIR_HELP)
 @click.option('-dicom_dir_format', help=DICOM_DIR_FORMAT_HELP)
 @click.option('-BIDS_dir', type=CLICK_DIR_TYPE_EXISTS,
-              help=CONVERT2BIDS_BIDS_DIR_HELP)
+              help=BIDS_DIR_HELP)
 @click.option('-overwrite', is_flag=True, default=False, help=OVERWRITE_HELP)
 @click.option('-log_dir', type=CLICK_DIR_TYPE_EXISTS, help=LOG_DIR_HELP)
-@click.option('-subject', required=False, help=CONVERT2BIDS_SUBJECT_HELP)
-@click.option('-session', required=False, help=CONVERT2BIDS_SESSION_HELP)
+@click.option('-subject', required=False, help=SUBJECT_HELP)
+@click.option('-session', required=False, help=SESSION_HELP)
 @click.option('-longitudinal', is_flag=True, default=False,
               help=CONVERT2BIDS_SESSION_HELP)
 @click.option('-submit', is_flag=True, default=False, help=SUBMIT_HELP)

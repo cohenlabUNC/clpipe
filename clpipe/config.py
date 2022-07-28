@@ -1,15 +1,5 @@
-import click
-
 DEFAULT_CONFIG_PATH = "data/defaultConvConfig.json"
 DEFAULT_CONFIG_FILE_NAME = 'clpipe_config.json'
-
-CLICK_FILE_TYPE = click.Path(dir_okay=False, file_okay=True)
-CLICK_FILE_TYPE_EXISTS = click.Path(
-    exists=True, dir_okay=False, file_okay=True)
-CLICK_DIR_TYPE = click.Path(dir_okay=True, file_okay=False)
-CLICK_DIR_TYPE_EXISTS = click.Path(exists=True, dir_okay=True, file_okay=False)
-CLICK_DIR_TYPE_NOT_EXIST = click.Path(
-    exists=False, dir_okay=True, file_okay=False)
 
 CONFIG_HELP = "Uses a given configuration file"
 LOG_DIR_HELP = "Where to put HPC output files (such as SLURM output files)"

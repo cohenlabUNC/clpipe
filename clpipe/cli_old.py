@@ -1,11 +1,6 @@
 import click
-import pkg_resources
 import sys
 
-from .project_setup import project_setup as project_setup_logic
-from .dcm2bids_wrapper import convert2bids as convert2bids_logic
-from .bids_validator import bids_validate as bids_validate_logic
-from .fmri_preprocess import fmriprep_process as fmriprep_process_logic
 from .fmri_postprocess import fmri_postprocess as fmri_postprocess_logic
 from .fmri_postprocess2 import postprocess_image_controller,\
     postprocess_subject_controller, postprocess_subjects_controller,\
@@ -16,102 +11,6 @@ from .glm_l1 import glm_l1_preparefsf as glm_l1_preparefsf_logic,\
 from .glm_l2 import glm_l2_preparefsf as glm_l2_preparefsf_logic
 from .fsl_onset_extract import fsl_onset_extract as fsl_onset_extract_logic
 from .outliers_report import get_study_outliers, get_image_confounds
-
-CLICK_FILE_TYPE = click.Path(dir_okay=False, file_okay=True)
-CLICK_FILE_TYPE_EXISTS = click.Path(
-    exists=True, dir_okay=False, file_okay=True)
-CLICK_DIR_TYPE = click.Path(dir_okay=True, file_okay=False)
-CLICK_DIR_TYPE_EXISTS = click.Path(exists=True, dir_okay=True, file_okay=False)
-CLICK_DIR_TYPE_NOT_EXIST = click.Path(
-    exists=False, dir_okay=True, file_okay=False)
-
-CONFIG_HELP = "Uses a given configuration file"
-LOG_DIR_HELP = "Where to put HPC output files (such as SLURM output files)"
-SUBMIT_HELP = "Flag to submit commands to the HPC"
-DEBUG_HELP = "Flag to enable detailed error messages and traceback"
-STATUS_CACHE_HELP = "Path to a status cache file for pipeline automation."
-INTERACTIVE_HELP = (
-    "Run in an interactive session. Only use in an interactive "
-    "compute session."
-)
-VERSION_HELP = "Display clpipe's version."
-
-# project_setup
-
-
-# convert2bids
-CONVERSION_CONFIG_HELP = (
-    "The configuration file for the study, use if you have a custom "
-    "batch configuration."
-)
-DICOM_DIR_HELP = "The folder where subject dicoms are located."
-DICOM_DIR_FORMAT_HELP = (
-    "Format string for how subjects/sessions are organized within the "
-    "dicom_dir."
-)
-CONVERT2BIDS_BIDS_DIR_HELP = "The dicom info output file name."
-OVERWRITE_HELP = "Overwrite existing BIDS data?"
-CONVERT2BIDS_SUBJECT_HELP = (
-    "A subject  to convert using the supplied configuration file. "
-    "Use to convert single subjects, else leave empty."
-)
-CONVERT2BIDS_SESSION_HELP = (
-    "A session  to convert using the supplied configuration file. Use in "
-    "combination with -subject to convert single subject/sessions, "
-    "else leave empty"
-)
-
-
-
-# fmriprep_process
-FMRIPREP_CONFIG_HELP = (
-    "Use a given configuration file. If left blank, uses the default config "
-    "file, requiring definition of BIDS, working and output directories."
-)
-FMRIPREP_BIDS_DIR_HELP = (
-    "Which BIDS directory to process. If a configuration file is provided "
-    "with a BIDS directory, this argument is not necessary."
-)
-FMRIPREP_WORKING_DIR_HELP = (
-    "Where to generate the working directory. If a configuration file is "
-    "provided with a working directory, this argument is not necessary."
-)
-FMRIPREP_OUTPUT_DIR_HELP = (
-    "Where to put the preprocessed data. If a configuration file is provided "
-    "with a output directory, this argument is not necessary."
-)
-
-
-
-
-
-
-
-
-@cli.command()
-@click.argument('subjects', nargs=-1, required=False, default=None)
-@click.option('-config_file', default=None, type=CLICK_FILE_TYPE_EXISTS, 
-              help=FMRIPREP_CONFIG_HELP)
-@click.option('-bids_dir', type=CLICK_DIR_TYPE_EXISTS,
-              help=FMRIPREP_BIDS_DIR_HELP)
-@click.option('-working_dir', type=CLICK_DIR_TYPE, 
-              help=FMRIPREP_WORKING_DIR_HELP)
-@click.option('-output_dir', type=CLICK_DIR_TYPE,
-              help=FMRIPREP_OUTPUT_DIR_HELP)
-@click.option('-log_dir', type=CLICK_DIR_TYPE, help=LOG_DIR_HELP)
-@click.option('-submit', is_flag=True, default=False, help=SUBMIT_HELP)
-@click.option('-debug', is_flag=True, help=DEBUG_HELP)
-@click.option('-status_cache', default=None, type=CLICK_FILE_TYPE, 
-              help=STATUS_CACHE_HELP)
-def fmriprep_process(bids_dir, working_dir, output_dir, config_file, subjects, 
-                     log_dir, submit, debug, status_cache):
-    """Submit BIDS-formatted images to fMRIPrep"""
-
-    fmriprep_process_logic(
-        bids_dir=bids_dir, working_dir=working_dir,
-        output_dir=output_dir, config_file=config_file, 
-        subjects=subjects, log_dir=log_dir, submit=submit, debug=debug, 
-        status_cache=status_cache)
 
 
 @cli.command()
