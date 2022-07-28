@@ -1,12 +1,42 @@
 import os
 import glob
 import logging
-from .config_json_parser import ClpipeConfigParser, GLMConfigParser
 import sys
-from .error_handler import exception_handler
-import nibabel as nib
-import pandas as pd
 import shutil
+import click
+import pandas as pd
+
+from .error_handler import exception_handler
+from .config_json_parser import GLMConfigParser
+
+PREPARE_FSF_COMMAND_NAME = "l2_preparefsf"
+APPLY_MUMFORD_COMMAND_NAME = "apply_mumford_workaournd"
+
+
+@click.command(PREPARE_FSF_COMMAND_NAME)
+@click.option('-glm_config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True), default=None, required = True,
+              help='Use a given GLM configuration file.')
+@click.option('-l2_name',  default=None, required = True,
+              help='Name for a given L2 model')
+@click.option('-debug', is_flag=True, help='Flag to enable detailed error messages and traceback')
+def glm_l2_preparefsf_cli(glm_config_file, l2_name, debug):
+    """Propagate an .fsf file template for L2 GLM analysis"""
+    glm_l2_preparefsf(glm_config_file=glm_config_file, l2_name=l2_name, debug=debug)
+
+
+@click.command(APPLY_MUMFORD_COMMAND_NAME)
+@click.option('-glm_config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True), default=None, required = False,
+              help='Location of your GLM config file.')
+@click.option('-l1_feat_folders_path', type=click.Path(exists=True, dir_okay=True, file_okay=False), default=None, required = False,
+              help='Location of your L1 FEAT folders.')
+def glm_apply_mumford_workaround_cli(glm_config_file, l1_feat_folders_path):
+    """
+    Apply the Mumford registration workaround to L1 FEAT folders. 
+    Applied by default in glm-l2-preparefsf.
+    """
+    if not (glm_config_file or l1_feat_folders_path):
+        click.echo("Error: At least one of either option '-glm_config_file' or '-l1_feat_folders_path' required.")
+        sys.exit()
 
 
 def glm_l2_preparefsf(glm_config_file=None, l2_name=None, debug=None):

@@ -1,15 +1,31 @@
 import os
 import glob
-from .config_json_parser import ClpipeConfigParser, GLMConfigParser
 import logging
 import sys
-from .error_handler import exception_handler
+import numpy
+import pandas
+import click
+import numpy as np
 import pkg_resources
 pkg_resources.require("numpy==1.18.5")
 pkg_resources.require("scipy==1.2.2")
-import numpy
-import pandas
-import numpy as np
+
+
+from .error_handler import exception_handler
+from .config_json_parser import ClpipeConfigParser, GLMConfigParser
+
+
+@click.command()
+@click.option('-config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True), default=None, required = True,
+              help='Use a given configuration file.')
+@click.option('-glm_config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True), default=None, required = True,
+              help='Use a given GLM configuration file.')
+@click.option('-debug', is_flag=True, default=False,
+              help='Print detailed processing information and traceback for errors.')
+def glm_onset_extract_cli(config_file, glm_config_file, debug):
+    """Convert onset files to FSL's 3 column format"""
+    fsl_onset_extract(
+        config_file=config_file, glm_config_file=glm_config_file, debug=debug)
 
 
 def fsl_onset_extract(config_file=None, glm_config_file = None, debug = None):

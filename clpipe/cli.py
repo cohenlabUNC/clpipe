@@ -12,6 +12,8 @@ from .fmri_postprocess import fmri_postprocess_cli
 from .fmri_postprocess2 import fmri_postprocess2_cli
 from .glm_setup import glm_setup_cli
 from .glm_l1 import glm_l1_preparefsf_cli, glm_l1_launch_cli
+from .glm_l2 import glm_l2_preparefsf_cli, glm_apply_mumford_workaround_cli
+from .fsl_onset_extract import glm_onset_extract_cli
 
 
 @click.group(invoke_without_command=True)
@@ -36,8 +38,6 @@ def glm_cli():
     """GLM Commands"""
 
 
-
-
 cli.add_command(project_setup_cli)
 cli.add_command(bids_validate_cli)
 cli.add_command(convert2bids_cli)
@@ -48,5 +48,8 @@ cli.add_command(fmri_postprocess2_cli)
 glm_cli.add_command(glm_setup_cli)
 glm_cli.add_command(glm_l1_preparefsf_cli)
 glm_cli.add_command(glm_l1_launch_cli)
+glm_cli.add_command(glm_l2_preparefsf_cli)
+glm_cli.add_command(glm_apply_mumford_workaround_cli)
+glm_cli.add_command(glm_onset_extract_cli)
 
 cli.add_command(glm_cli)
