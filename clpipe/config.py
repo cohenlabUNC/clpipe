@@ -1,5 +1,8 @@
 import click
 
+DEFAULT_CONFIG_PATH = "data/defaultConvConfig.json"
+DEFAULT_CONFIG_FILE_NAME = 'clpipe_config.json'
+
 CLICK_FILE_TYPE = click.Path(dir_okay=False, file_okay=True)
 CLICK_FILE_TYPE_EXISTS = click.Path(
     exists=True, dir_okay=False, file_okay=True)

@@ -37,13 +37,7 @@ INTERACTIVE_HELP = (
 VERSION_HELP = "Display clpipe's version."
 
 # project_setup
-PROJECT_SETUP_DIR_HELP = "Where the project will be located."
-SOURCE_DATA_HELP = \
-    "Where the raw data (usually DICOMs) are located."
-MOVE_SOURCE_DATA_HELP = \
-    "Move source data into project/data_DICOMs folder. USE WITH CAUTION."
-SYM_LINK_HELP = \
-    "Symlink the source data into project/data_dicoms. Usually safe to do."
+
 
 # convert2bids
 CONVERSION_CONFIG_HELP = (
@@ -92,42 +86,7 @@ FMRIPREP_OUTPUT_DIR_HELP = (
 )
 
 
-@click.group(invoke_without_command=True)
-@click.pass_context
-@click.option("-v", "--version", is_flag=True, default=False, 
-        help=VERSION_HELP)
-def cli(ctx, version):
-    """Welcome to clpipe. Please choose a processing command."""
 
-    if ctx.invoked_subcommand is None:
-        if version:
-            clpipe_version = pkg_resources.get_distribution("clpipe").version
-            print(f"clpipe v{clpipe_version}")
-            sys.exit(0)
-        else:
-            ctx = click.get_current_context()
-            click.echo(ctx.get_help())
-            ctx.exit()
-
-
-@cli.command()
-@click.option('-project_title', required=True, default=None)
-@click.option('-project_dir', required=True ,type=CLICK_DIR_TYPE_NOT_EXIST,
-              default=None, help=PROJECT_SETUP_DIR_HELP)
-@click.option('-source_data', type=CLICK_DIR_TYPE_EXISTS,
-              help=SOURCE_DATA_HELP)
-@click.option('-move_source_data', is_flag=True, default=False,
-              help=MOVE_SOURCE_DATA_HELP)
-@click.option('-symlink_source_data', is_flag=True, default=False,
-              help=SYM_LINK_HELP)
-def project_setup(project_title = None, project_dir=None, source_data=None, 
-                  move_source_data=None, symlink_source_data=None):
-    """Set up a clpipe project"""
-
-    project_setup_logic(project_title=project_title, 
-                        project_dir=project_dir, source_data=source_data, 
-                        move_source_data=move_source_data,
-                        symlink_source_data=symlink_source_data)
 
 
 @cli.command()
