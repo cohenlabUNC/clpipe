@@ -11,20 +11,54 @@ Step 4: Launch a feat job for each fsf
 import os
 import glob
 import logging
-
-from numpy import outer
-from .config_json_parser import GLMConfigParser
 import sys
-from .error_handler import exception_handler
-from pathlib import Path
+import click
 import nibabel as nib
+from pathlib import Path
 
+from .config_json_parser import GLMConfigParser
+from .error_handler import exception_handler
 from .batch_manager import BatchManager, Job
 
 DEFAULT_L1_MEMORY_USAGE = "10G"
 DEFAULT_L1_TIME_USAGE = "10:00:00"
 DEFAULT_L1_N_THREADS = "4"
 DEFAULT_BATCH_CONFIG_PATH = "slurmUNCConfig.json"
+
+PREPARE_FSF_COMMAND_NAME = "l1_prepare_fsf"
+LAUNCH_L1_COMMAND_NAME = "l1_launch"
+
+
+@click.command(PREPARE_FSF_COMMAND_NAME)
+@click.option('-glm_config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True), default=None, required = True,
+              help='Use a given GLM configuration file.')
+@click.option('-l1_name',  default=None, required = True,
+              help='Name for a given L1 model')
+@click.option('-debug', is_flag=True, help='Flag to enable detailed error messages and traceback')
+def glm_l1_preparefsf_cli(glm_config_file, l1_name, debug):
+    """Propagate an .fsf file template for L1 GLM analysis"""
+    
+    glm_l1_preparefsf(
+        glm_config_file=glm_config_file, l1_name=l1_name, debug=debug)
+
+
+@click.command(LAUNCH_L1_COMMAND_NAME)
+@click.option('-glm_config_file', type=click.Path(exists=True, dir_okay=False, 
+              file_okay=True), default=None, required = True,
+              help='Use a given GLM configuration file.')
+@click.option('-l1_name',  default=None, required = True,
+              help='Name for a given L1 model')
+@click.option('-test_one', is_flag=True,
+              help='Only submit one job for testing purposes.')
+@click.option('-submit', is_flag=True,
+              help='Flag to submit commands to the HPC.')
+@click.option('-debug', is_flag=True, 
+              help='Flag to enable detailed error messages and traceback')
+def glm_l1_launch_cli(glm_config_file, l1_name, test_one, submit, debug):
+    """Launch all prepared .fsf files for L1 GLM analysis"""
+    
+    glm_l1_launch_controller(glm_config_file=glm_config_file, l1_name=l1_name,
+                             test_one=test_one, submit=submit, debug=debug)
 
 
 def glm_l1_preparefsf(glm_config_file=None, l1_name=None, debug=None):
