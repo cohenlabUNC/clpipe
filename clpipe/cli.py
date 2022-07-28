@@ -13,7 +13,8 @@ from .fmri_postprocess2 import fmri_postprocess2_cli
 from .glm_setup import glm_setup_cli
 from .glm_l1 import glm_l1_preparefsf_cli, glm_l1_launch_cli
 from .glm_l2 import glm_l2_preparefsf_cli, glm_apply_mumford_workaround_cli
-from .fsl_onset_extract import glm_onset_extract_cli
+from .fsl_onset_extract import fsl_onset_extract_cli
+from .outliers_report import report_outliers_cli
 
 
 @click.group(invoke_without_command=True)
@@ -50,6 +51,7 @@ glm_cli.add_command(glm_l1_preparefsf_cli)
 glm_cli.add_command(glm_l1_launch_cli)
 glm_cli.add_command(glm_l2_preparefsf_cli)
 glm_cli.add_command(glm_apply_mumford_workaround_cli)
-glm_cli.add_command(glm_onset_extract_cli)
+glm_cli.add_command(fsl_onset_extract_cli)
+glm_cli.add_command(report_outliers_cli)
 
 cli.add_command(glm_cli)
