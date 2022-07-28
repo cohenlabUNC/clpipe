@@ -23,12 +23,14 @@ DEFAULT_EVENT = "submitted"
 DEFAULT_NOTE = "clpipe generated"
 CACHE_FILE_HELP = "Path to your status cache file."
 
+COMMAND_NAME = "status"
+
 
 #TODO: Move cli commands back to specific modules to avoid circular import here 
-@click.command()
+@click.command(COMMAND_NAME)
 @click.option('-cache_file', type=CLICK_FILE_TYPE_EXISTS,
-              help=CACHE_FILE_HELP)
-def status(cache_file):
+              help=CACHE_FILE_HELP, required=True)
+def status_cli(cache_file):
     show_latest_by_step(cache_file)
 
 
