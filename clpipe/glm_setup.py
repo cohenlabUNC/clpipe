@@ -20,7 +20,7 @@ import re
 import clpipe.postprocutils
 import numpy as np
 
-COMMAND_NAME = "glm_setup"
+COMMAND_NAME = "setup"
 
 
 @click.command(COMMAND_NAME)

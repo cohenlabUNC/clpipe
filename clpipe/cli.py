@@ -11,6 +11,7 @@ from .fmri_preprocess import fmriprep_process_cli
 from .fmri_postprocess import fmri_postprocess_cli
 from .fmri_postprocess2 import fmri_postprocess2_cli
 from .glm_setup import glm_setup_cli
+from .glm_l1 import glm_l1_preparefsf_cli, glm_l1_launch_cli
 
 
 @click.group(invoke_without_command=True)
@@ -30,6 +31,12 @@ def cli(ctx, version):
             click.echo(ctx.get_help())
             ctx.exit()
 
+@click.group("glm")
+def glm_cli():
+    """GLM Commands"""
+
+
+
 
 cli.add_command(project_setup_cli)
 cli.add_command(bids_validate_cli)
@@ -37,4 +44,9 @@ cli.add_command(convert2bids_cli)
 cli.add_command(fmriprep_process_cli)
 cli.add_command(fmri_postprocess_cli)
 cli.add_command(fmri_postprocess2_cli)
-cli.add_command(glm_setup_cli)
+
+glm_cli.add_command(glm_setup_cli)
+glm_cli.add_command(glm_l1_preparefsf_cli)
+glm_cli.add_command(glm_l1_launch_cli)
+
+cli.add_command(glm_cli)
