@@ -1,7 +1,6 @@
 import click
 import sys
 
-from .fmri_postprocess import fmri_postprocess as fmri_postprocess_logic
 from .fmri_postprocess2 import postprocess_image_controller,\
     postprocess_subject_controller, postprocess_subjects_controller,\
     DEFAULT_PROCESSING_STREAM_NAME
@@ -13,35 +12,7 @@ from .fsl_onset_extract import fsl_onset_extract as fsl_onset_extract_logic
 from .outliers_report import get_study_outliers, get_image_confounds
 
 
-@cli.command()
-@click.argument('subjects', nargs=-1, required=False, default=None)
-@click.option('-config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True), default=None, help = 'Use a given configuration file. If left blank, uses the default config file, requiring definition of BIDS, working and output directories.')
-@click.option('-target_dir', type=click.Path(exists=True, dir_okay=True, file_okay=False), help='Which fmriprep directory to process. If a configuration file is provided with a BIDS directory, this argument is not necessary. Note, must point to the ``fmriprep`` directory, not its parent directory.')
-@click.option('-target_suffix', help= 'Which file suffix to use. If a configuration file is provided with a target suffix, this argument is not necessary. Defaults to "preproc_bold.nii.gz"')
-@click.option('-output_dir', type=click.Path(dir_okay=True, file_okay=False), help = 'Where to put the postprocessed data. If a configuration file is provided with a output directory, this argument is not necessary.')
-@click.option('-output_suffix', help = 'What suffix to append to the postprocessed files. If a configuration file is provided with a output suffix, this argument is not necessary.')
-@click.option('-task', help = 'Which task to postprocess. If left blank, defaults to all tasks.')
-@click.option('-TR', help = 'The TR of the scans. If a config file is not provided, this option is required. If a config file is provided, this information is found from the sidecar jsons.')
-@click.option('-processing_stream', help = 'Optional processing stream selector.')
-@click.option('-log_dir', type=click.Path(dir_okay=True, file_okay=False), help = 'Where to put HPC output files. If not specified, defaults to <outputDir>/batchOutput.')
-@click.option('-beta_series', is_flag = True, default = False, help = "Flag to activate beta-series correlation correlation. ADVANCED METHOD, refer to the documentation.")
-@click.option('-submit', is_flag = True, default=False, help = 'Flag to submit commands to the HPC.')
-@click.option('-batch/-single', default=True, help = 'Submit to batch, or run in current session. Mainly used internally.')
-@click.option('-debug', is_flag = True, default=False, help = 'Print detailed processing information and traceback for errors.')
-def fmri_postprocess(config_file=None, subjects=None, target_dir=None, 
-                     target_suffix=None, output_dir=None,
-                     output_suffix=None, log_dir=None,
-                     submit=False, batch=True, task=None, tr=None, 
-                     processing_stream = None, debug = False, 
-                     beta_series = False):
-    """Additional preprocessing for connectivity analysis"""
 
-    fmri_postprocess_logic(
-        config_file=config_file, subjects=subjects, target_dir=target_dir, 
-        target_suffix=target_suffix, output_dir=output_dir, 
-        output_suffix=output_suffix, log_dir=log_dir, submit=submit, 
-        batch=batch, task=task, tr=tr, processing_stream=processing_stream, 
-        debug=debug, beta_series=beta_series)
 
 
 @cli.command()
