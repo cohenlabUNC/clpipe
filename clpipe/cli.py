@@ -10,6 +10,7 @@ from .dcm2bids_wrapper import convert2bids_cli
 from .fmri_preprocess import fmriprep_process_cli
 from .fmri_postprocess import fmri_postprocess_cli
 from .fmri_postprocess2 import fmri_postprocess2_cli
+from .glm_setup import glm_setup_cli
 
 
 @click.group(invoke_without_command=True)
@@ -29,9 +30,11 @@ def cli(ctx, version):
             click.echo(ctx.get_help())
             ctx.exit()
 
+
 cli.add_command(project_setup_cli)
 cli.add_command(bids_validate_cli)
 cli.add_command(convert2bids_cli)
 cli.add_command(fmriprep_process_cli)
 cli.add_command(fmri_postprocess_cli)
 cli.add_command(fmri_postprocess2_cli)
+cli.add_command(glm_setup_cli)

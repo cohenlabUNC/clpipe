@@ -10,9 +10,7 @@ import site
 path1 = sys.path
 path1.insert(0, site.USER_SITE)
 sys.path = path1
-import nibabel
 sys.path = path1[1:]
-import numpy
 import nipype.interfaces.fsl as fsl  # fsl
 import nipype.pipeline.engine as pe  # pypeline engine
 from nipype.interfaces.utility import IdentityInterface
@@ -21,6 +19,32 @@ import pandas
 import re
 import clpipe.postprocutils
 import numpy as np
+
+COMMAND_NAME = "glm_setup"
+
+
+@click.command(COMMAND_NAME)
+@click.argument('subjects', nargs=-1, required=False, default=None)
+@click.option('-config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True), default=None, required = True,
+              help='Use a given configuration file.')
+@click.option('-glm_config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True), default=None, required = True,
+              help='Use a given GLM configuration file.')
+@click.option('-drop_tps', type=click.Path(exists=True, dir_okay=False, file_okay=True), default=None, required = False,
+              help='Drop timepoints csv sheet')
+@click.option('-submit', is_flag=True, default=False, help='Flag to submit commands to the HPC.')
+@click.option('-batch/-single', default=True,
+              help='Submit to batch, or run in current session. Mainly used internally.')
+@click.option('-debug', is_flag=True, default=False,
+              help='Print detailed processing information and traceback for errors.')
+def glm_setup_cli(subjects, config_file, glm_config_file, submit, batch, debug, 
+                  drop_tps):
+    """Prepare task images and confound files for GLM analysis"""
+
+    glm_setup(
+        subjects=subjects, config_file=config_file, 
+        glm_config_file=glm_config_file,
+        submit=submit, batch=batch, debug=debug, drop_tps=drop_tps)
+
 
 def glm_setup(subjects = None, config_file=None, glm_config_file = None,
                      submit=False, batch=True, debug = None, drop_tps = None):
