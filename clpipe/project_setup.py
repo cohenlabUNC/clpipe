@@ -11,7 +11,7 @@ from config import CLICK_DIR_TYPE_NOT_EXIST, CLICK_DIR_TYPE_EXISTS, \
 DEFAULT_DICOM_DIR = 'data_DICOMs'
 DCM2BIDS_SCAFFOLD_TEMPLATE = 'dcm2bids_scaffold -o {}'
 
-PROJECT_SETUP_DIR_HELP = "Where the project will be located."
+PROJECT_DIR_HELP = "Where the project will be located."
 SOURCE_DATA_HELP = \
     "Where the raw data (usually DICOMs) are located."
 MOVE_SOURCE_DATA_HELP = \
@@ -23,7 +23,7 @@ SYM_LINK_HELP = \
 @cli.command()
 @click.option('-project_title', required=True, default=None)
 @click.option('-project_dir', required=True ,type=CLICK_DIR_TYPE_NOT_EXIST,
-              default=None, help=PROJECT_SETUP_DIR_HELP)
+              default=None, help=PROJECT_DIR_HELP)
 @click.option('-source_data', type=CLICK_DIR_TYPE_EXISTS,
               help=SOURCE_DATA_HELP)
 @click.option('-move_source_data', is_flag=True, default=False,

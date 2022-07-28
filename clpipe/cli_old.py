@@ -61,11 +61,7 @@ CONVERT2BIDS_SESSION_HELP = (
     "else leave empty"
 )
 
-# bids_validate
-BIDS_VALIDATE_VERBOSE_HELP = (
-    "Creates verbose validator output. Use if you want to see ALL files "
-    "with errors/warnings."
-)
+
 
 # fmriprep_process
 FMRIPREP_CONFIG_HELP = (
@@ -89,25 +85,7 @@ FMRIPREP_OUTPUT_DIR_HELP = (
 
 
 
-@cli.command()
-@click.option('-config_file', type=CLICK_FILE_TYPE_EXISTS, default=None, 
-              help=CONFIG_HELP)
-@click.argument('bids_dir', type=CLICK_DIR_TYPE_EXISTS, required=False)
-@click.option('-log_dir', type=CLICK_FILE_TYPE_EXISTS, default=None,
-              help=LOG_DIR_HELP)
-@click.option('-verbose', is_flag=True, default=False,
-              help=BIDS_VALIDATE_VERBOSE_HELP)
-@click.option('-submit', is_flag=True, help=SUBMIT_HELP)
-@click.option('-interactive', is_flag=True, default=False,
-              help=INTERACTIVE_HELP)
-@click.option('-debug', is_flag=True, help=DEBUG_HELP)
-def bids_validate(bids_dir, config_file, log_dir, interactive, submit,
-                  verbose, debug):
-    """Check that the given directory conforms to the BIDS standard"""
 
-    bids_validate_logic(
-        bids_dir=bids_dir, config_file=config_file, log_dir=log_dir, 
-        interactive=interactive, submit=submit, verbose=verbose, debug=debug)
 
 
 @cli.command()
