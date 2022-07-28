@@ -4,9 +4,10 @@ from .config_json_parser import ClpipeConfigParser
 from pkg_resources import resource_stream
 import json
 
-from cli import cli, CLICK_DIR_TYPE_NOT_EXIST, CLICK_DIR_TYPE_EXISTS
-from config import DEFAULT_CONFIG_PATH, DEFAULT_CONFIG_FILE_NAME
+from .config import DEFAULT_CONFIG_PATH, DEFAULT_CONFIG_FILE_NAME, \
+    CLICK_DIR_TYPE_NOT_EXIST, CLICK_DIR_TYPE_EXISTS
 
+COMMAND_NAME = "project_setup"
 DEFAULT_DICOM_DIR = 'data_DICOMs'
 DCM2BIDS_SCAFFOLD_TEMPLATE = 'dcm2bids_scaffold -o {}'
 
@@ -19,7 +20,7 @@ SYM_LINK_HELP = \
     "Symlink the source data into project/data_dicoms. Usually safe to do."
 
 
-@cli.command()
+@click.command(COMMAND_NAME)
 @click.option('-project_title', required=True, default=None)
 @click.option('-project_dir', required=True ,type=CLICK_DIR_TYPE_NOT_EXIST,
               default=None, help=PROJECT_DIR_HELP)
@@ -29,19 +30,20 @@ SYM_LINK_HELP = \
               help=MOVE_SOURCE_DATA_HELP)
 @click.option('-symlink_source_data', is_flag=True, default=False,
               help=SYM_LINK_HELP)
-def project_setup(project_title=None, project_dir=None, source_data=None, 
-                  move_source_data=None, symlink_source_data=None):
+def project_setup_cli(project_title=None, project_dir=None, source_data=None, 
+                      move_source_data=None, symlink_source_data=None):
     """Set up a clpipe project"""
 
-    project_setup_logic(project_title=project_title, 
-                        project_dir=project_dir, source_data=source_data, 
-                        move_source_data=move_source_data,
-                        symlink_source_data=symlink_source_data)
+    project_setup(
+        project_title=project_title, 
+        project_dir=project_dir, source_data=source_data, 
+        move_source_data=move_source_data,
+        symlink_source_data=symlink_source_data)
 
 
-def project_setup_logic(project_title=None, project_dir=None, 
-                        source_data=None, move_source_data=None,
-                        symlink_source_data=None):
+def project_setup(project_title=None, project_dir=None, 
+                  source_data=None, move_source_data=None,
+                  symlink_source_data=None):
 
     config_parser = ClpipeConfigParser()
     config = config_parser.config

@@ -4,11 +4,11 @@ import click
 
 from .batch_manager import BatchManager, Job
 from .config_json_parser import ClpipeConfigParser
-from .cli import cli, CLICK_FILE_TYPE_EXISTS, CLICK_DIR_TYPE_EXISTS
 from .utils import add_file_handler, get_logger
 from .config import CONFIG_HELP, LOG_DIR_HELP, SUBMIT_HELP, \
-    INTERACTIVE_HELP, DEBUG_HELP
+    INTERACTIVE_HELP, DEBUG_HELP, CLICK_FILE_TYPE_EXISTS, CLICK_DIR_TYPE_EXISTS
 
+COMMAND_NAME = "bids_validate"
 STEP_NAME = "bids-validation"
 SINGULARITY_CMD_TEMPLATE = ('singularity run --cleanenv -B {bindPaths} '
                       '{validatorInstance} {bidsDir}')
@@ -19,7 +19,7 @@ VERBOSE_HELP = (
 )
 
 
-@cli.command()
+@click.command(COMMAND_NAME)
 @click.option('-config_file', type=CLICK_FILE_TYPE_EXISTS, default=None, 
               help=CONFIG_HELP)
 @click.argument('bids_dir', type=CLICK_DIR_TYPE_EXISTS, required=False)
@@ -31,16 +31,16 @@ VERBOSE_HELP = (
 @click.option('-interactive', is_flag=True, default=False,
               help=INTERACTIVE_HELP)
 @click.option('-debug', is_flag=True, help=DEBUG_HELP)
-def bids_validate(bids_dir, config_file, log_dir, interactive, submit,
-                  verbose, debug):
+def bids_validate_cli(bids_dir, config_file, log_dir, interactive, submit,
+                      verbose, debug):
     """Check that the given directory conforms to the BIDS standard"""
 
-    bids_validate_logic(
+    bids_validate(
         bids_dir=bids_dir, config_file=config_file, log_dir=log_dir, 
         interactive=interactive, submit=submit, verbose=verbose, debug=debug)
 
 
-def bids_validate_logic(bids_dir=None, config_file=None, log_dir=None, 
+def bids_validate(bids_dir=None, config_file=None, log_dir=None, 
                         interactive=False, submit=False, verbose=False, 
                         debug=False):
     """

@@ -17,10 +17,11 @@ import clpipe.postprocutils
 from .batch_manager import BatchManager, Job
 from .config_json_parser import ClpipeConfigParser
 from .error_handler import exception_handler
-from .cli import cli
+
+COMMAND_NAME = "fmri_postprocess"
 
 
-@cli.command()
+@click.command(COMMAND_NAME)
 @click.argument('subjects', nargs=-1, required=False, default=None)
 @click.option('-config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True), default=None, help = 'Use a given configuration file. If left blank, uses the default config file, requiring definition of BIDS, working and output directories.')
 @click.option('-target_dir', type=click.Path(exists=True, dir_okay=True, file_okay=False), help='Which fmriprep directory to process. If a configuration file is provided with a BIDS directory, this argument is not necessary. Note, must point to the ``fmriprep`` directory, not its parent directory.')
@@ -35,15 +36,15 @@ from .cli import cli
 @click.option('-submit', is_flag = True, default=False, help = 'Flag to submit commands to the HPC.')
 @click.option('-batch/-single', default=True, help = 'Submit to batch, or run in current session. Mainly used internally.')
 @click.option('-debug', is_flag = True, default=False, help = 'Print detailed processing information and traceback for errors.')
-def fmri_postprocess(config_file=None, subjects=None, target_dir=None, 
-                     target_suffix=None, output_dir=None,
-                     output_suffix=None, log_dir=None,
-                     submit=False, batch=True, task=None, tr=None, 
-                     processing_stream = None, debug = False, 
-                     beta_series = False):
+def fmri_postprocess_cli(config_file=None, subjects=None, target_dir=None, 
+                         target_suffix=None, output_dir=None,
+                         output_suffix=None, log_dir=None,
+                         submit=False, batch=True, task=None, tr=None, 
+                         processing_stream = None, debug = False, 
+                         beta_series = False):
     """Additional preprocessing for connectivity analysis"""
 
-    fmri_postprocess_logic(
+    fmri_postprocess(
         config_file=config_file, subjects=subjects, target_dir=target_dir, 
         target_suffix=target_suffix, output_dir=output_dir, 
         output_suffix=output_suffix, log_dir=log_dir, submit=submit, 
@@ -51,7 +52,7 @@ def fmri_postprocess(config_file=None, subjects=None, target_dir=None,
         debug=debug, beta_series=beta_series)
 
 
-def fmri_postprocess_logic(config_file=None, subjects=None, target_dir=None, target_suffix=None, output_dir=None,
+def fmri_postprocess(config_file=None, subjects=None, target_dir=None, target_suffix=None, output_dir=None,
                      output_suffix=None, log_dir=None,
                      submit=False, batch=True, task=None, tr=None, processing_stream = None, debug = False, beta_series = False):
     """This command runs an fMRIprep'ed dataset through additional processing, as defined in the configuration file. To run specific subjects, specify their IDs. If no IDs are specified, all subjects are ran."""

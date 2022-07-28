@@ -6,10 +6,11 @@ from .batch_manager import BatchManager, Job
 from .config_json_parser import ClpipeConfigParser
 from .utils import get_logger, add_file_handler
 from .status import needs_processing, write_record
-from .config import LOG_DIR_HELP, SUBMIT_HELP, DEBUG_HELP, STATUS_CACHE_HELP
-from .cli import cli, CLICK_DIR_TYPE, CLICK_DIR_TYPE_EXISTS, \
-    CLICK_FILE_TYPE_EXISTS, CLICK_FILE_TYPE
+from .config import LOG_DIR_HELP, SUBMIT_HELP, DEBUG_HELP, STATUS_CACHE_HELP, \
+    CLICK_DIR_TYPE, CLICK_DIR_TYPE_EXISTS, CLICK_FILE_TYPE_EXISTS, \
+    CLICK_FILE_TYPE
 
+COMMAND_NAME = "fmriprep_process"
 STEP_NAME = "fmriprep-process"
 BASE_SINGULARITY_CMD = (
     "unset PYTHONPATH; {templateflow1} singularity run -B {templateflow2}"
@@ -48,7 +49,7 @@ OUTPUT_DIR_HELP = (
     "with a output directory, this argument is not necessary."
 )
 
-@cli.command()
+@click.command(COMMAND_NAME)
 @click.argument('subjects', nargs=-1, required=False, default=None)
 @click.option('-config_file', default=None, type=CLICK_FILE_TYPE_EXISTS, 
               help=CONFIG_HELP)
@@ -63,18 +64,18 @@ OUTPUT_DIR_HELP = (
 @click.option('-debug', is_flag=True, help=DEBUG_HELP)
 @click.option('-status_cache', default=None, type=CLICK_FILE_TYPE, 
               help=STATUS_CACHE_HELP)
-def fmriprep_process(bids_dir, working_dir, output_dir, config_file, subjects, 
-                     log_dir, submit, debug, status_cache):
+def fmriprep_process_cli(bids_dir, working_dir, output_dir, config_file, 
+                         subjects, log_dir, submit, debug, status_cache):
     """Submit BIDS-formatted images to fMRIPrep"""
 
-    fmriprep_process_logic(
+    fmriprep_process(
         bids_dir=bids_dir, working_dir=working_dir,
         output_dir=output_dir, config_file=config_file, 
         subjects=subjects, log_dir=log_dir, submit=submit, debug=debug, 
         status_cache=status_cache)
 
 
-def fmriprep_process_logic(bids_dir=None, working_dir=None, output_dir=None, 
+def fmriprep_process(bids_dir=None, working_dir=None, output_dir=None, 
                            config_file=None, subjects=None, log_dir=None,
                            status_cache=None, submit=False, debug=False):
     """

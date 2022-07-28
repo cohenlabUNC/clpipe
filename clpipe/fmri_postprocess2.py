@@ -42,15 +42,15 @@ from .postprocutils.workflows import build_image_postprocessing_workflow, build_
 from .postprocutils.confounds_workflows import build_confounds_processing_workflow
 from .error_handler import exception_handler
 from .errors import *
-from .cli import cli
 
+COMMAND_NAME = "fmri_postprocess2"
 DEFAULT_LOG_FILE_NAME = "postprocess.log"
 DEFAULT_PROCESSING_STREAM_NAME = "smooth-filter-normalize"
 PROCESSING_DESCRIPTION_FILE_NAME = "processing_description.json"
 IMAGE_TIME_DIMENSION_INDEX = 3
 
 
-@cli.command()
+@click.command(COMMAND_NAME)
 @click.argument('subjects', nargs=-1, required=False, default=None)
 @click.option('-config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True), default=None, required=True,
               help='Use a given configuration file.')
@@ -68,9 +68,9 @@ IMAGE_TIME_DIMENSION_INDEX = 3
 @click.option('-batch/-no-batch', is_flag = True, default=True, help = 'Flag to create batch jobs without prompt.')
 @click.option('-submit', is_flag = True, default=False, help = 'Flag to submit commands to the HPC without prompt.')
 @click.option('-debug', is_flag = True, default=False, help = 'Print detailed processing information and traceback for errors.')
-def fmri_postprocess2(subjects, config_file, fmriprep_dir, output_dir, 
-                      processing_stream, batch, submit, log_dir, index_dir, 
-                      refresh_index, debug):
+def fmri_postprocess2_cli(subjects, config_file, fmriprep_dir, output_dir, 
+                          processing_stream, batch, submit, log_dir, index_dir, 
+                          refresh_index, debug):
     """Perform additional processing on fMRIPrepped data"""
 
     postprocess_subjects_controller(

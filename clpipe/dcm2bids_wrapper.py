@@ -9,9 +9,9 @@ import click
 from .utils import get_logger, add_file_handler
 from .status import needs_processing, write_record
 from .config import CONFIG_HELP, LOG_DIR_HELP, SUBMIT_HELP, CLICK_FILE_TYPE, \
-    STATUS_CACHE_HELP
-from .cli import cli, CLICK_FILE_TYPE_EXISTS, CLICK_DIR_TYPE_EXISTS
+    STATUS_CACHE_HELP, CLICK_FILE_TYPE_EXISTS, CLICK_DIR_TYPE_EXISTS
 
+COMMAND_NAME = "convert2bids"
 STEP_NAME = "bids-conversion"
 BASE_CMD = ("dcm2bids -d {dicom_dir} -o {bids_dir} "
             "-p {subject} -c {conv_config_file}")
@@ -36,8 +36,13 @@ SESSION_HELP = (
     "combination with -subject to convert single subject/sessions, "
     "else leave empty"
 )
+LONGITUDINAL_HELP = (
+    "Convert all subjects/sessions into individual pseudo-subjects. "
+    "Use if you do not want T1w averaged across sessions during FMRIprep"
+)
 
-@cli.command()
+
+@click.command(COMMAND_NAME)
 @click.option('-config_file', type=CLICK_FILE_TYPE_EXISTS, default=None,
               help=CONFIG_HELP)
 @click.option('-conv_config_file', type=CLICK_FILE_TYPE_EXISTS, default=None, 
@@ -51,16 +56,17 @@ SESSION_HELP = (
 @click.option('-subject', required=False, help=SUBJECT_HELP)
 @click.option('-session', required=False, help=SESSION_HELP)
 @click.option('-longitudinal', is_flag=True, default=False,
-              help=CONVERT2BIDS_SESSION_HELP)
+              help=LONGITUDINAL_HELP)
 @click.option('-submit', is_flag=True, default=False, help=SUBMIT_HELP)
 @click.option('-status_cache', default=None, type=CLICK_FILE_TYPE, 
               help=STATUS_CACHE_HELP)
-def convert2bids(dicom_dir, dicom_dir_format, bids_dir, conv_config_file,
-                 config_file, overwrite, log_dir, subject, session, 
-                 longitudinal, submit, status_cache):
+def convert2bids_cli(dicom_dir, dicom_dir_format, bids_dir, 
+                     conv_config_file,
+                     config_file, overwrite, log_dir, subject, session, 
+                     longitudinal, submit, status_cache):
     """Convert DICOM files to BIDS format"""
 
-    convert2bids_logic(
+    convert2bids(
         dicom_dir=dicom_dir, dicom_dir_format=dicom_dir_format, 
         bids_dir=bids_dir, conv_config_file=conv_config_file, 
         config_file=config_file, overwrite=overwrite, log_dir=log_dir, 
@@ -68,11 +74,10 @@ def convert2bids(dicom_dir, dicom_dir_format, bids_dir, conv_config_file,
         submit=submit, status_cache=status_cache)
 
 
-def convert2bids_logic(dicom_dir=None, dicom_dir_format=None, bids_dir=None, 
+def convert2bids(dicom_dir=None, dicom_dir_format=None, bids_dir=None, 
                  conv_config_file=None, config_file=None, overwrite=None, 
                  log_dir=None, subject=None, session=None, longitudinal=False, 
                  status_cache=None, submit=None, debug=False):
-    
     config = ClpipeConfigParser()
     config.config_updater(config_file)
     config.setup_dcm2bids(dicom_dir,
