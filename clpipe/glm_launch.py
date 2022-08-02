@@ -211,7 +211,7 @@ def _create_submission_strings(fsf_files: os.PathLike,
                                python_path=None, test_one:bool=False):
 
         submission_strings = {}
-        SUBMISSION_STRING_TEMPLATE = ("feat {fsf_file}")
+        SUBMISSION_STRING_TEMPLATE = ("module load python/2.7.12; feat {fsf_file}")
         
         for fsf in Path(fsf_files).iterdir():
             key = f"{str(fsf.stem)}"
