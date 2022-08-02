@@ -1,11 +1,12 @@
 import os
-import logging
 import click
+import sys
 from pathlib import Path
 
 from .config import DEFAULT_BATCH_CONFIG_PATH, SUBMIT_HELP, DEBUG_HELP
-from .config_json_parser import GLMConfigParser
+from .config_json_parser import GLMConfigParser, ClpipeConfigParser
 from .batch_manager import BatchManager, Job
+from .utils import add_file_handler, get_logger
 
 DEFAULT_L1_MEMORY_USAGE = "10G"
 DEFAULT_L1_TIME_USAGE = "10:00:00"
@@ -15,7 +16,8 @@ DEFAULT_L2_MEMORY_USAGE = "5G"
 DEFAULT_L2_TIME_USAGE = "5:00:00"
 DEFAULT_L2_N_THREADS = "4"
 
-LAUNCH_COMMAND_NAME = "launch"
+COMMAND_NAME = "launch"
+STEP_NAME = "glm-launch"
 
 CONFIG_HELP = 'Use a given GLM configuration file.'
 L1_MODEL_HELP = 'Name of your L1 model'
@@ -24,11 +26,13 @@ LEVEL_HELP = "Level of your model, L1 or L2"
 MODEL_HELP = 'Name of your model'
 TEST_ONE_HELP = 'Only submit one job for testing purposes.'
 
-L1 = 1
-L2 = 2
+VALID_L1 = ["1", "L1", "l1"]
+VALID_L2 = ["2", "L2", "l2"]
+L1 = VALID_L1[1]
+L2 = VALID_L2[1]
 
 
-@click.command(LAUNCH_COMMAND_NAME)
+@click.command(COMMAND_NAME)
 @click.argument('level')
 @click.argument('model')
 @click.option('-glm_config_file', type=click.Path(exists=True, dir_okay=False, 
@@ -82,30 +86,53 @@ def glm_l1_launch_cli(glm_config_file, l1_name, test_one, submit, debug):
 def glm_l2_launch_cli(glm_config_file, l2_name, test_one, submit, debug):
     """Launch all prepared .fsf files for L2 GLM analysis"""
     
-    glm_launch_controller(glm_config_file=glm_config_file, level=L2, 
+    glm_launch_controller(glm_config_file=glm_config_file, level="L1", 
                           model=l2_name, test_one=test_one, submit=submit,
                           debug=debug)
 
 
 def glm_launch_controller(glm_config_file: str=None, level: int=L1,
                           model: str=None, test_one: bool=False, 
-                          submit: bool=True, debug: bool=None):
+                          submit: bool=False, debug: bool=False):
+    glm_config_parser = GLMConfigParser(glm_config_file)
+    glm_config = glm_config_parser.config
+    glm_setup_options = glm_config["GLMSetupOptions"]
+    parent_config = glm_setup_options["ParentClpipeConfig"]
 
-    #TODO create the logger
+    config = ClpipeConfigParser()
+    config.config_updater(parent_config)
 
-    glm_config = GLMConfigParser(glm_config_file)
+    project_dir = config.config["ProjectDirectory"]
+    add_file_handler(os.path.join(project_dir, "logs"))
+    logger = get_logger(STEP_NAME, debug=debug)
 
-    if level == L1:
+    if level in VALID_L1:
+        level = "L1"
         setup = 'Level1Setups'
-    elif level == L2:
+    elif level in VALID_L2:
+        level = "L2"
         setup = 'Level2Setups'
+    else:
+        logger.error(f"Level must be {L1} or {L2}")
+        sys.exit(0)
 
-    block = [x for x in glm_config.config[setup] \
+    python_2_path = None
+    if level == L2:
+        try:
+            python_2_path = glm_setup_options["Python2Path"]
+        except KeyError:
+            logger.warn(('No Python 2 path set. Will attempt to run anyways, '
+            'but you should set a Python 2 path in your glm config file as '
+            '"Python2Path" under "GLMSetupOptions"'))
+
+    logger.info(f"Setting up {level} .fsf launch using model: {model}")
+
+    block = [x for x in glm_config[setup] \
             if x['ModelName'] == str(model)]
     if len(block) is not 1:
         raise ValueError("Model not found, or multiple entries found.")
     glm_setup_options = block[0]
-    
+
     try:
         batch_options = glm_setup_options["BatchOptions"]
 
@@ -128,19 +155,23 @@ def glm_launch_controller(glm_config_file: str=None, level: int=L1,
         email = None
 
     fsf_dir = glm_setup_options["FSFDir"]
+    logger.info(f"Targeting .fsfs in dir: {fsf_dir}")
     out_dir = glm_setup_options["OutputDir"]
+    logger.info(f"Output dir: {out_dir}")
 
     try:
         log_dir = glm_setup_options["LogDir"]
     except KeyError:
         log_dir = out_dir
+    logger.info(f"Using log dir: {log_dir}")
 
     batch_manager = _setup_batch_manager(
         batch_config_path, log_dir,
         memory_usage=memory_usage, time_usage=time_usage, n_threads=n_threads,
         email=email)
 
-    glm_launch(fsf_dir, batch_manager, test_one=test_one, submit=submit)
+    glm_launch(fsf_dir, batch_manager, test_one=test_one,
+               submit=submit, logger=logger, python_path=python_2_path)
 
 
 def _setup_batch_manager(batch_config_path: str, log_dir: str, 
@@ -159,26 +190,40 @@ def _setup_batch_manager(batch_config_path: str, log_dir: str,
     return batch_manager
 
 
-def glm_launch(fsf_dir: str, batch_manager: BatchManager, 
-                  test_one:bool=False, submit: bool=False):
+def glm_launch(fsf_dir: str, batch_manager: BatchManager, python_path=None,
+               test_one:bool=False, submit: bool=False, logger=None):
+
     submission_strings = _create_submission_strings(
-        fsf_dir, test_one=test_one)
-    _run_jobs(batch_manager, submission_strings, submit)
+        fsf_dir, python_path=python_path, test_one=test_one)
+   
+    num_jobs = len(submission_strings)
+
+    if batch_manager:
+        _populate_batch_manager(batch_manager, submission_strings)
+        if submit:
+            logger.info(f"Running {num_jobs} job(s) in batch mode")
+            batch_manager.submit_jobs()
+        else:
+            batch_manager.print_jobs()
 
  
-def _create_submission_strings(fsf_files: os.PathLike, test_one:bool=False):
-        logging.info(f"Building feat job submission strings")
+def _create_submission_strings(fsf_files: os.PathLike, 
+                               python_path=None, test_one:bool=False):
 
         submission_strings = {}
-        SUBMISSION_STRING_TEMPLATE = ("feat {fsf_file}")
+        SUBMISSION_STRING_TEMPLATE = ("module list; feat {fsf_file}")
         
-        logging.info("Creating submission strings")
         for fsf in Path(fsf_files).iterdir():
             key = f"{str(fsf.stem)}"
             
-            submission_strings[key] = SUBMISSION_STRING_TEMPLATE.format(
+            submission_string = SUBMISSION_STRING_TEMPLATE.format(
                 fsf_file=fsf
             )
+
+            # if python_path:
+            #     submission_string += f"{python_path};"
+
+            submission_strings[key] = submission_string
 
             if test_one:
                 break
@@ -187,22 +232,8 @@ def _create_submission_strings(fsf_files: os.PathLike, test_one:bool=False):
 
 def _populate_batch_manager(batch_manager: BatchManager, 
                             submission_strings: dict):
-    logging.info("Setting up batch manager with jobs to run.")
-
     for key in submission_strings.keys():
         batch_manager.addjob(Job(key, submission_strings[key]))
 
     batch_manager.createsubmissionhead()
     batch_manager.compilejobstrings()
-
-
-def _run_jobs(batch_manager, submission_strings, submit=True):
-    num_jobs = len(submission_strings)
-
-    if batch_manager:
-        _populate_batch_manager(batch_manager, submission_strings)
-        if submit:
-            logging.info(f"Running {num_jobs} job(s) in batch mode")
-            batch_manager.submit_jobs()
-        else:
-            batch_manager.print_jobs()
