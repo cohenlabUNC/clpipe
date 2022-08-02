@@ -86,7 +86,7 @@ def glm_l1_launch_cli(glm_config_file, l1_name, test_one, submit, debug):
 def glm_l2_launch_cli(glm_config_file, l2_name, test_one, submit, debug):
     """Launch all prepared .fsf files for L2 GLM analysis"""
     
-    glm_launch_controller(glm_config_file=glm_config_file, level="L1", 
+    glm_launch_controller(glm_config_file=glm_config_file, level="L2", 
                           model=l2_name, test_one=test_one, submit=submit,
                           debug=debug)
 
