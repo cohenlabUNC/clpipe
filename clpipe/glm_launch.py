@@ -28,27 +28,24 @@ L1 = 1
 L2 = 2
 
 
-@click.command()
-@click.argument('level', help=LEVEL_HELP)
-@click.argument('model', help=MODEL_HELP)
+@click.command(LAUNCH_COMMAND_NAME)
+@click.argument('level')
+@click.argument('model')
 @click.option('-glm_config_file', type=click.Path(exists=True, dir_okay=False, 
               file_okay=True), default=None, required = True,
               help=CONFIG_HELP)
-@click.option('-model',  default=None, required = True,
-              help=MODEL_HELP)
 @click.option('-test_one', is_flag=True,
               help=TEST_ONE_HELP)
 @click.option('-submit', is_flag=True,
               help=SUBMIT_HELP)
 @click.option('-debug', is_flag=True, 
               help=DEBUG_HELP)
-def glm_l2_launch_cli(level, model, glm_config_file, test_one, submit, debug):
-    """Launch all prepared .fsf files for L1 GLM analysis"""
-    
+def glm_launch_cli(level, model, glm_config_file, test_one, submit, debug):
+    """Launch all prepared .fsf files for L1 or L2 GLM analysis"""
 
-
-    glm_launch_controller(glm_config_file=glm_config_file, l1_name=l1_name,
-                             test_one=test_one, submit=submit, debug=debug)
+    glm_launch_controller(glm_config_file=glm_config_file, level=level, 
+                          model=model, test_one=test_one, 
+                          submit=submit, debug=debug)
 
 
 @click.command()
@@ -66,8 +63,8 @@ def glm_l2_launch_cli(level, model, glm_config_file, test_one, submit, debug):
 def glm_l1_launch_cli(glm_config_file, l1_name, test_one, submit, debug):
     """Launch all prepared .fsf files for L1 GLM analysis"""
     
-    glm_launch_controller(glm_config_file=glm_config_file, l1_name=l1_name,
-                             test_one=test_one, submit=submit, debug=debug)
+    glm_launch_controller(glm_config_file=glm_config_file, model=l1_name,
+                          test_one=test_one, submit=submit, debug=debug)
 
 
 @click.command()
@@ -85,10 +82,9 @@ def glm_l1_launch_cli(glm_config_file, l1_name, test_one, submit, debug):
 def glm_l2_launch_cli(glm_config_file, l2_name, test_one, submit, debug):
     """Launch all prepared .fsf files for L2 GLM analysis"""
     
-    glm_launch_controller(glm_config_file=glm_config_file, l2_name=l2_name,
-                             test_one=test_one, submit=submit, debug=debug)
-
-
+    glm_launch_controller(glm_config_file=glm_config_file, level=L2, 
+                          model=l2_name, test_one=test_one, submit=submit,
+                          debug=debug)
 
 
 def glm_launch_controller(glm_config_file: str=None, level: int=L1,

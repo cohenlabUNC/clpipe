@@ -9,7 +9,7 @@ import pandas as pd
 from .error_handler import exception_handler
 from .config_json_parser import GLMConfigParser
 
-PREPARE_FSF_COMMAND_NAME = "l2_preparefsf"
+PREPARE_FSF_COMMAND_NAME = "l2_prepare_fsf"
 APPLY_MUMFORD_COMMAND_NAME = "apply_mumford_workaournd"
 
 
