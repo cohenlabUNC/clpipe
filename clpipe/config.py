@@ -8,6 +8,7 @@ CLICK_DIR_TYPE_EXISTS = click.Path(exists=True, dir_okay=True, file_okay=False)
 CLICK_DIR_TYPE_NOT_EXIST = click.Path(
     exists=False, dir_okay=True, file_okay=False)
 
+DEFAULT_BATCH_CONFIG_PATH = "slurmUNCConfig.json"
 DEFAULT_CONFIG_PATH = "data/defaultConvConfig.json"
 DEFAULT_CONFIG_FILE_NAME = 'clpipe_config.json'
 

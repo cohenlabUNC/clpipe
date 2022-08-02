@@ -8,6 +8,7 @@
     "TargetSuffix": "space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz",
     "WorkingDirectory": "FILL THIS IN",
     "TaskName": "gng_example",
+    "Python2Path": "/nas/longleaf/apps/python/2.7.12/bin/python",
     "ReferenceImage": "SET REFERENCE",
     "DummyScans": 0,
     "ApplyFMRIPREPMask": true,
@@ -46,7 +47,8 @@
     "EVDirectory": ""
   },
   "Level1Setups": [
-    { "ModelName": "example_L1",
+    { 
+      "ModelName": "example_L1",
       "TargetDirectory": "./data_BIDS",
       "TargetSuffix": "resampled.nii.gz",
       "FSFPrototype": "",
@@ -61,7 +63,14 @@
                          "correct.txt"
       ],
       "ConfoundSuffix": "confounds.tsv",
-      "OutputDir": "./test_l1feat"
+      "OutputDir": "./test_l1feat",
+      "BatchOptions": {
+				"MemoryUsage": "10G",
+				"TimeUsage": "10:0:0",
+				"NThreads": "4",
+				"Email": "",
+				"BatchConfig": "slurmUNCConfig.json"
+			}
     }
   ],
   "Level2Setups": [
@@ -69,7 +78,15 @@
       "FSFPrototype": "",
       "SubjectFile": "l2_sublist.csv",
       "FSFDir": "",
-      "OutputDir": ""
+      "OutputDir": "",
+      "BatchOptions": {
+        "MemoryUsage": "5G",
+        "TimeUsage": "5:0:0",
+        "NThreads": "4",
+        "Email": "",
+        "BatchConfig": "slurmUNCConfig.json"
+      }
     }
+    
   ]
 }
