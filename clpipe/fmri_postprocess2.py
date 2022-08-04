@@ -1,9 +1,12 @@
 """Postprocessing Pipeline Workflow Builder and Distributer.
 
-Based on user input, builds and runs a postprocessing pipeline for a set of subjects, distributing the workload across a cluster if requested.
+Based on user input, builds and runs a postprocessing pipeline for a set 
+of subjects, distributing the workload across a cluster if requested.
 
-Controller Functions - Serve as a middle layer between the front-end (CLI) and distribution / workflow setup functions. Handles sanitization, 
-    configuration parsing, batch manager initialization, and is the last layer of exception catching
+Controller Functions - Serve as a middle layer between the front-end (CLI) 
+and distribution / workflow setup functions. Handles sanitization, 
+configuration parsing, batch manager initialization, 
+and is the last layer of exception catching
 
     - postprocess_subjects_controller
     - postprocess_subject_controller
@@ -13,7 +16,8 @@ Distributor Functions - Create and submit child job processes
     - distribute_subject_jobs
     - distribute_image_jobs
 
-Workflow Builder & Runner - handles the creation and running of an image processing workflow
+Workflow Builder & Runner - handles the creation and running of an image 
+processing workflow
     - build_and_run_image_workflow
 """
 
@@ -26,8 +30,6 @@ import click
 from pathlib import Path
 
 import pydantic
-#from nilearn import plotting
-#from nilearn.image import load_img, index_img
 
 # This hides a pybids future warning
 with warnings.catch_warnings():
@@ -36,10 +38,15 @@ with warnings.catch_warnings():
     from bids.layout import BIDSFile
 
 from .config_json_parser import ClpipeConfigParser
+from .config import BATCH_HELP, CLICK_FILE_TYPE_EXISTS, \
+    CLICK_DIR_TYPE_EXISTS, CLICK_DIR_TYPE, CONFIG_HELP, LOG_DIR_HELP, \
+    SUBMIT_HELP, DEBUG_HELP, BATCH_HELP
 from .batch_manager import BatchManager, Job
 import nipype.pipeline.engine as pe
-from .postprocutils.workflows import build_image_postprocessing_workflow, build_postprocessing_workflow
-from .postprocutils.confounds_workflows import build_confounds_processing_workflow
+from .postprocutils.workflows import build_image_postprocessing_workflow, \
+    build_postprocessing_workflow
+from .postprocutils.confounds_workflows import \
+    build_confounds_processing_workflow
 from .error_handler import exception_handler
 from .errors import *
 
@@ -49,25 +56,35 @@ DEFAULT_PROCESSING_STREAM_NAME = "smooth-filter-normalize"
 PROCESSING_DESCRIPTION_FILE_NAME = "processing_description.json"
 IMAGE_TIME_DIMENSION_INDEX = 3
 
+FMRIPREP_DIR_HELP = """Which fmriprep directory to process. 
+    If a configuration file is provided with a BIDS directory, this argument is not necessary. 
+    Note, must point to the ``fmriprep`` directory, not its parent directory."""
+OUTPUT_DIR_HELP = """Where to put the postprocessed data. 
+    If a configuration file is provided with a output directory, this argument is not necessary."""
+PROCESSING_STREAM_HELP = "Specify a processing stream to use defined in your configuration file."
+INDEX_HELP = 'Give the path to an existing pybids index database.'
+REFRESH_INDEX_HELP = 'Refresh the pybids index database to reflect new fmriprep artifacts.'
 
 @click.command(COMMAND_NAME)
 @click.argument('subjects', nargs=-1, required=False, default=None)
-@click.option('-config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True), default=None, required=True,
-              help='Use a given configuration file.')
-@click.option('-fmriprep_dir', type=click.Path(exists=True, dir_okay=True, file_okay=False), help="""Which fmriprep directory to process. 
-    If a configuration file is provided with a BIDS directory, this argument is not necessary. 
-    Note, must point to the ``fmriprep`` directory, not its parent directory.""")
-@click.option('-output_dir', type=click.Path(dir_okay=True, file_okay=False), default=None, required=False, help = """Where to put the postprocessed data. 
-    If a configuration file is provided with a output directory, this argument is not necessary.""")
-@click.option('-processing_stream', default=DEFAULT_PROCESSING_STREAM_NAME, required=False, help="Specify a processing stream to use defined in your configuration file.")
-@click.option('-log_dir', type=click.Path(exists=True, dir_okay=True, file_okay=False), default=None, required = False, help = 'Path to the logging directory.')
-@click.option('-index_dir', type=click.Path(dir_okay=True, file_okay=False), default=None, required=False,
-              help='Give the path to an existing pybids index database.')
+@click.option('-config_file', type=CLICK_FILE_TYPE_EXISTS, default=None, 
+              required=True, help=CONFIG_HELP)
+@click.option('-fmriprep_dir', type=CLICK_DIR_TYPE_EXISTS, 
+              help=FMRIPREP_DIR_HELP)
+@click.option('-output_dir', type=CLICK_DIR_TYPE, default=None, required=False,
+              help=OUTPUT_DIR_HELP)
+@click.option('-processing_stream', default=DEFAULT_PROCESSING_STREAM_NAME, 
+required=False, help=PROCESSING_STREAM_HELP)
+@click.option('-log_dir', type=CLICK_DIR_TYPE_EXISTS, default=None, 
+              required=False, help=LOG_DIR_HELP)
+@click.option('-index_dir', type=CLICK_DIR_TYPE, default=None, required=False,
+              help=INDEX_HELP)
 @click.option('-refresh_index', is_flag=True, default=False, required=False,
-              help='Refresh the pybids index database to reflect new fmriprep artifacts.')
-@click.option('-batch/-no-batch', is_flag = True, default=True, help = 'Flag to create batch jobs without prompt.')
-@click.option('-submit', is_flag = True, default=False, help = 'Flag to submit commands to the HPC without prompt.')
-@click.option('-debug', is_flag = True, default=False, help = 'Print detailed processing information and traceback for errors.')
+              help=REFRESH_INDEX_HELP)
+@click.option('-batch/-no-batch', is_flag = True, default=True, 
+              help=BATCH_HELP)
+@click.option('-submit', is_flag = True, default=False, help=SUBMIT_HELP)
+@click.option('-debug', is_flag = True, default=False, help=DEBUG_HELP)
 def fmri_postprocess2_cli(subjects, config_file, fmriprep_dir, output_dir, 
                           processing_stream, batch, submit, log_dir, index_dir, 
                           refresh_index, debug):
