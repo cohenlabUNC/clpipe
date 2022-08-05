@@ -10,7 +10,7 @@ from .error_handler import exception_handler
 from .config_json_parser import GLMConfigParser
 
 PREPARE_FSF_COMMAND_NAME = "l2_prepare_fsf"
-APPLY_MUMFORD_COMMAND_NAME = "apply_mumford_workaournd"
+APPLY_MUMFORD_COMMAND_NAME = "apply_mumford_workaround"
 
 
 @click.command(PREPARE_FSF_COMMAND_NAME)
