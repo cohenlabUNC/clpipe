@@ -82,11 +82,12 @@
 		"ProcessingSteps": [
 			"SpatialSmoothing",
 			"TemporalFiltering",
-			"IntensityNormalization"
+			"IntensityNormalization",
+			"ApplyMask"
 		],
 		"ProcessingStepOptions": {
 			"TemporalFiltering": {
-				"Implementation":"Butterworth",
+				"Implementation":"fslmaths",
 				"FilteringHighPass": 0.008,
 				"FilteringLowPass": -1,
 				"FilteringOrder": 2
@@ -99,7 +100,7 @@
       			"FWHM": 6
 			},
 			"AROMARegression":{
-				"Implementation": "fsl_regfilt"
+				"Implementation": "fsl_regfilt_R"
 			},
 			"Resample":{
 				"ReferenceImage": "SET REFERENCE IMAGE"

@@ -118,7 +118,7 @@ def fmri_postprocess(config_file=None, subjects=None, target_dir=None, target_su
     if task is not None:
         task_string = '-task='+task
     if tr is not None:
-        tr_string = '-tr='+tr
+        tr_string = '-TR='+tr
     if beta_series:
         beta_series_string = '-beta_series'
     if processing_stream is not None:
@@ -223,7 +223,8 @@ def _fmri_postprocess_image(config, file, task = None, tr=None, beta_series = Fa
             image_json_path = _find_json(config, file)
             with open(os.path.abspath(image_json_path), "r") as json_path:
                 image_json = json.load(json_path)
-            tr = float(image_json['RepetitionTime'])
+            tr = image_json['RepetitionTime']
+        tr = float(tr)
         logging.info('TR found: ' + str(tr))
         image = nib.load(file)
         data = image.get_fdata()
