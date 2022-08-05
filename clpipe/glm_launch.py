@@ -19,17 +19,21 @@ DEFAULT_L2_N_THREADS = "4"
 COMMAND_NAME = "launch"
 STEP_NAME = "glm-launch"
 
+# Unset PYTHONPATH to ensure FSL uses its own internal python
+#   libraries
+SUBMISSION_STRING_TEMPLATE = ("unset PYTHONPATH; feat {fsf_file}")
+
+VALID_L1 = ["1", "L1", "l1"]
+VALID_L2 = ["2", "L2", "l2"]
+L1 = VALID_L1[1]
+L2 = VALID_L2[1]
+
 CONFIG_HELP = 'Use a given GLM configuration file.'
 L1_MODEL_HELP = 'Name of your L1 model'
 L2_MODEL_HELP = 'Name of your L2 model'
 LEVEL_HELP = "Level of your model, L1 or L2"
 MODEL_HELP = 'Name of your model'
 TEST_ONE_HELP = 'Only submit one job for testing purposes.'
-
-VALID_L1 = ["1", "L1", "l1"]
-VALID_L2 = ["2", "L2", "l2"]
-L1 = VALID_L1[1]
-L2 = VALID_L2[1]
 
 
 @click.command(COMMAND_NAME)
@@ -116,15 +120,6 @@ def glm_launch_controller(glm_config_file: str=None, level: int=L1,
         logger.error(f"Level must be {L1} or {L2}")
         sys.exit(0)
 
-    python_2_path = None
-    if level == L2:
-        try:
-            python_2_path = glm_setup_options["Python2Path"]
-        except KeyError:
-            logger.warn(('No Python 2 path set. Will attempt to run anyways, '
-            'but you should set a Python 2 path in your glm config file as '
-            '"Python2Path" under "GLMSetupOptions"'))
-
     logger.info(f"Setting up {level} .fsf launch using model: {model}")
 
     block = [x for x in glm_config[setup] \
@@ -171,7 +166,7 @@ def glm_launch_controller(glm_config_file: str=None, level: int=L1,
         email=email)
 
     glm_launch(fsf_dir, batch_manager, test_one=test_one,
-               submit=submit, logger=logger, python_path=python_2_path)
+               submit=submit, logger=logger)
 
 
 def _setup_batch_manager(batch_config_path: str, log_dir: str, 
@@ -190,11 +185,11 @@ def _setup_batch_manager(batch_config_path: str, log_dir: str,
     return batch_manager
 
 
-def glm_launch(fsf_dir: str, batch_manager: BatchManager, python_path=None,
+def glm_launch(fsf_dir: str, batch_manager: BatchManager,
                test_one:bool=False, submit: bool=False, logger=None):
 
     submission_strings = _create_submission_strings(
-        fsf_dir, python_path=python_path, test_one=test_one)
+        fsf_dir, test_one=test_one)
    
     num_jobs = len(submission_strings)
 
@@ -208,10 +203,9 @@ def glm_launch(fsf_dir: str, batch_manager: BatchManager, python_path=None,
 
  
 def _create_submission_strings(fsf_files: os.PathLike, 
-                               python_path=None, test_one:bool=False):
+                               test_one:bool=False):
 
         submission_strings = {}
-        SUBMISSION_STRING_TEMPLATE = ("feat {fsf_file}")
         
         for fsf in Path(fsf_files).iterdir():
             key = f"{str(fsf.stem)}"
