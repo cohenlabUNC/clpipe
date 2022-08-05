@@ -1,5 +1,7 @@
 import click
 
+APPLICATION_NAME = "clpipe"
+
 CLICK_FILE_TYPE = click.Path(dir_okay=False, file_okay=True)
 CLICK_FILE_TYPE_EXISTS = click.Path(
     exists=True, dir_okay=False, file_okay=True)
