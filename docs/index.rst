@@ -22,8 +22,8 @@ clpipe was developed to streamline the processing of MRI data using the high per
    bidsvalidation
    fmriprep
    postprocessing
-   roi_extraction
    glm
+   roi_extraction
 
 .. toctree::
    :maxdepth: 1
