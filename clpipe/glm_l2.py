@@ -36,8 +36,10 @@ def glm_apply_mumford_workaround_cli(glm_config_file, l1_feat_folders_path):
     """
     if not (glm_config_file or l1_feat_folders_path):
         click.echo("Error: At least one of either option '-glm_config_file' or '-l1_feat_folders_path' required.")
-        sys.exit()
-
+    glm_apply_mumford_workaround(
+        glm_config_file=glm_config_file,
+        l1_feat_folders_path=l1_feat_folders_path
+    )
 
 def glm_l2_preparefsf(glm_config_file=None, l2_name=None, debug=None):
     if not debug:
