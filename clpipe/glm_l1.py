@@ -123,7 +123,11 @@ def _get_ev_confound_mat(file_name, l1_block):
     EV_files = [item for sublist in EV_files for item in sublist]
 
     if len(EV_files) is not len(l1_block['EVFileSuffices']):
-        raise FileNotFoundError("Did not find enough EV files for this scan. Only found " + str(EV_files) +" and need " +str(len(l1_block['EVFileSuffices'])))
+        raise FileNotFoundError((
+            f"Did not find enough EV files for scan {file_name}. "
+            f"Only found {len(EV_files)} and need "
+            f"{len(l1_block['EVFileSuffices'])}"
+        ))
 
     if l1_block["ConfoundSuffix"] is not "":
         confound_file = glob.glob(os.path.join(l1_block["ConfoundDirectory"],"**",file_prefix + l1_block['ConfoundSuffix']), recursive = True)
