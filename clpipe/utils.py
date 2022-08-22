@@ -1,7 +1,10 @@
 import click
 import os
+import logging
+from pathlib import Path
 
 from nipype.utils.filemanip import split_filename
+
 
 @click.command()
 @click.argument('subjects', nargs=-1, required=False, default=None)
@@ -35,3 +38,36 @@ def append_suffix(original_path, suffix_to_add):
     out_file = os.path.join(base, out_stem)
 
     return out_file
+
+
+def get_logger(name, debug=False, log_dir=None, f_name="clpipe.log"):
+    logger = logging.getLogger("clpipe").getChild(name)
+
+    if debug:
+        logger.setLevel(logging.DEBUG)
+
+    if log_dir:
+        add_file_handler(log_dir, f_name, logger=logger)
+
+    return logger
+
+
+def add_file_handler(log_dir: Path, f_name: str="clpipe.log", 
+                     logger: logging.Logger = None):
+    log_dir = Path(log_dir)
+    if not log_dir.exists():
+        log_dir.mkdir(parents=True)
+
+    if not logger:
+        logger = logging.getLogger("clpipe")
+
+    # Create log handler
+    f_handler = logging.FileHandler(log_dir / f_name)
+    f_handler.setLevel(logging.DEBUG)
+    
+    # Create log format
+    f_format = logging.Formatter('%(asctime)s - %(levelname)s: %(name)s - %(message)s')
+    f_handler.setFormatter(f_format)
+
+    # Add handler to the logger
+    logger.addHandler(f_handler)

@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(name='clpipe',
-      version='1.5.0.5',
+      version='1.6.0',
       description='clpipe: MRI processing pipeline for high performance clusters',
       url='https://github.com/cohenlabUNC/clpipe',
       author='Maintainer: Teague Henry, Contributor: Will Asciutto, Contributor: Deepak Melwani',
@@ -30,21 +30,26 @@ setup(name='clpipe',
       package_data={'clpipe': ['R_scripts/*.R']},
       entry_points='''
       [console_scripts]
-      fmriprep_process=clpipe.fmri_preprocess:fmriprep_process_cli
-      fmri_postprocess2=clpipe.cli:postprocess_subjects_cli
-      postprocess_subject=clpipe.cli:postprocess_subject_cli
-      postprocess_image=clpipe.cli:postprocess_image_cli
-      dicom_to_nifti_to_bids_converter_setup=clpipe.dicom_to_bids_converter:dicom_to_nifti_to_bids_converter_setup
-      dicom_to_nifti_to_bids_converter=clpipe.dicom_to_bids_converter:dicom_to_nifti_to_bids_converter
+      clpipe=clpipe.cli:cli
+      project_setup=clpipe.project_setup:project_setup_cli
+      convert2bids=clpipe.dcm2bids_wrapper:convert2bids_cli
       bids_validate=clpipe.bids_validator:bids_validate_cli
-      fmri_postprocess=clpipe.fmri_postprocess:fmri_postprocess
+      fmriprep_process=clpipe.fmri_preprocess:fmriprep_process_cli
+      fmri_postprocess=clpipe.fmri_postprocess:fmri_postprocess_cli
+      fmri_postprocess2=clpipe.fmri_postprocess2:fmri_postprocess2_cli
+      postprocess_subject=clpipe.fmri_postprocess2:postprocess_subject_cli
+      postprocess_image=clpipe.fmri_postprocess2:postprocess_image_cli
+      glm_setup=clpipe.glm_setup:glm_setup_cli
+      glm_l1_preparefsf=clpipe.glm_l1:glm_l1_preparefsf_cli
+      glm_l1_launch=clpipe.glm_launch:glm_l1_launch_cli
+      glm_l2_preparefsf=clpipe.glm_l2:glm_l2_preparefsf_cli
+      glm_l2_launch=clpipe.glm_launch:glm_l2_launch_cli
+      fsl_onset_extract=clpipe.fsl_onset_extract:fsl_onset_extract_cli
       fmri_process_check=clpipe.fmri_process_check:fmri_process_check
       get_reports=clpipe.get_reports:get_reports
       get_config_file=clpipe.grab_config_file:get_config_file
       get_glm_config_file=clpipe.grab_config_file:get_glm_config_file
       fmri_roi_extraction=clpipe.roi_extractor:fmri_roi_extraction
-      convert2bids=clpipe.dcm2bids_wrapper:convert2bids_cli
-      project_setup=clpipe.project_setup:project_setup_cli
       test_batch_setup=clpipe.test_batch_setup:test_batch_setup
       susan_smoothing = clpipe.susan_smoothing:susan_smoothing
       get_available_atlases=clpipe.roi_extractor:get_available_atlases
@@ -52,10 +57,6 @@ setup(name='clpipe',
       templateflow_setup=clpipe.template_flow:templateflow_setup
       test_func=clpipe.utils:test_func
       fmap_cleanup=clpipe.fmap_cleanup:fmap_cleanup
-      glm_setup=clpipe.glm_setup:glm_setup_cli
-      glm_l1_preparefsf=clpipe.glm_l1:glm_l1_preparefsf
-      glm_l2_preparefsf=clpipe.glm_l2:glm_l2_preparefsf
-      fsl_onset_extract=clpipe.fsl_onset_extract:fsl_onset_extract
       reho_extract=clpipe.reho_extract:reho_extract
       t2star_extract=clpipe.t2star_extract:t2star_extract
       ''',

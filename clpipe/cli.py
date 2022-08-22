@@ -1,61 +1,61 @@
 import click
+import sys
+import pkg_resources
 
-from .fmri_postprocess2 import postprocess_image_controller, postprocess_subject_controller, postprocess_subjects_controller, DEFAULT_PROCESSING_STREAM_NAME
+from .config import VERSION_HELP
 
-@click.command()
-@click.argument('subjects', nargs=-1, required=False, default=None)
-@click.option('-config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True), default=None, required=True,
-              help='Use a given configuration file.')
-@click.option('-fmriprep_dir', type=click.Path(exists=True, dir_okay=True, file_okay=False), help="""Which fmriprep directory to process. 
-    If a configuration file is provided with a BIDS directory, this argument is not necessary. 
-    Note, must point to the ``fmriprep`` directory, not its parent directory.""")
-@click.option('-output_dir', type=click.Path(dir_okay=True, file_okay=False), default=None, required=False, help = """Where to put the postprocessed data. 
-    If a configuration file is provided with a output directory, this argument is not necessary.""")
-@click.option('-processing_stream', default=DEFAULT_PROCESSING_STREAM_NAME, required=False, help="Specify a processing stream to use defined in your configuration file.")
-@click.option('-log_dir', type=click.Path(exists=True, dir_okay=True, file_okay=False), default=None, required = False, help = 'Path to the logging directory.')
-@click.option('-index_dir', type=click.Path(dir_okay=True, file_okay=False), default=None, required=False,
-              help='Give the path to an existing pybids index database.')
-@click.option('-refresh_index', is_flag=True, default=False, required=False,
-              help='Refresh the pybids index database to reflect new fmriprep artifacts.')
-@click.option('-batch/-no-batch', is_flag = True, default=True, help = 'Flag to create batch jobs without prompt.')
-@click.option('-submit', is_flag = True, default=False, help = 'Flag to submit commands to the HPC without prompt.')
-@click.option('-debug', is_flag = True, default=False, help = 'Print detailed processing information and traceback for errors.')
-def postprocess_subjects_cli(subjects, config_file, fmriprep_dir, output_dir, processing_stream, batch, submit, log_dir, index_dir, refresh_index, debug):
-    postprocess_subjects_controller(subjects=subjects, config_file=config_file, fmriprep_dir=fmriprep_dir, output_dir=output_dir, 
-        processing_stream=processing_stream, batch=batch, submit=submit, log_dir=log_dir, pybids_db_path=index_dir, refresh_index=refresh_index, debug=debug)
+from .project_setup import project_setup_cli
+from .bids_validator import bids_validate_cli
+from .dcm2bids_wrapper import convert2bids_cli
+from .fmri_preprocess import fmriprep_process_cli
+from .fmri_postprocess import fmri_postprocess_cli
+from .fmri_postprocess2 import fmri_postprocess2_cli
+from .glm_setup import glm_setup_cli
+from .glm_l1 import glm_l1_preparefsf_cli
+from .glm_l2 import glm_l2_preparefsf_cli, glm_apply_mumford_workaround_cli
+from .glm_launch import glm_launch_cli
+from .fsl_onset_extract import fsl_onset_extract_cli
+from .outliers_report import report_outliers_cli
+from .status import status_cli
 
 
-@click.command()
-@click.argument('subject_id')
-@click.argument('bids_dir', type=click.Path(dir_okay=True, file_okay=False))
-@click.argument('fmriprep_dir', type=click.Path(dir_okay=True, file_okay=False))
-@click.argument('output_dir', type=click.Path(dir_okay=True, file_okay=False))
-@click.argument('processing_stream', default=DEFAULT_PROCESSING_STREAM_NAME)
-@click.argument('config_file', type=click.Path(dir_okay=False, file_okay=True))
-@click.argument('index_dir', type=click.Path(dir_okay=True, file_okay=False))
-@click.option('-batch/-no-batch', is_flag = True, default=True, help = 'Flag to create batch jobs without prompt.')
-@click.option('-submit', is_flag = True, default=False, help = 'Flag to submit commands to the HPC without prompt.')
-@click.argument('log_dir', type=click.Path(dir_okay=True, file_okay=False))
-def postprocess_subject_cli(subject_id, bids_dir, fmriprep_dir, output_dir, processing_stream, config_file, index_dir, 
-    batch, submit, log_dir):
-    
-    postprocess_subject_controller(subject_id, bids_dir, fmriprep_dir, output_dir, config_file, index_dir, 
-        batch, submit, log_dir, processing_stream=processing_stream)
+@click.group(invoke_without_command=True)
+@click.pass_context
+@click.option("-v", "--version", is_flag=True, default=False, 
+        help=VERSION_HELP)
+def cli(ctx, version):
+    """Welcome to clpipe. Please choose a processing command."""
+
+    if ctx.invoked_subcommand is None:
+        if version:
+            clpipe_version = pkg_resources.get_distribution("clpipe").version
+            print(f"clpipe v{clpipe_version}")
+            sys.exit(0)
+        else:
+            ctx = click.get_current_context()
+            click.echo(ctx.get_help())
+            ctx.exit()
 
 
-@click.command()
-@click.argument('config_file', type=click.Path(dir_okay=False, file_okay=True))
-@click.argument('image_path', type=click.Path(dir_okay=False, file_okay=True))
-@click.argument('bids_dir', type=click.Path(dir_okay=True, file_okay=False))
-@click.argument('fmriprep_dir', type=click.Path(dir_okay=True, file_okay=False))
-@click.argument('index_dir', type=click.Path(dir_okay=True, file_okay=False))
-@click.argument('out_dir', type=click.Path(dir_okay=True, file_okay=False))
-@click.argument('subject_out_dir', type=click.Path(dir_okay=True, file_okay=False))
-@click.argument('processing_stream', default=DEFAULT_PROCESSING_STREAM_NAME)
-@click.argument('subject_working_dir', type=click.Path(dir_okay=True, file_okay=False))
-@click.argument('log_dir', type=click.Path(dir_okay=True, file_okay=False))
-def postprocess_image_cli(config_file, image_path, bids_dir, fmriprep_dir, index_dir, 
-    out_dir, subject_out_dir, processing_stream, subject_working_dir, log_dir):
-    
-    postprocess_image_controller(config_file, image_path, bids_dir, fmriprep_dir, 
-    index_dir, out_dir, subject_out_dir, subject_working_dir, log_dir, processing_stream=processing_stream)
+@click.group("glm")
+def glm_cli():
+    """GLM Commands"""
+
+
+cli.add_command(project_setup_cli)
+cli.add_command(bids_validate_cli)
+cli.add_command(convert2bids_cli)
+cli.add_command(fmriprep_process_cli)
+cli.add_command(fmri_postprocess_cli)
+cli.add_command(fmri_postprocess2_cli)
+cli.add_command(status_cli)
+
+glm_cli.add_command(glm_setup_cli)
+glm_cli.add_command(glm_l1_preparefsf_cli)
+glm_cli.add_command(glm_launch_cli)
+glm_cli.add_command(glm_l2_preparefsf_cli)
+glm_cli.add_command(glm_apply_mumford_workaround_cli)
+glm_cli.add_command(fsl_onset_extract_cli)
+glm_cli.add_command(report_outliers_cli)
+
+cli.add_command(glm_cli)

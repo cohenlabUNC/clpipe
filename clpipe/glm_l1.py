@@ -1,19 +1,40 @@
+"""
+Design
+
+Step 1: Load in prototype, identify all needed lines
+Step 2: Load in paths for all image files, exclude/include as needed
+Step 3: Run through all required image files, construct the file changes
+Step 3a: Change prototype and spit out into fsf output folder
+Step 4: Launch a feat job for each fsf
+"""
+
 import os
 import glob
 import logging
-import click
-from .config_json_parser import ClpipeConfigParser, GLMConfigParser
 import sys
-from .error_handler import exception_handler
+import click
 import nibabel as nib
 
-@click.command()
+from .config_json_parser import GLMConfigParser
+from .error_handler import exception_handler
+
+PREPARE_FSF_COMMAND_NAME = "l1_prepare_fsf"
+
+
+@click.command(PREPARE_FSF_COMMAND_NAME)
 @click.option('-glm_config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True), default=None, required = True,
               help='Use a given GLM configuration file.')
 @click.option('-l1_name',  default=None, required = True,
               help='Name for a given L1 model')
 @click.option('-debug', is_flag=True, help='Flag to enable detailed error messages and traceback')
-def glm_l1_preparefsf(glm_config_file, l1_name, debug):
+def glm_l1_preparefsf_cli(glm_config_file, l1_name, debug):
+    """Propagate an .fsf file template for L1 GLM analysis"""
+    
+    glm_l1_preparefsf(
+        glm_config_file=glm_config_file, l1_name=l1_name, debug=debug)
+
+
+def glm_l1_preparefsf(glm_config_file=None, l1_name=None, debug=None):
     if not debug:
         sys.excepthook = exception_handler
         logging.basicConfig(level=logging.INFO)
@@ -31,10 +52,7 @@ def glm_l1_preparefsf(glm_config_file, l1_name, debug):
     _glm_l1_propagate(l1_block, glm_setup_options)
 
 
-
 def _glm_l1_propagate(l1_block, glm_setup_options):
-
-
     with open(l1_block['FSFPrototype']) as f:
         fsf_file_template=f.readlines()
 
@@ -105,7 +123,11 @@ def _get_ev_confound_mat(file_name, l1_block):
     EV_files = [item for sublist in EV_files for item in sublist]
 
     if len(EV_files) is not len(l1_block['EVFileSuffices']):
-        raise FileNotFoundError("Did not find enough EV files for this scan. Only found " + str(EV_files) +" and need " +str(len(l1_block['EVFileSuffices'])))
+        raise FileNotFoundError((
+            f"Did not find enough EV files for scan {file_name}. "
+            f"Only found {len(EV_files)} and need "
+            f"{len(l1_block['EVFileSuffices'])}"
+        ))
 
     if l1_block["ConfoundSuffix"] is not "":
         confound_file = glob.glob(os.path.join(l1_block["ConfoundDirectory"],"**",file_prefix + l1_block['ConfoundSuffix']), recursive = True)
@@ -116,11 +138,4 @@ def _get_ev_confound_mat(file_name, l1_block):
     return {"EVs": EV_files}
 
 
-
-#Design
-
-#Step 1: Load in prototype, identify all needed lines
-#Step 2: Load in paths for all image files, exclude/include as needed
-#Step 3: run through all required image files, construct the file changes
-#Step 3a: Change prototype and spit out into fsf output folder
 

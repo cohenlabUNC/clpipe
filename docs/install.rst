@@ -2,35 +2,82 @@
 Installation
 ============
 
-Installation of clpipe is fairly simple. If you have priviledges to add python packages to a system, you can install the most recent version of clpipe with
+-----------------------
+Python Environment Setup
+-----------------------
+
+If you have priviledges to add python packages to a system, 
+you can install the most recent version of clpipe with:
 
 .. code-block:: console
 
     pip3 install --upgrade git+https://github.com/cohenlabUNC/clpipe.git
 
-If you don't have access to the global library (perhaps you are just a user of an HPC), you can install a local copy by adding the ``--user`` flag.
+If you don't have access to the global library 
+(perhaps you are just a user of an HPC), you can install a local copy by 
+adding the ``--user`` flag:
 
 .. code-block:: console
 
      pip3 install --user --upgrade git+https://github.com/cohenlabUNC/clpipe.git
 
-The installation will also install any additional packaged needed.
+Pip will automatically install all required Python package dependencies.
 
-If you don't already have a Singularity image of fMRIprep, head over to their `site <https://fmriprep.readthedocs.io/en/latest/index.html>`_ and follow the directions. You will have to change the fMRIprep image path in your configuration file.
+-----------------------
+External Dependencies
+-----------------------
 
-Similarly, if you do not have a copy of the BIDS-validator Singularity image, go ahead and construct one.
+If you don't already have a Singularity image of fMRIprep, head over to their 
+`site <https://fmriprep.readthedocs.io/en/latest/index.html>`_ and follow the 
+directions. You will have to change the fMRIprep image path in 
+your configuration file.
 
-Once these images are available, clpipe is ready to go.
+Similarly, if you do not have a copy of the BIDS-validator Singularity image, 
+you'll need to obtain `this image <https://hub.docker.com/r/bids/validator>`_ as well:
+
+Additionally, clpipe requires the following tools to be installed in order
+to run its postprocessing and analysis steps (UNC-CH Users - this is handled
+by the clpipe module):
+
+- FSL (recommended v6.0.0 +)
+- AFNI (recommended v20.0.00 +)
+- R (v4.0.0 +)
 
 -----------------------
 A Note for UNC-CH Users
 -----------------------
 
-If you are a Longleaf user, and a member of the hng posix group, you already have access to the latest singularity images for both fmriprep and the bids validator, so there is no need to construct your own, unless you want a older version.
+If you are a Longleaf user and a member of the hng posix group,
+clpipe has already been installed for you via the module system. 
+Add the following line to your ``~/.bashrc`` file to include clpipe's modules:
+
+.. code-block:: console
+
+    module use /proj/hng/software/modules
+
+You can then use the following to access the latest version of clpipe:
+
+.. code-block:: console
+
+    module add clpipe
+
+You also already have access to the latest singularity images for both fmriprep 
+and the bids validator at ``/proj/hng/singularity_imgs``, 
+so there is no need to construct your own, unless you want a older version.
 
 ---------------
 Batch Languages
 ---------------
 
-clpipe was originally designed for use on University of North Carolina at Chapel Hill's HPC, Longleaf, which uses the SLURM task management system. The way clpipe handles what batch language to use is through a set of batch configuration files. These files are not directly exposed to users, and modification of these directly is ill advised. For other institutions that use task management systems other than SLURM, get in touch with the package maintainers, and we would be happy to help setup a configuration file for your system. In coming versions of clpipe, functionality will be added to allow users to change the batch management system settings.
+clpipe was originally designed for use on the
+University of North Carolina at Chapel Hill's HPC, Longleaf, which uses 
+the SLURM task management system. The way clpipe handles what batch language 
+to use is through a set of batch configuration files. 
+These files are not directly exposed to users, 
+and modification of these directly is ill advised. 
+For other institutions that use task management systems other than SLURM, 
+get in touch with the package maintainers, and we would be happy to 
+help setup a configuration file for your system. 
+In coming versions of clpipe, functionality will be added to 
+allow users to change the batch management system settings.
 

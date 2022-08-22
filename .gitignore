@@ -10,6 +10,7 @@ dist/
 clpipe.egg-info/
 Test_BIDS/
 dist/
+docs/_build/
 # if you remove the above rule, at least ignore the following:
 
 # User-specific stuff:
