@@ -225,9 +225,6 @@ def convert2bids(dicom_dir=None, dicom_dir_format=None, bids_dir=None,
             if status_cache:
                 for subject in subjects_need_processing:
                     write_record(subject, cache_path = status_cache)
-
-            config.config_json_dump(
-                os.path.dirname(os.path.abspath(config_file)), config_file)
         else:
             logger.info("No subjects need processing.")
     else:
