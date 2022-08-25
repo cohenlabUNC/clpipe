@@ -50,7 +50,7 @@ from .postprocutils.confounds_workflows import \
 from .error_handler import exception_handler
 from .errors import *
 
-COMMAND_NAME = "fmri_postprocess2"
+COMMAND_NAME = "postprocess2"
 DEFAULT_LOG_FILE_NAME = "postprocess.log"
 DEFAULT_PROCESSING_STREAM_NAME = "smooth-filter-normalize"
 DEFAULT_GRAPH_STYLE = "colored"
