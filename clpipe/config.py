@@ -24,3 +24,4 @@ INTERACTIVE_HELP = (
     "compute session."
 )
 VERSION_HELP = "Display clpipe's version."
+BATCH_HELP = 'Flag to create batch jobs without prompt.'
