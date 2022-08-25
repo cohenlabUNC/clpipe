@@ -10,7 +10,7 @@ from .config import LOG_DIR_HELP, SUBMIT_HELP, DEBUG_HELP, STATUS_CACHE_HELP, \
     CLICK_DIR_TYPE, CLICK_DIR_TYPE_EXISTS, CLICK_FILE_TYPE_EXISTS, \
     CLICK_FILE_TYPE
 
-COMMAND_NAME = "fmriprep_process"
+COMMAND_NAME = "preprocess"
 STEP_NAME = "fmriprep-process"
 BASE_SINGULARITY_CMD = (
     "unset PYTHONPATH; {templateflow1} singularity run -B {templateflow2}"
