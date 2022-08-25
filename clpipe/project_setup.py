@@ -7,7 +7,7 @@ import json
 from .config import DEFAULT_CONFIG_PATH, DEFAULT_CONFIG_FILE_NAME, \
     CLICK_DIR_TYPE_NOT_EXIST, CLICK_DIR_TYPE_EXISTS
 
-COMMAND_NAME = "project_setup"
+COMMAND_NAME = "setup"
 DEFAULT_DICOM_DIR = 'data_DICOMs'
 DCM2BIDS_SCAFFOLD_TEMPLATE = 'dcm2bids_scaffold -o {}'
 
