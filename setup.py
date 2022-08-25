@@ -26,7 +26,8 @@ setup(name='clpipe',
                         'pybids>=0.14.0',
                         'templateflow',
                         'deepdiff',
-                        "pydantic"],
+                        "pydantic",
+                        "matplotlib"],
       package_data={'clpipe': ['R_scripts/*.R']},
       entry_points='''
       [console_scripts]
