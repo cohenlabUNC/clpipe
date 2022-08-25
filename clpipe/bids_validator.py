@@ -8,7 +8,7 @@ from .utils import add_file_handler, get_logger
 from .config import CONFIG_HELP, LOG_DIR_HELP, SUBMIT_HELP, \
     INTERACTIVE_HELP, DEBUG_HELP, CLICK_FILE_TYPE_EXISTS, CLICK_DIR_TYPE_EXISTS
 
-COMMAND_NAME = "bids_validate"
+COMMAND_NAME = "validate"
 STEP_NAME = "bids-validation"
 SINGULARITY_CMD_TEMPLATE = ('singularity run --cleanenv -B {bindPaths} '
                       '{validatorInstance} {bidsDir}')

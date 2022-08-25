@@ -42,13 +42,19 @@ def glm_cli():
     """GLM Commands"""
 
 
+@click.group("bids")
+def bids_cli():
+    """BIDS Commands"""
+
+
 cli.add_command(project_setup_cli)
-cli.add_command(bids_validate_cli)
-cli.add_command(convert2bids_cli)
 cli.add_command(fmriprep_process_cli)
 cli.add_command(fmri_postprocess_cli)
 cli.add_command(fmri_postprocess2_cli)
 cli.add_command(status_cli)
+
+bids_cli.add_command(convert2bids_cli)
+bids_cli.add_command(bids_validate_cli)
 
 glm_cli.add_command(glm_setup_cli)
 glm_cli.add_command(glm_l1_preparefsf_cli)
@@ -58,4 +64,5 @@ glm_cli.add_command(glm_apply_mumford_workaround_cli)
 glm_cli.add_command(fsl_onset_extract_cli)
 glm_cli.add_command(report_outliers_cli)
 
+cli.add_command(bids_cli)
 cli.add_command(glm_cli)
