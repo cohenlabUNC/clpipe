@@ -18,8 +18,47 @@ from .fsl_onset_extract import fsl_onset_extract_cli
 from .outliers_report import report_outliers_cli
 from .status import status_cli
 
+DEFAULT_HELP_PRIORITY = 5
 
-@click.group(invoke_without_command=True)
+
+class OrderedHelpGroup(click.Group):
+    """
+    A click.Group sub-class which allows sub commands to define their
+    own display order within the main help command.
+
+    Code adapted from Stephen Rauch's answer at:
+        https://stackoverflow.com/questions/47972638/
+        how-can-i-define-the-order-of-click-sub-commands-in-help
+    """
+    def __init__(self, *args, **kwargs):
+        self.help_priorities = {}
+        super(OrderedHelpGroup, self).__init__(*args, **kwargs)
+
+    def get_help(self, ctx):
+        self.list_commands = self.list_commands_for_help
+        return super(OrderedHelpGroup, self).get_help(ctx)
+
+    def list_commands_for_help(self, ctx):
+        """reorder the list of commands when listing the help"""
+        commands = super(OrderedHelpGroup, self).list_commands(ctx)
+        return (c[1] for c in sorted(
+            (self.help_priorities.get(command, 1), command)
+                for command in commands)
+        )
+
+    def add_command(self, cmd: click.Command, name: str = None, 
+                    help_priority: int=DEFAULT_HELP_PRIORITY) -> None:
+        """
+        Behaves the same as `click.Group.add_command()`, except capture
+        a priority for listing command names in help.
+        """
+        help_priorities = self.help_priorities
+        help_priorities[cmd.name] = help_priority
+        
+        return super().add_command(cmd, name)
+
+
+@click.group(cls=OrderedHelpGroup, invoke_without_command=True)
 @click.pass_context
 @click.option("-v", "--version", is_flag=True, default=False, 
         help=VERSION_HELP)
@@ -47,10 +86,10 @@ def bids_cli():
     """BIDS Commands"""
 
 
-cli.add_command(project_setup_cli)
-cli.add_command(fmriprep_process_cli)
-cli.add_command(fmri_postprocess_cli)
-cli.add_command(fmri_postprocess2_cli)
+cli.add_command(project_setup_cli, help_priority=1)
+cli.add_command(fmriprep_process_cli, help_priority=3)
+cli.add_command(fmri_postprocess_cli, help_priority=4)
+cli.add_command(fmri_postprocess2_cli, help_priority=4)
 cli.add_command(status_cli)
 
 bids_cli.add_command(convert2bids_cli)
@@ -64,5 +103,5 @@ glm_cli.add_command(glm_apply_mumford_workaround_cli)
 glm_cli.add_command(fsl_onset_extract_cli)
 glm_cli.add_command(report_outliers_cli)
 
-cli.add_command(bids_cli)
+cli.add_command(bids_cli, help_priority=2)
 cli.add_command(glm_cli)
