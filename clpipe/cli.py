@@ -76,7 +76,7 @@ def cli(ctx, version):
             ctx.exit()
 
 
-@click.group("glm")
+@click.group("glm", cls=OrderedHelpGroup)
 def glm_cli():
     """GLM Commands"""
 
@@ -95,13 +95,13 @@ cli.add_command(status_cli)
 bids_cli.add_command(convert2bids_cli)
 bids_cli.add_command(bids_validate_cli)
 
-glm_cli.add_command(glm_setup_cli)
-glm_cli.add_command(glm_l1_preparefsf_cli)
-glm_cli.add_command(glm_launch_cli)
-glm_cli.add_command(glm_l2_preparefsf_cli)
-glm_cli.add_command(glm_apply_mumford_workaround_cli)
-glm_cli.add_command(fsl_onset_extract_cli)
-glm_cli.add_command(report_outliers_cli)
+glm_cli.add_command(glm_setup_cli, help_priority=1)
+glm_cli.add_command(glm_l1_preparefsf_cli, help_priority=3)
+glm_cli.add_command(glm_launch_cli, help_priority=4)
+glm_cli.add_command(glm_l2_preparefsf_cli, help_priority=6)
+glm_cli.add_command(glm_apply_mumford_workaround_cli, help_priority=5)
+glm_cli.add_command(fsl_onset_extract_cli, help_priority=2)
+glm_cli.add_command(report_outliers_cli, help_priority=7)
 
 cli.add_command(bids_cli, help_priority=2)
 cli.add_command(glm_cli)
