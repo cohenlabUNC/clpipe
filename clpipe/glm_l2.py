@@ -52,33 +52,43 @@ def glm_apply_mumford_workaround_cli(glm_config_file, l1_feat_folders_path,
         l1_feat_folders_path=l1_feat_folders_path, debug=debug
     )
 
+
 def glm_l2_preparefsf(glm_config_file=None, l2_name=None, debug=None):
-    if not debug:
-        sys.excepthook = exception_handler
-        logging.basicConfig(level=logging.INFO)
-    else:
-        logging.basicConfig(level=logging.DEBUG)
+    logger = get_logger(APPLY_MUMFORD_COMMAND_NAME, debug=debug)
+
     glm_config = GLMConfigParser(glm_config_file)
 
-    l2_block = [x for x in glm_config.config['Level2Setups'] if x['ModelName'] == str(l2_name)]
+    l2_block = [x for x in glm_config.config['Level2Setups'] \
+        if x['ModelName'] == str(l2_name)]
     if len(l2_block) is not 1:
         raise ValueError("L2 model not found, or multiple entries found.")
 
     l2_block = l2_block[0]
     glm_setup_options = glm_config.config['GLMSetupOptions']
 
-    _glm_l2_propagate(l2_block, glm_setup_options)
+    _glm_l2_propagate(l2_block, glm_setup_options, logger)
 
 
-def _glm_l2_propagate(l2_block, glm_setup_options):
-    sub_tab = pd.read_csv(l2_block['SubjectFile'])
-    with open(l2_block['FSFPrototype']) as f:
+def _glm_l2_propagate(l2_block, glm_setup_options, logger):
+    subject_file = l2_block['SubjectFile']
+    prototype_file = l2_block['FSFPrototype']
+    
+    logger.info(f"Reading subject file: {subject_file}")
+    sub_tab = pd.read_csv()
+
+    logger.info(f"Opening prototype file: {prototype_file}")
+    with open(prototype_file) as f:
         fsf_file_template=f.readlines()
 
-    output_ind = [i for i,e in enumerate(fsf_file_template) if "set fmri(outputdir)" in e]
-    image_files_ind = [i for i,e in enumerate(fsf_file_template) if "set feat_files" in e]
-    regstandard_ind = [i for i, e in enumerate(fsf_file_template) if "set fmri(regstandard)" in e]
-
+    output_ind = [
+        i for i,e in enumerate(fsf_file_template) if "set fmri(outputdir)" in e
+    ]
+    image_files_ind = [
+        i for i,e in enumerate(fsf_file_template) if "set feat_files" in e
+    ]
+    regstandard_ind = [
+        i for i, e in enumerate(fsf_file_template) if "set fmri(regstandard)" in e
+    ]
 
     sub_tab = sub_tab.loc[sub_tab['L2_name'] == l2_block['ModelName']]
 
@@ -92,7 +102,7 @@ def _glm_l2_propagate(l2_block, glm_setup_options):
             new_fsf = fsf_file_template
             target_dirs = sub_tab.loc[sub_tab["fsf_name"] == fsf].feat_folders
             counter = 1
-            logging.info("Creating " + fsf)
+            logger.info("Creating " + fsf)
             for feat in target_dirs:
                 if not os.path.exists(feat):
                     raise FileNotFoundError("Cannot find "+ feat)
