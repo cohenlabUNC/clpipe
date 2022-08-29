@@ -3,42 +3,53 @@ import glob
 import logging
 import sys
 import shutil
+from pathlib import Path
 import click
 import pandas as pd
 
 from .error_handler import exception_handler
 from .config_json_parser import GLMConfigParser
+from .utils import get_logger
+from .config import CLICK_FILE_TYPE_EXISTS, CLICK_DIR_TYPE_EXISTS
 
 PREPARE_FSF_COMMAND_NAME = "l2_prepare_fsf"
 APPLY_MUMFORD_COMMAND_NAME = "apply_mumford_workaround"
 
 
 @click.command(PREPARE_FSF_COMMAND_NAME)
-@click.option('-glm_config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True), default=None, required = True,
-              help='Use a given GLM configuration file.')
-@click.option('-l2_name',  default=None, required = True,
+@click.option('-glm_config_file', type=CLICK_FILE_TYPE_EXISTS, default=None,
+              required=True, help='Use a given GLM configuration file.')
+@click.option('-l2_name', default=None, required=True,
               help='Name for a given L2 model')
-@click.option('-debug', is_flag=True, help='Flag to enable detailed error messages and traceback')
+@click.option('-debug', is_flag=True,
+              help='Flag to enable detailed error messages and traceback')
 def glm_l2_preparefsf_cli(glm_config_file, l2_name, debug):
     """Propagate an .fsf file template for L2 GLM analysis"""
-    glm_l2_preparefsf(glm_config_file=glm_config_file, l2_name=l2_name, debug=debug)
+    glm_l2_preparefsf(glm_config_file=glm_config_file, l2_name=l2_name,
+                      debug=debug)
 
 
 @click.command(APPLY_MUMFORD_COMMAND_NAME)
-@click.option('-glm_config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True), default=None, required = False,
+@click.option('-glm_config_file', type=CLICK_FILE_TYPE_EXISTS, default=None,
+              required=False,
               help='Location of your GLM config file.')
-@click.option('-l1_feat_folders_path', type=click.Path(exists=True, dir_okay=True, file_okay=False), default=None, required = False,
+@click.option('-l1_feat_folders_path', type=CLICK_DIR_TYPE_EXISTS,
+              default=None, required=False,
               help='Location of your L1 FEAT folders.')
-def glm_apply_mumford_workaround_cli(glm_config_file, l1_feat_folders_path):
+@click.option('-debug', is_flag=True,
+              help='Flag to enable detailed error messages and traceback')
+def glm_apply_mumford_workaround_cli(glm_config_file, l1_feat_folders_path,
+                                     debug):
     """
     Apply the Mumford registration workaround to L1 FEAT folders. 
     Applied by default in glm-l2-preparefsf.
     """
     if not (glm_config_file or l1_feat_folders_path):
-        click.echo("Error: At least one of either option '-glm_config_file' or '-l1_feat_folders_path' required.")
+        click.echo(("Error: At least one of either option '-glm_config_file' "
+                    "or '-l1_feat_folders_path' required."))
     glm_apply_mumford_workaround(
         glm_config_file=glm_config_file,
-        l1_feat_folders_path=l1_feat_folders_path
+        l1_feat_folders_path=l1_feat_folders_path, debug=debug
     )
 
 def glm_l2_preparefsf(glm_config_file=None, l2_name=None, debug=None):
@@ -87,10 +98,6 @@ def _glm_l2_propagate(l2_block, glm_setup_options):
                     raise FileNotFoundError("Cannot find "+ feat)
                 else:
                     _apply_mumford_workaround(feat)
-                    # if os.path.exists(os.path.join(feat, "reg_standard")):
-                    #     shutil.rmtree(os.path.join(feat, "reg_standard"))
-                    # shutil.copy(os.path.join(os.environ["FSLDIR"], 'etc/flirtsch/ident.mat'), os.path.join(feat, "reg/example_func2standard.mat"))
-                    # shutil.copy(os.path.join(feat, 'mean_func.nii.gz'), os.path.join(feat, "reg/standard.nii.gz"))
                     new_fsf[image_files_ind[counter - 1]] = "set feat_files(" + str(counter) + ") \"" + os.path.abspath(
                         feat) + "\"\n"
                     counter = counter + 1
@@ -110,41 +117,72 @@ def _glm_l2_propagate(l2_block, glm_setup_options):
             logging.exception(err)
 
 
-def glm_apply_mumford_workaround(glm_config_file=None, l1_feat_folders_path=None):
+def glm_apply_mumford_workaround(glm_config_file=None, 
+                                 l1_feat_folders_path=None,
+                                 debug=False):
+
+    logger = get_logger(APPLY_MUMFORD_COMMAND_NAME, debug=debug)
     if glm_config_file:
         glm_config = GLMConfigParser(glm_config_file)
         l1_feat_folders_path = glm_config["Level1Setups"]["OutputDir"]
-    print(f"Applying Mumford workaround to: {l1_feat_folders_path}")
+    logger.info(f"Applying Mumford workaround to: {l1_feat_folders_path}")
 
-    logging.info(f"Applying Mumford workaround to: {l1_feat_folders_path}")
+    logger.info(f"Applying Mumford workaround to: {l1_feat_folders_path}")
     for l1_feat_folder in os.scandir(l1_feat_folders_path):
         if os.path.isdir(l1_feat_folder):
-            print(f"Processing L1 FEAT folder: {l1_feat_folder.path}")
-            _apply_mumford_workaround(l1_feat_folder)
+            logger.info(f"Processing L1 FEAT folder: {l1_feat_folder.path}")
+            _apply_mumford_workaround(l1_feat_folder, logger)
 
-    print(f"Finished applying Mumford workaround.")
+    logger.info(f"Finished applying Mumford workaround.")
 
 
-def _apply_mumford_workaround(l1_feat_folder):
+def _apply_mumford_workaround(l1_feat_folder, logger):
     """
-    When using an image registration other than FSL's, such as fMRIPrep's, this work-around is
-    necessary to run FEAT L2 analysis in FSL.
+    When using an image registration other than FSL's, such as fMRIPrep's,
+    this work-around is necessary to run FEAT L2 analysis in FSL.
 
-    See: https://mumfordbrainstats.tumblr.com/post/166054797696/feat-registration-workaround
+    See: https://mumfordbrainstats.tumblr.com/post/166054797696/
+        feat-registration-workaround
     """
-    for mat in glob.glob(os.path.join(l1_feat_folder, "reg", "*.mat")):
-        os.remove(mat)
+    l1_feat_folder = Path(l1_feat_folder)
+    l1_feat_reg_folder = l1_feat_folder / "reg"
 
-    reg_standard_path = os.path.join(l1_feat_folder, "reg_standard")
-    if os.path.exists(reg_standard_path):
-        logging.info(f"Removing: {reg_standard_path}")
-        shutil.rmtree(os.path.join(l1_feat_folder, "reg_standard"))
+    # Create the reg directory if it doesn't exist
+    # This happens if FEAT's preprocessing was not used
+    if not l1_feat_reg_folder.exists():
+        l1_feat_reg_folder.mkdir()
+    else:
+        # Remove all of the .mat files in the reg folder
+        for mat in l1_feat_reg_folder.glob("*.mat"):
+            logger.debug(f"Removing: {mat}")
+            os.remove(mat)
+
+    # Delete the reg_standard folder if it exists
+    reg_standard_path = l1_feat_folder / "reg_standard"
+    if reg_standard_path.exists():
+        logger.debug(f"Removing: {reg_standard_path}")
+        shutil.rmtree(reg_standard_path)
 
     try:
-        logging.info("Copying identity matrix")
-        shutil.copy(os.path.join(os.environ["FSLDIR"], 'etc/flirtsch/ident.mat'), os.path.join(l1_feat_folder, "reg/example_func2standard.mat"))
-        logging.info("Copying mean func image")
-        shutil.copy(os.path.join(l1_feat_folder, 'mean_func.nii.gz'), os.path.join(l1_feat_folder, "reg/standard.nii.gz"))
+        # Grab the FSLDIR environment var to get path to standard matrices
+        fsl_dir = Path(os.environ["FSLDIR"])
+        identity_matrix_path = fsl_dir / 'etc/flirtsch/ident.mat'
+        func_to_standard_path = \
+            l1_feat_reg_folder / "example_func2standard.mat"
+        mean_func_path = l1_feat_folder / 'mean_func.nii.gz'
+        standard_path = l1_feat_reg_folder / "standard.nii.gz"
+
+        # Copy over the standard identity matrix
+        logger.debug((
+            f"Copying identity matrix {identity_matrix_path}"
+            f" to {func_to_standard_path}"))
+        shutil.copy(identity_matrix_path, func_to_standard_path)
+
+        # Copy in the mean_func image as the reg folder standard,
+        # imitating multiplication with the identity matrix.
+        logger.debug(
+            f"Copying mean func image {mean_func_path} to {standard_path}")
+        shutil.copy(mean_func_path, standard_path)
     except FileNotFoundError as e:
         print(e, "- skipping")
 
