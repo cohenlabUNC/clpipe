@@ -13,7 +13,7 @@ from .utils import get_logger
 from .config import CLICK_FILE_TYPE_EXISTS, CLICK_DIR_TYPE_EXISTS
 
 PREPARE_FSF_COMMAND_NAME = "l2_prepare_fsf"
-APPLY_MUMFORD_COMMAND_NAME = "apply_mumford_workaround"
+APPLY_MUMFORD_COMMAND_NAME = "apply_mumford"
 
 
 @click.command(PREPARE_FSF_COMMAND_NAME)
