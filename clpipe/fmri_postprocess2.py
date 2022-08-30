@@ -47,7 +47,7 @@ from .postprocutils.workflows import build_image_postprocessing_workflow, \
     build_postprocessing_workflow
 from .postprocutils.confounds_workflows import \
     build_confounds_processing_workflow
-from .error_handler import exception_handler
+from .utils import add_file_handler, get_logger
 from .errors import *
 
 COMMAND_NAME = "postprocess2"
@@ -170,6 +170,12 @@ def postprocess_subjects_controller(
     config = _parse_config(config_file)
     config_file = Path(config_file)
 
+    project_dir = config["ProjectDirectory"]
+
+    # Setup Logging
+    add_file_handler(os.path.join(project_dir, "logs"))
+    logger = get_logger(COMMAND_NAME, debug=debug)
+    
     if not fmriprep_dir:
         # Look for a target dir configuration - if empty or not present,
         # assume the fmriprep dir
@@ -182,13 +188,14 @@ def postprocess_subjects_controller(
         except KeyError:
             fmriprep_dir = default_path
     fmriprep_dir = Path(fmriprep_dir)
+    logger.info(f"Preparing postprocessing job targeting: {str(fmriprep_dir)}")
 
     if not bids_dir:
         bids_dir = Path(config["FMRIPrepOptions"]["BIDSDirectory"])
     bids_dir = Path(bids_dir)
 
     if not output_dir:
-        default_path = Path(config["ProjectDirectory"]) / "data_postproc2"
+        default_path = Path(project_dir) / "data_postproc2"
         try:
             output_dir = config["PostProcessingOptions2"]["OutputDirectory"]
             if output_dir == "":
@@ -199,21 +206,14 @@ def postprocess_subjects_controller(
     output_dir = Path(output_dir)
 
     if not log_dir:
-        log_dir = Path(config["ProjectDirectory"]) / "logs" / "postproc2_logs"
+        log_dir = Path(project_dir) / "logs" / "postproc2_logs"
     log_dir = Path(log_dir)
 
     if not pybids_db_path:
-        pybids_db_path = Path(config["ProjectDirectory"]) / "bids_index"
+        pybids_db_path = Path(project_dir) / "bids_index"
     pybids_db_path = Path(pybids_db_path)
 
-    logger = _get_logger("postprocess_subjects_controller")
-
-    # Setup Logging
-    if debug: 
-        logger.setLevel(logging.DEBUG)
-    else:
-        sys.excepthook = exception_handler
-    logger.info(f"Preparing postprocessing job targeting: {str(fmriprep_dir)}")
+    
 
     # Setup batch jobs if indicated
     batch_manager = None
@@ -318,7 +318,7 @@ def postprocess_image_controller(
 
 def distribute_subject_jobs(
     bids_dir, fmriprep_dir, output_dir: os.PathLike, 
-    config_file: os.PathLike, 
+    config_file: os.PathLike, logger,
     processing_stream:str=DEFAULT_PROCESSING_STREAM_NAME,
     submit=False, batch_manager=None,subjects_to_process=None, 
     log_dir: os.PathLike=None, pybids_db_path: os.PathLike=None, 
@@ -326,9 +326,6 @@ def distribute_subject_jobs(
     """
     Prepare arguments to be passed to the subject submission string creator.
     """
-
-    logger = _get_logger("distribute_subject_jobs")
-    _add_file_handler(logger, log_dir, DEFAULT_LOG_FILE_NAME)
 
     output_dir = Path(output_dir)
     # Don't create any files/directories unless the user is submitting
