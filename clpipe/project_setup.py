@@ -46,20 +46,23 @@ def project_setup(project_title=None, project_dir=None,
                   symlink_source_data=None):
 
     config_parser = ClpipeConfigParser()
-    config = config_parser.config
+
     org_source = os.path.abspath(source_data)
-
-    bids_dir = config.config['DICOMToBIDSOptions']['BIDSDirectory']
-    project_dir = config.config['ProjectDirectory']
-    conv_config = config.config['DICOMToBIDSOptions']['ConversionConfig']
-
-    # Create the project directory
-    os.makedirs(project_dir, exist_ok=True)
-
     if move_source_data or symlink_source_data:
         source_data = os.path.join(os.path.abspath(project_dir), 
             DEFAULT_DICOM_DIR)
+
     config_parser.setup_project(project_title, project_dir, source_data)
+
+    config = config_parser.config
+
+    # Create the project directory
+    if not os.path.exists(project_dir):
+        os.makedirs(project_dir)
+
+    bids_dir = config['DICOMToBIDSOptions']['BIDSDirectory']
+    project_dir = config['ProjectDirectory']
+    conv_config_path = config['DICOMToBIDSOptions']['ConversionConfig']
     
     if symlink_source_data:
         os.symlink(
@@ -70,12 +73,12 @@ def project_setup(project_title=None, project_dir=None,
     # Create an empty BIDS directory
     os.system(DCM2BIDS_SCAFFOLD_TEMPLATE.format(bids_dir))
 
-    config.config_json_dump(project_dir, DEFAULT_CONFIG_FILE_NAME)
+    config_parser.config_json_dump(project_dir, DEFAULT_CONFIG_FILE_NAME)
 
     with resource_stream(__name__, DEFAULT_CONFIG_PATH) as def_conv_config:
         conv_config = json.load(def_conv_config)
 
-    with open(conv_config, 'w') as fp:
+    with open(conv_config_path, 'w') as fp:
         json.dump(conv_config, fp, indent='\t')
 
     os.makedirs(os.path.join(project_dir, 'analyses'), 
