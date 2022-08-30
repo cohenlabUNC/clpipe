@@ -80,6 +80,7 @@
 		"TargetImageSpace": "MNI152NLin2009cAsym",
 		"TargetTasks": [],
 		"TargetAcquisitions": [],
+		"OutputDirectory": "",
 		"ProcessingSteps": [
 			"SpatialSmoothing",
 			"TemporalFiltering",

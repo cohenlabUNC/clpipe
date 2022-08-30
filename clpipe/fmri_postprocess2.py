@@ -178,9 +178,7 @@ def postprocess_subjects_controller(
         try:
             fmriprep_dir = config["PostProcessingOptions2"]["TargetDirectory"]
             if fmriprep_dir == "":
-                fmriprep_dir = \
-                    Path(config["FMRIPrepOptions"]["OutputDirectory"]) \
-                        / "fmriprep"
+                fmriprep_dir = default_path
         except KeyError:
             fmriprep_dir = default_path
     fmriprep_dir = Path(fmriprep_dir)
@@ -190,7 +188,14 @@ def postprocess_subjects_controller(
     bids_dir = Path(bids_dir)
 
     if not output_dir:
-        output_dir = Path(config["ProjectDirectory"]) / "data_postproc2"
+        default_path = Path(config["ProjectDirectory"]) / "data_postproc2"
+        try:
+            output_dir = config["PostProcessingOptions2"]["OutputDirectory"]
+            if output_dir == "":
+                output_dir = default_path
+        except KeyError:
+            output_dir = default_path
+
     output_dir = Path(output_dir)
 
     if not log_dir:
