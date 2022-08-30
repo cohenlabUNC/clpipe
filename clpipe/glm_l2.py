@@ -71,7 +71,7 @@ def _glm_l2_propagate(l2_block, glm_setup_options, logger):
     prototype_file = l2_block['FSFPrototype']
     
     logger.info(f"Reading subject file: {subject_file}")
-    sub_tab = pd.read_csv()
+    sub_tab = pd.read_csv(subject_file)
 
     logger.info(f"Opening prototype file: {prototype_file}")
     with open(prototype_file) as f:
@@ -104,7 +104,7 @@ def _glm_l2_propagate(l2_block, glm_setup_options, logger):
                 if not os.path.exists(feat):
                     raise FileNotFoundError("Cannot find "+ feat)
                 else:
-                    _apply_mumford_workaround(feat)
+                    _apply_mumford_workaround(feat, logger)
                     new_fsf[image_files_ind[counter - 1]] = "set feat_files(" + str(counter) + ") \"" + os.path.abspath(
                         feat) + "\"\n"
                     counter = counter + 1
