@@ -51,7 +51,6 @@ from .utils import add_file_handler, get_logger
 from .errors import *
 
 COMMAND_NAME = "postprocess2"
-DEFAULT_LOG_FILE_NAME = "postprocess.log"
 DEFAULT_PROCESSING_STREAM_NAME = "smooth-filter-normalize"
 DEFAULT_GRAPH_STYLE = "colored"
 PROCESSING_DESCRIPTION_FILE_NAME = "processing_description.json"
@@ -229,8 +228,9 @@ def postprocess_subjects_controller(
     # TODO: PYBIDS_DB_PATH should have config arg
     try:
         distribute_subject_jobs(
-            bids_dir, fmriprep_dir, output_dir, config_file, submit=submit, 
-            batch_manager=batch_manager, subjects_to_process=subjects, 
+            bids_dir, fmriprep_dir, output_dir, config_file, logger,
+            submit=submit, batch_manager=batch_manager, 
+            subjects_to_process=subjects, 
             log_dir=log_dir, pybids_db_path=pybids_db_path, 
             refresh_index=refresh_index, processing_stream=processing_stream)
     except NoSubjectsFoundError as nsfe:
@@ -318,7 +318,7 @@ def postprocess_image_controller(
 
 def distribute_subject_jobs(
     bids_dir, fmriprep_dir, output_dir: os.PathLike, 
-    config_file: os.PathLike, logger,
+    config_file: os.PathLike, logger: logging.Logger,
     processing_stream:str=DEFAULT_PROCESSING_STREAM_NAME,
     submit=False, batch_manager=None,subjects_to_process=None, 
     log_dir: os.PathLike=None, pybids_db_path: os.PathLike=None, 
@@ -333,13 +333,15 @@ def distribute_subject_jobs(
         # Create the root output directory for all subject postprocessing 
         # results, if it doesn't yet exist.
         if not output_dir.exists():
+            logger.info(f"Creating output directory: {output_dir}")
             output_dir.mkdir()
 
     bids:BIDSLayout = _get_bids(
-        bids_dir, database_path=pybids_db_path, 
+        bids_dir, database_path=pybids_db_path, logger=logger, 
         fmriprep_dir=fmriprep_dir, refresh=refresh_index)
 
     subjects_to_process = _get_subjects(bids, subjects_to_process)
+    logger.info(f"Processing requested for subjects: {subjects_to_process}")
 
     submission_strings = _create_submission_strings(
         subjects_to_process, bids_dir, fmriprep_dir,
@@ -367,17 +369,6 @@ def distribute_image_jobs(
     log_dir=Path(log_dir)
     out_dir = Path(out_dir)
     config_file = Path(config_file)
-    
-    # Create a subject folder for this subject's postprocessing output,
-    # if one doesn't already exist
-    subject_out_dir = out_dir / processing_stream / ("sub-" + subject_id)
-    if not subject_out_dir.exists():
-        logger.info(f"Creating subject directory: {subject_out_dir}")
-        subject_out_dir.mkdir(exist_ok=True, parents=True)
-
-    working_dir = postprocessing_config["WorkingDirectory"]
-    subject_working_dir = _get_subject_working_dir(
-        working_dir, out_dir, subject_id, processing_stream, logger) 
     
     # Create a postprocessing logging directory for this subject,
     # if it doesn't exist
@@ -412,6 +403,17 @@ def distribute_image_jobs(
     images_to_process = _get_images_to_process(
         subject_id, image_space, bids, logger, 
         tasks=tasks, acquisitions=acquisitions)
+
+    # Create a subject folder for this subject's postprocessing output,
+    # if one doesn't already exist
+    subject_out_dir = out_dir / processing_stream / ("sub-" + subject_id)
+    if not subject_out_dir.exists():
+        logger.info(f"Creating subject directory: {subject_out_dir}")
+        subject_out_dir.mkdir(exist_ok=True, parents=True)
+
+    working_dir = postprocessing_config["WorkingDirectory"]
+    subject_working_dir = _get_subject_working_dir(
+        working_dir, out_dir, subject_id, processing_stream, logger) 
 
     submission_strings = _create_image_submission_strings(
         images_to_process, bids_dir, fmriprep_dir, pybids_db_path, 
@@ -539,8 +541,10 @@ def _get_mixing_file(bids, query_params, logger):
 
         return mixing_file
     except IndexError:
-        raise MixingFileNotFoundError(
-            f"MELODIC mixing file for query {query_params} not found.")
+        raise MixingFileNotFoundError((
+            f"MELODIC mixing file for query {query_params} not found. "
+            "Did you set UseAROMA to 'true' in your FMRIPrepOptions?"
+        ))
 
 
 def _get_noise_file(bids, query_params, logger):
@@ -550,7 +554,10 @@ def _get_noise_file(bids, query_params, logger):
             **query_params, suffix="AROMAnoiseICs",
                 extension=".csv", return_type="filename", scope="derivatives"
         )[0]
-        logger.info(f"AROMA noise ICs file found: {noise_file}")
+        logger.info((
+            f"AROMA noise ICs file found: {noise_file}"
+            "Did you set UseAROMA to 'true' in your FMRIPrepOptions?"
+        ))
 
         return noise_file
     except IndexError:
@@ -870,7 +877,7 @@ def _create_image_submission_strings(
         logger.info(f"Building image job submission strings")
         submission_strings = {}
         
-        logger.info("Creating submission strings")
+        logger.info("Creating submission string(s)")
         for image in images_to_process:
             key = f"Postprocessing_{str(Path(image.path).stem)}"
             
@@ -995,7 +1002,7 @@ def _create_submission_strings(
     fmriprep_dir, config_file, pybids_db_path, output_dir, 
     processing_stream, log_dir, logger, batch_manager, submit):
     
-    logger.info("Creating submission strings")
+    logger.info("Creating submission string(s)")
     submission_strings = {}
 
     batch_flag = ""
@@ -1005,7 +1012,6 @@ def _create_submission_strings(
     if submit:
         submit_flag = "-submit"
 
-    
     for subject in subjects_to_process:
         key = "Postprocessing_sub-" + subject
         submission_strings[key] = \
