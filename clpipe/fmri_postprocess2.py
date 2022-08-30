@@ -62,7 +62,8 @@ IMAGE_SUBMISSION_STRING_TEMPLATE = (
 )
 SUBJECT_SUBMISSION_STRING_TEMPLATE = (
     "postprocess_subject {subject_id} {bids_dir} {fmriprep_dir} {output_dir} "
-    "{processing_stream} {config_file} {index_dir} {log_dir} {batch} {submit}"
+    "{processing_stream} {config_file} {index_dir} {log_dir} {batch} {submit} "
+    "{debug}"
 )
 
 FMRIPREP_DIR_HELP = (
@@ -122,17 +123,19 @@ def fmri_postprocess2_cli(subjects, config_file, fmriprep_dir, output_dir,
 @click.argument('processing_stream', default=DEFAULT_PROCESSING_STREAM_NAME)
 @click.argument('config_file', type=click.Path(dir_okay=False, file_okay=True))
 @click.argument('index_dir', type=click.Path(dir_okay=True, file_okay=False))
+@click.argument('log_dir', type=click.Path(dir_okay=True, file_okay=False))
 @click.option('-batch/-no-batch', is_flag = True, default=True, 
               help=BATCH_HELP)
 @click.option('-submit', is_flag = True, default=False, help=SUBMIT_HELP)
-@click.argument('log_dir', type=click.Path(dir_okay=True, file_okay=False))
+@click.option('-debug', is_flag = True, default=False, help=DEBUG_HELP)
 def postprocess_subject_cli(subject_id, bids_dir, fmriprep_dir, output_dir, 
                             processing_stream, config_file, index_dir, 
-                            batch, submit, log_dir):
+                            batch, submit, log_dir, debug):
     
     postprocess_subject_controller(
         subject_id, bids_dir, fmriprep_dir, output_dir, config_file, index_dir, 
-        batch, submit, log_dir, processing_stream=processing_stream)
+        batch, submit, log_dir, processing_stream=processing_stream,
+        debug=debug)
 
 
 @click.command()
@@ -146,14 +149,15 @@ def postprocess_subject_cli(subject_id, bids_dir, fmriprep_dir, output_dir,
 @click.argument('processing_stream', default=DEFAULT_PROCESSING_STREAM_NAME)
 @click.argument('subject_working_dir', type=click.Path(CLICK_DIR_TYPE))
 @click.argument('log_dir', type=click.Path(dir_okay=True, file_okay=False))
+@click.option('-debug', is_flag = True, default=False, help=DEBUG_HELP)
 def postprocess_image_cli(config_file, image_path, bids_dir, fmriprep_dir, 
-                          index_dir, out_dir, subject_out_dir, 
+                          index_dir, out_dir, subject_out_dir, debug,
                           processing_stream, subject_working_dir, log_dir):
     
     postprocess_image_controller(
         config_file, image_path, bids_dir, fmriprep_dir, index_dir, out_dir, 
         subject_out_dir, subject_working_dir, log_dir, 
-        processing_stream=processing_stream)
+        processing_stream=processing_stream, debug=debug)
 
 
 def postprocess_subjects_controller(
@@ -245,13 +249,13 @@ def postprocess_subjects_controller(
 
 def postprocess_subject_controller(
     subject_id, bids_dir, fmriprep_dir, output_dir, config_file, index_dir, 
-    batch, submit, log_dir, processing_stream=DEFAULT_PROCESSING_STREAM_NAME):
+    batch, submit, log_dir, processing_stream=DEFAULT_PROCESSING_STREAM_NAME,
+    debug=False):
     """
     Parse configuration and (TODO) sanitize inputs for image job distribution.
     """
     
     logger = _get_logger("postprocess_subject_controller")
-    
     logger.info(f"Processing subject: {subject_id}")
 
     config = _parse_config(config_file)
@@ -291,13 +295,12 @@ def postprocess_subject_controller(
 def postprocess_image_controller(
     config_file, image_path, bids_dir, fmriprep_dir, pybids_db_path, out_dir,
     subject_out_dir, subject_working_dir, log_dir, 
-    processing_stream=DEFAULT_PROCESSING_STREAM_NAME):
+    processing_stream=DEFAULT_PROCESSING_STREAM_NAME, debug=False):
     """
     Parse configuration and (TODO) sanitize inputs for the workflow builder.
     """
 
     logger = _get_logger("postprocess_image_controller")
-
     logger.info(f"Processing image: {image_path}")
 
     config = _parse_config(config_file)
@@ -311,7 +314,7 @@ def postprocess_image_controller(
     build_and_run_postprocessing_workflow(
         postprocessing_config, image_path, bids_dir, fmriprep_dir, 
         pybids_db_path, stream_dir, subject_out_dir, subject_working_dir, 
-        log_dir)
+        log_dir, logger)
    
     sys.exit()
 
@@ -426,7 +429,7 @@ def distribute_image_jobs(
 def build_and_run_postprocessing_workflow(
     postprocessing_config, image_path, bids_dir, fmriprep_dir, 
     pybids_db_path, stream_dir, subject_out_dir, subject_working_dir, 
-    log_dir, confounds_only=False):
+    log_dir, logger, confounds_only=False):
     """
     Setup the workflows specified in the postprocessing configuration.
     """
@@ -894,6 +897,7 @@ def _create_image_submission_strings(
                     subject_working_dir=subject_working_dir,
                     log_dir=log_dir
                 )
+            logger.debug(submission_strings[key])
         return submission_strings
 
 
@@ -939,7 +943,7 @@ def _get_bids(bids_dir: os.PathLike, validate=False,
                 validate=validate, index_metadata=index_metadata)
             if logger:
                 logger.info(f"Indexing BIDS directory: {bids_dir}")
-            print("Indexing BIDS directory - this can take a few minutes...")
+                logger.info("This can take a few minutes...")
 
             if fmriprep_dir:
                 return BIDSLayout(
@@ -1000,17 +1004,22 @@ def _setup_batch_manager(config, log_dir, non_processing=False):
 def _create_submission_strings(
     subjects_to_process, bids_dir, 
     fmriprep_dir, config_file, pybids_db_path, output_dir, 
-    processing_stream, log_dir, logger, batch_manager, submit):
+    processing_stream, log_dir, logger, batch_manager, submit, debug):
     
+    # Pass debug into this from whoever calls
+
     logger.info("Creating submission string(s)")
     submission_strings = {}
 
     batch_flag = ""
     submit_flag = ""
+    debug_flag = ""
     if not batch_manager:
         batch_flag = "-no-batch"
     if submit:
         submit_flag = "-submit"
+    if debug:
+        debug_flag = "-debug"
 
     for subject in subjects_to_process:
         key = "Postprocessing_sub-" + subject
@@ -1025,7 +1034,8 @@ def _create_submission_strings(
                 processing_stream=processing_stream,
                 log_dir=log_dir,
                 batch=batch_flag,
-                submit=submit_flag
+                submit=submit_flag,
+                debug=debug_flag
             )
     return submission_strings
 
