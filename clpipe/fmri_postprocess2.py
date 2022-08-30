@@ -171,8 +171,18 @@ def postprocess_subjects_controller(
     config_file = Path(config_file)
 
     if not fmriprep_dir:
-        fmriprep_dir = Path(config["FMRIPrepOptions"]["OutputDirectory"]) / \
-            "fmriprep"
+        # Look for a target dir configuration - if empty or not present,
+        # assume the fmriprep dir
+        default_path = \
+            Path(config["FMRIPrepOptions"]["OutputDirectory"]) / "fmriprep"
+        try:
+            fmriprep_dir = config["PostProcessingOptions2"]["TargetDirectory"]
+            if fmriprep_dir == "":
+                fmriprep_dir = \
+                    Path(config["FMRIPrepOptions"]["OutputDirectory"]) \
+                        / "fmriprep"
+        except KeyError:
+            fmriprep_dir = default_path
     fmriprep_dir = Path(fmriprep_dir)
 
     if not bids_dir:
