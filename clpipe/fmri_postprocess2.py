@@ -221,7 +221,7 @@ def postprocess_subjects_controller(
     # Setup batch jobs if indicated
     batch_manager = None
     if batch:
-        slurm_log_dir = log_dir / "slurm_out"
+        slurm_log_dir = log_dir / "distributor"
         if not slurm_log_dir.exists():
             logger.info(f"Creating slurm log directory: {slurm_log_dir}")
             slurm_log_dir.mkdir(exist_ok=True, parents=True)
@@ -263,10 +263,6 @@ def postprocess_subject_controller(
     # if it doesn't exist
     log_dir = Path(log_dir)
     log_dir = log_dir / ("sub-" + subject_id)
-    add_file_handler(
-        log_dir, f_name=f'sub-{subject_id}.log',
-        logger=logger
-    )
 
     config = _parse_config(config_file)
     config_file = Path(config_file)
@@ -276,12 +272,9 @@ def postprocess_subject_controller(
 
     batch_manager = None
     if batch:
-        slurm_log_dir = log_dir / Path(f"sub-{subject_id}") / "slurm_out"
-        if not slurm_log_dir.exists():
-            logger.info(
-                f"Creating subject slurm log directory: {slurm_log_dir}")
-            slurm_log_dir.mkdir(exist_ok=True, parents=True)
-        batch_manager = _setup_batch_manager(config, slurm_log_dir)
+        batch_manager = _setup_batch_manager(config, log_dir)
+
+    output_dir = Path(output_dir)
 
     try:
         postprocess_subject(
@@ -874,7 +867,7 @@ def _create_image_submission_strings(
         
         logger.info("Creating submission string(s)")
         for image in images_to_process:
-            key = f"Postprocessing_{str(Path(image.path).stem)}"
+            key = f"{str(Path(image.path).stem)}"
             
             submission_strings[key] = \
                 IMAGE_SUBMISSION_STRING_TEMPLATE.format(
