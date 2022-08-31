@@ -31,6 +31,7 @@ COMMAND_NAME = "status"
 @click.option('-cache_file', type=CLICK_FILE_TYPE_EXISTS,
               help=CACHE_FILE_HELP, required=True)
 def status_cli(cache_file):
+    """Check the status of your project"""
     show_latest_by_step(cache_file)
 
 
