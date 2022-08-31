@@ -330,8 +330,8 @@ def postprocess_image_controller(
 
 
 def postprocess_subjects(
-    bids_dir, fmriprep_dir, output_dir: os.PathLike, 
-    config_file: os.PathLike, logger: logging.Logger,
+    bids_dir, fmriprep_dir, output_dir: str, 
+    config_file: str, logger: logging.Logger,
     processing_stream:str=DEFAULT_PROCESSING_STREAM_NAME,
     submit=False, batch_manager=None,subjects_to_process=None, 
     log_dir: os.PathLike=None, pybids_db_path: os.PathLike=None, 
@@ -339,15 +339,6 @@ def postprocess_subjects(
     """
     Prepare arguments to be passed to the subject submission string creator.
     """
-
-    output_dir = Path(output_dir)
-    # Remove this
-    if submit:
-        # Create the root output directory for all subject postprocessing 
-        # results, if it doesn't yet exist.
-        if not output_dir.exists():
-            logger.info(f"Creating output directory: {output_dir}")
-            output_dir.mkdir()
 
     bids:BIDSLayout = _get_bids(
         bids_dir, database_path=pybids_db_path, logger=logger, 
@@ -733,7 +724,7 @@ def _fetch_postprocessing_stream_config(
     """
     stream_output_dir = Path(output_dir) / processing_stream
     if not stream_output_dir.exists():
-        stream_output_dir.mkdir()
+        stream_output_dir.mkdir(parents=True)
 
     postprocessing_description_file = \
         Path(stream_output_dir) / PROCESSING_DESCRIPTION_FILE_NAME
