@@ -13,12 +13,12 @@ and is the last layer of exception catching
     - postprocess_image_controller
 
 Distributor Functions - Create and submit child job processes
-    - distribute_subject_jobs
-    - distribute_image_jobs
+    - postprocess_subjects
+    - postprocess_images
 
 Workflow Builder & Runner - handles the creation and running of an image 
 processing workflow
-    - build_and_run_image_workflow
+    - postprocess_image
 """
 
 import sys
@@ -229,7 +229,7 @@ def postprocess_subjects_controller(
     # Create jobs based on subjects given for processing
     # TODO: PYBIDS_DB_PATH should have config arg
     try:
-        distribute_subject_jobs(
+        postprocess_subjects(
             bids_dir, fmriprep_dir, output_dir, config_file, logger,
             submit=submit, batch_manager=batch_manager, 
             subjects_to_process=subjects, 
@@ -273,7 +273,7 @@ def postprocess_subject_controller(
         batch_manager = _setup_batch_manager(config, slurm_log_dir)
 
     try:
-        distribute_image_jobs(
+        postprocess_subject(
             subject_id, bids_dir, fmriprep_dir, output_dir, 
             postprocessing_config, config_file, logger,
             pybids_db_path=index_dir, 
@@ -311,7 +311,7 @@ def postprocess_image_controller(
 
     stream_dir = Path(out_dir) / processing_stream
 
-    build_and_run_postprocessing_workflow(
+    postprocess_image(
         postprocessing_config, image_path, bids_dir, fmriprep_dir, 
         pybids_db_path, stream_dir, subject_out_dir, subject_working_dir, 
         log_dir, logger)
@@ -319,7 +319,7 @@ def postprocess_image_controller(
     sys.exit()
 
 
-def distribute_subject_jobs(
+def postprocess_subjects(
     bids_dir, fmriprep_dir, output_dir: os.PathLike, 
     config_file: os.PathLike, logger: logging.Logger,
     processing_stream:str=DEFAULT_PROCESSING_STREAM_NAME,
@@ -354,7 +354,7 @@ def distribute_subject_jobs(
     _submit_jobs(batch_manager, submission_strings, logger, submit=submit)
 
 
-def distribute_image_jobs(
+def postprocess_subject(
     subject_id: str, bids_dir: Path, fmriprep_dir: Path, 
     out_dir: Path, postprocessing_config: dict,
     config_file: Path, logger: logging.Logger,
@@ -363,7 +363,6 @@ def distribute_image_jobs(
     processing_stream=DEFAULT_PROCESSING_STREAM_NAME):
     
     
-
     # Create a postprocessing logging directory for this subject,
     # if it doesn't exist
     log_dir = log_dir / ("sub-" + subject_id)
@@ -421,7 +420,7 @@ def distribute_image_jobs(
     _submit_jobs(batch_manager, submission_strings, logger, submit=submit)
 
 
-def build_and_run_postprocessing_workflow(
+def postprocess_image(
     postprocessing_config, image_path, bids_dir, fmriprep_dir, 
     pybids_db_path, stream_dir, subject_out_dir, subject_working_dir, 
     log_dir, logger, confounds_only=False):
