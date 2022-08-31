@@ -174,10 +174,12 @@ def postprocess_subjects_controller(
     config_file = Path(config_file)
 
     project_dir = config["ProjectDirectory"]
+    project_dir = Path(project_dir)
 
     # Setup Logging
-    add_file_handler(os.path.join(project_dir, "logs"))
+    clpipe_logs = project_dir / "logs"
     logger = get_logger(COMMAND_NAME, debug=debug)
+    add_file_handler(clpipe_logs)
     
     if not fmriprep_dir:
         # Look for a target dir configuration - if empty or not present,
@@ -256,6 +258,15 @@ def postprocess_subject_controller(
     
     logger = get_logger("postprocess_subject", debug=debug)
     logger.info(f"Processing subject: {subject_id}")
+    
+    # Create a postprocessing logging directory for this subject,
+    # if it doesn't exist
+    log_dir = Path(log_dir)
+    log_dir = log_dir / ("sub-" + subject_id)
+    add_file_handler(
+        log_dir, f_name=f'sub-{subject_id}.log',
+        logger=logger
+    )
 
     config = _parse_config(config_file)
     config_file = Path(config_file)
@@ -359,21 +370,8 @@ def postprocess_subject(
     out_dir: Path, postprocessing_config: dict,
     config_file: Path, logger: logging.Logger,
     pybids_db_path: Path=None,
-    submit=False, batch_manager=None, log_dir: Path=None, 
+    submit=False, batch_manager=None, log_dir: str=None, 
     processing_stream=DEFAULT_PROCESSING_STREAM_NAME):
-    
-    
-    # Create a postprocessing logging directory for this subject,
-    # if it doesn't exist
-    log_dir = log_dir / ("sub-" + subject_id)
-    if not log_dir.exists():
-        logger.info(f"Creating subject log directory: {log_dir}")
-        log_dir.mkdir(exist_ok=True)
-
-    add_file_handler(
-        log_dir, f_name=f'sub-{subject_id}.log',
-        logger=logger
-    )
 
     bids:BIDSLayout = _get_bids(
         bids_dir, database_path=pybids_db_path, fmriprep_dir=fmriprep_dir)

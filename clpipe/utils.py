@@ -54,15 +54,18 @@ def get_logger(name, debug=False, log_dir=None, f_name="clpipe.log"):
 
 def add_file_handler(log_dir: Path, f_name: str="clpipe.log", 
                      logger: logging.Logger = None):
-    log_dir = Path(log_dir)
-    if not log_dir.exists():
-        log_dir.mkdir(parents=True)
-
     if not logger:
         logger = logging.getLogger("clpipe")
 
+    if not log_dir.exists():
+        logger.info(f"Creating subject log directory: {log_dir}")
+        log_dir.mkdir(parents=True)    
+
+    log_file = log_dir / f_name
+
     # Create log handler
-    f_handler = logging.FileHandler(log_dir / f_name)
+    logger.debug(f"Using log file: {log_file}")
+    f_handler = logging.FileHandler(log_file)
     f_handler.setLevel(logging.DEBUG)
     
     # Create log format
