@@ -58,7 +58,8 @@ IMAGE_TIME_DIMENSION_INDEX = 3
 IMAGE_SUBMISSION_STRING_TEMPLATE = (
     "postprocess_image {config_file} "
     "{image_path} {bids_dir} {fmriprep_dir} {pybids_db_path} {out_dir} "
-    "{subject_out_dir} {processing_stream} {subject_working_dir} {log_dir}"
+    "{subject_out_dir} {processing_stream} {subject_working_dir} {log_dir} "
+    "{debug}"
 )
 SUBJECT_SUBMISSION_STRING_TEMPLATE = (
     "postprocess_subject {subject_id} {bids_dir} {fmriprep_dir} {output_dir} "
@@ -280,9 +281,9 @@ def postprocess_subject_controller(
         postprocess_subject(
             subject_id, bids_dir, fmriprep_dir, output_dir, 
             postprocessing_config, config_file, logger,
-            pybids_db_path=index_dir, 
+            pybids_db_path=index_dir,
             submit=submit, batch_manager=batch_manager, log_dir=log_dir, 
-            processing_stream=processing_stream)
+            processing_stream=processing_stream, debug=debug)
     except SubjectNotFoundError as snfe:
         logger.error(snfe)
         sys.exit()
@@ -304,7 +305,7 @@ def postprocess_image_controller(
     Parse configuration sanitize inputs for the workflow builder.
     """
 
-    logger = _get_logger("postprocess_image_controller")
+    logger = get_logger("postprocess_image", debug=debug)
     logger.info(f"Processing image: {image_path}")
 
     config = _parse_config(config_file)
@@ -340,7 +341,7 @@ def postprocess_subjects(
     """
 
     output_dir = Path(output_dir)
-    # Don't create any files/directories unless the user is submitting
+    # Remove this
     if submit:
         # Create the root output directory for all subject postprocessing 
         # results, if it doesn't yet exist.
@@ -369,7 +370,7 @@ def postprocess_subject(
     config_file: Path, logger: logging.Logger,
     pybids_db_path: Path=None,
     submit=False, batch_manager=None, log_dir: str=None, 
-    processing_stream=DEFAULT_PROCESSING_STREAM_NAME):
+    processing_stream=DEFAULT_PROCESSING_STREAM_NAME, debug=False):
 
     bids:BIDSLayout = _get_bids(
         bids_dir, database_path=pybids_db_path, fmriprep_dir=fmriprep_dir)
@@ -401,12 +402,12 @@ def postprocess_subject(
 
     working_dir = postprocessing_config["WorkingDirectory"]
     subject_working_dir = _get_subject_working_dir(
-        working_dir, out_dir, subject_id, processing_stream, logger) 
+        working_dir, out_dir, subject_id, processing_stream) 
 
     submission_strings = _create_image_submission_strings(
         images_to_process, bids_dir, fmriprep_dir, pybids_db_path, 
         out_dir, subject_out_dir, processing_stream, 
-        subject_working_dir, config_file, log_dir, logger)
+        subject_working_dir, config_file, log_dir, debug, logger)
 
     _submit_jobs(batch_manager, submission_strings, logger, submit=submit)
 
@@ -425,8 +426,6 @@ def postprocess_image(
         Path(str(image_path).rstrip(''.join(image_path.suffixes))).stem
     # Remove hyphens to allow use as a pipeline name
     pipeline_name = file_name_no_extensions.replace('-', "_")
-
-    logger = _get_logger(f"postprocess_image_{file_name_no_extensions}")
 
     bids:BIDSLayout = _get_bids(
         bids_dir, database_path=pybids_db_path, fmriprep_dir=fmriprep_dir)
@@ -506,6 +505,11 @@ def postprocess_image(
     if not subject_out_dir.exists():
         logger.info(f"Creating subject directory: {subject_out_dir}")
         subject_out_dir.mkdir(parents=True)
+
+    if not subject_working_dir.exists():
+        logger.info(
+            f"Creating subject working directory: {subject_working_dir}")
+        subject_working_dir.mkdir(parents=True)
 
     postproc_wf.inputs.inputnode.in_file = image_path
     postproc_wf.inputs.inputnode.confounds_file = confounds_path
@@ -859,11 +863,15 @@ def _get_images_to_process(subject_id, image_space, bids, logger,
 def _create_image_submission_strings(
     images_to_process, bids_dir, fmriprep_dir,
     pybids_db_path, out_dir, subject_out_dir, processing_stream,
-    subject_working_dir, config_file, log_dir, logger):
+    subject_working_dir, config_file, log_dir, debug, logger):
     
         logger.info(f"Building image job submission strings")
         submission_strings = {}
         
+        debug_flag = ""
+        if debug:
+            debug_flag = "-debug"       
+
         logger.info("Creating submission string(s)")
         for image in images_to_process:
             key = f"{str(Path(image.path).stem)}"
@@ -879,7 +887,8 @@ def _create_image_submission_strings(
                     subject_out_dir=subject_out_dir,
                     processing_stream=processing_stream,
                     subject_working_dir=subject_working_dir,
-                    log_dir=log_dir
+                    log_dir=log_dir,
+                    debug=debug_flag,
                 )
             logger.debug(submission_strings[key])
         return submission_strings
@@ -1059,7 +1068,7 @@ def _add_file_handler(logger: logging.Logger, log_dir: Path, f_name: str):
 
 
 def _get_subject_working_dir(
-    working_dir, out_dir, subject_id, processing_stream, logger):
+    working_dir, out_dir, subject_id, processing_stream):
     
     # If no top-level working directory is provided, make one in the out_dir
     if not working_dir:
@@ -1070,11 +1079,5 @@ def _get_subject_working_dir(
     else:
         subject_working_dir = \
             Path(working_dir) / processing_stream / ("sub-" + subject_id)
-
-    # Create the working directory, if it doesn't exist
-    if not subject_working_dir.exists():
-        logger.info(
-            f"Creating subject working directory: {subject_working_dir}")
-        subject_working_dir.mkdir(exist_ok=True, parents=True)
 
     return subject_working_dir
