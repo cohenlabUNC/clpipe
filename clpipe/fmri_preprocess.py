@@ -103,7 +103,7 @@ def fmriprep_process(bids_dir=None, working_dir=None, output_dir=None,
     n_threads = config['FMRIPrepOptions']['NThreads']
     email = config["EmailAddress"]
     cmd_line_opts = config['FMRIPrepOptions']['CommandLineOpts']
-    use_aroma = config['FMRIPrepOptions']['UseAROMA']
+    use_aroma_flag = config['FMRIPrepOptions']['UseAROMA']
     docker_toggle = config['FMRIPrepOptions']['DockerToggle']
     docker_fmriprep_version = \
         config['FMRIPrepOptions']['DockerFMRIPrepVersion']
@@ -145,13 +145,12 @@ def fmriprep_process(bids_dir=None, working_dir=None, output_dir=None,
         logger.debug(f"Container path: {fmriprep_path}")
 
     other_opts = cmd_line_opts
+    use_aroma = ""
     if USE_AROMA_FLAG in other_opts:
-        logger.debug("Use AROMA: ON")
-    elif use_aroma:
+        logger.debug("Use AROMA: ON")  
+    elif use_aroma_flag:
         logger.debug("Use AROMA: ON")
         use_aroma = USE_AROMA_FLAG
-    else:
-        use_aroma = ""
 
     if not subjects:
         sublist = [o.replace('sub-', '') for o in os.listdir(bids_dir)
