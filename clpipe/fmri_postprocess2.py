@@ -236,7 +236,8 @@ def postprocess_subjects_controller(
             submit=submit, batch_manager=batch_manager, 
             subjects_to_process=subjects, 
             log_dir=log_dir, pybids_db_path=pybids_db_path, 
-            refresh_index=refresh_index, processing_stream=processing_stream)
+            refresh_index=refresh_index, processing_stream=processing_stream,
+            debug=debug)
     except NoSubjectsFoundError as nsfe:
         logger.error(nsfe)
         sys.exit()
@@ -255,7 +256,7 @@ def postprocess_subject_controller(
     Parse configuration and (TODO) sanitize inputs for image job distribution.
     """
     
-    logger = _get_logger("postprocess_subject_controller")
+    logger = get_logger("postprocess_subject", debug=debug)
     logger.info(f"Processing subject: {subject_id}")
 
     config = _parse_config(config_file)
@@ -276,7 +277,8 @@ def postprocess_subject_controller(
     try:
         distribute_image_jobs(
             subject_id, bids_dir, fmriprep_dir, output_dir, 
-            postprocessing_config, config_file, pybids_db_path=index_dir, 
+            postprocessing_config, config_file, logger,
+            pybids_db_path=index_dir, 
             submit=submit, batch_manager=batch_manager, log_dir=log_dir, 
             processing_stream=processing_stream)
     except SubjectNotFoundError as snfe:
@@ -325,7 +327,7 @@ def distribute_subject_jobs(
     processing_stream:str=DEFAULT_PROCESSING_STREAM_NAME,
     submit=False, batch_manager=None,subjects_to_process=None, 
     log_dir: os.PathLike=None, pybids_db_path: os.PathLike=None, 
-    refresh_index=False):
+    refresh_index=False, debug=False):
     """
     Prepare arguments to be passed to the subject submission string creator.
     """
@@ -349,22 +351,18 @@ def distribute_subject_jobs(
     submission_strings = _create_submission_strings(
         subjects_to_process, bids_dir, fmriprep_dir,
         config_file, pybids_db_path, output_dir, processing_stream,
-        log_dir, logger, batch_manager, submit)
+        log_dir, logger, batch_manager, submit, debug)
     
     _submit_jobs(batch_manager, submission_strings, logger, submit=submit)
 
 
 def distribute_image_jobs(
-    subject_id: str, bids_dir: os.PathLike, fmriprep_dir: os.PathLike, 
-    out_dir: os.PathLike, postprocessing_config: dict,
-    config_file: os.PathLike, pybids_db_path: os.PathLike=None, 
-    submit=False, batch_manager=None, log_dir: os.PathLike=None, 
+    subject_id: str, bids_dir: Path, fmriprep_dir: Path, 
+    out_dir: Path, postprocessing_config: dict,
+    config_file: Path, logger: logging.Logger,
+    pybids_db_path: Path=None,
+    submit=False, batch_manager=None, log_dir: Path=None, 
     processing_stream=DEFAULT_PROCESSING_STREAM_NAME):
-    """
-    Sanitize paramters before passing into image submission string creator.
-    """
-
-    logger = _get_logger(f"distribute_image_jobs_sub-{subject_id}")
     
     bids_dir = Path(bids_dir)
     pybids_db_path = Path(pybids_db_path)
@@ -372,14 +370,18 @@ def distribute_image_jobs(
     log_dir=Path(log_dir)
     out_dir = Path(out_dir)
     config_file = Path(config_file)
-    
+
     # Create a postprocessing logging directory for this subject,
     # if it doesn't exist
     log_dir = log_dir / ("sub-" + subject_id)
     if not log_dir.exists():
         logger.info(f"Creating subject log directory: {log_dir}")
         log_dir.mkdir(exist_ok=True)
-    _add_file_handler(logger, log_dir, f'sub-{subject_id}.log')
+
+    add_file_handler(
+        log_dir, f_name=f'sub-{subject_id}.log',
+        logger=logger
+    )
 
     bids:BIDSLayout = _get_bids(
         bids_dir, database_path=pybids_db_path, fmriprep_dir=fmriprep_dir)
@@ -1005,8 +1007,6 @@ def _create_submission_strings(
     subjects_to_process, bids_dir, 
     fmriprep_dir, config_file, pybids_db_path, output_dir, 
     processing_stream, log_dir, logger, batch_manager, submit, debug):
-    
-    # Pass debug into this from whoever calls
 
     logger.info("Creating submission string(s)")
     submission_strings = {}
