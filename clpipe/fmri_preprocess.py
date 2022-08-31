@@ -151,6 +151,8 @@ def fmriprep_process(bids_dir=None, working_dir=None, output_dir=None,
     elif use_aroma_flag:
         logger.debug("Use AROMA: ON")
         use_aroma = USE_AROMA_FLAG
+    else:
+        logger.debug("Use AROMA: OFF")
 
     if not subjects:
         sublist = [o.replace('sub-', '') for o in os.listdir(bids_dir)
