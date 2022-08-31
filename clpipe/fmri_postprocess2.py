@@ -301,7 +301,7 @@ def postprocess_image_controller(
     subject_out_dir, subject_working_dir, log_dir, 
     processing_stream=DEFAULT_PROCESSING_STREAM_NAME, debug=False):
     """
-    Parse configuration and (TODO) sanitize inputs for the workflow builder.
+    Parse configuration sanitize inputs for the workflow builder.
     """
 
     logger = _get_logger("postprocess_image_controller")
@@ -314,6 +314,11 @@ def postprocess_image_controller(
         config, out_dir, processing_stream=processing_stream)
 
     stream_dir = Path(out_dir) / processing_stream
+
+    image_path = Path(image_path)
+    subject_working_dir = Path(subject_working_dir)
+    log_dir = Path(log_dir)
+    subject_out_dir = Path(subject_out_dir)
 
     postprocess_image(
         postprocessing_config, image_path, bids_dir, fmriprep_dir, 
@@ -392,12 +397,7 @@ def postprocess_subject(
         subject_id, image_space, bids, logger, 
         tasks=tasks, acquisitions=acquisitions)
 
-    # Create a subject folder for this subject's postprocessing output,
-    # if one doesn't already exist
     subject_out_dir = out_dir / processing_stream / ("sub-" + subject_id)
-    if not subject_out_dir.exists():
-        logger.info(f"Creating subject directory: {subject_out_dir}")
-        subject_out_dir.mkdir(exist_ok=True, parents=True)
 
     working_dir = postprocessing_config["WorkingDirectory"]
     subject_working_dir = _get_subject_working_dir(
@@ -412,17 +412,12 @@ def postprocess_subject(
 
 
 def postprocess_image(
-    postprocessing_config, image_path, bids_dir, fmriprep_dir, 
-    pybids_db_path, stream_dir, subject_out_dir, subject_working_dir, 
-    log_dir, logger, confounds_only=False):
+    postprocessing_config, image_path: Path, bids_dir, fmriprep_dir, 
+    pybids_db_path, stream_dir, subject_out_dir: Path, 
+    subject_working_dir: Path, log_dir: Path, logger, confounds_only=False):
     """
     Setup the workflows specified in the postprocessing configuration.
     """
-    
-    image_path = Path(image_path)
-    subject_working_dir = Path(subject_working_dir)
-    log_dir = Path(log_dir)
-    subject_out_dir = Path(subject_out_dir)
 
     # Grab only the image file name in a way that works 
     #   on both .nii and .nii.gz
@@ -507,6 +502,10 @@ def postprocess_image(
     
     if postprocessing_config["WriteProcessGraph"]:
         _draw_graph(postproc_wf, "processing_graph", stream_dir, logger=logger)
+
+    if not subject_out_dir.exists():
+        logger.info(f"Creating subject directory: {subject_out_dir}")
+        subject_out_dir.mkdir(parents=True)
 
     postproc_wf.inputs.inputnode.in_file = image_path
     postproc_wf.inputs.inputnode.confounds_file = confounds_path
