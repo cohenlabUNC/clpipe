@@ -8,7 +8,8 @@ from pkg_resources import resource_stream, resource_filename
 import shutil
 
 @click.command()
-@click.option('-config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True), default=None, required = True,
+@click.option('-config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True),
+              default=None, required = True,
               help='Configuration file to update.')
 def update_config_file(config_file=None):
     '''Updates an existing configuration file with any new fields. Does not modify existing fields.'''
@@ -30,10 +31,13 @@ def config_json_parser(json_path):
 
 class ClpipeConfigParser:
 
-    def __init__(self):
-        with resource_stream(__name__, 'data/defaultConfig.json') as def_config:
-            self.config = json.load(def_config)
-        self.setup_default_config()
+    def __init__(self, config_file:os.PathLike=None):
+        if not config_file:
+            with resource_stream(__name__, 'data/defaultConfig.json') as def_config:
+                self.config = json.load(def_config)
+            self.setup_default_config()
+        else:
+            self.config = config_json_parser(config_file)
         #with resource_stream(__name__, 'data/configSchema.json') as def_schema:
          #   self.configSchema = json.load(def_schema)
 
