@@ -146,9 +146,9 @@ def postprocess_subject_cli(subject_id, bids_dir, fmriprep_dir, output_dir,
 @click.argument('fmriprep_dir', type=CLICK_DIR_TYPE)
 @click.argument('index_dir', type=click.Path(dir_okay=True, file_okay=False))
 @click.argument('out_dir', type=click.Path(dir_okay=True, file_okay=False))
-@click.argument('subject_out_dir', type=click.Path(CLICK_DIR_TYPE))
+@click.argument('subject_out_dir', type=CLICK_DIR_TYPE)
 @click.argument('processing_stream', default=DEFAULT_PROCESSING_STREAM_NAME)
-@click.argument('subject_working_dir', type=click.Path(CLICK_DIR_TYPE))
+@click.argument('subject_working_dir', type=CLICK_DIR_TYPE)
 @click.argument('log_dir', type=click.Path(dir_okay=True, file_okay=False))
 @click.option('-debug', is_flag = True, default=False, help=DEBUG_HELP)
 def postprocess_image_cli(config_file, image_path, bids_dir, fmriprep_dir, 
