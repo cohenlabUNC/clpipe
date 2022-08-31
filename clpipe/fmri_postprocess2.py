@@ -216,8 +216,6 @@ def postprocess_subjects_controller(
         pybids_db_path = Path(project_dir) / "bids_index"
     pybids_db_path = Path(pybids_db_path)
 
-    
-
     # Setup batch jobs if indicated
     batch_manager = None
     if batch:
@@ -364,12 +362,7 @@ def distribute_image_jobs(
     submit=False, batch_manager=None, log_dir: Path=None, 
     processing_stream=DEFAULT_PROCESSING_STREAM_NAME):
     
-    bids_dir = Path(bids_dir)
-    pybids_db_path = Path(pybids_db_path)
-    fmriprep_dir = Path(fmriprep_dir)
-    log_dir=Path(log_dir)
-    out_dir = Path(out_dir)
-    config_file = Path(config_file)
+    
 
     # Create a postprocessing logging directory for this subject,
     # if it doesn't exist
