@@ -52,11 +52,12 @@ def get_logger(name, debug=False, log_dir=None, f_name="clpipe.log"):
     return logger
 
 
-def add_file_handler(log_dir: Path, f_name: str="clpipe.log", 
+def add_file_handler(log_dir: os.PathLike, f_name: str="clpipe.log", 
                      logger: logging.Logger = None):
     if not logger:
         logger = logging.getLogger("clpipe")
 
+    log_dir = Path(log_dir)
     if not log_dir.exists():
         logger.info(f"Creating subject log directory: {log_dir}")
         log_dir.mkdir(parents=True)    
