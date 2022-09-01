@@ -102,18 +102,19 @@ required=False, help=PROCESSING_STREAM_HELP)
               help=REFRESH_INDEX_HELP)
 @click.option('-batch/-no-batch', is_flag = True, default=True, 
               help=BATCH_HELP)
+@click.option('-cache/-no-cache', is_flag=True, default=True)
 @click.option('-submit', is_flag = True, default=False, help=SUBMIT_HELP)
 @click.option('-debug', is_flag = True, default=False, help=DEBUG_HELP)
 def fmri_postprocess2_cli(subjects, config_file, fmriprep_dir, output_dir, 
                           processing_stream, batch, submit, log_dir, index_dir, 
-                          refresh_index, debug):
+                          refresh_index, debug, cache):
     """Perform additional processing on fMRIPrepped data"""
 
     postprocess_subjects_controller(
         subjects=subjects, config_file=config_file,fmriprep_dir=fmriprep_dir, 
         output_dir=output_dir, processing_stream=processing_stream,
         batch=batch, submit=submit, log_dir=log_dir, pybids_db_path=index_dir,
-        refresh_index=refresh_index, debug=debug)
+        refresh_index=refresh_index, debug=debug, cache=cache)
 
 
 @click.command()
@@ -165,7 +166,7 @@ def postprocess_subjects_controller(
         subjects=None, config_file=None, bids_dir=None, fmriprep_dir=None, 
         output_dir=None, processing_stream=DEFAULT_PROCESSING_STREAM_NAME, 
         batch=False, submit=False, log_dir=None, pybids_db_path=None, 
-        refresh_index=False, debug=False):
+        refresh_index=False, debug=False, cache=True):
     """
     Parse configuration and sanitize inputs in preparation for 
         subject job distribution. 
@@ -238,7 +239,7 @@ def postprocess_subjects_controller(
             subjects_to_process=subjects, 
             log_dir=log_dir, pybids_db_path=pybids_db_path, 
             refresh_index=refresh_index, processing_stream=processing_stream,
-            debug=debug)
+            debug=debug, cache=cache)
     except NoSubjectsFoundError as nsfe:
         logger.error(nsfe)
         sys.exit()
@@ -337,7 +338,7 @@ def postprocess_subjects(
     log_dir: os.PathLike=None, pybids_db_path: os.PathLike=None, 
     refresh_index=False, debug=False):
     """
-    Prepare arguments to be passed to the subject submission string creator.
+    Create a postprocess_subject job for each subject.
     """
 
     bids:BIDSLayout = _get_bids(
@@ -347,10 +348,29 @@ def postprocess_subjects(
     subjects_to_process = _get_subjects(bids, subjects_to_process)
     logger.info(f"Processing requested for subjects: {subjects_to_process}")
 
-    submission_strings = _create_submission_strings(
-        subjects_to_process, bids_dir, fmriprep_dir,
-        config_file, pybids_db_path, output_dir, processing_stream,
-        log_dir, logger, batch_manager, submit, debug)
+    logger.info("Creating submission string(s)")
+    submission_strings = {}
+
+    batch_flag = "" if batch_manager else "-no-batch"
+    submit_flag = "" if submit else "-submit"
+    debug_flag = "" if debug else "-debug"
+
+    for subject in subjects_to_process:
+        key = "Postprocessing_sub-" + subject
+        submission_strings[key] = \
+            SUBJECT_SUBMISSION_STRING_TEMPLATE.format(
+                subject_id=subject,
+                bids_dir=bids_dir,
+                fmriprep_dir=fmriprep_dir,
+                config_file=config_file,
+                index_dir=pybids_db_path,
+                output_dir=output_dir,
+                processing_stream=processing_stream,
+                log_dir=log_dir,
+                batch=batch_flag,
+                submit=submit_flag,
+                debug=debug_flag
+            )
     
     _submit_jobs(batch_manager, submission_strings, logger, submit=submit)
 
@@ -984,44 +1004,7 @@ def _setup_batch_manager(config, log_dir, non_processing=False):
 
     return batch_manager
 
-
-def _create_submission_strings(
-    subjects_to_process, bids_dir, 
-    fmriprep_dir, config_file, pybids_db_path, output_dir, 
-    processing_stream, log_dir, logger, batch_manager, submit, debug):
-
-    logger.info("Creating submission string(s)")
-    submission_strings = {}
-
-    batch_flag = ""
-    submit_flag = ""
-    debug_flag = ""
-    if not batch_manager:
-        batch_flag = "-no-batch"
-    if submit:
-        submit_flag = "-submit"
-    if debug:
-        debug_flag = "-debug"
-
-    for subject in subjects_to_process:
-        key = "Postprocessing_sub-" + subject
-        submission_strings[key] = \
-            SUBJECT_SUBMISSION_STRING_TEMPLATE.format(
-                subject_id=subject,
-                bids_dir=bids_dir,
-                fmriprep_dir=fmriprep_dir,
-                config_file=config_file,
-                index_dir=pybids_db_path,
-                output_dir=output_dir,
-                processing_stream=processing_stream,
-                log_dir=log_dir,
-                batch=batch_flag,
-                submit=submit_flag,
-                debug=debug_flag
-            )
-    return submission_strings
-
-
+    
 def _get_logger(name):
     logger = logging.getLogger(name)
     logger.setLevel(logging.INFO)
