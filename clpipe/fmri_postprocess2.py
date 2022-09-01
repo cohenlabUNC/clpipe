@@ -352,8 +352,8 @@ def postprocess_subjects(
     submission_strings = {}
 
     batch_flag = "" if batch_manager else "-no-batch"
-    submit_flag = "" if submit else "-submit"
-    debug_flag = "" if debug else "-debug"
+    submit_flag = "-submit" if submit else ""
+    debug_flag = "-debug" if debug else ""
 
     for subject in subjects_to_process:
         key = "Postprocessing_sub-" + subject
