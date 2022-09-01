@@ -1004,42 +1004,6 @@ def _setup_batch_manager(config, log_dir, non_processing=False):
 
     return batch_manager
 
-    
-def _get_logger(name):
-    logger = logging.getLogger(name)
-    logger.setLevel(logging.INFO)
-    
-    # Create log handler
-    c_handler = logging.StreamHandler()
-    c_handler.setLevel(logging.INFO)
-
-    # Create log formatter to add to handler
-    c_format = logging.Formatter(
-        '%(asctime)s - %(levelname)s: %(name)s - %(message)s')
-    c_handler.setFormatter(c_format)
-    
-    # Add handler to logger
-    logger.addHandler(c_handler)
-
-    return logger
-
-
-def _add_file_handler(logger: logging.Logger, log_dir: Path, f_name: str):
-    if not log_dir.exists():
-        log_dir.mkdir(parents=True)
-
-    # Create log handler
-    f_handler = logging.FileHandler(log_dir / f_name)
-    f_handler.setLevel(logging.DEBUG)
-    
-    # Create log format
-    f_format = logging.Formatter(
-        '%(asctime)s - %(levelname)s: %(name)s - %(message)s')
-    f_handler.setFormatter(f_format)
-
-    # Add handler to the logger
-    logger.addHandler(f_handler)
-
 
 def _get_subject_working_dir(
     working_dir, out_dir, subject_id, processing_stream):
