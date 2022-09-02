@@ -29,6 +29,10 @@ import json
 import click
 from pathlib import Path
 
+from .bids import (
+    get_bids, get_confounds, get_images_to_process, get_mask,
+    get_mixing_file, get_noise_file, get_subjects, get_tr, validate_subject_exists)
+
 import pydantic
 
 # This hides a pybids future warning
@@ -86,25 +90,25 @@ REFRESH_INDEX_HELP = \
 
 @click.command(COMMAND_NAME)
 @click.argument('subjects', nargs=-1, required=False, default=None)
-@click.option('-config_file', type=CLICK_FILE_TYPE_EXISTS, default=None, 
+@click.option('-config_file', '-c', type=CLICK_FILE_TYPE_EXISTS, default=None, 
               required=True, help=CONFIG_HELP)
 @click.option('-fmriprep_dir', type=CLICK_DIR_TYPE_EXISTS, 
               help=FMRIPREP_DIR_HELP)
-@click.option('-output_dir', type=CLICK_DIR_TYPE, default=None, required=False,
+@click.option('-output_dir', '-o', type=CLICK_DIR_TYPE, default=None, required=False,
               help=OUTPUT_DIR_HELP)
-@click.option('-processing_stream', default=DEFAULT_PROCESSING_STREAM_NAME, 
+@click.option('-processing_stream', '-p', default=DEFAULT_PROCESSING_STREAM_NAME, 
 required=False, help=PROCESSING_STREAM_HELP)
-@click.option('-log_dir', type=CLICK_DIR_TYPE_EXISTS, default=None, 
+@click.option('-log_dir', '-l', type=CLICK_DIR_TYPE_EXISTS, default=None, 
               required=False, help=LOG_DIR_HELP)
 @click.option('-index_dir', type=CLICK_DIR_TYPE, default=None, required=False,
               help=INDEX_HELP)
-@click.option('-refresh_index', is_flag=True, default=False, required=False,
+@click.option('-refresh_index', '-r', is_flag=True, default=False, required=False,
               help=REFRESH_INDEX_HELP)
 @click.option('-batch/-no-batch', is_flag = True, default=True, 
               help=BATCH_HELP)
 @click.option('-cache/-no-cache', is_flag=True, default=True)
-@click.option('-submit', is_flag = True, default=False, help=SUBMIT_HELP)
-@click.option('-debug', is_flag = True, default=False, help=DEBUG_HELP)
+@click.option('-submit', '-s', is_flag = True, default=False, help=SUBMIT_HELP)
+@click.option('-debug', '-d', is_flag = True, default=False, help=DEBUG_HELP)
 def fmri_postprocess2_cli(subjects, config_file, fmriprep_dir, output_dir, 
                           processing_stream, batch, submit, log_dir, index_dir, 
                           refresh_index, debug, cache):
@@ -188,11 +192,11 @@ def postprocess_subjects(
     # Create jobs based on subjects given for processing
     # TODO: PYBIDS_DB_PATH should have config arg
     try:
-        bids:BIDSLayout = _get_bids(
+        bids:BIDSLayout = get_bids(
         bids_dir, database_path=pybids_db_path, logger=logger, 
         fmriprep_dir=fmriprep_dir, refresh=refresh_index)
 
-        subjects_to_process = _get_subjects(bids, subjects)
+        subjects_to_process = get_subjects(bids, subjects)
         logger.info(f"Processing requested for subjects: {subjects_to_process}")
 
         logger.info("Creating submission string(s)")
@@ -282,9 +286,9 @@ def postprocess_subject(
     output_dir = Path(output_dir)
 
     try:
-        bids:BIDSLayout = _get_bids(
+        bids:BIDSLayout = get_bids(
         bids_dir, database_path=index_dir, fmriprep_dir=fmriprep_dir)
-        _validate_subject_exists(bids, subject_id, logger)
+        validate_subject_exists(bids, subject_id, logger)
 
         image_space = postprocessing_config["TargetImageSpace"]
         try:
@@ -304,7 +308,7 @@ def postprocess_subject(
             ))
             acquisitions = None
 
-        images_to_process = _get_images_to_process(
+        images_to_process = get_images_to_process(
             subject_id, image_space, bids, logger, 
             tasks=tasks, acquisitions=acquisitions)
 
@@ -387,7 +391,7 @@ def postprocess_image(
     # Remove hyphens to allow use as a pipeline name
     pipeline_name = file_name_no_extensions.replace('-', "_")
 
-    bids:BIDSLayout = _get_bids(
+    bids:BIDSLayout = get_bids(
         bids_dir, database_path=pybids_db_path, fmriprep_dir=fmriprep_dir)
     # Lookup the BIDSFile with the image path
     bids_image:BIDSFile = bids.get_file(image_path)
@@ -406,8 +410,8 @@ def postprocess_image(
     if "AROMARegression" in postprocessing_config["ProcessingSteps"]:
         try:
             #TODO: update these for image entities
-            mixing_file = _get_mixing_file(bids, non_image_query_params, logger)
-            noise_file = _get_noise_file(bids, non_image_query_params, logger)
+            mixing_file = get_mixing_file(bids, non_image_query_params, logger)
+            noise_file = get_noise_file(bids, non_image_query_params, logger)
         except MixingFileNotFoundError as mfnfe:
             logger.error(mfnfe)
             #TODO: this should raise the error for the controller to handle
@@ -416,9 +420,9 @@ def postprocess_image(
             logger.error(nfnfe)
             sys.exit(1)
 
-    mask_image = _get_mask(bids, query_params, logger)
-    tr = _get_tr(bids, query_params, logger)
-    confounds_path = _get_confounds(bids, non_image_query_params, logger)
+    mask_image = get_mask(bids, query_params, logger)
+    tr = get_tr(bids, query_params, logger)
+    confounds_path = get_confounds(bids, non_image_query_params, logger)
 
     image_wf = None
     confounds_wf = None
@@ -482,94 +486,6 @@ def postprocess_image(
    
     sys.exit(0)
 
-    
-def _get_mixing_file(bids, query_params, logger):
-    logger.info("Searching for MELODIC mixing file")
-    try:
-        mixing_file = bids.get(
-            **query_params, suffix="mixing", extension=".tsv", 
-                return_type="filename", desc="MELODIC", scope="derivatives"
-        )[0]
-        logger.info(f"MELODIC mixing file found: {mixing_file}")
-
-        return mixing_file
-    except IndexError:
-        raise MixingFileNotFoundError((
-            f"MELODIC mixing file for query {query_params} not found. "
-            "Did you set UseAROMA to 'true' in your FMRIPrepOptions?"
-        ))
-
-
-def _get_noise_file(bids, query_params, logger):
-    logger.info("Searching for AROMA noise ICs file")
-    try:
-        noise_file = bids.get(
-            **query_params, suffix="AROMAnoiseICs",
-                extension=".csv", return_type="filename", scope="derivatives"
-        )[0]
-        logger.info((
-            f"AROMA noise ICs file found: {noise_file}"
-            "Did you set UseAROMA to 'true' in your FMRIPrepOptions?"
-        ))
-
-        return noise_file
-    except IndexError:
-        raise NoiseFileNotFoundError(
-            f"AROMA noise ICs file for query {query_params} not found.")
-
-
-def _get_mask(bids, query_params, logger):
-    # Find the subject's mask file
-    logger.info("Searching for mask file")
-    try:
-        mask_image = bids.get(
-            **query_params, suffix="mask", extension=".nii.gz", 
-                datatype="func", return_type="filename", 
-                desc="brain", scope="derivatives"
-        )[0]
-        logger.info(f"Mask file found: {mask_image}")
-
-        return mask_image
-    except IndexError:
-        logger.warn(f"Mask image for search query: {query_params} not found")
-        return None
-
-def _get_tr(bids, query_params, logger):
-    # To get the TR, we do another, similar query to get the sidecar 
-    # and open it as a dict, because indexing metadata in
-    # pybids is too slow to be worth just having the TR available
-    # This can probably be done in just one query combined with the above
-
-    image_to_process_json = bids.get(
-        **query_params, extension=".json", datatype="func", 
-        suffix="bold", desc="preproc", scope="derivatives",
-        return_type="filename")[0]
-
-    logger.info(f"Looking up TR in file: {image_to_process_json}")
-
-    with open(image_to_process_json) as sidecar_file:
-        sidecar_data = json.load(sidecar_file)
-        tr = sidecar_data["RepetitionTime"]
-
-        logger.info(f"Found TR: {tr}")
-
-        return tr
-
-def _get_confounds(bids, query_params, logger):
-    # Find the subject's confounds file
-    
-    logger.info("Searching for confounds file")
-    try:
-        confounds = bids.get(
-            **query_params, return_type="filename", extension=".tsv",
-                desc="confounds", scope="derivatives"
-        )[0]
-        logger.info(f"Confound file found: {confounds}")
-
-        return confounds
-    except IndexError:
-        logger.warn(f"Confound file for query {query_params} not found.")
-
 
 def _setup_image_workflow(
     postprocessing_config, pipeline_name,
@@ -610,7 +526,7 @@ def _build_export_path(image_path: os.PathLike, subject_id: str,
 
     # Create the output folder if it doesn't exist
     if not export_folder.exists():
-        export_folder.mkdir(parents=True)
+        export_folder.mkdir(parents=True, exist_ok=True)
 
     export_path = Path(subject_out_dir) / str(out_path).replace("preproc",
                                                                 "postproc")
@@ -781,47 +697,6 @@ def _submit_jobs(batch_manager, submission_strings, logger, submit=True):
                 print(submission_strings[key])
 
 
-def _get_images_to_process(subject_id, image_space, bids, logger, 
-                           tasks=None, acquisitions=None):
-    logger.info(f"Searching for images to process")
-    logger.info(f"Target image space: {image_space}")
-    
-    # Find the subject's preproc images
-    try:
-        images_to_process = []
-
-        search_args = {
-            "subject": subject_id, "extension": "nii.gz", "datatype": "func", 
-            "suffix": "bold", "desc": "preproc", "scope": "derivatives", 
-            "space": image_space
-        }
-        if tasks:
-            search_args["task"] = tasks
-            logger.info(f"Targeting task(s): {tasks}")
-        else:
-            logger.info(f"Targeting all available tasks.")
-
-        if acquisitions:
-            search_args["acquisition"] = acquisitions
-            logger.info(f"Targeting acquisition(s): {acquisitions}")
-        else:
-            logger.info(f"Targeting all available acquisitions.")
-        
-        images_to_process = bids.get(**search_args)
-
-        if len(images_to_process) == 0:
-            raise NoImagesFoundError(
-                f"No preproc BOLD images found for sub-{subject_id} "
-                f"in space {image_space}, task(s): {str(tasks)}."
-            )
-
-        logger.info(f"Found images: {len(images_to_process)}")
-        return images_to_process
-    except IndexError:
-        raise NoImagesFoundError(
-            f"No preproc BOLD image for subject {subject_id} found.")
-
-
 def _create_image_submission_strings(
     images_to_process, bids_dir, fmriprep_dir,
     pybids_db_path, out_dir, subject_out_dir, processing_stream,
@@ -856,19 +731,6 @@ def _create_image_submission_strings(
         return submission_strings
 
 
-def _validate_subject_exists(bids, subject_id, logger):
-    # Open the bids dir and validate that it contains the subject
-    logger.info(f"Checking for requested subject in fmriprep output")
-    if len(bids.get(subject=subject_id, scope="derivatives")) == 0:
-        snfe = (
-            f"Subject {subject_id} was not found in fmriprep output. "
-            "You may need to add the option '-refresh_index' if this "
-            "is a new subject."
-        )
-        logger.error(snfe)
-        raise SubjectNotFoundError(snfe)
-    
-
 def _parse_config(config_file):
     # Get postprocessing configuration from general config
     if not config_file:
@@ -879,54 +741,6 @@ def _parse_config(config_file):
     config = configParser.config
 
     return config
-
-
-def _get_bids(bids_dir: os.PathLike, validate=False, 
-              database_path: os.PathLike=None, fmriprep_dir: os.PathLike=None, 
-              index_metadata=False, refresh=False, logger=None) -> BIDSLayout:
-    try:
-        database_path = Path(database_path)
-        
-        # Use an existing pybids database, 
-        #   and user did not request an index refresh
-        if database_path.exists() and not refresh:
-            if logger:
-                logger.info(f"Using existing BIDS index: {database_path}")
-            return BIDSLayout(database_path=database_path)
-        # Index from scratch (slow)
-        else:
-            indexer = BIDSLayoutIndexer(
-                validate=validate, index_metadata=index_metadata)
-            if logger:
-                logger.info(f"Indexing BIDS directory: {bids_dir}")
-                logger.info("This can take a few minutes...")
-
-            if fmriprep_dir:
-                return BIDSLayout(
-                    bids_dir, validate=validate, indexer=indexer, 
-                    database_path=database_path, derivatives=fmriprep_dir, 
-                    reset_database=refresh)
-            else:
-                return BIDSLayout(
-                    bids_dir, validate=validate,
-                    indexer=indexer, database_path=database_path,
-                    reset_database=refresh)
-    except FileNotFoundError as fne:
-        if logger:
-            logger.error(fne)
-        raise fne
-
-
-def _get_subjects(bids_dir: BIDSLayout, subjects):   
-    # If no subjects were provided, use all subjects in the fmriprep directory
-    if subjects is None or len(subjects) == 0:
-        subjects = bids_dir.get_subjects(scope='derivatives')
-        if len(subjects) == 0:
-            no_subjects_found_str = \
-                f"No subjects found to parse at: {bids_dir.root}"
-            raise NoSubjectsFoundError(no_subjects_found_str)
-
-    return subjects
 
 
 def _populate_batch_manager(batch_manager, submission_strings, logger):
