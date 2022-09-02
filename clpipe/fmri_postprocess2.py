@@ -110,59 +110,14 @@ def fmri_postprocess2_cli(subjects, config_file, fmriprep_dir, output_dir,
                           refresh_index, debug, cache):
     """Perform additional processing on fMRIPrepped data"""
 
-    postprocess_subjects_controller(
+    postprocess_subjects(
         subjects=subjects, config_file=config_file,fmriprep_dir=fmriprep_dir, 
         output_dir=output_dir, processing_stream=processing_stream,
         batch=batch, submit=submit, log_dir=log_dir, pybids_db_path=index_dir,
         refresh_index=refresh_index, debug=debug, cache=cache)
 
 
-@click.command()
-@click.argument('subject_id')
-@click.argument('bids_dir', type=click.Path(dir_okay=True, file_okay=False))
-@click.argument('fmriprep_dir', type=CLICK_DIR_TYPE)
-@click.argument('output_dir', type=click.Path(dir_okay=True, file_okay=False))
-@click.argument('processing_stream', default=DEFAULT_PROCESSING_STREAM_NAME)
-@click.argument('config_file', type=click.Path(dir_okay=False, file_okay=True))
-@click.argument('index_dir', type=click.Path(dir_okay=True, file_okay=False))
-@click.argument('log_dir', type=click.Path(dir_okay=True, file_okay=False))
-@click.option('-batch/-no-batch', is_flag = True, default=True, 
-              help=BATCH_HELP)
-@click.option('-submit', is_flag = True, default=False, help=SUBMIT_HELP)
-@click.option('-debug', is_flag = True, default=False, help=DEBUG_HELP)
-def postprocess_subject_cli(subject_id, bids_dir, fmriprep_dir, output_dir, 
-                            processing_stream, config_file, index_dir, 
-                            batch, submit, log_dir, debug):
-    
-    postprocess_subject_controller(
-        subject_id, bids_dir, fmriprep_dir, output_dir, config_file, index_dir, 
-        batch, submit, log_dir, processing_stream=processing_stream,
-        debug=debug)
-
-
-@click.command()
-@click.argument('config_file', type=click.Path(dir_okay=False, file_okay=True))
-@click.argument('image_path', type=click.Path(dir_okay=False, file_okay=True))
-@click.argument('bids_dir', type=click.Path(dir_okay=True, file_okay=False))
-@click.argument('fmriprep_dir', type=CLICK_DIR_TYPE)
-@click.argument('index_dir', type=click.Path(dir_okay=True, file_okay=False))
-@click.argument('out_dir', type=click.Path(dir_okay=True, file_okay=False))
-@click.argument('subject_out_dir', type=CLICK_DIR_TYPE)
-@click.argument('processing_stream', default=DEFAULT_PROCESSING_STREAM_NAME)
-@click.argument('subject_working_dir', type=CLICK_DIR_TYPE)
-@click.argument('log_dir', type=click.Path(dir_okay=True, file_okay=False))
-@click.option('-debug', is_flag = True, default=False, help=DEBUG_HELP)
-def postprocess_image_cli(config_file, image_path, bids_dir, fmriprep_dir, 
-                          index_dir, out_dir, subject_out_dir, debug,
-                          processing_stream, subject_working_dir, log_dir):
-    
-    postprocess_image_controller(
-        config_file, image_path, bids_dir, fmriprep_dir, index_dir, out_dir, 
-        subject_out_dir, subject_working_dir, log_dir, 
-        processing_stream=processing_stream, debug=debug)
-
-
-def postprocess_subjects_controller(
+def postprocess_subjects(
         subjects=None, config_file=None, bids_dir=None, fmriprep_dir=None, 
         output_dir=None, processing_stream=DEFAULT_PROCESSING_STREAM_NAME, 
         batch=False, submit=False, log_dir=None, pybids_db_path=None, 
@@ -233,13 +188,38 @@ def postprocess_subjects_controller(
     # Create jobs based on subjects given for processing
     # TODO: PYBIDS_DB_PATH should have config arg
     try:
-        postprocess_subjects(
-            bids_dir, fmriprep_dir, output_dir, config_file, logger,
-            submit=submit, batch_manager=batch_manager, 
-            subjects_to_process=subjects, 
-            log_dir=log_dir, pybids_db_path=pybids_db_path, 
-            refresh_index=refresh_index, processing_stream=processing_stream,
-            debug=debug, cache=cache)
+        bids:BIDSLayout = _get_bids(
+        bids_dir, database_path=pybids_db_path, logger=logger, 
+        fmriprep_dir=fmriprep_dir, refresh=refresh_index)
+
+        subjects_to_process = _get_subjects(bids, subjects)
+        logger.info(f"Processing requested for subjects: {subjects_to_process}")
+
+        logger.info("Creating submission string(s)")
+        submission_strings = {}
+
+        batch_flag = "" if batch_manager else "-no-batch"
+        submit_flag = "-submit" if submit else ""
+        debug_flag = "-debug" if debug else ""
+
+        for subject in subjects_to_process:
+            key = "Postprocessing_sub-" + subject
+            submission_strings[key] = \
+                SUBJECT_SUBMISSION_STRING_TEMPLATE.format(
+                    subject_id=subject,
+                    bids_dir=bids_dir,
+                    fmriprep_dir=fmriprep_dir,
+                    config_file=config_file,
+                    index_dir=pybids_db_path,
+                    output_dir=output_dir,
+                    processing_stream=processing_stream,
+                    log_dir=log_dir,
+                    batch=batch_flag,
+                    submit=submit_flag,
+                    debug=debug_flag
+                )
+    
+        _submit_jobs(batch_manager, submission_strings, logger, submit=submit)
     except NoSubjectsFoundError as nsfe:
         logger.error(nsfe)
         sys.exit()
@@ -250,7 +230,30 @@ def postprocess_subjects_controller(
     sys.exit()
 
 
-def postprocess_subject_controller(
+@click.command()
+@click.argument('subject_id')
+@click.argument('bids_dir', type=click.Path(dir_okay=True, file_okay=False))
+@click.argument('fmriprep_dir', type=CLICK_DIR_TYPE)
+@click.argument('output_dir', type=click.Path(dir_okay=True, file_okay=False))
+@click.argument('processing_stream', default=DEFAULT_PROCESSING_STREAM_NAME)
+@click.argument('config_file', type=click.Path(dir_okay=False, file_okay=True))
+@click.argument('index_dir', type=click.Path(dir_okay=True, file_okay=False))
+@click.argument('log_dir', type=click.Path(dir_okay=True, file_okay=False))
+@click.option('-batch/-no-batch', is_flag = True, default=True, 
+              help=BATCH_HELP)
+@click.option('-submit', is_flag = True, default=False, help=SUBMIT_HELP)
+@click.option('-debug', is_flag = True, default=False, help=DEBUG_HELP)
+def postprocess_subject_cli(subject_id, bids_dir, fmriprep_dir, output_dir, 
+                            processing_stream, config_file, index_dir, 
+                            batch, submit, log_dir, debug):
+    
+    postprocess_subject(
+        subject_id, bids_dir, fmriprep_dir, output_dir, config_file, index_dir, 
+        batch, submit, log_dir, processing_stream=processing_stream,
+        debug=debug)
+
+
+def postprocess_subject(
     subject_id, bids_dir, fmriprep_dir, output_dir, config_file, index_dir, 
     batch, submit, log_dir, processing_stream=DEFAULT_PROCESSING_STREAM_NAME,
     debug=False):
@@ -279,12 +282,44 @@ def postprocess_subject_controller(
     output_dir = Path(output_dir)
 
     try:
-        postprocess_subject(
-            subject_id, bids_dir, fmriprep_dir, output_dir, 
-            postprocessing_config, config_file, logger,
-            pybids_db_path=index_dir,
-            submit=submit, batch_manager=batch_manager, log_dir=log_dir, 
-            processing_stream=processing_stream, debug=debug)
+        bids:BIDSLayout = _get_bids(
+        bids_dir, database_path=index_dir, fmriprep_dir=fmriprep_dir)
+        _validate_subject_exists(bids, subject_id, logger)
+
+        image_space = postprocessing_config["TargetImageSpace"]
+        try:
+            tasks = postprocessing_config["TargetTasks"]
+        except KeyError:
+            logger.warn((
+                "Postprocessing configuration setting 'TargetTasks' not set. "
+                "Defaulting to all tasks."
+            ))
+            tasks = None
+        try:
+            acquisitions = postprocessing_config["TargetAcquisitions"]
+        except KeyError:
+            logger.warn((
+                "Postprocessing configuration setting 'TargetAcquisitions' "
+                "not set. Defaulting to all acquisitions."
+            ))
+            acquisitions = None
+
+        images_to_process = _get_images_to_process(
+            subject_id, image_space, bids, logger, 
+            tasks=tasks, acquisitions=acquisitions)
+
+        subject_out_dir = output_dir / processing_stream / ("sub-" + subject_id)
+
+        working_dir = postprocessing_config["WorkingDirectory"]
+        subject_working_dir = _get_subject_working_dir(
+            working_dir, output_dir, subject_id, processing_stream) 
+
+        submission_strings = _create_image_submission_strings(
+            images_to_process, bids_dir, fmriprep_dir, index_dir, 
+            output_dir, subject_out_dir, processing_stream, 
+            subject_working_dir, config_file, log_dir, debug, logger)
+
+        _submit_jobs(batch_manager, submission_strings, logger, submit=submit)
     except SubjectNotFoundError as snfe:
         logger.error(snfe)
         sys.exit()
@@ -298,12 +333,35 @@ def postprocess_subject_controller(
     sys.exit()
 
 
-def postprocess_image_controller(
+@click.command()
+@click.argument('config_file', type=click.Path(dir_okay=False, file_okay=True))
+@click.argument('image_path', type=click.Path(dir_okay=False, file_okay=True))
+@click.argument('bids_dir', type=click.Path(dir_okay=True, file_okay=False))
+@click.argument('fmriprep_dir', type=CLICK_DIR_TYPE)
+@click.argument('index_dir', type=click.Path(dir_okay=True, file_okay=False))
+@click.argument('out_dir', type=click.Path(dir_okay=True, file_okay=False))
+@click.argument('subject_out_dir', type=CLICK_DIR_TYPE)
+@click.argument('processing_stream', default=DEFAULT_PROCESSING_STREAM_NAME)
+@click.argument('subject_working_dir', type=CLICK_DIR_TYPE)
+@click.argument('log_dir', type=click.Path(dir_okay=True, file_okay=False))
+@click.option('-debug', is_flag = True, default=False, help=DEBUG_HELP)
+def postprocess_image_cli(config_file, image_path, bids_dir, fmriprep_dir, 
+                          index_dir, out_dir, subject_out_dir, debug,
+                          processing_stream, subject_working_dir, log_dir):
+    
+    postprocess_image(
+        config_file, image_path, bids_dir, fmriprep_dir, index_dir, out_dir, 
+        subject_out_dir, subject_working_dir, log_dir, 
+        processing_stream=processing_stream, debug=debug)
+
+
+def postprocess_image(
     config_file, image_path, bids_dir, fmriprep_dir, pybids_db_path, out_dir,
     subject_out_dir, subject_working_dir, log_dir, 
-    processing_stream=DEFAULT_PROCESSING_STREAM_NAME, debug=False):
+    processing_stream=DEFAULT_PROCESSING_STREAM_NAME, confounds_only=False,
+    debug=False):
     """
-    Parse configuration sanitize inputs for the workflow builder.
+    Setup the workflows specified in the postprocessing configuration.
     """
 
     logger = get_logger("postprocess_image", debug=debug)
@@ -321,115 +379,6 @@ def postprocess_image_controller(
     subject_working_dir = Path(subject_working_dir)
     log_dir = Path(log_dir)
     subject_out_dir = Path(subject_out_dir)
-
-    postprocess_image(
-        postprocessing_config, image_path, bids_dir, fmriprep_dir, 
-        pybids_db_path, stream_dir, subject_out_dir, subject_working_dir, 
-        log_dir, logger)
-   
-    sys.exit()
-
-
-def postprocess_subjects(
-    bids_dir, fmriprep_dir, output_dir: str, 
-    config_file: str, logger: logging.Logger,
-    processing_stream:str=DEFAULT_PROCESSING_STREAM_NAME,
-    submit=False, batch_manager=None,subjects_to_process=None, 
-    log_dir: os.PathLike=None, pybids_db_path: os.PathLike=None, 
-    refresh_index=False, debug=False):
-    """
-    Create a postprocess_subject job for each subject.
-    """
-
-    bids:BIDSLayout = _get_bids(
-        bids_dir, database_path=pybids_db_path, logger=logger, 
-        fmriprep_dir=fmriprep_dir, refresh=refresh_index)
-
-    subjects_to_process = _get_subjects(bids, subjects_to_process)
-    logger.info(f"Processing requested for subjects: {subjects_to_process}")
-
-    logger.info("Creating submission string(s)")
-    submission_strings = {}
-
-    batch_flag = "" if batch_manager else "-no-batch"
-    submit_flag = "-submit" if submit else ""
-    debug_flag = "-debug" if debug else ""
-
-    for subject in subjects_to_process:
-        key = "Postprocessing_sub-" + subject
-        submission_strings[key] = \
-            SUBJECT_SUBMISSION_STRING_TEMPLATE.format(
-                subject_id=subject,
-                bids_dir=bids_dir,
-                fmriprep_dir=fmriprep_dir,
-                config_file=config_file,
-                index_dir=pybids_db_path,
-                output_dir=output_dir,
-                processing_stream=processing_stream,
-                log_dir=log_dir,
-                batch=batch_flag,
-                submit=submit_flag,
-                debug=debug_flag
-            )
-    
-    _submit_jobs(batch_manager, submission_strings, logger, submit=submit)
-
-
-def postprocess_subject(
-    subject_id: str, bids_dir: Path, fmriprep_dir: Path, 
-    out_dir: Path, postprocessing_config: dict,
-    config_file: Path, logger: logging.Logger,
-    pybids_db_path: Path=None,
-    submit=False, batch_manager=None, log_dir: str=None, 
-    processing_stream=DEFAULT_PROCESSING_STREAM_NAME, debug=False):
-
-    bids:BIDSLayout = _get_bids(
-        bids_dir, database_path=pybids_db_path, fmriprep_dir=fmriprep_dir)
-    _validate_subject_exists(bids, subject_id, logger)
-
-    image_space = postprocessing_config["TargetImageSpace"]
-    try:
-        tasks = postprocessing_config["TargetTasks"]
-    except KeyError:
-        logger.warn((
-            "Postprocessing configuration setting 'TargetTasks' not set. "
-            "Defaulting to all tasks."
-        ))
-        tasks = None
-    try:
-        acquisitions = postprocessing_config["TargetAcquisitions"]
-    except KeyError:
-        logger.warn((
-            "Postprocessing configuration setting 'TargetAcquisitions' "
-            "not set. Defaulting to all acquisitions."
-        ))
-        acquisitions = None
-
-    images_to_process = _get_images_to_process(
-        subject_id, image_space, bids, logger, 
-        tasks=tasks, acquisitions=acquisitions)
-
-    subject_out_dir = out_dir / processing_stream / ("sub-" + subject_id)
-
-    working_dir = postprocessing_config["WorkingDirectory"]
-    subject_working_dir = _get_subject_working_dir(
-        working_dir, out_dir, subject_id, processing_stream) 
-
-    submission_strings = _create_image_submission_strings(
-        images_to_process, bids_dir, fmriprep_dir, pybids_db_path, 
-        out_dir, subject_out_dir, processing_stream, 
-        subject_working_dir, config_file, log_dir, debug, logger)
-
-    _submit_jobs(batch_manager, submission_strings, logger, submit=submit)
-
-
-def postprocess_image(
-    postprocessing_config, image_path: Path, bids_dir, fmriprep_dir, 
-    pybids_db_path, stream_dir, subject_out_dir: Path, 
-    subject_working_dir: Path, log_dir: Path, logger, confounds_only=False):
-    """
-    Setup the workflows specified in the postprocessing configuration.
-    """
 
     # Grab only the image file name in a way that works 
     #   on both .nii and .nii.gz
@@ -530,6 +479,8 @@ def postprocess_image(
     # Disabled until this plotting works with .nii.gz
     # if not confounds_only:
     #     _plot_image_sample(image_export_path, title=pipeline_name)
+   
+    sys.exit(0)
 
     
 def _get_mixing_file(bids, query_params, logger):
@@ -928,6 +879,7 @@ def _parse_config(config_file):
     config = configParser.config
 
     return config
+
 
 def _get_bids(bids_dir: os.PathLike, validate=False, 
               database_path: os.PathLike=None, fmriprep_dir: os.PathLike=None, 
