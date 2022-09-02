@@ -25,7 +25,7 @@ def get_bids(bids_dir: os.PathLike, validate=False,
         #   and user did not request an index refresh
         if database_path.exists() and not refresh:
             if logger:
-                logger.info(f"Using existing BIDS index: {database_path}")
+                logger.debug(f"Using existing BIDS index: {database_path}")
             return BIDSLayout(database_path=database_path)
         # Index from scratch (slow)
         else:

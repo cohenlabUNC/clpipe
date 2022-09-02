@@ -27,6 +27,7 @@ import logging
 import warnings
 import json
 import click
+import time
 from pathlib import Path
 
 from .bids import (
@@ -155,6 +156,7 @@ def postprocess_subjects(
             fmriprep_dir = default_path
     fmriprep_dir = Path(fmriprep_dir)
     logger.info(f"Preparing postprocessing job targeting: {str(fmriprep_dir)}")
+    time.sleep(0.5)
 
     if not bids_dir:
         bids_dir = Path(config["FMRIPrepOptions"]["BIDSDirectory"])
@@ -170,10 +172,18 @@ def postprocess_subjects(
             output_dir = default_path
 
     output_dir = Path(output_dir)
+    logger.info(f"Output directory: {output_dir}")
+
+    working_dir = config["PostProcessingOptions2"]["WorkingDirectory"]
+    if working_dir == "":
+        logger.warn("Working directory not set, defaulting to output directory.")
+    else:
+        logger.info(f"Using working directory: {working_dir}")
 
     if not log_dir:
         log_dir = Path(project_dir) / "logs" / "postproc2_logs"
     log_dir = Path(log_dir)
+    logger.debug(f"Using log directory: {log_dir}")
 
     if not pybids_db_path:
         pybids_db_path = Path(project_dir) / "bids_index"
@@ -197,10 +207,13 @@ def postprocess_subjects(
         fmriprep_dir=fmriprep_dir, refresh=refresh_index)
 
         subjects_to_process = get_subjects(bids, subjects)
-        logger.info(f"Processing requested for subjects: {subjects_to_process}")
+        logger.info(
+            f"Processing requested for subject(s): {','.join(subjects_to_process)}")
+        time.sleep(0.5)
 
         logger.info("Creating submission string(s)")
         submission_strings = {}
+        time.sleep(0.5)
 
         batch_flag = "" if batch_manager else "-no-batch"
         submit_flag = "-submit" if submit else ""
