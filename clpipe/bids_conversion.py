@@ -79,49 +79,34 @@ def convert2bids_cli(dicom_dir, dicom_dir_format, bids_dir,
                      config_file, overwrite, log_dir, subject, subjects, session, 
                      longitudinal, submit, debug, status_cache):
     """Convert DICOM files to BIDS format"""
-
-    if conv_config_file:
-        dcm2bids_wrapper(
-            dicom_dir=dicom_dir, dicom_dir_format=dicom_dir_format, 
-            bids_dir=bids_dir, conv_config_file=conv_config_file, 
-            config_file=config_file, overwrite=overwrite, log_dir=log_dir, 
-            subject=subject, session=session, longitudinal=longitudinal, 
-            submit=submit, status_cache=status_cache, debug=debug)
-    elif heuristic:
-        heudiconv_wrapper(
-            subjects=subjects, dicom_directory=dicom_dir, submit=submit,
-            output_directory=bids_dir, heuristic_file=heuristic, debug=debug,
-            overwrite=overwrite)
+    convert2bids(
+        dicom_dir=dicom_dir, dicom_dir_format=dicom_dir_format, 
+        bids_dir=bids_dir, conv_config_file=conv_config_file, heuristic=heuristic,
+        config_file=config_file, overwrite=overwrite, log_dir=log_dir, 
+        subject=subject, subjects=subjects, session=session, longitudinal=longitudinal, 
+        submit=submit, status_cache=status_cache, debug=debug)
 
 
-def dcm2bids_wrapper(dicom_dir=None, dicom_dir_format=None, bids_dir=None, 
-                 conv_config_file=None, config_file=None, overwrite=None, 
-                 log_dir=None, subject=None, session=None, longitudinal=False, 
+def convert2bids(dicom_dir=None, dicom_dir_format=None, bids_dir=None, 
+                 conv_config_file=None, heuristic=None, config_file=None, overwrite=None, 
+                 log_dir=None, subject=None, subjects=None, session=None, longitudinal=False, 
                  status_cache=None, submit=None, debug=False):
     
-    config = ClpipeConfigParser()
-    config.config_updater(config_file)
-    config.setup_dcm2bids(dicom_dir,
-                          conv_config_file,
-                          bids_dir,
-                          dicom_dir_format,
-                          log_dir)
+    config_parser = ClpipeConfigParser()
+    config_parser.config_updater(config_file)
+    config = config_parser.config
 
-    project_dir = config.config["ProjectDirectory"]
-    dicom_dir = config.config['DICOMToBIDSOptions']['DICOMDirectory']
-    dicom_dir_format = config.config['DICOMToBIDSOptions']['DICOMFormatString']
-    bids_dir = config.config['DICOMToBIDSOptions']['BIDSDirectory']
-    conv_config = config.config['DICOMToBIDSOptions']['ConversionConfig']
-    log_dir = config.config['DICOMToBIDSOptions']['LogDirectory']
-    batch_config = config.config['BatchConfig']
-    mem_usage = config.config['DICOMToBIDSOptions']['MemUsage']
-    time_usage = config.config['DICOMToBIDSOptions']['TimeUsage']
-    n_threads = config.config['DICOMToBIDSOptions']['CoreUsage']
+    project_dir = config["ProjectDirectory"]
 
     add_file_handler(os.path.join(project_dir, "logs"))
     logger = get_logger(STEP_NAME, debug=debug)
 
-    logger.info("Using converter: dcm2bids")
+    dicom_dir = dicom_dir if dicom_dir else config['DICOMToBIDSOptions']['DICOMDirectory']
+    dicom_dir_format = dicom_dir_format if dicom_dir_format else config['DICOMToBIDSOptions']['DICOMFormatString']
+    bids_dir = bids_dir if bids_dir else config['DICOMToBIDSOptions']['BIDSDirectory']
+    conv_config_file = conv_config_file if conv_config_file else config['DICOMToBIDSOptions']['ConversionConfig']
+    log_dir = log_dir if log_dir else config['DICOMToBIDSOptions']['LogDirectory']
+    heuristic = heuristic if heuristic else config['DICOMToBIDSOptions']['Heuristic']
 
     if not dicom_dir:
         logger.error('DICOM directory not specified.')
@@ -129,15 +114,57 @@ def dcm2bids_wrapper(dicom_dir=None, dicom_dir_format=None, bids_dir=None,
     if not bids_dir:
         logger.error('BIDS directory not specified.')
         sys.exit(1)
-    if not conv_config:
-        logger.error('Conversion config not specified.')
-        sys.exit(1)
     if not dicom_dir_format:
         logger.error('Format string not specified.')
         sys.exit(1)
     if not log_dir:
         logger.error('Log directory not specified.')
         sys.exit(1)
+    
+    if conv_config_file:
+        logger.info("Using converter: dcm2bids")
+
+        config_parser.setup_dcm2bids(
+            dicom_dir,
+            conv_config_file,
+            bids_dir,
+            dicom_dir_format,
+            log_dir)
+
+        dcm2bids_wrapper(
+            dicom_dir=dicom_dir, dicom_dir_format=dicom_dir_format, 
+            bids_dir=bids_dir, conv_config_file=conv_config_file, 
+            config=config, overwrite=overwrite, log_dir=log_dir, 
+            subject=subject, session=session, longitudinal=longitudinal, 
+            submit=submit, status_cache=status_cache, debug=debug,
+            logger=logger)
+
+    elif heuristic:
+        logger.info("Using converter: heudiconv")
+
+        config.setup_heudiconv(
+            dicom_dir,
+            os.path.abspath(heuristic),
+            os.path.abspath(bids_dir))
+
+        heudiconv_wrapper(
+            config=config, subjects=subjects, dicom_directory=dicom_dir, submit=submit,
+            output_directory=bids_dir, heuristic_file=heuristic, debug=debug,
+            overwrite=overwrite)
+
+    else:
+        logger.error("Must specificy one of either 'conv_config' or 'heuristic'")
+
+
+def dcm2bids_wrapper(dicom_dir=None, dicom_dir_format=None, bids_dir=None, 
+                 config=None, config_file=None, overwrite=None, 
+                 log_dir=None, subject=None, session=None, longitudinal=False, 
+                 status_cache=None, submit=None, debug=False, logger=None):
+
+    batch_config = config['BatchConfig']
+    mem_usage = config['DICOMToBIDSOptions']['MemUsage']
+    time_usage = config['DICOMToBIDSOptions']['TimeUsage']
+    n_threads = config['DICOMToBIDSOptions']['CoreUsage']
 
     logger.info(f"Starting BIDS conversion targeting: {dicom_dir}")
     logger.debug(f"Using config file: {config_file}")
@@ -318,23 +345,6 @@ def heudiconv_wrapper(subjects=None, dicom_directory=None, submit=False,
     Users can specify any number of subjects, or leave subjects blank to convert all 
     subjects. 
     """
-    
-    config = ClpipeConfigParser()
-    config.setup_heudiconv(dicom_directory,
-                           os.path.abspath(heuristic_file),
-                           os.path.abspath(output_directory))
-
-    project_dir = config.config["ProjectDirectory"]
-
-    add_file_handler(os.path.join(project_dir, "logs"))
-    logger = get_logger(STEP_NAME, debug=debug)
-
-    logger.info("Using converter: heudiconv")
-
-    if not any([config.config['DICOMToBIDSOptions']['DICOMDirectory'],
-            config.config['DICOMToBIDSOptions']['OutputDirectory'],
-            config.config['DICOMToBIDSOptions']['HeuristicFile']]):
-        raise ValueError('DICOM directory, output directory and/or heuristic file are not specified.')
 
     if not log_output_dir:
         log_output_dir = os.path.abspath(os.path.join('.', 'Batch_Output'))
