@@ -1,3 +1,4 @@
+from distutils.log import debug
 from .batch_manager import LOGGER_NAME, BatchManager, Job
 from .config_json_parser import ClpipeConfigParser
 import os
@@ -8,7 +9,7 @@ import click
 
 from .utils import get_logger, add_file_handler
 from .status import needs_processing, write_record
-from .config import CONFIG_HELP, LOG_DIR_HELP, SUBMIT_HELP, CLICK_FILE_TYPE, \
+from .config import CONFIG_HELP, DEBUG_HELP, LOG_DIR_HELP, SUBMIT_HELP, CLICK_FILE_TYPE, \
     STATUS_CACHE_HELP, CLICK_FILE_TYPE_EXISTS, CLICK_DIR_TYPE_EXISTS
 
 # These imports are for the heudiconv converter
@@ -25,7 +26,7 @@ CONVERSION_CONFIG_HELP = (
     "A dcm2bids conversion definition .json file."
 )
 HEURISTIC_FILE_HELP = (
-    "A heudiconv heuristic file."
+    "A heudiconv heuristic file to use for the conversion."
 )
 DICOM_DIR_HELP = "The folder where subject dicoms are located."
 DICOM_DIR_FORMAT_HELP = (
@@ -37,6 +38,9 @@ OVERWRITE_HELP = "Overwrite existing BIDS data?"
 SUBJECT_HELP = (
     "A subject  to convert using the supplied configuration file. "
     "Use to convert single subjects, else leave empty."
+)
+SUBJECTS_HELP = (
+    "*heudiconv only* - Specify a list of subjects to convert"
 )
 SESSION_HELP = (
     "A session  to convert using the supplied configuration file. Use in "
@@ -54,7 +58,7 @@ LONGITUDINAL_HELP = (
               help=CONFIG_HELP)
 @click.option('-conv_config_file', type=CLICK_FILE_TYPE_EXISTS, default=None, 
               help=CONVERSION_CONFIG_HELP)
-@click.option('-heuristic_file', default = '', help = 'A heuristic file to use')
+@click.option('-heuristic', help=HEURISTIC_FILE_HELP)
 @click.option('-dicom_dir', type=CLICK_DIR_TYPE_EXISTS, help=DICOM_DIR_HELP)
 @click.option('-dicom_dir_format', help=DICOM_DIR_FORMAT_HELP)
 @click.option('-BIDS_dir', type=CLICK_DIR_TYPE_EXISTS,
@@ -62,27 +66,35 @@ LONGITUDINAL_HELP = (
 @click.option('-overwrite', is_flag=True, default=False, help=OVERWRITE_HELP)
 @click.option('-log_dir', type=CLICK_DIR_TYPE_EXISTS, help=LOG_DIR_HELP)
 @click.option('-subject', required=False, help=SUBJECT_HELP)
+@click.option('-subjects', required=False, help=SUBJECTS_HELP)
 @click.option('-session', required=False, help=SESSION_HELP)
 @click.option('-longitudinal', is_flag=True, default=False,
               help=LONGITUDINAL_HELP)
 @click.option('-submit', is_flag=True, default=False, help=SUBMIT_HELP)
+@click.option('-debug', is_flag=True, help=DEBUG_HELP)
 @click.option('-status_cache', default=None, type=CLICK_FILE_TYPE, 
               help=STATUS_CACHE_HELP)
 def convert2bids_cli(dicom_dir, dicom_dir_format, bids_dir, 
-                     conv_config_file,
-                     config_file, overwrite, log_dir, subject, session, 
-                     longitudinal, submit, status_cache):
+                     conv_config_file, heuristic,
+                     config_file, overwrite, log_dir, subject, subjects, session, 
+                     longitudinal, submit, debug, status_cache):
     """Convert DICOM files to BIDS format"""
 
-    convert2bids(
-        dicom_dir=dicom_dir, dicom_dir_format=dicom_dir_format, 
-        bids_dir=bids_dir, conv_config_file=conv_config_file, 
-        config_file=config_file, overwrite=overwrite, log_dir=log_dir, 
-        subject=subject, session=session, longitudinal=longitudinal, 
-        submit=submit, status_cache=status_cache)
+    if conv_config_file:
+        dcm2bids_wrapper(
+            dicom_dir=dicom_dir, dicom_dir_format=dicom_dir_format, 
+            bids_dir=bids_dir, conv_config_file=conv_config_file, 
+            config_file=config_file, overwrite=overwrite, log_dir=log_dir, 
+            subject=subject, session=session, longitudinal=longitudinal, 
+            submit=submit, status_cache=status_cache, debug=debug)
+    elif heuristic:
+        heudiconv_wrapper(
+            subjects=subjects, dicom_directory=dicom_dir, submit=submit,
+            output_directory=bids_dir, heuristic_file=heuristic, debug=debug,
+            overwrite=overwrite)
 
 
-def convert2bids(dicom_dir=None, dicom_dir_format=None, bids_dir=None, 
+def dcm2bids_wrapper(dicom_dir=None, dicom_dir_format=None, bids_dir=None, 
                  conv_config_file=None, config_file=None, overwrite=None, 
                  log_dir=None, subject=None, session=None, longitudinal=False, 
                  status_cache=None, submit=None, debug=False):
@@ -108,6 +120,8 @@ def convert2bids(dicom_dir=None, dicom_dir_format=None, bids_dir=None,
 
     add_file_handler(os.path.join(project_dir, "logs"))
     logger = get_logger(STEP_NAME, debug=debug)
+
+    logger.info("Using converter: dcm2bids")
 
     if not dicom_dir:
         logger.error('DICOM directory not specified.')
@@ -249,7 +263,6 @@ def convert2bids(dicom_dir=None, dicom_dir_format=None, bids_dir=None,
 def dicom_to_nifti_to_bids_converter_setup(subject = None, session = None, dicom_directory=None, output_file=None, config_file = None,  submit=False):
     """This command can be used to compute and extract a dicom information spreadsheet so that a heuristic file can be written. Users should specify a subject with all scans of interest present, and run this command on all sessions of interest. """
     config = ClpipeConfigParser()
-    
 
     heuristic_file = resource_filename(__name__, 'data/setup_heuristic.py')
 
@@ -297,18 +310,26 @@ def dicom_to_nifti_to_bids_converter_setup(subject = None, session = None, dicom
 @click.option('-overwrite', is_flag=True, default=False, help = 'Overwrite previous files?')
 @click.option('-submit', is_flag=True, default=False, help = 'Submit jobs to HPC')
 @click.option('-debug', is_flag=True, default=False, help = 'Debug flag for traceback')
-def heudiconv_wrapper(subjects = None, dicom_directory=None, submit=False, output_directory= None, heuristic_file = None,debug = False, log_output_dir = None, overwrite = False):
-    """This command uses heudiconv to convert dicoms into BIDS formatted NiFTI files. Users can specify any number of subjects, or leave subjects blank to convert all subjects. """
-    if not debug:
-        sys.excepthook = exception_handler
-        logging.basicConfig(level=logging.INFO)
-    else:
-        logging.basicConfig(level=logging.DEBUG)
-
+def heudiconv_wrapper(subjects=None, dicom_directory=None, submit=False,
+    output_directory=None, heuristic_file=None, debug=False,
+    log_output_dir=None, overwrite=False):
+    """
+    This command uses heudiconv to convert dicoms into BIDS formatted NiFTI files. 
+    Users can specify any number of subjects, or leave subjects blank to convert all 
+    subjects. 
+    """
+    
     config = ClpipeConfigParser()
     config.setup_heudiconv(dicom_directory,
                            os.path.abspath(heuristic_file),
                            os.path.abspath(output_directory))
+
+    project_dir = config.config["ProjectDirectory"]
+
+    add_file_handler(os.path.join(project_dir, "logs"))
+    logger = get_logger(STEP_NAME, debug=debug)
+
+    logger.info("Using converter: heudiconv")
 
     if not any([config.config['DICOMToBIDSOptions']['DICOMDirectory'],
             config.config['DICOMToBIDSOptions']['OutputDirectory'],
