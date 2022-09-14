@@ -6,7 +6,7 @@ from .config import VERSION_HELP
 
 from .project_setup import project_setup_cli
 from .bids_validator import bids_validate_cli
-from .dcm2bids_wrapper import convert2bids_cli
+from .bids_conversion import convert2bids_cli
 from .fmri_preprocess import fmriprep_process_cli
 from .fmri_postprocess import fmri_postprocess_cli
 from .fmri_postprocess2 import fmri_postprocess2_cli
