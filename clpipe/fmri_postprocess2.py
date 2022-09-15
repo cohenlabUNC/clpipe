@@ -93,7 +93,7 @@ REFRESH_INDEX_HELP = \
 @click.argument('subjects', nargs=-1, required=False, default=None)
 @click.option('-config_file', '-c', type=CLICK_FILE_TYPE_EXISTS, default=None, 
               required=True, help=CONFIG_HELP)
-@click.option('-fmriprep_dir', type=CLICK_DIR_TYPE_EXISTS, 
+@click.option('-fmriprep_dir', '-i', type=CLICK_DIR_TYPE_EXISTS, 
               help=FMRIPREP_DIR_HELP)
 @click.option('-output_dir', '-o', type=CLICK_DIR_TYPE, default=None, required=False,
               help=OUTPUT_DIR_HELP)
