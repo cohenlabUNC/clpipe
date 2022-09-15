@@ -156,7 +156,7 @@ def convert2bids(dicom_dir=None, dicom_dir_format=None, bids_dir=None,
         dcm2bids_wrapper(
             dicom_dir=dicom_dir, dicom_dir_format=dicom_dir_format, 
             bids_dir=bids_dir, conv_config=conv_config_file, 
-            overwrite=overwrite, log_dir=log_dir, 
+            overwrite=overwrite, logger=logger, 
             subject=subject, session=session, longitudinal=longitudinal, 
             submit=submit, status_cache=status_cache, debug=debug,
             logger=logger, batch_manager=batch_manager)
