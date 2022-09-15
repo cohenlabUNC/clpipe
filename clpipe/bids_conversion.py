@@ -51,17 +51,20 @@ LONGITUDINAL_HELP = (
     "Convert all subjects/sessions into individual pseudo-subjects. "
     "Use if you do not want T1w averaged across sessions during FMRIprep"
 )
+MODE_HELP = (
+    "Specify which converter to use."
+)
 
 
 @click.command(COMMAND_NAME)
-@click.option('-config_file', type=CLICK_FILE_TYPE_EXISTS, default=None,
+@click.option('-config_file', '-c', type=CLICK_FILE_TYPE_EXISTS, default=None,
               help=CONFIG_HELP)
 @click.option('-conv_config_file', type=CLICK_FILE_TYPE_EXISTS, default=None, 
               help=CONVERSION_CONFIG_HELP)
-@click.option('-heuristic', help=HEURISTIC_FILE_HELP)
-@click.option('-dicom_dir', type=CLICK_DIR_TYPE_EXISTS, help=DICOM_DIR_HELP)
+@click.option('-heuristic', '-h', help=HEURISTIC_FILE_HELP)
+@click.option('-dicom_dir', '-i', type=CLICK_DIR_TYPE_EXISTS, help=DICOM_DIR_HELP)
 @click.option('-dicom_dir_format', help=DICOM_DIR_FORMAT_HELP)
-@click.option('-BIDS_dir', type=CLICK_DIR_TYPE_EXISTS,
+@click.option('-BIDS_dir', '-o', type=CLICK_DIR_TYPE_EXISTS,
               help=BIDS_DIR_HELP)
 @click.option('-overwrite', is_flag=True, default=False, help=OVERWRITE_HELP)
 @click.option('-log_dir', type=CLICK_DIR_TYPE_EXISTS, help=LOG_DIR_HELP)
@@ -70,12 +73,13 @@ LONGITUDINAL_HELP = (
 @click.option('-session', required=False, help=SESSION_HELP)
 @click.option('-longitudinal', is_flag=True, default=False,
               help=LONGITUDINAL_HELP)
-@click.option('-submit', is_flag=True, default=False, help=SUBMIT_HELP)
-@click.option('-debug', is_flag=True, help=DEBUG_HELP)
+@click.option('-submit', '-s', is_flag=True, default=False, help=SUBMIT_HELP)
+@click.option('-debug', '-d', is_flag=True, help=DEBUG_HELP)
+@click.option('-dcm2bids/-heudiconv', default=True, help=MODE_HELP)
 @click.option('-status_cache', default=None, type=CLICK_FILE_TYPE, 
               help=STATUS_CACHE_HELP)
 def convert2bids_cli(dicom_dir, dicom_dir_format, bids_dir, 
-                     conv_config_file, heuristic,
+                     conv_config_file, heuristic, dcm2bids,
                      config_file, overwrite, log_dir, subject, subjects, session, 
                      longitudinal, submit, debug, status_cache):
     """Convert DICOM files to BIDS format"""
@@ -84,13 +88,13 @@ def convert2bids_cli(dicom_dir, dicom_dir_format, bids_dir,
         bids_dir=bids_dir, conv_config_file=conv_config_file, heuristic=heuristic,
         config_file=config_file, overwrite=overwrite, log_dir=log_dir, 
         subject=subject, subjects=subjects, session=session, longitudinal=longitudinal, 
-        submit=submit, status_cache=status_cache, debug=debug)
+        submit=submit, status_cache=status_cache, debug=debug, dcm2bids=dcm2bids)
 
 
 def convert2bids(dicom_dir=None, dicom_dir_format=None, bids_dir=None, 
                  conv_config_file=None, heuristic=None, config_file=None, overwrite=None, 
                  log_dir=None, subject=None, subjects=None, session=None, longitudinal=False, 
-                 status_cache=None, submit=None, debug=False):
+                 status_cache=None, submit=None, debug=False, dcm2bids=True):
     
     config_parser = ClpipeConfigParser()
     config_parser.config_updater(config_file)
@@ -113,12 +117,6 @@ def convert2bids(dicom_dir=None, dicom_dir_format=None, bids_dir=None,
     time_usage = config['DICOMToBIDSOptions']['TimeUsage']
     n_threads = config['DICOMToBIDSOptions']['CoreUsage']
 
-    batch_manager = BatchManager(batch_config, log_dir, debug=debug)
-    batch_manager.create_submission_head()
-    batch_manager.update_mem_usage(mem_usage)
-    batch_manager.update_time(time_usage)
-    batch_manager.update_nthreads(n_threads)
-
     if not dicom_dir:
         logger.error('DICOM directory not specified.')
         sys.exit(1)
@@ -132,11 +130,21 @@ def convert2bids(dicom_dir=None, dicom_dir_format=None, bids_dir=None,
         logger.error('Log directory not specified.')
         sys.exit(1)
 
+    batch_manager = BatchManager(batch_config, log_dir, debug=debug)
+    batch_manager.create_submission_head()
+    batch_manager.update_mem_usage(mem_usage)
+    batch_manager.update_time(time_usage)
+    batch_manager.update_nthreads(n_threads)
+
     logger.info(f"Starting BIDS conversion targeting: {dicom_dir}")
     logger.debug(f"Using config file: {config_file}")
     
-    if conv_config_file:
+    if dcm2bids:
         logger.info("Using converter: dcm2bids")
+
+        if not conv_config_file:
+            logger.error("Must provide a conversion config file when using dcm2bids")
+            sys.exit(1)
 
         config_parser.setup_dcm2bids(
             dicom_dir,
@@ -147,24 +155,29 @@ def convert2bids(dicom_dir=None, dicom_dir_format=None, bids_dir=None,
 
         dcm2bids_wrapper(
             dicom_dir=dicom_dir, dicom_dir_format=dicom_dir_format, 
-            bids_dir=bids_dir, conv_config_file=conv_config_file, 
-            config=config, overwrite=overwrite, log_dir=log_dir, 
+            bids_dir=bids_dir, conv_config=conv_config_file, 
+            overwrite=overwrite, log_dir=log_dir, 
             subject=subject, session=session, longitudinal=longitudinal, 
             submit=submit, status_cache=status_cache, debug=debug,
             logger=logger, batch_manager=batch_manager)
 
-    elif heuristic:
+    elif not dcm2bids:
         logger.info("Using converter: heudiconv")
 
-        config.setup_heudiconv(
+        if not heuristic:
+            logger.error("Must provide a heuristic file when using heudiconv")
+            sys.exit(1)
+
+        config_parser.setup_heudiconv(
             dicom_dir,
             os.path.abspath(heuristic),
             os.path.abspath(bids_dir))
 
         heudiconv_wrapper(
-            config=config, subjects=subjects, dicom_directory=dicom_dir, submit=submit,
-            output_directory=bids_dir, heuristic_file=heuristic, debug=debug,
-            overwrite=overwrite, batch_manager=batch_manager)
+            subjects=subjects, dicom_directory=dicom_dir, submit=submit,
+            output_directory=bids_dir, heuristic_file=heuristic,
+            overwrite=overwrite, batch_manager=batch_manager, logger=logger,
+            dicom_dir_format=dicom_dir_format)
 
     else:
         logger.error("Must specificy one of either 'conv_config' or 'heuristic'")
@@ -294,6 +307,7 @@ def heudiconv_wrapper(
     dicom_directory: os.PathLike,
     output_directory: os.PathLike,
     heuristic_file: os.PathLike,
+    dicom_dir_format: str,
     batch_manager: BatchManager,
     logger: logging.Logger,
     subjects: list=None,
@@ -306,11 +320,12 @@ def heudiconv_wrapper(
     subjects. 
     """
 
-    heuristic_file = resource_filename(__name__, 'data/setup_heuristic.py')
-
-    parse_string = dicom_directory.replace('/*', '')
+    parse_string = dicom_dir_format.replace('/*', '')
     parse_string = parse_string.replace('*', '')
-    if '{session}' in dicom_directory:
+
+    logger.debug(f"parse_string: {parse_string}")
+
+    if '{session}' in dicom_dir_format:
         session_toggle = True
         all_dicoms = glob.glob(parse_string.format(
             subject = "*",
@@ -321,9 +336,14 @@ def heudiconv_wrapper(
         all_dicoms = glob.glob(parse_string.format(
             subject="*"
         ))
+    
+    logger.debug(f"session_toggle: {session_toggle}")
+    logger.debug(f"all_dicoms: {all_dicoms}")
+
     parser = parse.compile(parse_string)
 
     fileinfo = [parser.parse(x).named for x in all_dicoms if parser.parse(x) is not None]
+    logger.debug(f"fileinfo: {fileinfo}")
 
 
     if subjects:
