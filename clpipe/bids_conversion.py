@@ -21,6 +21,8 @@ COMMAND_NAME = "convert"
 STEP_NAME = "bids-conversion"
 BASE_CMD = ("dcm2bids -d {dicom_dir} -o {bids_dir} "
             "-p {subject} -c {conv_config_file}")
+HEUDICONV_BASE_CMD = '''heudiconv -d {dicomdirectory} -s {subject} '''\
+        '''-f {heuristic} -o {output_directory} -b'''
 
 CONVERSION_CONFIG_HELP = (
     "A dcm2bids conversion definition .json file."
@@ -349,16 +351,11 @@ def heudiconv_wrapper(
     if subjects:
         fileinfo = [x for x in fileinfo if x['subject'] in subjects]
 
-
+    heudiconv_string = HEUDICONV_BASE_CMD
     if session_toggle:
-        heudiconv_string = '''module add heudiconv \n heudiconv -d {dicomdirectory} -s {subject} '''\
-        ''' -ss {sess} -f {heuristic} -o {output_directory} -b --minmeta'''
-    else:
-        heudiconv_string = '''module add heudiconv \n heudiconv -d {dicomdirectory} -s {subject} ''' \
-                           ''' -f {heuristic} -o {output_directory} -b --minmeta'''
+        heudiconv_string += " -ss {sess}"
     if overwrite:
-        heudiconv_string = '''module add heudiconv \n heudiconv -d {dicomdirectory} -s {subject} ''' \
-                           ''' -f {heuristic} -o {output_directory} -b --minmeta --overwrite'''
+        heudiconv_string += " --overwrite"
     
     for file in fileinfo:
         subject_id = file['subject']

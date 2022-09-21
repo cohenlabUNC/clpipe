@@ -27,7 +27,8 @@ setup(name='clpipe',
                         'templateflow',
                         'deepdiff',
                         "pydantic",
-                        "matplotlib"],
+                        "matplotlib",
+                        "heudiconv==0.10.0"],
       package_data={'clpipe': ['R_scripts/*.R']},
       entry_points='''
       [console_scripts]
