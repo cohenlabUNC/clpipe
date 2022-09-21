@@ -1,4 +1,5 @@
 from distutils.log import debug
+from pathlib import Path
 from .batch_manager import LOGGER_NAME, BatchManager, Job
 from .config_json_parser import ClpipeConfigParser
 import os
@@ -9,7 +10,7 @@ import click
 
 from .utils import get_logger, add_file_handler
 from .status import needs_processing, write_record
-from .config import CONFIG_HELP, DEBUG_HELP, LOG_DIR_HELP, SUBMIT_HELP, CLICK_FILE_TYPE, \
+from .config import BATCH_HELP, CONFIG_HELP, DEBUG_HELP, LOG_DIR_HELP, SUBMIT_HELP, CLICK_FILE_TYPE, \
     STATUS_CACHE_HELP, CLICK_FILE_TYPE_EXISTS, CLICK_DIR_TYPE_EXISTS
 
 # These imports are for the heudiconv converter
@@ -21,7 +22,7 @@ COMMAND_NAME = "convert"
 STEP_NAME = "bids-conversion"
 BASE_CMD = ("dcm2bids -d {dicom_dir} -o {bids_dir} "
             "-p {subject} -c {conv_config_file}")
-HEUDICONV_BASE_CMD = '''heudiconv -d {dicomdirectory} -s {subject} '''\
+HEUDICONV_BASE_CMD = '''heudiconv -d {dicom_dir_template} -s {subject} '''\
         '''-f {heuristic} -o {output_directory} -b'''
 
 CONVERSION_CONFIG_HELP = (
@@ -59,6 +60,7 @@ MODE_HELP = (
 
 
 @click.command(COMMAND_NAME)
+@click.argument('subjects', nargs=-1, required=False, default=None)
 @click.option('-config_file', '-c', type=CLICK_FILE_TYPE_EXISTS, default=None,
               help=CONFIG_HELP)
 @click.option('-conv_config_file', type=CLICK_FILE_TYPE_EXISTS, default=None, 
@@ -71,11 +73,12 @@ MODE_HELP = (
 @click.option('-overwrite', is_flag=True, default=False, help=OVERWRITE_HELP)
 @click.option('-log_dir', type=CLICK_DIR_TYPE_EXISTS, help=LOG_DIR_HELP)
 @click.option('-subject', required=False, help=SUBJECT_HELP)
-@click.option('-subjects', required=False, help=SUBJECTS_HELP)
 @click.option('-session', required=False, help=SESSION_HELP)
 @click.option('-longitudinal', is_flag=True, default=False,
               help=LONGITUDINAL_HELP)
 @click.option('-submit', '-s', is_flag=True, default=False, help=SUBMIT_HELP)
+@click.option('-batch/-no-batch', is_flag = True, default=True, 
+              help=BATCH_HELP)
 @click.option('-debug', '-d', is_flag=True, help=DEBUG_HELP)
 @click.option('-dcm2bids/-heudiconv', default=True, help=MODE_HELP)
 @click.option('-status_cache', default=None, type=CLICK_FILE_TYPE, 
@@ -83,12 +86,12 @@ MODE_HELP = (
 def convert2bids_cli(dicom_dir, dicom_dir_format, bids_dir, 
                      conv_config_file, heuristic, dcm2bids,
                      config_file, overwrite, log_dir, subject, subjects, session, 
-                     longitudinal, submit, debug, status_cache):
+                     longitudinal, submit, batch, debug, status_cache):
     """Convert DICOM files to BIDS format"""
     convert2bids(
         dicom_dir=dicom_dir, dicom_dir_format=dicom_dir_format, 
         bids_dir=bids_dir, conv_config_file=conv_config_file, heuristic=heuristic,
-        config_file=config_file, overwrite=overwrite, log_dir=log_dir, 
+        config_file=config_file, overwrite=overwrite, log_dir=log_dir, batch=batch,
         subject=subject, subjects=subjects, session=session, longitudinal=longitudinal, 
         submit=submit, status_cache=status_cache, debug=debug, dcm2bids=dcm2bids)
 
@@ -96,7 +99,7 @@ def convert2bids_cli(dicom_dir, dicom_dir_format, bids_dir,
 def convert2bids(dicom_dir=None, dicom_dir_format=None, bids_dir=None, 
                  conv_config_file=None, heuristic=None, config_file=None, overwrite=None, 
                  log_dir=None, subject=None, subjects=None, session=None, longitudinal=False, 
-                 status_cache=None, submit=None, debug=False, dcm2bids=True):
+                 status_cache=None, submit=None, debug=False, dcm2bids=True, batch=True):
     
     config_parser = ClpipeConfigParser()
     config_parser.config_updater(config_file)
@@ -174,6 +177,10 @@ def convert2bids(dicom_dir=None, dicom_dir_format=None, bids_dir=None,
             dicom_dir,
             os.path.abspath(heuristic),
             os.path.abspath(bids_dir))
+
+        # Pack a single subject into list for heudiconv
+        if subject and not subjects:
+            subjects = [subject]
 
         heudiconv_wrapper(
             subjects=subjects, dicom_directory=dicom_dir, submit=submit,
@@ -313,6 +320,7 @@ def heudiconv_wrapper(
     batch_manager: BatchManager,
     logger: logging.Logger,
     subjects: list=None,
+    session: str=None,
     overwrite: bool=False,
     submit: bool=False
     ):
@@ -322,73 +330,49 @@ def heudiconv_wrapper(
     subjects. 
     """
 
-    parse_string = dicom_dir_format.replace('/*', '')
-    parse_string = parse_string.replace('*', '')
+    dicom_dir_template = str(Path(dicom_directory) / dicom_dir_format)
 
-    logger.debug(f"parse_string: {parse_string}")
+    logger.debug(f"dicom_dir_template: {dicom_dir_template}")
 
-    if '{session}' in dicom_dir_format:
+    if session:
+        if '{session}' not  in dicom_dir_format:
+            raise ValueError("Session value given but no '{session}' placeholder found in dicom_dir_format")
         session_toggle = True
-        all_dicoms = glob.glob(parse_string.format(
-            subject = "*",
-            session = "*"
-        ))
+        logger.debug("Session toggle: ON")
     else:
         session_toggle = False
-        all_dicoms = glob.glob(parse_string.format(
-            subject="*"
-        ))
-    
-    logger.debug(f"session_toggle: {session_toggle}")
-    logger.debug(f"all_dicoms: {all_dicoms}")
-
-    parser = parse.compile(parse_string)
-
-    fileinfo = [parser.parse(x).named for x in all_dicoms if parser.parse(x) is not None]
-    logger.debug(f"fileinfo: {fileinfo}")
-
-
-    if subjects:
-        fileinfo = [x for x in fileinfo if x['subject'] in subjects]
+        logger.debug("Session toggle: OFF")
 
     heudiconv_string = HEUDICONV_BASE_CMD
     if session_toggle:
         heudiconv_string += " -ss {sess}"
     if overwrite:
         heudiconv_string += " --overwrite"
-    
-    for file in fileinfo:
-        subject_id = file['subject']
-        subject_id = subject_id.replace('/*', '')
-        subject_id = subject_id.replace('*', '')
+
+    for subject in subjects:
+        job_id = 'convert_sub-' + subject
         if session_toggle:
-             session_id = file['session']
-             session_id = session_id.replace('/*', '')
-             session_id = session_id.replace('*', '')
-             job_id = 'convert_sub-' + file['subject'] + '_ses-' + file['session']
-             job1 = Job(job_id, heudiconv_string.format(
-                dicomdirectory=dicom_directory,
-                subject=subject_id,
-                sess=session_id,
-                heuristic = heuristic_file,
-                output_directory = output_directory
-            ))
-        else:
-            job_id = 'convert_sub-' + file['subject']
-            job1 = Job(job_id, heudiconv_string.format(
-                dicomdirectory=dicom_directory,
-                subject=subject_id,
-                heuristic=heuristic_file,
-                output_directory=os.path.abspath(output_directory)
-            ))
-        batch_manager.addjob(job1)
+            job_id +=  + '_ses-' + session
+        
+        job_args = {
+            "dicom_dir_template": dicom_dir_template,
+            "subject": subject,
+            "heuristic": heuristic_file,
+            "output_directory" : output_directory
+        }
+        if session_toggle:
+            job_args["sess"] = session
 
-
+        job_str = heudiconv_string.format(**job_args)
+        job = Job(job_id, job_str)
+        batch_manager.add_job(job)
+    
     batch_manager.compilejobstrings()
     if submit:
         batch_manager.submit_jobs()
     else:
         batch_manager.print_jobs()
+    
 
 
 @click.command()
