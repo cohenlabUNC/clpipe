@@ -158,12 +158,13 @@ def convert2bids(dicom_dir=None, dicom_dir_format=None, bids_dir=None,
             dicom_dir_format,
             log_dir)
 
+        # move sub / session detection code to seperate function to try with heudiconv
         dcm2bids_wrapper(
             dicom_dir=dicom_dir, dicom_dir_format=dicom_dir_format, 
             bids_dir=bids_dir, conv_config=conv_config_file, 
             overwrite=overwrite, subject=subject, session=session, 
             longitudinal=longitudinal, 
-            submit=submit, status_cache=status_cache, debug=debug,
+            submit=submit, status_cache=status_cache,
             logger=logger, batch_manager=batch_manager)
 
     elif not dcm2bids:
@@ -256,6 +257,7 @@ def dcm2bids_wrapper(
         conv_string = conv_string + " --clobber --forceDcm2niix"
 
     subjects_to_process = [result['subject'] for result in sub_sess_list]
+    logger.debug(f"Subjects to process: {subjects_to_process}")
 
     # Default to processing all subjects
     subjects_need_processing = subjects_to_process
@@ -265,6 +267,7 @@ def dcm2bids_wrapper(
         subjects_need_processing = needs_processing(
             subjects_to_process, status_cache
         )
+    logger.debug(f"Subjects need processing: {subjects_need_processing}")
 
     # Create jobs using the sub/sess list
     for ind, i in enumerate(sub_sess_list):
