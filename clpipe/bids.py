@@ -143,13 +143,13 @@ def get_noise_file(bids, query_params, logger):
         )[0]
         logger.info((
             f"AROMA noise ICs file found: {noise_file}"
-            "Did you set UseAROMA to 'true' in your FMRIPrepOptions?"
         ))
 
         return noise_file
     except IndexError:
-        raise NoiseFileNotFoundError(
-            f"AROMA noise ICs file for query {query_params} not found.")
+        raise NoiseFileNotFoundError((
+            f"AROMA noise ICs file for query {query_params} not found. "
+            "Did you set UseAROMA to 'true' in your FMRIPrepOptions?"))
 
 
 def get_mask(bids, query_params, logger):
