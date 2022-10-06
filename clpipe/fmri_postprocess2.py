@@ -779,7 +779,7 @@ def _setup_batch_manager(config, log_dir, non_processing=False):
     if non_processing:
         batch_manager.update_mem_usage(2000)
         batch_manager.update_nthreads(1)
-        batch_manager.update_time("0:0:30")
+        batch_manager.update_time("0:30:0")
 
     return batch_manager
 
