@@ -2,23 +2,6 @@
 
 Based on user input, builds and runs a postprocessing pipeline for a set 
 of subjects, distributing the workload across a cluster if requested.
-
-Controller Functions - Serve as a middle layer between the front-end (CLI) 
-and distribution / workflow setup functions. Handles sanitization, 
-configuration parsing, batch manager initialization, 
-and is the last layer of exception catching
-
-    - postprocess_subjects_controller
-    - postprocess_subject_controller
-    - postprocess_image_controller
-
-Distributor Functions - Create and submit child job processes
-    - postprocess_subjects
-    - postprocess_images
-
-Workflow Builder & Runner - handles the creation and running of an image 
-processing workflow
-    - postprocess_image
 """
 
 import sys
