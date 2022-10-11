@@ -208,13 +208,15 @@ def dcm2bids_wrapper(
     submit: bool=None
     ):
 
+    logger.debug(f"Format string: {dicom_dir_format}")
+
     format_str = dicom_dir_format.replace("{subject}", "*")
     session_toggle = False
     if "{session}" in dicom_dir_format:
         session_toggle = True
 
     format_str = format_str.replace("{session}", "*")
-    logger.debug(f"Format string: {format_str}")
+    
 
     pstring = os.path.join(dicom_dir, dicom_dir_format+'/')
     logger.debug(f"pstring: {pstring}")
@@ -246,7 +248,7 @@ def dcm2bids_wrapper(
 
     if len(sub_sess_list) == 0:
         logger.error((f'There are no subjects/sessions found for format '
-                       'string: {format_str}'))
+                      f'string: {format_str}'))
         sys.exit(1)
 
     conv_string = BASE_CMD
@@ -288,7 +290,7 @@ def dcm2bids_wrapper(
             if longitudinal:
                 conv_args["subject"] += "sess"+ i['session']
             else:
-                conv_args["session"] = session
+                conv_args["session"] = i['session']
 
         # Unpack the conv_args
         submission_string = conv_string.format(**conv_args)
