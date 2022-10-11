@@ -93,20 +93,8 @@ def clpipe_dir(tmp_path_factory):
     raw_data = Path(proj_path / "data_DICOMs")
     raw_data.mkdir(parents=True, exist_ok=True)
 
-    # Use the clpipe CLI to setup project
-    runner = CliRunner()
-    result = runner.invoke(
-        project_setup, 
-        [
-            '-project_title', PROJECT_TITLE, 
-            '-project_dir', str(proj_path),
-            '-source_data', str(raw_data), 
-        ]
-    )
-
-    # Raise any exceptions from the CLI
-    if result.exit_code != 0:
-        raise Exception(result.exception)
+    project_setup(project_title=PROJECT_TITLE, project_dir=str(proj_path),
+        source_data=str(raw_data))
 
     return proj_path
 
