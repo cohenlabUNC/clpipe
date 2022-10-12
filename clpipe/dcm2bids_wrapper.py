@@ -204,7 +204,7 @@ def convert2bids(dicom_dir=None, dicom_dir_format=None, bids_dir=None,
             if longitudinal:
                 conv_args["subject"] += "sess"+ i['session']
             else:
-                conv_args["session"] = session
+                conv_args["session"] = i['session']
 
         # Unpack the conv_args
         submission_string = conv_string.format(**conv_args)
