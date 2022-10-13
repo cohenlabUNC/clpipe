@@ -208,53 +208,19 @@ def dcm2bids_wrapper(
     submit: bool=None
     ):
 
-    logger.debug(f"Format string: {dicom_dir_format}")
-
-    format_str = dicom_dir_format.replace("{subject}", "*")
-    session_toggle = False
-    if "{session}" in dicom_dir_format:
-        session_toggle = True
-
-    format_str = format_str.replace("{session}", "*")
-    
-
-    pstring = os.path.join(dicom_dir, dicom_dir_format+'/')
-    logger.debug(f"pstring: {pstring}")
-    
-    # Get all folders in the dicom_dir
-    folders = glob.glob(os.path.join(dicom_dir, format_str+'/'))
-    # Parse the subject id and/or session id from the folder names
-    sub_sess_list = [parse.parse(pstring, x) for x in folders]
-
-    # Create a list of indexes for both subjects and sessions
-    sub_inds = [ind for ind, x in enumerate(sub_sess_list)]
-    sess_inds = [ind for ind, x in enumerate(sub_sess_list)]
-    
-    # Narrow down the index lists to the requested subjects/sessions
-    if subject is not None:
-        sub_inds = [ind for ind, x in enumerate(sub_sess_list) \
-            if x['subject'] == subject]
-    if session is not None:
-        sess_inds = [ind for ind, x in enumerate(sub_sess_list) \
-            if x['session'] == session]
-
-    # Find the intersection of subject and session indexes
-    sub_sess_inds = list(set(sub_inds) & set(sess_inds))
-
-    # Pick the relevant folders using the remaining indexes
-    folders = [folders[i] for i in sub_sess_inds]
-    # Pick the relevant subject sessions using the remaining indexes
-    sub_sess_list = [sub_sess_list[i] for i in sub_sess_inds]
+    sub_sess_list, folders = _get_sub_session_list(dicom_dir, dicom_dir_format, logger,
+        subject=subject, session=session)
 
     if len(sub_sess_list) == 0:
-        logger.error((f'There are no subjects/sessions found for format '
-                      f'string: {format_str}'))
-        sys.exit(1)
+        logger.warn((f'There were no subjects/sessions found for format '
+                    f'string: {dicom_dir_format}'))
+        return
 
     conv_string = BASE_CMD
+    session_toggle = "{session}" in dicom_dir_format
+    
     if session_toggle and not longitudinal:
         conv_string += " -s {session}"
-
     if overwrite:
         conv_string = conv_string + " --clobber --forceDcm2niix"
 
@@ -377,6 +343,43 @@ def heudiconv_wrapper(
         batch_manager.submit_jobs()
     else:
         batch_manager.print_jobs()
+
+
+def _get_sub_session_list(dicom_dir, dicom_dir_format, logger, subject=None, session=None):
+    logger.debug(f"Format string: {dicom_dir_format}")
+
+    format_str = dicom_dir_format.replace("{subject}", "*")
+    format_str = format_str.replace("{session}", "*")
+    
+    pstring = os.path.join(dicom_dir, dicom_dir_format+'/')
+    logger.debug(f"pstring: {pstring}")
+    
+    # Get all folders in the dicom_dir
+    folders = glob.glob(os.path.join(dicom_dir, format_str+'/'))
+    # Parse the subject id and/or session id from the folder names
+    sub_sess_list = [parse.parse(pstring, x) for x in folders]
+
+    # Create a list of indexes for both subjects and sessions
+    sub_inds = [ind for ind, x in enumerate(sub_sess_list)]
+    sess_inds = [ind for ind, x in enumerate(sub_sess_list)]
+    
+    # Narrow down the index lists to the requested subjects/sessions
+    if subject is not None:
+        sub_inds = [ind for ind, x in enumerate(sub_sess_list) \
+            if x['subject'] == subject]
+    if session is not None:
+        sess_inds = [ind for ind, x in enumerate(sub_sess_list) \
+            if x['session'] == session]
+
+    # Find the intersection of subject and session indexes
+    sub_sess_inds = list(set(sub_inds) & set(sess_inds))
+
+    # Pick the relevant folders using the remaining indexes
+    folders = [folders[i] for i in sub_sess_inds]
+    # Pick the relevant subject sessions using the remaining indexes
+    sub_sess_list = [sub_sess_list[i] for i in sub_sess_inds]
+
+    return sub_sess_list, folders
     
 
 
