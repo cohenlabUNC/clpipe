@@ -5,7 +5,7 @@ from pkg_resources import resource_stream
 import json
 
 from .config import DEFAULT_CONFIG_PATH, DEFAULT_CONFIG_FILE_NAME, \
-    CLICK_DIR_TYPE_NOT_EXIST, CLICK_DIR_TYPE_EXISTS, LOG_DIR_HELP
+    CLICK_DIR_TYPE_NOT_EXIST, CLICK_DIR_TYPE_EXISTS, LOG_DIR_HELP, DEBUG_HELP
 from .utils import get_logger, add_file_handler
 
 STEP_NAME = "project-setup"
@@ -73,7 +73,7 @@ def project_setup(project_title=None, project_dir=None,
 
     bids_dir = config['DICOMToBIDSOptions']['BIDSDirectory']
     project_dir = config['ProjectDirectory']
-    conv_config = config['DICOMToBIDSOptions']['ConversionConfig']
+    conv_config_path = config['DICOMToBIDSOptions']['ConversionConfig']
 
     if symlink_source_data:
         logger.info('Creating SymLink for source data to project/data_DICOMs')
