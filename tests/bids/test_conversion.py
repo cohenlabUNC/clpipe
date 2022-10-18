@@ -51,3 +51,13 @@ def test_dcm2bids_session_sub_flat(clpipe_dicom_dir, config_file):
     )
 
     assert True
+
+def test_heudiconv(clpipe_dicom_dir, config_file):
+    convert2bids(
+        dcm2bids = False,
+        config_file = config_file,
+        dicom_dir = clpipe_dicom_dir / "sub",
+        dicom_dir_format = "{subject}"
+    )
+
+    assert True
