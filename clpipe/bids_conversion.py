@@ -284,7 +284,7 @@ def dcm2bids_wrapper(
 
 
 def heudiconv_wrapper(
-    dicom_directory: os.PathLike,
+    dicom_dir: os.PathLike,
     output_directory: os.PathLike,
     heuristic_file: os.PathLike,
     dicom_dir_format: str,
@@ -301,8 +301,21 @@ def heudiconv_wrapper(
     subjects. 
     """
 
-    dicom_dir_template = str(Path(dicom_directory) / dicom_dir_format)
+    session_toggle = "{session}" in dicom_dir_format
 
+    sub_sess_list, folders = _get_sub_session_list(dicom_dir, dicom_dir_format, logger,
+        subject=subject, session=session)
+
+    if len(sub_sess_list) == 0:
+        logger.warn((f'There were no subjects/sessions found for format '
+                    f'string: {dicom_dir_format}'))
+        return
+        
+    subjects_to_process = [result['subject'] for result in sub_sess_list]
+    logger.debug(f"Subjects to process: {subjects_to_process}")
+
+
+    dicom_dir_template = str(Path(dicom_dir) / dicom_dir_format)
     logger.debug(f"dicom_dir_template: {dicom_dir_template}")
 
     if session:
@@ -320,7 +333,10 @@ def heudiconv_wrapper(
     if overwrite:
         heudiconv_string += " --overwrite"
 
-    for subject in subjects:
+   # Create jobs using the sub/sess list
+    for ind, i in enumerate(sub_sess_list):
+        subject = i['subject']
+
         job_id = 'convert_sub-' + subject
         if session_toggle:
             job_id +=  + '_ses-' + session
@@ -332,7 +348,7 @@ def heudiconv_wrapper(
             "output_directory" : output_directory
         }
         if session_toggle:
-            job_args["sess"] = session
+            job_id += '_ses-' + i['session']
 
         job_str = heudiconv_string.format(**job_args)
         job = Job(job_id, job_str)
