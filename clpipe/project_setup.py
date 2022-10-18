@@ -56,13 +56,25 @@ def project_setup(project_title=None, project_dir=None,
     add_file_handler(os.path.join(project_dir, "logs"))
     logger = get_logger(STEP_NAME, debug=debug)
 
+    org_source = os.path.abspath(source_data)
     if move_source_data or symlink_source_data:
         source_data = os.path.join(os.path.abspath(project_dir), 
             DEFAULT_DICOM_DIR)
         logger.debug(f"Created path for source directory at: {source_data}")
     
     logger.info(f"Starting project setup with title: {project_title}")
+
     config_parser.setup_project(project_title, project_dir, source_data)
+
+    config = config_parser.config
+
+    # Create the project directory
+    if not os.path.exists(project_dir):
+        os.makedirs(project_dir)
+
+    bids_dir = config['DICOMToBIDSOptions']['BIDSDirectory']
+    project_dir = config['ProjectDirectory']
+    conv_config_path = config['DICOMToBIDSOptions']['ConversionConfig']
     
     config = config_parser.config
 
@@ -86,6 +98,7 @@ def project_setup(project_title=None, project_dir=None,
     logger.debug(f"Created empty BIDS directory at: {bids_dir}")
 
     logger.debug('Creating JSON config file')
+
     config_parser.config_json_dump(project_dir, DEFAULT_CONFIG_FILE_NAME)
 
     with resource_stream(__name__, DEFAULT_CONFIG_PATH) as def_conv_config:

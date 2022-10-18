@@ -2,23 +2,6 @@
 
 Based on user input, builds and runs a postprocessing pipeline for a set 
 of subjects, distributing the workload across a cluster if requested.
-
-Controller Functions - Serve as a middle layer between the front-end (CLI) 
-and distribution / workflow setup functions. Handles sanitization, 
-configuration parsing, batch manager initialization, 
-and is the last layer of exception catching
-
-    - postprocess_subjects_controller
-    - postprocess_subject_controller
-    - postprocess_image_controller
-
-Distributor Functions - Create and submit child job processes
-    - postprocess_subjects
-    - postprocess_images
-
-Workflow Builder & Runner - handles the creation and running of an image 
-processing workflow
-    - postprocess_image
 """
 
 import sys
@@ -93,7 +76,7 @@ REFRESH_INDEX_HELP = \
 @click.argument('subjects', nargs=-1, required=False, default=None)
 @click.option('-config_file', '-c', type=CLICK_FILE_TYPE_EXISTS, default=None, 
               required=True, help=CONFIG_HELP)
-@click.option('-fmriprep_dir', type=CLICK_DIR_TYPE_EXISTS, 
+@click.option('-fmriprep_dir', '-i', type=CLICK_DIR_TYPE_EXISTS, 
               help=FMRIPREP_DIR_HELP)
 @click.option('-output_dir', '-o', type=CLICK_DIR_TYPE, default=None, required=False,
               help=OUTPUT_DIR_HELP)
@@ -779,7 +762,7 @@ def _setup_batch_manager(config, log_dir, non_processing=False):
     if non_processing:
         batch_manager.update_mem_usage(2000)
         batch_manager.update_nthreads(1)
-        batch_manager.update_time("0:0:30")
+        batch_manager.update_time("0:30:0")
 
     return batch_manager
 
