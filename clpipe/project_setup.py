@@ -61,15 +61,14 @@ def project_setup(project_title=None, project_dir=None,
             DEFAULT_DICOM_DIR)
         logger.debug(f"Created path for source directory at: {source_data}")
     
-    logger.debug(f"Starting project setup with title as: {project_title}")
+    logger.info(f"Starting project setup with title: {project_title}")
     config_parser.setup_project(project_title, project_dir, source_data)
-    logger.info('Completed project setup')
     
     config = config_parser.config
 
     # Create the project directory
     os.makedirs(project_dir, exist_ok=True)
-    logger.debug(f"Created project directory at: {project_dir}")
+    logger.info(f"Created project directory at: {project_dir}")
 
     bids_dir = config['DICOMToBIDSOptions']['BIDSDirectory']
     project_dir = config['ProjectDirectory']
@@ -86,7 +85,7 @@ def project_setup(project_title=None, project_dir=None,
     os.system(DCM2BIDS_SCAFFOLD_TEMPLATE.format(bids_dir))
     logger.debug(f"Created empty BIDS directory at: {bids_dir}")
 
-    logger.info('Creating JSON config file')
+    logger.debug('Creating JSON config file')
     config_parser.config_json_dump(project_dir, DEFAULT_CONFIG_FILE_NAME)
 
     with resource_stream(__name__, DEFAULT_CONFIG_PATH) as def_conv_config:
@@ -104,3 +103,5 @@ def project_setup(project_title=None, project_dir=None,
     os.makedirs(os.path.join(project_dir, 'scripts'), 
                 exist_ok=True)
     logger.debug('Created empty scripts directory')
+
+    logger.info('Completed project setup')
