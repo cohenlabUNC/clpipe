@@ -59,7 +59,7 @@ def add_file_handler(log_dir: os.PathLike, f_name: str="clpipe.log",
 
     log_dir = Path(log_dir)
     if not log_dir.exists():
-        logger.info(f"Creating subject log directory: {log_dir}")
+        logger.debug(f"Creating log directory: {log_dir}")
         log_dir.mkdir(parents=True)    
 
     log_file = log_dir / f_name
