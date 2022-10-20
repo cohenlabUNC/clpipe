@@ -71,6 +71,8 @@ MODE_HELP = (
 @click.option('-BIDS_dir', '-o', type=CLICK_DIR_TYPE_EXISTS,
               help=BIDS_DIR_HELP)
 @click.option('-overwrite', is_flag=True, default=False, help=OVERWRITE_HELP)
+@click.option('-clear_cache', is_flag=True, default=False, help="Clear cached data for given subject.")
+@click.option('-clear_outputs', is_flag=True, default=False, help="Clear all BIDS data for given subject.")
 @click.option('-log_dir', type=CLICK_DIR_TYPE_EXISTS, help=LOG_DIR_HELP)
 @click.option('-subject', required=False, help=SUBJECT_HELP)
 @click.option('-session', required=False, help=SESSION_HELP)
@@ -85,21 +87,23 @@ MODE_HELP = (
               help=STATUS_CACHE_HELP)
 def convert2bids_cli(dicom_dir, dicom_dir_format, bids_dir, 
                      conv_config_file, heuristic, dcm2bids,
-                     config_file, overwrite, log_dir, subject, subjects, session, 
+                     config_file, overwrite, clear_cache, clear_outputs, 
+                     log_dir, subject, subjects, session, 
                      longitudinal, submit, batch, debug, status_cache):
     """Convert DICOM files to BIDS format"""
     convert2bids(
         dicom_dir=dicom_dir, dicom_dir_format=dicom_dir_format, 
         bids_dir=bids_dir, conv_config_file=conv_config_file, heuristic=heuristic,
-        config_file=config_file, overwrite=overwrite, log_dir=log_dir, batch=batch,
-        subject=subject, subjects=subjects, session=session, longitudinal=longitudinal, 
-        submit=submit, status_cache=status_cache, debug=debug, dcm2bids=dcm2bids)
+        config_file=config_file, overwrite=overwrite, clear_cache=clear_cache, clear_outputs=clear_outputs, 
+        log_dir=log_dir, batch=batch, subject=subject, subjects=subjects, session=session, 
+        longitudinal=longitudinal, submit=submit, status_cache=status_cache, debug=debug, dcm2bids=dcm2bids)
 
 
 def convert2bids(dicom_dir=None, dicom_dir_format=None, bids_dir=None, 
                  conv_config_file=None, heuristic=None, config_file=None, overwrite=None, 
-                 log_dir=None, subject=None, subjects=None, session=None, longitudinal=False, 
-                 status_cache=None, submit=None, debug=False, dcm2bids=True, batch=True):
+                 clear_cache=False, clear_outputs=False, log_dir=None, subject=None, subjects=None, session=None, 
+                 longitudinal=False, status_cache=None, submit=None, debug=False, 
+                 dcm2bids=True, batch=True):
     
     config_parser = ClpipeConfigParser()
     config_parser.config_updater(config_file)
@@ -187,7 +191,8 @@ def convert2bids(dicom_dir=None, dicom_dir_format=None, bids_dir=None,
             subjects=subjects, dicom_dir=dicom_dir, submit=submit,
             output_directory=bids_dir, heuristic_file=heuristic,
             overwrite=overwrite, batch_manager=batch_manager, logger=logger,
-            dicom_dir_format=dicom_dir_format)
+            dicom_dir_format=dicom_dir_format, clear_cache=clear_cache, 
+            clear_outputs=clear_outputs)
 
     else:
         logger.error("Must specificy one of either 'conv_config' or 'heuristic'")
@@ -293,6 +298,8 @@ def heudiconv_wrapper(
     subjects: list=None,
     session: str=None,
     overwrite: bool=False,
+    clear_cache: bool=False,
+    clear_outputs: bool=False,
     submit: bool=False
     ):
     """
@@ -351,6 +358,14 @@ def heudiconv_wrapper(
             job_id += '_ses-' + i['session']
 
         job_str = heudiconv_string.format(**job_args)
+
+        if clear_cache:
+            clear_cache_cmd = f"rm -r {output_directory}/.heudiconv/{i['subject']}"
+            job_str = clear_cache_cmd + "; " + job_str
+        if clear_outputs:
+            clear_bids_cmd = f"rm -r {output_directory}/sub-{i['subject']}"
+            job_str = clear_bids_cmd + "; " + job_str
+
         job = Job(job_id, job_str)
         batch_manager.add_job(job)
     
