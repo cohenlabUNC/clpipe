@@ -184,7 +184,7 @@ def convert2bids(dicom_dir=None, dicom_dir_format=None, bids_dir=None,
             subjects = [subject]
 
         heudiconv_wrapper(
-            subjects=subjects, dicom_directory=dicom_dir, submit=submit,
+            subjects=subjects, dicom_dir=dicom_dir, submit=submit,
             output_directory=bids_dir, heuristic_file=heuristic,
             overwrite=overwrite, batch_manager=batch_manager, logger=logger,
             dicom_dir_format=dicom_dir_format)
@@ -304,7 +304,7 @@ def heudiconv_wrapper(
     session_toggle = "{session}" in dicom_dir_format
 
     sub_sess_list, folders = _get_sub_session_list(dicom_dir, dicom_dir_format, logger,
-        subject=subject, session=session)
+        session=session)
 
     if len(sub_sess_list) == 0:
         logger.warn((f'There were no subjects/sessions found for format '
