@@ -20,9 +20,9 @@ import logging
 
 COMMAND_NAME = "convert"
 STEP_NAME = "bids-conversion"
-BASE_CMD = ("dcm2bids -d {dicom_dir} -o {bids_dir} "
+BASE_CMD = ("dcm2bids -d {subject_dicom_dir} -o {bids_dir} "
             "-p {subject} -c {conv_config_file}")
-HEUDICONV_BASE_CMD = '''heudiconv -d {dicom_dir_template} -s {subject} '''\
+HEUDICONV_BASE_CMD = '''heudiconv --files {subject_dicom_dir} -s {subject} '''\
         '''-f {heuristic} -o {output_directory} -b'''
 
 CONVERSION_CONFIG_HELP = (
@@ -243,7 +243,7 @@ def dcm2bids_wrapper(
 
         # Create a dict of args with which to format conv_string
         conv_args = {
-            "dicom_dir": folders[ind], 
+            "subject_dicom_dir": folders[ind], 
             "conv_config_file": conv_config,
             "bids_dir": bids_dir,
             "subject": subject
@@ -342,7 +342,7 @@ def heudiconv_wrapper(
             job_id +=  + '_ses-' + session
         
         job_args = {
-            "dicom_dir_template": dicom_dir_template,
+            "subject_dicom_dir": folders[ind],
             "subject": subject,
             "heuristic": heuristic_file,
             "output_directory" : output_directory
