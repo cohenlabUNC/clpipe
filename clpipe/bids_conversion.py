@@ -119,7 +119,6 @@ def convert2bids(dicom_dir=None, dicom_dir_format=None, bids_dir=None,
     bids_dir = bids_dir if bids_dir else config['DICOMToBIDSOptions']['BIDSDirectory']
     conv_config_file = conv_config_file if conv_config_file else config['DICOMToBIDSOptions']['ConversionConfig']
     log_dir = log_dir if log_dir else config['DICOMToBIDSOptions']['LogDirectory']
-    heuristic = heuristic if heuristic else config['DICOMToBIDSOptions']['Heuristic']
 
     batch_config = config['BatchConfig']
     mem_usage = config['DICOMToBIDSOptions']['MemUsage']
@@ -138,6 +137,9 @@ def convert2bids(dicom_dir=None, dicom_dir_format=None, bids_dir=None,
     if not log_dir:
         logger.error('Log directory not specified.')
         sys.exit(1)
+    if not conv_config_file:
+        logger.error("Conversion config file not specified")
+        sys.exit(1)
 
     batch_manager = BatchManager(batch_config, log_dir, debug=debug)
     batch_manager.create_submission_head()
@@ -150,10 +152,6 @@ def convert2bids(dicom_dir=None, dicom_dir_format=None, bids_dir=None,
     
     if dcm2bids:
         logger.info("Using converter: dcm2bids")
-
-        if not conv_config_file:
-            logger.error("Must provide a conversion config file when using dcm2bids")
-            sys.exit(1)
 
         config_parser.setup_dcm2bids(
             dicom_dir,
@@ -174,13 +172,9 @@ def convert2bids(dicom_dir=None, dicom_dir_format=None, bids_dir=None,
     elif not dcm2bids:
         logger.info("Using converter: heudiconv")
 
-        if not heuristic:
-            logger.error("Must provide a heuristic file when using heudiconv")
-            sys.exit(1)
-
         config_parser.setup_heudiconv(
             dicom_dir,
-            os.path.abspath(heuristic),
+            os.path.abspath(conv_config_file),
             os.path.abspath(bids_dir))
 
         # Pack a single subject into list for heudiconv
@@ -189,7 +183,7 @@ def convert2bids(dicom_dir=None, dicom_dir_format=None, bids_dir=None,
 
         heudiconv_wrapper(
             subjects=subjects, dicom_dir=dicom_dir, submit=submit,
-            output_directory=bids_dir, heuristic_file=heuristic,
+            output_directory=bids_dir, heuristic_file=conv_config_file,
             overwrite=overwrite, batch_manager=batch_manager, logger=logger,
             dicom_dir_format=dicom_dir_format, clear_cache=clear_cache, 
             clear_outputs=clear_outputs)

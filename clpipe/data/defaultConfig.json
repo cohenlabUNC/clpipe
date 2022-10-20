@@ -8,7 +8,6 @@
 		"DICOMDirectory": "",
 		"BIDSDirectory": "",
 		"ConversionConfig": "",
-		"Heuristic":"",
 		"DICOMFormatString": "",
 		"TimeUsage": "1:0:0",
 		"MemUsage": "5000",
