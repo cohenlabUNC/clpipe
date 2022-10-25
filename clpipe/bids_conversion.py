@@ -19,6 +19,7 @@ from .error_handler import exception_handler
 import logging
 
 COMMAND_NAME = "convert"
+INFO_COMMAND_NAME = "dicom-info"
 STEP_NAME = "bids-conversion"
 BASE_CMD = ("dcm2bids -d {subject_dicom_dir} -o {bids_dir} "
             "-p {subject} -c {conv_config_file}")
@@ -408,7 +409,7 @@ def _get_sub_session_list(dicom_dir, dicom_dir_format, logger, subject=None, ses
     
 
 
-@click.command()
+@click.command(INFO_COMMAND_NAME)
 @click.option('-config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True), default = None, help = 'The configuration file for the study, use if you have a custom batch configuration.')
 @click.option('-subject', required=True, default=None, help = 'A subject that has all scans of interest present.')
 @click.option('-session', default=None, help = 'A session indicator, if sessions are present')
