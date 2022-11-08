@@ -6,10 +6,6 @@ import numpy
 import pandas
 import click
 import numpy as np
-import pkg_resources
-pkg_resources.require("numpy==1.18.5")
-pkg_resources.require("scipy==1.2.2")
-
 
 from .error_handler import exception_handler
 from .config_json_parser import ClpipeConfigParser, GLMConfigParser
