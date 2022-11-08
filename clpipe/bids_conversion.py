@@ -187,7 +187,7 @@ def convert2bids(dicom_dir=None, dicom_dir_format=None, bids_dir=None,
             output_directory=bids_dir, heuristic_file=conv_config_file,
             overwrite=overwrite, batch_manager=batch_manager, logger=logger,
             dicom_dir_format=dicom_dir_format, clear_cache=clear_cache, 
-            clear_outputs=clear_outputs)
+            clear_outputs=clear_outputs, longitudinal=longitudinal)
 
     else:
         logger.error("Must specificy one of either 'conv_config' or 'heuristic'")
@@ -252,11 +252,9 @@ def dcm2bids_wrapper(
 
         if session_toggle:
             job_id += '_ses-' + i['session']
-            
-            if longitudinal:
-                conv_args["subject"] += "sess"+ i['session']
-            else:
-                conv_args["session"] = i['session']
+            conv_args["session"] = i['session']
+        if longitudinal:
+            conv_args["subject"] += "sess"+ i['session']
 
         # Unpack the conv_args
         submission_string = conv_string.format(**conv_args)
@@ -292,6 +290,7 @@ def heudiconv_wrapper(
     logger: logging.Logger,
     subjects: list=None,
     session: str=None,
+    longitudinal: bool=False,
     overwrite: bool=False,
     clear_cache: bool=False,
     clear_outputs: bool=False,
@@ -330,7 +329,7 @@ def heudiconv_wrapper(
         logger.debug("Session toggle: OFF")
 
     heudiconv_string = HEUDICONV_BASE_CMD
-    if session_toggle:
+    if session_toggle and not longitudinal:
         heudiconv_string += " -ss {sess}"
     if overwrite:
         heudiconv_string += " --overwrite"
@@ -340,8 +339,6 @@ def heudiconv_wrapper(
         subject = i['subject']
 
         job_id = 'convert_sub-' + subject
-        if session_toggle:
-            job_id +=  + '_ses-' + session
         
         job_args = {
             "subject_dicom_dir": folders[ind],
@@ -349,8 +346,11 @@ def heudiconv_wrapper(
             "heuristic": heuristic_file,
             "output_directory" : output_directory
         }
-        if session_toggle:
+        if session_toggle and not longitudinal:
             job_id += '_ses-' + i['session']
+            job_args["session"] = i['session']
+        if longitudinal:
+            job_args["subject"] += "sess"+ i['session']
 
         job_str = heudiconv_string.format(**job_args)
 
