@@ -1,0 +1,1 @@
+_CLPIPE_COMPLETE=bash_source clpipe > build/.clpipe-complete
