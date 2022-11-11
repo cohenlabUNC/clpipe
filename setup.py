@@ -1,13 +1,13 @@
 from setuptools import setup, find_packages
 
 setup(name='clpipe',
-      version='1.6.1',
+      version='1.7.0',
       description='clpipe: MRI processing pipeline for high performance clusters',
       url='https://github.com/cohenlabUNC/clpipe',
       author='Maintainer: Teague Henry, Maintainer: Will Asciutto, Contributor: Deepak Melwani',
       author_email='trhenry@email.unc.edu',
       license='MIT',
-      python_requires='>=3.6',
+      python_requires='>=3.7',
       include_package_data=True,
       packages=find_packages(),
       install_requires=['jsonschema',
