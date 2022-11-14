@@ -100,7 +100,6 @@ def bids_validate(bids_dir=None, config_file=None, log_dir=None,
         if submit:
             logger.info("Running BIDS validation in batch mode.")
             batch_manager.submit_jobs()
-            logger.info(f"Jobs submitted. Check {log_dir} for results.")
+            logger.info(f"Check {log_dir} for results.")
         else:
             batch_manager.print_jobs()
-            logger.info("Rerun with the '-submit' flag to launch these jobs.")
