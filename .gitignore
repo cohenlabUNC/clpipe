@@ -63,6 +63,7 @@ staticfiles
 .env
 TestFiles/
 tests/artifacts
+deploy.sh
 
 # vscode
 *.code-workspace
