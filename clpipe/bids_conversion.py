@@ -153,7 +153,7 @@ def convert2bids(dicom_dir=None, dicom_dir_format=None, bids_dir=None,
     # Pack a single subject into list
     if subject and not subjects:
         subjects = [subject]
-        logger.warn("-subject option is deprecated. You can now pass an arbitrary number of subjects as command line arguments.")
+        logger.warn("WARNING: The -subject option is deprecated. You can now pass an arbitrary number of subjects as command line arguments.")
     
     if dcm2bids:
         logger.info("Using converter: dcm2bids")
