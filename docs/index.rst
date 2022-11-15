@@ -24,6 +24,7 @@ clpipe was developed to streamline the processing of MRI data using the high per
    postprocessing
    glm
    roi_extraction
+   cli
 
 .. toctree::
    :maxdepth: 1
