@@ -4,7 +4,7 @@ The goal of this processing step is to convert "raw" DICOM format images into BI
 
 Due to the manual labeling necessary for DICOM to BIDS conversion, this is one of the most difficult parts of clpipe to setup - do not be discourged by this early step!
 
-> Note: This tutorial is a clpipe implmentation of the [dcm2bids](https://unfmontreal.github.io/Dcm2Bids/docs/2-tutorial/) tutorial, which clpipe uses for dcm to BIDS conversion.
+> Note: This tutorial is a clpipe implmentation of the [dcm2bids](https://unfmontreal.github.io/Dcm2Bids/docs/tutorial/first-steps/) tutorial, which clpipe uses for dcm to BIDS conversion.
 
 ## Obtaining Sample Raw Data
 
