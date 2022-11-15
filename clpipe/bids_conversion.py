@@ -184,7 +184,7 @@ def convert2bids(dicom_dir=None, dicom_dir_format=None, bids_dir=None,
             os.path.abspath(bids_dir))
 
         heudiconv_wrapper(
-            subjects=subjects, dicom_dir=dicom_dir, submit=submit,
+            subjects=subjects, session=session, dicom_dir=dicom_dir, submit=submit,
             output_directory=bids_dir, heuristic_file=conv_config_file,
             overwrite=overwrite, batch_manager=batch_manager, logger=logger,
             dicom_dir_format=dicom_dir_format, clear_cache=clear_cache, 
@@ -323,15 +323,13 @@ def heudiconv_wrapper(
     if session:
         if '{session}' not  in dicom_dir_format:
             raise ValueError("Session value given but no '{session}' placeholder found in dicom_dir_format")
-        session_toggle = True
         logger.debug("Session toggle: ON")
     else:
-        session_toggle = False
         logger.debug("Session toggle: OFF")
 
     heudiconv_string = HEUDICONV_BASE_CMD
     if session_toggle and not longitudinal:
-        heudiconv_string += " -ss {sess}"
+        heudiconv_string += " -ss {session}"
     if overwrite:
         heudiconv_string += " --overwrite"
 
@@ -347,7 +345,7 @@ def heudiconv_wrapper(
             "heuristic": heuristic_file,
             "output_directory" : output_directory
         }
-        if session_toggle and not longitudinal:
+        if session_toggle:
             job_id += '_ses-' + i['session']
             job_args["session"] = i['session']
         if longitudinal:
