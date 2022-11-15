@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 
-CLPIPE_R_LIBS_PATH = Path(os.path.expanduser('~')) / Path(".local/lib/clpipe_R")
+CLPIPE_R_LIBS_PATH = Path.home() / Path(".local/lib/clpipe_R")
 
 def setup_clpipe_R_lib():
     """
