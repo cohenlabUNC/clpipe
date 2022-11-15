@@ -2,22 +2,9 @@
 Project Setup
 ========================
 
-clpipe contains a convenience command for setting up the directories and configuration files for a given neuroimaging project, in a way that makes it simple to change configuration options:
-
-.. code-block:: console
-
-    Usage: project_setup [OPTIONS]
-
-    Options:
-        -project_title TEXT     [required]
-        -project_dir PATH       Where the project will be located.  [required]
-        -source_data DIRECTORY  Where the raw data (usually DICOMs) are located.
-        -symlink_source_data    symlink the source data into project/data_dicoms.
-                                Usually safe to do.
-        -submit                 Flag to submit commands to the HPC
-        -debug                  Flag to enable detailed error messages and
-                                traceback.
-        --help                  Show this message and exit.
+clpipe contains a convenience command for setting up the directories and configuration 
+files for a given neuroimaging project, in a way that makes it simple to 
+change configuration option.
 
 This command will create the necessary directory structures, as well as create a default configuration file with many directory fields already filled out. For example,
 
@@ -53,3 +40,6 @@ This command will create the necessary directory structures, as well as create a
     |   |-- ROI_extraction_logs
     |-- scripts
 
+.. click:: clpipe.project_setup:project_setup_cli
+	:prog: project_setup
+	:nested: full
