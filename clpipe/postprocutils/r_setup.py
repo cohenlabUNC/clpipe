@@ -1,9 +1,7 @@
 import os
 from pathlib import Path
-import getpass
-import pkg_resources
 
-CLPIPE_R_LIBS_PATH = Path("/nas/longleaf/home/") / Path(getpass.getuser()) / Path(".local/lib/clpipe_R")
+CLPIPE_R_LIBS_PATH = Path(os.path.expanduser('~')) / Path(".local/lib/clpipe_R")
 
 def setup_clpipe_R_lib():
     """
