@@ -135,32 +135,6 @@ fmri_postprocess2
 New to clpipe v1.5, the command fmri_postprocess2 combines the functionality
 of fmri_postprocess and glm_setup into a unified postprocessing stream.
 
-.. code-block:: console
-
-  Usage: fmri_postprocess2 [OPTIONS] [SUBJECTS]...
-
-  Options:
-    -config_file FILE        Use a given configuration file.  [required]
-    -fmriprep_dir DIRECTORY  Which fmriprep directory to process.  If a
-                            configuration file is provided with a BIDS
-                            directory, this argument is not necessary.  Note,
-                            must point to the ``fmriprep`` directory, not its
-                            parent directory.
-    -output_dir DIRECTORY    Where to put the postprocessed data.  If a
-                            configuration file is provided with a output
-                            directory, this argument is not necessary.
-    -processing_stream TEXT  Specify a processing stream to use defined in your
-                            configuration file.
-    -log_dir DIRECTORY       Path to the logging directory.
-    -index_dir DIRECTORY     Give the path to an existing pybids index database.
-    -refresh_index           Refresh the pybids index database to reflect new
-                            fmriprep artifacts.
-    -batch / -no-batch       Flag to create batch jobs without prompt.
-    -submit                  Flag to submit commands to the HPC without prompt.
-    -debug                   Print detailed processing information and traceback
-                            for errors.
-    --help                   Show this message and exit.
-
 This command allows for flexible creation of processing streams. The order of
 processing steps and their specific implementations can be modified in the
 configuration file. Any temporally-relevant processing steps can also be
@@ -183,8 +157,11 @@ Available processing steps:
 	- Resample
 	- Trim Timepoints
 
-
 .. image:: resources/example_pipeline.png
+
+.. click:: clpipe.fmri_postprocess2:fmri_postprocess2_cli
+	:prog: fmri_postprocess2
+	:nested: full
 
 Configuration Setup
 ===================

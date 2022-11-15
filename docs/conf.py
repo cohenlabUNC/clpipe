@@ -43,7 +43,8 @@ extensions = [
     'sphinx.ext.coverage',
     'sphinx.ext.mathjax',
     'sphinx-jsonschema',
-    'myst_parser'
+    'myst_parser',
+    'sphinx_click'
 ]
 
 # Add any paths that contain templates here, relative to this directory.
