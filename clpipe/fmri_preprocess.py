@@ -63,7 +63,7 @@ OUTPUT_DIR_HELP = (
 @click.option('-submit', is_flag=True, default=False, help=SUBMIT_HELP)
 @click.option('-debug', is_flag=True, help=DEBUG_HELP)
 @click.option('-status_cache', default=None, type=CLICK_FILE_TYPE, 
-              help=STATUS_CACHE_HELP)
+              help=STATUS_CACHE_HELP, hidden=True)
 def fmriprep_process_cli(bids_dir, working_dir, output_dir, config_file, 
                          subjects, log_dir, submit, debug, status_cache):
     """Submit BIDS-formatted images to fMRIPrep"""
