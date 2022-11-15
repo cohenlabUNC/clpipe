@@ -38,7 +38,7 @@ COMMAND_NAME = "setup"
               help='Print detailed processing information and traceback for errors.')
 def glm_setup_cli(subjects, config_file, glm_config_file, submit, batch, debug, 
                   drop_tps):
-    """Prepare task images and confound files for GLM analysis"""
+    """Additional preprocessing for GLM analysis"""
 
     glm_setup(
         subjects=subjects, config_file=config_file, 

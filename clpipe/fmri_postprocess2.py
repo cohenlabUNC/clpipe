@@ -96,7 +96,7 @@ required=False, help=PROCESSING_STREAM_HELP)
 def fmri_postprocess2_cli(subjects, config_file, fmriprep_dir, output_dir, 
                           processing_stream, batch, submit, log_dir, index_dir, 
                           refresh_index, debug, cache):
-    """Perform additional processing on fMRIPrepped data"""
+    """Additional preprocessing for GLM or connectivity analysis"""
 
     postprocess_subjects(
         subjects=subjects, config_file=config_file,fmriprep_dir=fmriprep_dir, 
