@@ -7,6 +7,7 @@ import parse
 import glob
 import sys
 import click
+from warnings import warn
 
 from .utils import get_logger, add_file_handler
 from .status import needs_processing, write_record
@@ -40,11 +41,8 @@ DICOM_DIR_FORMAT_HELP = (
 BIDS_DIR_HELP = "The dicom info output file name."
 OVERWRITE_HELP = "Overwrite existing BIDS data?"
 SUBJECT_HELP = (
-    "A subject  to convert using the supplied configuration file. "
-    "Use to convert single subjects, else leave empty."
-)
-SUBJECTS_HELP = (
-    "*heudiconv only* - Specify a list of subjects to convert"
+    "Deprecated version of specifying one subject to process - can give an "
+    "arbitrary number of subjects as arguments now."
 )
 SESSION_HELP = (
     "A session  to convert using the supplied configuration file. Use in "
@@ -103,7 +101,8 @@ def convert2bids_cli(dicom_dir, dicom_dir_format, bids_dir,
 
 def convert2bids(dicom_dir=None, dicom_dir_format=None, bids_dir=None, 
                  conv_config_file=None, config_file=None, overwrite=None, 
-                 clear_cache=False, clear_outputs=False, log_dir=None, subject=None, subjects=None, session=None, 
+                 clear_cache=False, clear_outputs=False, log_dir=None, subject=None,
+                 subjects=None, session=None, 
                  longitudinal=False, status_cache=None, submit=None, debug=False, 
                  dcm2bids=True, batch=False):
     
@@ -151,6 +150,11 @@ def convert2bids(dicom_dir=None, dicom_dir_format=None, bids_dir=None,
 
     logger.info(f"Starting BIDS conversion targeting: {dicom_dir}")
     logger.debug(f"Using config file: {config_file}")
+
+    # Pack a single subject into list
+    if subject and not subjects:
+        subjects = [subject]
+        logger.warn("-subject option is deprecated. You can now pass an arbitrary number of subjects as command line arguments.")
     
     if dcm2bids:
         logger.info("Using converter: dcm2bids")
@@ -166,7 +170,7 @@ def convert2bids(dicom_dir=None, dicom_dir_format=None, bids_dir=None,
         dcm2bids_wrapper(
             dicom_dir=dicom_dir, dicom_dir_format=dicom_dir_format, 
             bids_dir=bids_dir, conv_config=conv_config_file, 
-            overwrite=overwrite, subject=subject, session=session, 
+            overwrite=overwrite, subjects=subjects, session=session, 
             longitudinal=longitudinal, 
             submit=submit, status_cache=status_cache,
             logger=logger, batch_manager=batch_manager)
@@ -178,10 +182,6 @@ def convert2bids(dicom_dir=None, dicom_dir_format=None, bids_dir=None,
             dicom_dir,
             os.path.abspath(conv_config_file),
             os.path.abspath(bids_dir))
-
-        # Pack a single subject into list for heudiconv
-        if subject and not subjects:
-            subjects = [subject]
 
         heudiconv_wrapper(
             subjects=subjects, dicom_dir=dicom_dir, submit=submit,
@@ -201,7 +201,7 @@ def dcm2bids_wrapper(
     dicom_dir_format: str, 
     batch_manager: BatchManager,
     logger: logging.Logger,
-    subject: str=None,
+    subjects: str=None,
     session: str=None,
     longitudinal: bool=False,
     overwrite: bool=None, 
@@ -210,7 +210,7 @@ def dcm2bids_wrapper(
     ):
 
     sub_sess_list, folders = _get_sub_session_list(dicom_dir, dicom_dir_format, logger,
-        subject=subject, session=session)
+        subjects=subjects, session=session)
 
     if len(sub_sess_list) == 0:
         logger.warn((f'There were no subjects/sessions found for format '
@@ -306,7 +306,7 @@ def heudiconv_wrapper(
     session_toggle = "{session}" in dicom_dir_format
 
     sub_sess_list, folders = _get_sub_session_list(dicom_dir, dicom_dir_format, logger,
-        session=session)
+        session=session, subjects=subjects)
 
     if len(sub_sess_list) == 0:
         logger.warn((f'There were no subjects/sessions found for format '
@@ -372,7 +372,7 @@ def heudiconv_wrapper(
         batch_manager.print_jobs()
 
 
-def _get_sub_session_list(dicom_dir, dicom_dir_format, logger, subject=None, session=None):
+def _get_sub_session_list(dicom_dir, dicom_dir_format, logger, subjects=None, session=None):
     logger.debug(f"Format string: {dicom_dir_format}")
 
     format_str = dicom_dir_format.replace("{subject}", "*")
@@ -391,9 +391,9 @@ def _get_sub_session_list(dicom_dir, dicom_dir_format, logger, subject=None, ses
     sess_inds = [ind for ind, x in enumerate(sub_sess_list)]
     
     # Narrow down the index lists to the requested subjects/sessions
-    if subject is not None:
+    if subjects is not None:
         sub_inds = [ind for ind, x in enumerate(sub_sess_list) \
-            if x['subject'] == subject]
+            if x['subject'] in subjects]
     if session is not None:
         sess_inds = [ind for ind, x in enumerate(sub_sess_list) \
             if x['session'] == session]
