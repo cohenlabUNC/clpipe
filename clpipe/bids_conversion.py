@@ -7,7 +7,6 @@ import parse
 import glob
 import sys
 import click
-from warnings import warn
 
 from .utils import get_logger, add_file_handler
 from .status import needs_processing, write_record
