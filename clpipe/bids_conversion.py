@@ -388,7 +388,7 @@ def _get_sub_session_list(dicom_dir, dicom_dir_format, logger, subjects=None, se
     sess_inds = [ind for ind, x in enumerate(sub_sess_list)]
     
     # Narrow down the index lists to the requested subjects/sessions
-    if subjects is not None:
+    if subjects:
         sub_inds = [ind for ind, x in enumerate(sub_sess_list) \
             if x['subject'] in subjects]
     if session is not None:
