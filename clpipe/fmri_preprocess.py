@@ -10,7 +10,7 @@ from .config import LOG_DIR_HELP, SUBMIT_HELP, DEBUG_HELP, STATUS_CACHE_HELP, \
     CLICK_DIR_TYPE, CLICK_DIR_TYPE_EXISTS, CLICK_FILE_TYPE_EXISTS, \
     CLICK_FILE_TYPE
 
-COMMAND_NAME = "fmriprep_process"
+COMMAND_NAME = "preprocess"
 STEP_NAME = "fmriprep-process"
 BASE_SINGULARITY_CMD = (
     "unset PYTHONPATH; {templateflow1} singularity run -B {templateflow2}"
@@ -63,7 +63,7 @@ OUTPUT_DIR_HELP = (
 @click.option('-submit', is_flag=True, default=False, help=SUBMIT_HELP)
 @click.option('-debug', is_flag=True, help=DEBUG_HELP)
 @click.option('-status_cache', default=None, type=CLICK_FILE_TYPE, 
-              help=STATUS_CACHE_HELP)
+              help=STATUS_CACHE_HELP, hidden=True)
 def fmriprep_process_cli(bids_dir, working_dir, output_dir, config_file, 
                          subjects, log_dir, submit, debug, status_cache):
     """Submit BIDS-formatted images to fMRIPrep"""
@@ -145,6 +145,7 @@ def fmriprep_process(bids_dir=None, working_dir=None, output_dir=None,
         logger.debug(f"Container path: {fmriprep_path}")
 
     other_opts = cmd_line_opts
+    
     use_aroma = ""
     if USE_AROMA_FLAG in other_opts:
         logger.debug("Use AROMA: ON")  

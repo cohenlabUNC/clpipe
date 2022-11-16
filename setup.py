@@ -1,19 +1,19 @@
 from setuptools import setup, find_packages
 
 setup(name='clpipe',
-      version='1.6.0.2',
+      version='1.7.0',
       description='clpipe: MRI processing pipeline for high performance clusters',
       url='https://github.com/cohenlabUNC/clpipe',
-      author='Maintainer: Teague Henry, Contributor: Will Asciutto, Contributor: Deepak Melwani',
+      author='Maintainer: Teague Henry, Maintainer: Will Asciutto, Contributor: Deepak Melwani',
       author_email='trhenry@email.unc.edu',
       license='MIT',
-      python_requires='>=3.6',
+      python_requires='>=3.7',
       include_package_data=True,
       packages=find_packages(),
       install_requires=['jsonschema',
                         'click',
                         'nipy',
-                        'numpy==1.18.5',
+                        'numpy>=1.18.5',
                         'pandas',
                         'nibabel>=3',
                         'scipy==1.2.2',
@@ -26,13 +26,15 @@ setup(name='clpipe',
                         'pybids>=0.14.0',
                         'templateflow',
                         'deepdiff',
-                        "pydantic"],
+                        "pydantic",
+                        "matplotlib",
+                        "heudiconv>=0.10.0"],
       package_data={'clpipe': ['R_scripts/*.R']},
       entry_points='''
       [console_scripts]
       clpipe=clpipe.cli:cli
       project_setup=clpipe.project_setup:project_setup_cli
-      convert2bids=clpipe.dcm2bids_wrapper:convert2bids_cli
+      convert2bids=clpipe.bids_conversion:convert2bids_cli
       bids_validate=clpipe.bids_validator:bids_validate_cli
       fmriprep_process=clpipe.fmri_preprocess:fmriprep_process_cli
       fmri_postprocess=clpipe.fmri_postprocess:fmri_postprocess_cli

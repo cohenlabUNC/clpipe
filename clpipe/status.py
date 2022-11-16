@@ -5,6 +5,9 @@ import csv
 import datetime
 import click
 
+from .config_json_parser import ClpipeConfigParser
+from .config import CONFIG_HELP
+
 CLICK_FILE_TYPE_EXISTS = click.Path(
     exists=True, dir_okay=False, file_okay=True)
 
@@ -28,10 +31,13 @@ COMMAND_NAME = "status"
 
 #TODO: Move cli commands back to specific modules to avoid circular import here 
 @click.command(COMMAND_NAME)
+@click.option('-config_file', type=CLICK_FILE_TYPE_EXISTS,
+              help=CONFIG_HELP, required=False)
 @click.option('-cache_file', type=CLICK_FILE_TYPE_EXISTS,
-              help=CACHE_FILE_HELP, required=True)
-def status_cli(cache_file):
-    show_latest_by_step(cache_file)
+              help=CACHE_FILE_HELP, required=False)
+def status_cli(config_file, cache_file):
+    """Check the status of your project"""
+    show_latest_by_step(config_file=config_file, cache_path=cache_file)
 
 
 def _load_records(cache_path: os.PathLike) -> pd.DataFrame:
@@ -130,6 +136,15 @@ def get_latest_by_step(cache_path: os.PathLike):
     return latest_records_pivot_reordered_fillna
 
 
-def show_latest_by_step(cache_path: os.PathLike):
+def show_latest_by_step(config_file: os.PathLike=None,
+                        cache_path: os.PathLike=None):
+    if not config_file and not cache_path:
+        raise ValueError(
+            "Need at least one of either config file or cache_path")
+
+    if not cache_path:
+        config_parser = ClpipeConfigParser(config_file)
+        cache_path = Path(config_parser.config["StatusCache"])
+
     latest_by_step = get_latest_by_step(cache_path)
     click.echo(latest_by_step)

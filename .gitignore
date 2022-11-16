@@ -5,6 +5,7 @@
 ## Directory-based project format:
 .idea/
 venv/
+venv3.7.14/
 build/
 dist/
 clpipe.egg-info/
@@ -62,6 +63,7 @@ staticfiles
 .env
 TestFiles/
 tests/artifacts
+deploy.sh
 
 # vscode
 *.code-workspace

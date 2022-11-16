@@ -154,25 +154,6 @@ This command will create convert an entire folder's data, and create a temporary
 Once you have updated your conversion configuration file, you can convert your entire dataset with:
 
 
-.. code-block:: console
-
-    convert2bids [OPTIONS]
-
-        Options:
-            -config_file PATH       The configuration file for the study, use if you
-                                    have a custom batch configuration.
-        -conv_config_file PATH      The configuration file for the study, use if you
-                                    have a custom batch configuration.
-        -dicom_dir TEXT             The folder where subject dicoms are located.
-        -dicom_dir_format TEXT      Format string for how subjects/sessions are
-                                    organized within the dicom_dir.
-        -BIDS_dir TEXT              The dicom info output file name.
-        -overwrite                  Overwrite existing BIDS data?
-        -log_dir TEXT               Where to put the log files. Defaults to Batch_Output
-                                    in the current working directory.
-        -subject TEXT               A subject  to convert using the supplied configuration
-                                    file.  Use to convert single subjects, else leave empty.
-        -session TEXT               A session  to convert using the supplied configuration
-                                    file.  Use in combination with -subject to convert single
-                                    subject/sessions, else leave empty.
-        --help                      Show this message and exit.
+.. click:: clpipe.bids_conversion:convert2bids_cli
+   :prog: convert2bids
+   :nested: full

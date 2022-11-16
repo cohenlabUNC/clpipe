@@ -8,7 +8,7 @@ from .utils import add_file_handler, get_logger
 from .config import CONFIG_HELP, LOG_DIR_HELP, SUBMIT_HELP, \
     INTERACTIVE_HELP, DEBUG_HELP, CLICK_FILE_TYPE_EXISTS, CLICK_DIR_TYPE_EXISTS
 
-COMMAND_NAME = "bids_validate"
+COMMAND_NAME = "validate"
 STEP_NAME = "bids-validation"
 SINGULARITY_CMD_TEMPLATE = ('singularity run --cleanenv -B {bindPaths} '
                       '{validatorInstance} {bidsDir}')
@@ -100,7 +100,6 @@ def bids_validate(bids_dir=None, config_file=None, log_dir=None,
         if submit:
             logger.info("Running BIDS validation in batch mode.")
             batch_manager.submit_jobs()
-            logger.info(f"Jobs submitted. Check {log_dir} for results.")
+            logger.info(f"Check {log_dir} for results.")
         else:
             batch_manager.print_jobs()
-            logger.info("Rerun with the '-submit' flag to launch these jobs.")

@@ -1,6 +1,5 @@
 import pytest
 import sys
-import os
 import shutil
 import json
 from pathlib import Path
@@ -18,7 +17,9 @@ from clpipe.project_setup import project_setup
 from clpipe.config_json_parser import ClpipeConfigParser, GLMConfigParser
 
 PROJECT_TITLE = "test_project"
-NUM_SUBJECTS = 10
+NUM_BIDS_SUBJECTS = 10
+NUM_DICOM_SUBJECTS = 5
+DICOM_SESSIONS = ['2000', '2010', '2020']
 NUM_FMRIPREP_SUBJECTS = 8
 DEFAULT_RANDOM_NII_DIMS = (12, 12, 12, 36)
 
@@ -93,28 +94,50 @@ def clpipe_dir(tmp_path_factory):
     raw_data = Path(proj_path / "data_DICOMs")
     raw_data.mkdir(parents=True, exist_ok=True)
 
-    # Use the clpipe CLI to setup project
-    runner = CliRunner()
-    result = runner.invoke(
-        project_setup, 
-        [
-            '-project_title', PROJECT_TITLE, 
-            '-project_dir', str(proj_path),
-            '-source_data', str(raw_data), 
-        ]
-    )
-
-    # Raise any exceptions from the CLI
-    if result.exit_code != 0:
-        raise Exception(result.exception)
+    project_setup(project_title=PROJECT_TITLE, project_dir=str(proj_path),
+        source_data=str(raw_data))
 
     return proj_path
+
+@pytest.fixture(scope="module")
+def clpipe_dicom_dir(clpipe_dir):
+    """Fixture which adds different varieties of DICOM folder structures"""
+
+    dicom_dir = clpipe_dir / "data_DICOMs"
+
+    sub = dicom_dir / "sub"
+    session_sub = dicom_dir / "session_sub"
+    session_sub_flat = dicom_dir / "session_sub_flat"
+    sub_session = dicom_dir / "sub_session"
+    sub_session_flat = dicom_dir / "sub_session_flat"
+
+    for sub_num in range(NUM_DICOM_SUBJECTS):
+        sub_folder = sub / str(sub_num)
+        sub_folder.mkdir(parents=True, exist_ok=True)
+
+        for session in DICOM_SESSIONS:
+            sub_session_folder = sub_session / str(sub_num) / session
+            sub_session_folder.mkdir(parents=True, exist_ok=True)
+
+            sub_session_folder_flat = sub_session_flat / Path(str(sub_num) + "_" + session)
+            sub_session_folder_flat.mkdir(parents=True, exist_ok=True)
+
+            session_sub_folder = session_sub / session / str(sub_num)
+            session_sub_folder.mkdir(parents=True, exist_ok=True)
+
+            session_sub_folder_flat = session_sub_flat / Path(session + "_" + str(sub_num))
+            session_sub_folder_flat.mkdir(parents=True, exist_ok=True)
+
+            
+
+    return dicom_dir
+
 
 @pytest.fixture(scope="module")
 def clpipe_bids_dir(clpipe_dir):
     """Fixture which adds some subject folders to data_BIDS."""
 
-    for sub_num in range(NUM_SUBJECTS):
+    for sub_num in range(NUM_BIDS_SUBJECTS):
             subject_folder = clpipe_dir / "data_BIDS" / f"sub-{sub_num}"
             subject_folder.mkdir()
 

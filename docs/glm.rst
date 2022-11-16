@@ -160,99 +160,26 @@ run the ``project_setup`` function.
 Commands
 -------------------------------
 
-``glm_setup``
-======================
+.. click:: clpipe.glm_setup:glm_setup_cli
+	:prog: glm_setup
+	:nested: full
 
-.. code-block:: console
+.. click:: clpipe.fsl_onset_extract:fsl_onset_extract_cli
+	:prog: fsl_onset_extract
+	:nested: full
 
-    Usage: glm_setup [OPTIONS] [SUBJECTS]...
+.. click:: clpipe.glm_l1:glm_l1_preparefsf_cli
+	:prog: glm_l1_preparefsf
+	:nested: full
 
-    Options:
-      -config_file PATH      Use a given configuration file.  [required]
-      -glm_config_file PATH  Use a given GLM configuration file.  [required]
-      -drop_tps PATH         Drop timepoints csv sheet
-      -submit                Flag to submit commands to the HPC.
-      -batch / -single       Submit to batch, or run in current session. Mainly
-                         used internally.
-      -debug                 Print detailed processing information and traceback
-                         for errors.
-      --help                 Show this message and exit.
+.. click:: clpipe.glm_launch:glm_l1_launch_cli
+	:prog: glm_l1_launch
+	:nested: full
 
+.. click:: clpipe.glm_l2:glm_l2_preparefsf_cli
+	:prog: glm_l2_preparefsf
+	:nested: full
 
-``fsl_onset_extract``
-==============================
-
-.. code-block:: console
-
- fsl_onset_extract [OPTIONS]
-
- Options:
-   -config_file FILE      Use a given configuration file.  [required]
-   -glm_config_file FILE  Use a given GLM configuration file.  [required]
-   -debug                 Print detailed processing information and traceback
-                          for errors.
-
-   --help                 Show this message and exit.
-
-
-``glm_l1_preparefsf``
-==============================
-
-.. code-block:: console
-
-    Usage: glm_l1_preparefsf [OPTIONS]
-
-    Options:
-      -glm_config_file PATH  Use a given GLM configuration file.  [required]
-      -l1_name TEXT          Name for a given L1 model  [required]
-      -debug                 Flag to enable detailed error messages and traceback
-      --help                 Show this message and exit.
-
-
-``glm_l1_launch``
-==============================
-
-.. code-block:: console
-
-	Usage: glm_l1_launch [OPTIONS]
-
-	Launch all prepared .fsf files for L1 GLM analysis
-
-	Options:
-	-glm_config_file FILE  Use a given GLM configuration file.  [required]
-	-l1_name TEXT          Name of your L1 model  [required]
-	-test_one              Only submit one job for testing purposes.
-	-submit                Flag to submit commands to the HPC
-	-debug                 Flag to enable detailed error messages and traceback
-	--help                 Show this message and exit.
-
-
-``glm_l2_preparefsf``
-==============================
-
-.. code-block:: console
-
-    Usage: glm_l2_preparefsf [OPTIONS]
-
-    Options:
-      -glm_config_file PATH  Use a given GLM configuration file.  [required]
-      -l2_name TEXT          Name for a given L1 model  [required]
-      -debug                 Flag to enable detailed error messages and traceback
-      --help                 Show this message and exit.
-
-``glm_l2_launch``
-==============================
-
-.. code-block:: console
-
-	Usage: glm_l2_launch [OPTIONS]
-
-  	Launch all prepared .fsf files for L2 GLM analysis
-
-	Options:
-	-glm_config_file FILE  Use a given GLM configuration file.  [required]
-	-l2_name TEXT          Name of your L2 model  [required]
-	-test_one              Only submit one job for testing purposes.
-	-submit                Flag to submit commands to the HPC
-	-debug                 Flag to enable detailed error messages and traceback
-	--help                 Show this message and exit.
+.. click:: clpipe.glm_launch:glm_l2_launch_cli
+	:prog: glm_l2_launch
+	:nested: full

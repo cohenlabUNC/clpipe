@@ -76,9 +76,11 @@
 	"PostProcessingOptions2": {
 		"WorkingDirectory": "",
 		"WriteProcessGraph": true,
+		"TargetDirectory": "",
 		"TargetImageSpace": "MNI152NLin2009cAsym",
 		"TargetTasks": [],
 		"TargetAcquisitions": [],
+		"OutputDirectory": "",
 		"ProcessingSteps": [
 			"SpatialSmoothing",
 			"TemporalFiltering",
@@ -241,5 +243,6 @@
 		"LogDirectory": ""
 	},
 	"RunLog": [],
+	"StatusCache": "",
 	"BatchConfig": "slurmUNCConfig.json"
 }

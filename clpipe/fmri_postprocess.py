@@ -18,7 +18,7 @@ from .batch_manager import BatchManager, Job
 from .config_json_parser import ClpipeConfigParser
 from .error_handler import exception_handler
 
-COMMAND_NAME = "fmri_postprocess"
+COMMAND_NAME = "postprocess"
 
 
 @click.command(COMMAND_NAME)

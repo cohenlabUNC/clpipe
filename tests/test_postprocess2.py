@@ -1,16 +1,12 @@
-import io
 import pytest
 from pathlib import Path
 import traceback
 
-import nipype.pipeline.engine as pe
-import nibabel as nib
-from nilearn import plotting
-from nilearn.image import load_img, index_img
 from click.testing import CliRunner
 
 from clpipe.postprocutils.workflows import *
 from clpipe.fmri_postprocess2 import PostProcessSubjectJobs, PostProcessSubjectJob, postprocess_fmriprep_dir, fmri_postprocess2_cli
+
 
 def test_postprocess_cli_debug(clpipe_fmriprep_dir, artifact_dir, helpers, request):
     """Note: this test always passes because click does its own exit code handling - but this lets one trace through the cli with a debugger"""
