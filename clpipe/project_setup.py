@@ -4,46 +4,12 @@ from .config_json_parser import ClpipeConfigParser
 from pkg_resources import resource_stream
 import json
 
-from .config import DEFAULT_CONFIG_PATH, DEFAULT_CONFIG_FILE_NAME, \
-    CLICK_DIR_TYPE_NOT_EXIST, CLICK_DIR_TYPE_EXISTS, LOG_DIR_HELP, DEBUG_HELP
+from .config import DEFAULT_CONFIG_PATH, DEFAULT_CONFIG_FILE_NAME
 from .utils import get_logger, add_file_handler
 
 STEP_NAME = "project-setup"
-COMMAND_NAME = "setup"
 DEFAULT_DICOM_DIR = 'data_DICOMs'
 DCM2BIDS_SCAFFOLD_TEMPLATE = 'dcm2bids_scaffold -o {}'
-
-PROJECT_DIR_HELP = "Where the project will be located."
-SOURCE_DATA_HELP = \
-    "Where the raw data (usually DICOMs) are located."
-MOVE_SOURCE_DATA_HELP = \
-    "Move source data into project/data_DICOMs folder. USE WITH CAUTION."
-SYM_LINK_HELP = \
-    "Symlink the source data into project/data_dicoms. Usually safe to do."
-
-
-@click.command(COMMAND_NAME)
-@click.option('-project_title', required=True, default=None)
-@click.option('-project_dir', required=True ,type=CLICK_DIR_TYPE_NOT_EXIST,
-              default=None, help=PROJECT_DIR_HELP)
-@click.option('-source_data', type=CLICK_DIR_TYPE_EXISTS,
-              help=SOURCE_DATA_HELP)
-@click.option('-move_source_data', is_flag=True, default=False,
-              help=MOVE_SOURCE_DATA_HELP)
-@click.option('-symlink_source_data', is_flag=True, default=False,
-              help=SYM_LINK_HELP)
-@click.option('-debug', is_flag=True, help=DEBUG_HELP)
-
-def project_setup_cli(project_title=None, project_dir=None, source_data=None, 
-                      move_source_data=None, symlink_source_data=None, log_dir=None,
-                      debug=False):
-    """Set up a clpipe project"""
-
-    project_setup(
-        project_title=project_title, 
-        project_dir=project_dir, source_data=source_data, 
-        move_source_data=move_source_data,
-        symlink_source_data=symlink_source_data,debug=debug)
 
 
 def project_setup(project_title=None, project_dir=None, 

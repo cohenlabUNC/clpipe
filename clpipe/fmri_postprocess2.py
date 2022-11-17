@@ -26,9 +26,7 @@ with warnings.catch_warnings():
     from bids.layout import BIDSFile
 
 from .config_json_parser import ClpipeConfigParser
-from .config import BATCH_HELP, CLICK_FILE_TYPE_EXISTS, \
-    CLICK_DIR_TYPE_EXISTS, CLICK_DIR_TYPE, CONFIG_HELP, LOG_DIR_HELP, \
-    SUBMIT_HELP, DEBUG_HELP, BATCH_HELP
+from .config import *
 from .batch_manager import BatchManager, Job
 import nipype.pipeline.engine as pe
 from .postprocutils.workflows import build_image_postprocessing_workflow, \
@@ -38,8 +36,6 @@ from .postprocutils.confounds_workflows import \
 from .utils import add_file_handler, get_logger
 from .errors import *
 
-COMMAND_NAME = "postprocess2"
-DEFAULT_PROCESSING_STREAM_NAME = "smooth-filter-normalize"
 DEFAULT_GRAPH_STYLE = "colored"
 PROCESSING_DESCRIPTION_FILE_NAME = "processing_description.json"
 IMAGE_TIME_DIMENSION_INDEX = 3
@@ -54,55 +50,6 @@ SUBJECT_SUBMISSION_STRING_TEMPLATE = (
     "{processing_stream} {config_file} {index_dir} {log_dir} {batch} {submit} "
     "{debug}"
 )
-
-FMRIPREP_DIR_HELP = (
-    "Which fmriprep directory to process. "
-    "If a configuration file is provided with a BIDS directory, " 
-    "this argument is not necessary. Note, must point to the ``fmriprep`` "
-    "directory, not its parent directory."
-)
-OUTPUT_DIR_HELP = (
-    "Where to put the postprocessed data. If a configuration file is "
-    "provided with a output directory, this argument is not necessary."
-)
-PROCESSING_STREAM_HELP = \
-    "Specify a processing stream to use defined in your configuration file."
-INDEX_HELP = 'Give the path to an existing pybids index database.'
-REFRESH_INDEX_HELP = \
-    'Refresh the pybids index database to reflect new fmriprep artifacts.'
-
-
-@click.command(COMMAND_NAME)
-@click.argument('subjects', nargs=-1, required=False, default=None)
-@click.option('-config_file', '-c', type=CLICK_FILE_TYPE_EXISTS, default=None, 
-              required=True, help=CONFIG_HELP)
-@click.option('-fmriprep_dir', '-i', type=CLICK_DIR_TYPE_EXISTS, 
-              help=FMRIPREP_DIR_HELP)
-@click.option('-output_dir', '-o', type=CLICK_DIR_TYPE, default=None, required=False,
-              help=OUTPUT_DIR_HELP)
-@click.option('-processing_stream', '-p', default=DEFAULT_PROCESSING_STREAM_NAME, 
-required=False, help=PROCESSING_STREAM_HELP)
-@click.option('-log_dir', '-l', type=CLICK_DIR_TYPE_EXISTS, default=None, 
-              required=False, help=LOG_DIR_HELP)
-@click.option('-index_dir', type=CLICK_DIR_TYPE, default=None, required=False,
-              help=INDEX_HELP)
-@click.option('-refresh_index', '-r', is_flag=True, default=False, required=False,
-              help=REFRESH_INDEX_HELP)
-@click.option('-batch/-no-batch', is_flag = True, default=True, 
-              help=BATCH_HELP)
-@click.option('-cache/-no-cache', is_flag=True, default=True)
-@click.option('-submit', '-s', is_flag = True, default=False, help=SUBMIT_HELP)
-@click.option('-debug', '-d', is_flag = True, default=False, help=DEBUG_HELP)
-def fmri_postprocess2_cli(subjects, config_file, fmriprep_dir, output_dir, 
-                          processing_stream, batch, submit, log_dir, index_dir, 
-                          refresh_index, debug, cache):
-    """Additional preprocessing for GLM or connectivity analysis"""
-
-    postprocess_subjects(
-        subjects=subjects, config_file=config_file,fmriprep_dir=fmriprep_dir, 
-        output_dir=output_dir, processing_stream=processing_stream,
-        batch=batch, submit=submit, log_dir=log_dir, pybids_db_path=index_dir,
-        refresh_index=refresh_index, debug=debug, cache=cache)
 
 
 def postprocess_subjects(
@@ -123,7 +70,7 @@ def postprocess_subjects(
 
     # Setup Logging
     clpipe_logs = project_dir / "logs"
-    logger = get_logger(COMMAND_NAME, debug=debug)
+    logger = get_logger(POSTPROCESS2_COMMAND_NAME, debug=debug)
     add_file_handler(clpipe_logs)
     
     if not fmriprep_dir:
