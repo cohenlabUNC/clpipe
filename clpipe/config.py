@@ -2,6 +2,7 @@ import click
 
 APPLICATION_NAME = "clpipe"
 
+# Click path validation types
 CLICK_FILE_TYPE = click.Path(dir_okay=False, file_okay=True)
 CLICK_FILE_TYPE_EXISTS = click.Path(
     exists=True, dir_okay=False, file_okay=True)
@@ -10,10 +11,12 @@ CLICK_DIR_TYPE_EXISTS = click.Path(exists=True, dir_okay=True, file_okay=False)
 CLICK_DIR_TYPE_NOT_EXIST = click.Path(
     exists=False, dir_okay=True, file_okay=False)
 
+# Default paths
 DEFAULT_BATCH_CONFIG_PATH = "slurmUNCConfig.json"
 DEFAULT_CONFIG_PATH = "data/defaultConvConfig.json"
 DEFAULT_CONFIG_FILE_NAME = 'clpipe_config.json'
 
+# Global use help messages
 CONFIG_HELP = "Uses a given configuration file"
 LOG_DIR_HELP = "Where to put HPC output files (such as SLURM output files)"
 SUBMIT_HELP = "Flag to submit commands to the HPC"
@@ -30,6 +33,7 @@ WORKING_DIR_HELP = (
 )
 GLM_CONFIG_HELP = 'Use a given GLM configuration file.'
 
+# Project setup help
 SETUP_COMMAND_NAME = "setup"
 PROJECT_DIR_HELP = "Where the project will be located."
 SOURCE_DATA_HELP = \
@@ -39,6 +43,7 @@ MOVE_SOURCE_DATA_HELP = \
 SYM_LINK_HELP = \
     "Symlink the source data into project/data_dicoms. Usually safe to do."
 
+# BIDS conversion help
 CONVERSION_COMMAND_NAME = "convert"
 CONVERSION_CONFIG_HELP = (
     "A dcm2bids conversion definition .json file."
@@ -70,12 +75,14 @@ MODE_HELP = (
     "Specify which converter to use."
 )
 
+# BIDS Validation Help
 VALIDATOR_COMMAND_NAME = "validate"
 VERBOSE_HELP = (
     "Creates verbose validator output. Use if you want to see ALL files "
     "with errors/warnings."
 )
 
+# FMRIPrep help
 FMRIPREP_COMMAND_NAME = "preprocess"
 FMRIPREP_CONFIG_HELP = (
     "Use a given configuration file. If left blank, uses the default config "
@@ -90,8 +97,10 @@ FMRIPREP_OUTPUT_DIR_HELP = (
     "with a output directory, this argument is not necessary."
 )
 
+# Postprocess help
 POSTPROCESS_COMMAND_NAME = "postprocess"
 
+# Postprocess2 help
 POSTPROCESS2_COMMAND_NAME = "postprocess2"
 FMRIPREP_DIR_HELP = (
     "Which fmriprep directory to process. "
@@ -110,14 +119,15 @@ REFRESH_INDEX_HELP = \
     'Refresh the pybids index database to reflect new fmriprep artifacts.'
 DEFAULT_PROCESSING_STREAM_NAME = "smooth-filter-normalize"
 
+# GLM Help
 GLM_SETUP_COMMAND_NAME = "setup"
-
 L1_PREPARE_FSF_COMMAND_NAME = "l1_prepare_fsf"
-
 L2_PREPARE_FSF_COMMAND_NAME = "l2_prepare_fsf"
-
 APPLY_MUMFORD_COMMAND_NAME = "apply_mumford"
+ONSET_EXTRACT_COMMAND_NAME = "fsl_onset_extract"
+OUTLIERS_COMMAND_NAME = "report_outliers"
 
+# GLM Launch Help
 GLM_LAUNCH_COMMAND_NAME = "launch"
 L1_MODEL_HELP = 'Name of your L1 model'
 L2_MODEL_HELP = 'Name of your L2 model'
@@ -125,9 +135,6 @@ LEVEL_HELP = "Level of your model, L1 or L2"
 MODEL_HELP = 'Name of your model'
 TEST_ONE_HELP = 'Only submit one job for testing purposes.'
 
-ONSET_EXTRACT_COMMAND_NAME = "fsl_onset_extract"
-
-OUTLIERS_COMMAND_NAME = "report_outliers"
-
+# Other Help
 STATUS_COMMAND_NAME = "status"
 CACHE_FILE_HELP = "Path to your status cache file."
