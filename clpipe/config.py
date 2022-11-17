@@ -51,8 +51,9 @@ CONVERSION_CONFIG_HELP = (
 )
 DICOM_DIR_HELP = "The folder where subject dicoms are located."
 DICOM_DIR_FORMAT_HELP = (
-    "Format string for how subjects/sessions are organized within the "
-    "dicom_dir."
+    "Format string which specifies how subjects/sessions are organized within the "
+    "dicom_dir. Example: {subject}_{session}. See "
+    "https://clpipe.readthedocs.io/en/latest/bids_convert.html for more details."
 )
 BIDS_DIR_HELP = "The dicom info output file name."
 OVERWRITE_HELP = "Overwrite existing BIDS data?"
@@ -61,7 +62,8 @@ SUBJECT_HELP = (
     "arbitrary number of subjects as arguments now."
 )
 SESSION_HELP = (
-    "Specify the session to convert."
+    "Specify the session to convert. Available sessions determined by the {session} "
+    "placeholder given by dicom_dir_format."
 )
 LONGITUDINAL_HELP = (
     "Convert all subjects/sessions into individual pseudo-subjects. "

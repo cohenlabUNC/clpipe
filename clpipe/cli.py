@@ -51,7 +51,16 @@ class OrderedHelpGroup(click.Group):
 @click.option("-v", "--version", is_flag=True, default=False, 
         help=VERSION_HELP)
 def cli(ctx, version):
-    """Welcome to clpipe. Please choose a processing command."""
+    """Welcome to clpipe. Please choose a processing command.
+    
+    You can get more help about about any of the below commands by running them
+    with the '-h' flag:
+
+    > clpipe setup -h
+
+    If you're not sure where to begin, please see the documentation at:
+    https://clpipe.readthedocs.io/en/latest/index.html
+    """
 
     if ctx.invoked_subcommand is None:
         if version:
@@ -107,9 +116,9 @@ def _add_commands():
               help=SYM_LINK_HELP)
 @click.option('-debug', is_flag=True, help=DEBUG_HELP)
 def project_setup_cli(project_title=None, project_dir=None, source_data=None, 
-                      move_source_data=None, symlink_source_data=None, log_dir=None,
+                      move_source_data=None, symlink_source_data=None,
                       debug=False):
-    """Set up a clpipe project"""
+    """Set up a clpipe project."""
     from .project_setup import project_setup
     project_setup(
         project_title=project_title, 
@@ -150,7 +159,15 @@ def convert2bids_cli(dicom_dir, dicom_dir_format, bids_dir,
                      config_file, overwrite, clear_cache, clear_outputs, 
                      log_dir, subject, subjects, session, 
                      longitudinal, submit, batch, debug, status_cache):
-    """Convert DICOM files to BIDS format"""
+    """Convert DICOM files to BIDS format.
+    
+    Providing no SUBJECTS will default to all subjects.
+    List subject IDs in SUBJECTS to process specific subjects: 
+
+    > clpipe bids convert 123 124 125 ...
+
+    Available subject IDs are determined by the dicom_dir_format string.
+    """
     from .bids_conversion import convert2bids
     convert2bids(
         dicom_dir=dicom_dir, dicom_dir_format=dicom_dir_format, 
@@ -161,9 +178,9 @@ def convert2bids_cli(dicom_dir, dicom_dir_format, bids_dir,
 
 
 @click.command(VALIDATOR_COMMAND_NAME)
+@click.argument('bids_dir', type=CLICK_DIR_TYPE_EXISTS, required=False)
 @click.option('-config_file', type=CLICK_FILE_TYPE_EXISTS, default=None, 
               help=CONFIG_HELP)
-@click.argument('bids_dir', type=CLICK_DIR_TYPE_EXISTS, required=False)
 @click.option('-log_dir', type=CLICK_FILE_TYPE_EXISTS, default=None,
               help=LOG_DIR_HELP)
 @click.option('-verbose', is_flag=True, default=False,
@@ -174,7 +191,13 @@ def convert2bids_cli(dicom_dir, dicom_dir_format, bids_dir,
 @click.option('-debug', is_flag=True, help=DEBUG_HELP)
 def bids_validate_cli(bids_dir, config_file, log_dir, interactive, submit,
                       verbose, debug):
-    """Check that the given directory conforms to the BIDS standard"""
+    """Validate if a directory BIDS standard.
+
+    Validates the directory at BIDS_DIR, or at the BIDS directory 
+    in your config file's DICOMToBIDSOptions if -config_file is given.
+
+    Results are viewable in logs/bids_validation_logs unless -interactive is used.
+    """
     from .bids_validator import bids_validate
     bids_validate(
         bids_dir=bids_dir, config_file=config_file, log_dir=log_dir, 
@@ -198,7 +221,13 @@ def bids_validate_cli(bids_dir, config_file, log_dir, interactive, submit,
               help=STATUS_CACHE_HELP, hidden=True)
 def fmriprep_process_cli(bids_dir, working_dir, output_dir, config_file, 
                          subjects, log_dir, submit, debug, status_cache):
-    """Submit BIDS-formatted images to fMRIPrep"""
+    """Submit BIDS-formatted images to fMRIPrep.
+    
+    Providing no SUBJECTS will default to all subjects.
+    List subject IDs in SUBJECTS to process specific subjects: 
+
+    > clpipe preprocess 123 124 125 ...
+    """
     from .fmri_preprocess import fmriprep_process
     fmriprep_process(
         bids_dir=bids_dir, working_dir=working_dir,
@@ -228,7 +257,13 @@ def fmri_postprocess_cli(config_file=None, subjects=None, target_dir=None,
                          submit=False, batch=True, task=None, tr=None, 
                          processing_stream = None, debug = False, 
                          beta_series = False):
-    """Additional preprocessing for connectivity analysis"""
+    """Additional processing for connectivity analysis.
+    
+    Providing no SUBJECTS will default to all subjects.
+    List subject IDs in SUBJECTS to process specific subjects: 
+
+    > clpipe postprocess 123 124 125 ...
+    """
     from .fmri_postprocess import fmri_postprocess
     fmri_postprocess(
         config_file=config_file, subjects=subjects, target_dir=target_dir, 
@@ -262,7 +297,13 @@ required=False, help=PROCESSING_STREAM_HELP)
 def fmri_postprocess2_cli(subjects, config_file, fmriprep_dir, output_dir, 
                           processing_stream, batch, submit, log_dir, index_dir, 
                           refresh_index, debug, cache):
-    """Additional preprocessing for GLM or connectivity analysis"""
+    """Additional processing for GLM or connectivity analysis.
+    
+    Providing no SUBJECTS will default to all subjects.
+    List subject IDs in SUBJECTS to process specific subjects: 
+
+    > clpipe postprocess2 123 124 125 ...
+    """
     from .fmri_postprocess2 import postprocess_subjects
     postprocess_subjects(
         subjects=subjects, config_file=config_file,fmriprep_dir=fmriprep_dir, 
@@ -286,7 +327,13 @@ def fmri_postprocess2_cli(subjects, config_file, fmriprep_dir, output_dir,
               help='Print detailed processing information and traceback for errors.')
 def glm_setup_cli(subjects, config_file, glm_config_file, submit, batch, debug, 
                   drop_tps):
-    """Additional preprocessing for GLM analysis"""
+    """Additional preprocessing for GLM analysis.
+    
+    Providing no SUBJECTS will default to all subjects.
+    List subject IDs in SUBJECTS to process specific subjects: 
+
+    > clpipe glm setup 123 124 125 ...
+    """
     from .glm_setup import glm_setup
     glm_setup(
         subjects=subjects, config_file=config_file, 
@@ -296,12 +343,15 @@ def glm_setup_cli(subjects, config_file, glm_config_file, submit, batch, debug,
 
 @click.command(L1_PREPARE_FSF_COMMAND_NAME, no_args_is_help=True)
 @click.option('-glm_config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True), default=None, required = True,
-              help='Use a given GLM configuration file.')
+              help='Your GLM configuration file.')
 @click.option('-l1_name',  default=None, required = True,
-              help='Name for a given L1 model')
+              help='Name for a given L1 model as defined in your GLM configuration file.')
 @click.option('-debug', is_flag=True, help='Flag to enable detailed error messages and traceback')
 def glm_l1_preparefsf_cli(glm_config_file, l1_name, debug):
-    """Propagate an .fsf file template for L1 GLM analysis"""
+    """Propagate an .fsf file template for L1 GLM analysis.
+    
+    You must create a template .fsf file in FSL's FEAT GUI first.
+    """
     from .glm_l1 import glm_l1_preparefsf
     glm_l1_preparefsf(
         glm_config_file=glm_config_file, l1_name=l1_name, debug=debug)
@@ -309,13 +359,16 @@ def glm_l1_preparefsf_cli(glm_config_file, l1_name, debug):
 
 @click.command(L2_PREPARE_FSF_COMMAND_NAME, no_args_is_help=True)
 @click.option('-glm_config_file', type=CLICK_FILE_TYPE_EXISTS, default=None,
-              required=True, help='Use a given GLM configuration file.')
+              required=True, help='Your GLM configuration file.')
 @click.option('-l2_name', default=None, required=True,
               help='Name for a given L2 model')
 @click.option('-debug', is_flag=True,
               help='Flag to enable detailed error messages and traceback')
 def glm_l2_preparefsf_cli(glm_config_file, l2_name, debug):
-    """Propagate an .fsf file template for L2 GLM analysis"""
+    """Propagate an .fsf file template for L2 GLM analysis.
+    
+    You must create a group-level template .fsf file in FSL's FEAT GUI first.
+    """
     from .glm_l2 import glm_l2_preparefsf
     glm_l2_preparefsf(glm_config_file=glm_config_file, l2_name=l2_name,
                       debug=debug)
@@ -324,7 +377,7 @@ def glm_l2_preparefsf_cli(glm_config_file, l2_name, debug):
 @click.command(APPLY_MUMFORD_COMMAND_NAME, no_args_is_help=True)
 @click.option('-glm_config_file', type=CLICK_FILE_TYPE_EXISTS, default=None,
               required=False,
-              help='Location of your GLM config file.')
+              help='Your GLM configuration file.')
 @click.option('-l1_feat_folders_path', type=CLICK_DIR_TYPE_EXISTS,
               default=None, required=False,
               help='Location of your L1 FEAT folders.')
@@ -334,7 +387,10 @@ def glm_apply_mumford_workaround_cli(glm_config_file, l1_feat_folders_path,
                                      debug):
     """
     Apply the Mumford registration workaround to L1 FEAT folders. 
-    Applied by default in glm-l2-preparefsf.
+    
+    Applied by default in glm-l2-preparefsf. This command is useful for applying
+    the Mumford workaround to single-run subjects who skip L2, allowing you to still
+    combine them with multiple-run subjects at L3.
     """
     from .glm_l2 import glm_apply_mumford_workaround
     if not (glm_config_file or l1_feat_folders_path):
@@ -359,7 +415,14 @@ def glm_apply_mumford_workaround_cli(glm_config_file, l1_feat_folders_path,
 @click.option('-debug', is_flag=True, 
               help=DEBUG_HELP)
 def glm_launch_cli(level, model, glm_config_file, test_one, submit, debug):
-    """Launch all prepared .fsf files for L1 or L2 GLM analysis"""
+    """Launch all prepared .fsf files for L1 or L2 GLM analysis.
+    
+    L1 can be any of: 1, L1, l1, or level1.
+
+    L2 can be any of: 2, L2, l2, or level2.
+
+    MODEL must be a a corresponding L1 or L2 model from your GLM configuration file.
+    """
     from .glm_launch import glm_launch_controller
     glm_launch_controller(glm_config_file=glm_config_file, level=level, 
                           model=model, test_one=test_one, 
@@ -379,7 +442,7 @@ def glm_launch_cli(level, model, glm_config_file, test_one, submit, debug):
 @click.option('-debug', is_flag=True, 
               help=DEBUG_HELP)
 def glm_l1_launch_cli(glm_config_file, l1_name, test_one, submit, debug):
-    """Launch all prepared .fsf files for L1 GLM analysis"""
+    """Launch all prepared .fsf files for L1 GLM analysis."""
     from .glm_launch import glm_launch_controller
     glm_launch_controller(glm_config_file=glm_config_file, model=l1_name,
                           test_one=test_one, submit=submit, debug=debug)
@@ -398,7 +461,7 @@ def glm_l1_launch_cli(glm_config_file, l1_name, test_one, submit, debug):
 @click.option('-debug', is_flag=True, 
               help=DEBUG_HELP)
 def glm_l2_launch_cli(glm_config_file, l2_name, test_one, submit, debug):
-    """Launch all prepared .fsf files for L2 GLM analysis"""
+    """Launch all prepared .fsf files for L2 GLM analysis."""
     from .glm_launch import glm_launch_controller
     glm_launch_controller(glm_config_file=glm_config_file, level="L2", 
                           model=l2_name, test_one=test_one, submit=submit,
@@ -415,7 +478,7 @@ def glm_l2_launch_cli(glm_config_file, l2_name, test_one, submit, debug):
 @click.option('-debug', is_flag=True, default=False,
               help='Print detailed processing information and traceback for errors.')
 def fsl_onset_extract_cli(config_file, glm_config_file, debug):
-    """Convert onset files to FSL's 3 column format"""
+    """Convert onset files to FSL's 3 column format."""
     from .fsl_onset_extract import fsl_onset_extract
     fsl_onset_extract(
         config_file=config_file, glm_config_file=glm_config_file, debug=debug)
@@ -432,7 +495,10 @@ def fsl_onset_extract_cli(config_file, glm_config_file, debug):
               default='confounds.tsv')
 def report_outliers_cli(confounds_dir, confounds_file, output_file, 
                     confound_suffix):
-    """Generate a confound outliers report."""
+    """Generate a confound outliers report.
+    
+    Must provide one of either --confounds_dir or --confounds_file.
+    """
     from .outliers_report import get_study_outliers, get_image_confounds
     if confounds_dir:
         get_study_outliers(confounds_dir, output_file, confound_suffix)
@@ -446,7 +512,7 @@ def report_outliers_cli(confounds_dir, confounds_file, output_file,
 @click.option('-cache_file', type=CLICK_FILE_TYPE_EXISTS,
               help=CACHE_FILE_HELP, required=False)
 def status_cli(config_file, cache_file):
-    """Check the status of your project"""
+    """Check the status of your project."""
     from .status import show_latest_by_step
     show_latest_by_step(config_file=config_file, cache_path=cache_file)
 
