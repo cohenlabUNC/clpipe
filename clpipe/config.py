@@ -17,21 +17,21 @@ DEFAULT_CONFIG_PATH = "data/defaultConvConfig.json"
 DEFAULT_CONFIG_FILE_NAME = 'clpipe_config.json'
 
 # Global use help messages
-CONFIG_HELP = "Uses a given configuration file"
-LOG_DIR_HELP = "Where to put HPC output files (such as SLURM output files)"
-SUBMIT_HELP = "Flag to submit commands to the HPC"
-DEBUG_HELP = "Flag to enable detailed error messages and traceback"
+CONFIG_HELP = "The path to your clpipe configuration file."
+LOG_DIR_HELP = "Where to put your HPC output files (such as SLURM output files)."
+SUBMIT_HELP = "Flag to submit commands to the HPC."
+DEBUG_HELP = "Flag to enable detailed error messages and traceback."
 STATUS_CACHE_HELP = "Path to a status cache file for pipeline automation."
 INTERACTIVE_HELP = (
-    "Run in an interactive session. Only use in an interactive "
+    "Run in interactive mode. Only use in an interactive "
     "compute session."
 )
 VERSION_HELP = "Display clpipe's version."
-BATCH_HELP = 'Flag to create batch jobs without prompt.'
+BATCH_HELP = 'Flag to create batch jobs without prompting.'
 WORKING_DIR_HELP = (
     "Where to generate the working directory."
 )
-GLM_CONFIG_HELP = 'Use a given GLM configuration file.'
+GLM_CONFIG_HELP = 'The path to your GLM configuration file.'
 
 # Project setup help
 SETUP_COMMAND_NAME = "setup"
@@ -46,10 +46,8 @@ SYM_LINK_HELP = \
 # BIDS conversion help
 CONVERSION_COMMAND_NAME = "convert"
 CONVERSION_CONFIG_HELP = (
-    "A dcm2bids conversion definition .json file."
-)
-HEURISTIC_FILE_HELP = (
-    "A heudiconv heuristic file to use for the conversion."
+    "A conversion definition file, either a dcm2bids conversion config .json "
+    "file or a heudiconv heuristic .py file."
 )
 DICOM_DIR_HELP = "The folder where subject dicoms are located."
 DICOM_DIR_FORMAT_HELP = (
@@ -63,9 +61,7 @@ SUBJECT_HELP = (
     "arbitrary number of subjects as arguments now."
 )
 SESSION_HELP = (
-    "A session  to convert using the supplied configuration file. Use in "
-    "combination with -subject to convert single subject/sessions, "
-    "else leave empty"
+    "Specify the session to convert."
 )
 LONGITUDINAL_HELP = (
     "Convert all subjects/sessions into individual pseudo-subjects. "
@@ -84,10 +80,6 @@ VERBOSE_HELP = (
 
 # FMRIPrep help
 FMRIPREP_COMMAND_NAME = "preprocess"
-FMRIPREP_CONFIG_HELP = (
-    "Use a given configuration file. If left blank, uses the default config "
-    "file, requiring definition of BIDS, working and output directories."
-)
 FMRIPREP_BIDS_DIR_HELP = (
     "Which BIDS directory to process. If a configuration file is provided "
     "with a BIDS directory, this argument is not necessary."
