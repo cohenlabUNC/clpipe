@@ -492,7 +492,7 @@ def fsl_onset_extract_cli(config_file, glm_config_file, debug):
         config_file=config_file, glm_config_file=glm_config_file, debug=debug)
 
 
-@click.command("extract")
+@click.command("extract", no_args_is_help=True)
 @click.argument('subjects', nargs=-1, required=False, default=None)
 @click.option('-config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True), default=None,
               help='Use a given configuration file. If left blank, uses the default config file, requiring definition of BIDS, working and output directories. This will extract all ROI sets specified in the configuration file.')
