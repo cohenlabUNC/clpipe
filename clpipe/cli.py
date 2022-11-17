@@ -6,6 +6,8 @@ from .config import *
 
 DEFAULT_HELP_PRIORITY = 5
 
+CONTEXT_SETTINGS = dict(help_option_names=['-h', '-help', '--help'])
+
 
 class OrderedHelpGroup(click.Group):
     """
@@ -44,7 +46,7 @@ class OrderedHelpGroup(click.Group):
         return super().add_command(cmd, name)
 
 
-@click.group(cls=OrderedHelpGroup, invoke_without_command=True)
+@click.group(cls=OrderedHelpGroup, context_settings=CONTEXT_SETTINGS)
 @click.pass_context
 @click.option("-v", "--version", is_flag=True, default=False, 
         help=VERSION_HELP)
