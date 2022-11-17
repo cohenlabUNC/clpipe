@@ -1,101 +1,25 @@
-from distutils.log import debug
 from pathlib import Path
-from .batch_manager import LOGGER_NAME, BatchManager, Job
+from .batch_manager import BatchManager, Job
 from .config_json_parser import ClpipeConfigParser
 import os
 import parse
 import glob
 import sys
 import click
+import logging
 
 from .utils import get_logger, add_file_handler
 from .status import needs_processing, write_record
-from .config import BATCH_HELP, CONFIG_HELP, DEBUG_HELP, LOG_DIR_HELP, SUBMIT_HELP, CLICK_FILE_TYPE, \
-    STATUS_CACHE_HELP, CLICK_FILE_TYPE_EXISTS, CLICK_DIR_TYPE_EXISTS
 
 # These imports are for the heudiconv converter
 from pkg_resources import resource_filename
-from .error_handler import exception_handler
-import logging
 
-COMMAND_NAME = "convert"
 INFO_COMMAND_NAME = "dicom-info"
 STEP_NAME = "bids-conversion"
 BASE_CMD = ("dcm2bids -d {subject_dicom_dir} -o {bids_dir} "
             "-p {subject} -c {conv_config_file}")
 HEUDICONV_BASE_CMD = '''heudiconv --files {subject_dicom_dir} -s {subject} '''\
         '''-f {heuristic} -o {output_directory} -b'''
-
-CONVERSION_CONFIG_HELP = (
-    "A dcm2bids conversion definition .json file."
-)
-HEURISTIC_FILE_HELP = (
-    "A heudiconv heuristic file to use for the conversion."
-)
-DICOM_DIR_HELP = "The folder where subject dicoms are located."
-DICOM_DIR_FORMAT_HELP = (
-    "Format string for how subjects/sessions are organized within the "
-    "dicom_dir."
-)
-BIDS_DIR_HELP = "The dicom info output file name."
-OVERWRITE_HELP = "Overwrite existing BIDS data?"
-SUBJECT_HELP = (
-    "Deprecated version of specifying one subject to process - can give an "
-    "arbitrary number of subjects as arguments now."
-)
-SESSION_HELP = (
-    "A session  to convert using the supplied configuration file. Use in "
-    "combination with -subject to convert single subject/sessions, "
-    "else leave empty"
-)
-LONGITUDINAL_HELP = (
-    "Convert all subjects/sessions into individual pseudo-subjects. "
-    "Use if you do not want T1w averaged across sessions during FMRIprep"
-)
-MODE_HELP = (
-    "Specify which converter to use."
-)
-
-
-@click.command(COMMAND_NAME)
-@click.argument('subjects', nargs=-1, required=False, default=None)
-@click.option('-config_file', '-c', type=CLICK_FILE_TYPE_EXISTS, default=None,
-              help=CONFIG_HELP)
-@click.option('-conv_config_file', type=CLICK_FILE_TYPE_EXISTS, default=None, 
-              help=CONVERSION_CONFIG_HELP)
-@click.option('-dicom_dir', '-i', type=CLICK_DIR_TYPE_EXISTS, help=DICOM_DIR_HELP)
-@click.option('-dicom_dir_format', help=DICOM_DIR_FORMAT_HELP)
-@click.option('-BIDS_dir', '-o', type=CLICK_DIR_TYPE_EXISTS,
-              help=BIDS_DIR_HELP)
-@click.option('-overwrite', is_flag=True, default=False, help=OVERWRITE_HELP)
-@click.option('-clear_cache', is_flag=True, default=False, help="Clear cached data for given subject.",
-    hidden=True)
-@click.option('-clear_outputs', is_flag=True, default=False, help="Clear all BIDS data for given subject.",
-    hidden=True)
-@click.option('-log_dir', type=CLICK_DIR_TYPE_EXISTS, help=LOG_DIR_HELP)
-@click.option('-subject', required=False, help=SUBJECT_HELP)
-@click.option('-session', required=False, help=SESSION_HELP)
-@click.option('-longitudinal', is_flag=True, default=False,
-              help=LONGITUDINAL_HELP)
-@click.option('-submit', '-s', is_flag=True, default=False, help=SUBMIT_HELP)
-@click.option('-batch/-no-batch', is_flag = True, default=True, 
-              help=BATCH_HELP, hidden=True)
-@click.option('-debug', '-d', is_flag=True, help=DEBUG_HELP)
-@click.option('-dcm2bids/-heudiconv', default=True, help=MODE_HELP)
-@click.option('-status_cache', default=None, type=CLICK_FILE_TYPE, 
-              help=STATUS_CACHE_HELP, hidden=True)
-def convert2bids_cli(dicom_dir, dicom_dir_format, bids_dir, 
-                     conv_config_file, dcm2bids,
-                     config_file, overwrite, clear_cache, clear_outputs, 
-                     log_dir, subject, subjects, session, 
-                     longitudinal, submit, batch, debug, status_cache):
-    """Convert DICOM files to BIDS format"""
-    convert2bids(
-        dicom_dir=dicom_dir, dicom_dir_format=dicom_dir_format, 
-        bids_dir=bids_dir, conv_config_file=conv_config_file,
-        config_file=config_file, overwrite=overwrite, clear_cache=clear_cache, clear_outputs=clear_outputs, 
-        log_dir=log_dir, batch=batch, subject=subject, subjects=subjects, session=session, 
-        longitudinal=longitudinal, submit=submit, status_cache=status_cache, debug=debug, dcm2bids=dcm2bids)
 
 
 def convert2bids(dicom_dir=None, dicom_dir_format=None, bids_dir=None, 
@@ -405,7 +329,6 @@ def _get_sub_session_list(dicom_dir, dicom_dir_format, logger, subjects=None, se
 
     return sub_sess_list, folders
     
-
 
 @click.command(INFO_COMMAND_NAME)
 @click.option('-config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True), default = None, help = 'The configuration file for the study, use if you have a custom batch configuration.')

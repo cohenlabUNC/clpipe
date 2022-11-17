@@ -2,56 +2,15 @@ import os
 import logging
 import shutil
 from pathlib import Path
-import click
 import pandas as pd
 
+from .config import *
 from .config_json_parser import GLMConfigParser
 from .utils import get_logger
-from .config import CLICK_FILE_TYPE_EXISTS, CLICK_DIR_TYPE_EXISTS
-
-PREPARE_FSF_COMMAND_NAME = "l2_prepare_fsf"
-APPLY_MUMFORD_COMMAND_NAME = "apply_mumford"
-
-
-@click.command(PREPARE_FSF_COMMAND_NAME)
-@click.option('-glm_config_file', type=CLICK_FILE_TYPE_EXISTS, default=None,
-              required=True, help='Use a given GLM configuration file.')
-@click.option('-l2_name', default=None, required=True,
-              help='Name for a given L2 model')
-@click.option('-debug', is_flag=True,
-              help='Flag to enable detailed error messages and traceback')
-def glm_l2_preparefsf_cli(glm_config_file, l2_name, debug):
-    """Propagate an .fsf file template for L2 GLM analysis"""
-    glm_l2_preparefsf(glm_config_file=glm_config_file, l2_name=l2_name,
-                      debug=debug)
-
-
-@click.command(APPLY_MUMFORD_COMMAND_NAME)
-@click.option('-glm_config_file', type=CLICK_FILE_TYPE_EXISTS, default=None,
-              required=False,
-              help='Location of your GLM config file.')
-@click.option('-l1_feat_folders_path', type=CLICK_DIR_TYPE_EXISTS,
-              default=None, required=False,
-              help='Location of your L1 FEAT folders.')
-@click.option('-debug', is_flag=True,
-              help='Flag to enable detailed error messages and traceback')
-def glm_apply_mumford_workaround_cli(glm_config_file, l1_feat_folders_path,
-                                     debug):
-    """
-    Apply the Mumford registration workaround to L1 FEAT folders. 
-    Applied by default in glm-l2-preparefsf.
-    """
-    if not (glm_config_file or l1_feat_folders_path):
-        click.echo(("Error: At least one of either option '-glm_config_file' "
-                    "or '-l1_feat_folders_path' required."))
-    glm_apply_mumford_workaround(
-        glm_config_file=glm_config_file,
-        l1_feat_folders_path=l1_feat_folders_path, debug=debug
-    )
 
 
 def glm_l2_preparefsf(glm_config_file=None, l2_name=None, debug=None):
-    logger = get_logger(APPLY_MUMFORD_COMMAND_NAME, debug=debug)
+    logger = get_logger(L1_PREPARE_FSF_COMMAND_NAME, debug=debug)
 
     glm_config = GLMConfigParser(glm_config_file)
 

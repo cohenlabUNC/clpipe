@@ -1,16 +1,11 @@
 import os
 import sys
-import click
 
 from .batch_manager import BatchManager, Job
 from .config_json_parser import ClpipeConfigParser
 from .utils import get_logger, add_file_handler
 from .status import needs_processing, write_record
-from .config import LOG_DIR_HELP, SUBMIT_HELP, DEBUG_HELP, STATUS_CACHE_HELP, \
-    CLICK_DIR_TYPE, CLICK_DIR_TYPE_EXISTS, CLICK_FILE_TYPE_EXISTS, \
-    CLICK_FILE_TYPE
 
-COMMAND_NAME = "preprocess"
 STEP_NAME = "fmriprep-process"
 BASE_SINGULARITY_CMD = (
     "unset PYTHONPATH; {templateflow1} singularity run -B {templateflow2}"
@@ -31,48 +26,6 @@ TEMPLATE_2 = \
     "${{TEMPLATEFLOW_HOME:-$HOME/.cache/templateflow}}:{templateflowpath},"
 USE_AROMA_FLAG = "--use-aroma"
 N_THREADS_FLAG = "--nthreads"
-
-CONFIG_HELP = (
-    "Use a given configuration file. If left blank, uses the default config "
-    "file, requiring definition of BIDS, working and output directories."
-)
-BIDS_DIR_HELP = (
-    "Which BIDS directory to process. If a configuration file is provided "
-    "with a BIDS directory, this argument is not necessary."
-)
-WORKING_DIR_HELP = (
-    "Where to generate the working directory. If a configuration file is "
-    "provided with a working directory, this argument is not necessary."
-)
-OUTPUT_DIR_HELP = (
-    "Where to put the preprocessed data. If a configuration file is provided "
-    "with a output directory, this argument is not necessary."
-)
-
-@click.command(COMMAND_NAME)
-@click.argument('subjects', nargs=-1, required=False, default=None)
-@click.option('-config_file', default=None, type=CLICK_FILE_TYPE_EXISTS, 
-              help=CONFIG_HELP)
-@click.option('-bids_dir', type=CLICK_DIR_TYPE_EXISTS,
-              help=BIDS_DIR_HELP)
-@click.option('-working_dir', type=CLICK_DIR_TYPE, 
-              help=WORKING_DIR_HELP)
-@click.option('-output_dir', type=CLICK_DIR_TYPE,
-              help=OUTPUT_DIR_HELP)
-@click.option('-log_dir', type=CLICK_DIR_TYPE, help=LOG_DIR_HELP)
-@click.option('-submit', is_flag=True, default=False, help=SUBMIT_HELP)
-@click.option('-debug', is_flag=True, help=DEBUG_HELP)
-@click.option('-status_cache', default=None, type=CLICK_FILE_TYPE, 
-              help=STATUS_CACHE_HELP, hidden=True)
-def fmriprep_process_cli(bids_dir, working_dir, output_dir, config_file, 
-                         subjects, log_dir, submit, debug, status_cache):
-    """Submit BIDS-formatted images to fMRIPrep"""
-
-    fmriprep_process(
-        bids_dir=bids_dir, working_dir=working_dir,
-        output_dir=output_dir, config_file=config_file, 
-        subjects=subjects, log_dir=log_dir, submit=submit, debug=debug, 
-        status_cache=status_cache)
 
 
 def fmriprep_process(bids_dir=None, working_dir=None, output_dir=None, 

@@ -1,9 +1,8 @@
 import os
-import click
 import sys
 from pathlib import Path
 
-from .config import DEFAULT_BATCH_CONFIG_PATH, SUBMIT_HELP, DEBUG_HELP
+from .config import DEFAULT_BATCH_CONFIG_PATH
 from .config_json_parser import GLMConfigParser, ClpipeConfigParser
 from .batch_manager import BatchManager, Job
 from .utils import add_file_handler, get_logger
@@ -16,7 +15,7 @@ DEFAULT_L2_MEMORY_USAGE = "5G"
 DEFAULT_L2_TIME_USAGE = "5:00:00"
 DEFAULT_L2_N_THREADS = "4"
 
-COMMAND_NAME = "launch"
+
 STEP_NAME = "glm-launch"
 
 # Unset PYTHONPATH to ensure FSL uses its own internal python
@@ -27,72 +26,6 @@ VALID_L1 = ["1", "L1", "l1"]
 VALID_L2 = ["2", "L2", "l2"]
 L1 = VALID_L1[1]
 L2 = VALID_L2[1]
-
-CONFIG_HELP = 'Use a given GLM configuration file.'
-L1_MODEL_HELP = 'Name of your L1 model'
-L2_MODEL_HELP = 'Name of your L2 model'
-LEVEL_HELP = "Level of your model, L1 or L2"
-MODEL_HELP = 'Name of your model'
-TEST_ONE_HELP = 'Only submit one job for testing purposes.'
-
-
-@click.command(COMMAND_NAME)
-@click.argument('level')
-@click.argument('model')
-@click.option('-glm_config_file', type=click.Path(exists=True, dir_okay=False, 
-              file_okay=True), default=None, required = True,
-              help=CONFIG_HELP)
-@click.option('-test_one', is_flag=True,
-              help=TEST_ONE_HELP)
-@click.option('-submit', is_flag=True,
-              help=SUBMIT_HELP)
-@click.option('-debug', is_flag=True, 
-              help=DEBUG_HELP)
-def glm_launch_cli(level, model, glm_config_file, test_one, submit, debug):
-    """Launch all prepared .fsf files for L1 or L2 GLM analysis"""
-
-    glm_launch_controller(glm_config_file=glm_config_file, level=level, 
-                          model=model, test_one=test_one, 
-                          submit=submit, debug=debug)
-
-
-@click.command()
-@click.option('-glm_config_file', type=click.Path(exists=True, dir_okay=False, 
-              file_okay=True), default=None, required = True,
-              help=CONFIG_HELP)
-@click.option('-l1_name',  default=None, required = True,
-              help=L1_MODEL_HELP)
-@click.option('-test_one', is_flag=True,
-              help=TEST_ONE_HELP)
-@click.option('-submit', is_flag=True,
-              help=SUBMIT_HELP)
-@click.option('-debug', is_flag=True, 
-              help=DEBUG_HELP)
-def glm_l1_launch_cli(glm_config_file, l1_name, test_one, submit, debug):
-    """Launch all prepared .fsf files for L1 GLM analysis"""
-    
-    glm_launch_controller(glm_config_file=glm_config_file, model=l1_name,
-                          test_one=test_one, submit=submit, debug=debug)
-
-
-@click.command()
-@click.option('-glm_config_file', type=click.Path(exists=True, dir_okay=False, 
-              file_okay=True), default=None, required = True,
-              help=CONFIG_HELP)
-@click.option('-l2_name',  default=None, required = True,
-              help=L2_MODEL_HELP)
-@click.option('-test_one', is_flag=True,
-              help=TEST_ONE_HELP)
-@click.option('-submit', is_flag=True,
-              help=SUBMIT_HELP)
-@click.option('-debug', is_flag=True, 
-              help=DEBUG_HELP)
-def glm_l2_launch_cli(glm_config_file, l2_name, test_one, submit, debug):
-    """Launch all prepared .fsf files for L2 GLM analysis"""
-    
-    glm_launch_controller(glm_config_file=glm_config_file, level="L2", 
-                          model=l2_name, test_one=test_one, submit=submit,
-                          debug=debug)
 
 
 def glm_launch_controller(glm_config_file: str=None, level: int=L1,

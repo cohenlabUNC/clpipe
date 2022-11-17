@@ -25,3 +25,109 @@ INTERACTIVE_HELP = (
 )
 VERSION_HELP = "Display clpipe's version."
 BATCH_HELP = 'Flag to create batch jobs without prompt.'
+WORKING_DIR_HELP = (
+    "Where to generate the working directory."
+)
+GLM_CONFIG_HELP = 'Use a given GLM configuration file.'
+
+SETUP_COMMAND_NAME = "setup"
+PROJECT_DIR_HELP = "Where the project will be located."
+SOURCE_DATA_HELP = \
+    "Where the raw data (usually DICOMs) are located."
+MOVE_SOURCE_DATA_HELP = \
+    "Move source data into project/data_DICOMs folder. USE WITH CAUTION."
+SYM_LINK_HELP = \
+    "Symlink the source data into project/data_dicoms. Usually safe to do."
+
+CONVERSION_COMMAND_NAME = "convert"
+CONVERSION_CONFIG_HELP = (
+    "A dcm2bids conversion definition .json file."
+)
+HEURISTIC_FILE_HELP = (
+    "A heudiconv heuristic file to use for the conversion."
+)
+DICOM_DIR_HELP = "The folder where subject dicoms are located."
+DICOM_DIR_FORMAT_HELP = (
+    "Format string for how subjects/sessions are organized within the "
+    "dicom_dir."
+)
+BIDS_DIR_HELP = "The dicom info output file name."
+OVERWRITE_HELP = "Overwrite existing BIDS data?"
+SUBJECT_HELP = (
+    "DEPRECATED: specify one subject to process - can give an "
+    "arbitrary number of subjects as arguments now."
+)
+SESSION_HELP = (
+    "A session  to convert using the supplied configuration file. Use in "
+    "combination with -subject to convert single subject/sessions, "
+    "else leave empty"
+)
+LONGITUDINAL_HELP = (
+    "Convert all subjects/sessions into individual pseudo-subjects. "
+    "Use if you do not want T1w averaged across sessions during FMRIprep"
+)
+MODE_HELP = (
+    "Specify which converter to use."
+)
+
+VALIDATOR_COMMAND_NAME = "validate"
+VERBOSE_HELP = (
+    "Creates verbose validator output. Use if you want to see ALL files "
+    "with errors/warnings."
+)
+
+FMRIPREP_COMMAND_NAME = "preprocess"
+FMRIPREP_CONFIG_HELP = (
+    "Use a given configuration file. If left blank, uses the default config "
+    "file, requiring definition of BIDS, working and output directories."
+)
+FMRIPREP_BIDS_DIR_HELP = (
+    "Which BIDS directory to process. If a configuration file is provided "
+    "with a BIDS directory, this argument is not necessary."
+)
+FMRIPREP_OUTPUT_DIR_HELP = (
+    "Where to put the preprocessed data. If a configuration file is provided "
+    "with a output directory, this argument is not necessary."
+)
+
+POSTPROCESS_COMMAND_NAME = "postprocess"
+
+POSTPROCESS2_COMMAND_NAME = "postprocess2"
+FMRIPREP_DIR_HELP = (
+    "Which fmriprep directory to process. "
+    "If a configuration file is provided with a BIDS directory, " 
+    "this argument is not necessary. Note, must point to the ``fmriprep`` "
+    "directory, not its parent directory."
+)
+OUTPUT_DIR_HELP = (
+    "Where to put the postprocessed data. If a configuration file is "
+    "provided with a output directory, this argument is not necessary."
+)
+PROCESSING_STREAM_HELP = \
+    "Specify a processing stream to use defined in your configuration file."
+INDEX_HELP = 'Give the path to an existing pybids index database.'
+REFRESH_INDEX_HELP = \
+    'Refresh the pybids index database to reflect new fmriprep artifacts.'
+DEFAULT_PROCESSING_STREAM_NAME = "smooth-filter-normalize"
+
+GLM_SETUP_COMMAND_NAME = "setup"
+
+L1_PREPARE_FSF_COMMAND_NAME = "l1_prepare_fsf"
+
+L2_PREPARE_FSF_COMMAND_NAME = "l2_prepare_fsf"
+
+APPLY_MUMFORD_COMMAND_NAME = "apply_mumford"
+
+GLM_LAUNCH_COMMAND_NAME = "launch"
+L1_MODEL_HELP = 'Name of your L1 model'
+L2_MODEL_HELP = 'Name of your L2 model'
+LEVEL_HELP = "Level of your model, L1 or L2"
+MODEL_HELP = 'Name of your model'
+TEST_ONE_HELP = 'Only submit one job for testing purposes.'
+
+ONSET_EXTRACT_COMMAND_NAME = "fsl_onset_extract"
+
+OUTLIERS_COMMAND_NAME = "report_outliers"
+
+STATUS_COMMAND_NAME = "status"
+CACHE_FILE_HELP = "Path to your status cache file."
