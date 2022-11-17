@@ -75,12 +75,16 @@ def cli(ctx, version):
 
 @click.group("glm", cls=OrderedHelpGroup)
 def glm_cli():
-    """GLM Commands"""
+    """General Linear Model (GLM) Commands."""
 
 
 @click.group("bids")
 def bids_cli():
-    """BIDS Commands"""
+    """BIDS Commands."""
+
+@click.group("roi", cls=OrderedHelpGroup)
+def roi_cli():
+    """Region of Interest (ROI) Commands."""
 
 def _add_commands():
     cli.add_command(project_setup_cli, help_priority=1)
@@ -100,8 +104,12 @@ def _add_commands():
     glm_cli.add_command(fsl_onset_extract_cli, help_priority=2)
     glm_cli.add_command(report_outliers_cli, help_priority=7)
 
+    roi_cli.add_command(get_availablea_atlases_cli, help_priority=1)
+    roi_cli.add_command(fmri_roi_extraction_cli, help_priority=2)
+
     cli.add_command(bids_cli, help_priority=2)
     cli.add_command(glm_cli)
+    cli.add_command(roi_cli)
 
 
 @click.command(SETUP_COMMAND_NAME, no_args_is_help=True)
@@ -482,6 +490,51 @@ def fsl_onset_extract_cli(config_file, glm_config_file, debug):
     from .fsl_onset_extract import fsl_onset_extract
     fsl_onset_extract(
         config_file=config_file, glm_config_file=glm_config_file, debug=debug)
+
+
+@click.command("extract")
+@click.argument('subjects', nargs=-1, required=False, default=None)
+@click.option('-config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True), default=None,
+              help='Use a given configuration file. If left blank, uses the default config file, requiring definition of BIDS, working and output directories. This will extract all ROI sets specified in the configuration file.')
+@click.option('-target_dir', type=click.Path(exists=True, dir_okay=True, file_okay=False),
+              help='Which postprocessed directory to process. If a configuration file is provided with a target directory, this argument is not necessary.')
+@click.option('-target_suffix',
+              help='Which target suffix to process. If a configuration file is provided with a target suffix, this argument is not necessary.')
+@click.option('-output_dir', type=click.Path(dir_okay=True, file_okay=False),
+              help='Where to put the ROI extracted data. If a configuration file is provided with a output directory, this argument is not necessary.')
+@click.option('-task', help = 'Which task to process. If none, then all tasks are processed.')
+@click.option('-atlas_name', help = "What atlas to use. Please refer to documentation, or use the command get_available_atlases to see which are available. When specified for a custom atlas, this is what the output files will be named.")
+@click.option('-custom_atlas', help = 'A custom atlas image, in .nii or .nii.gz for label or maps, or a .txt tab delimited set of ROI coordinates if for a sphere atlas. Not needed if specified in config.')
+@click.option('-custom_label', help = 'A custom atlas label file. Not needed if specified in config.')
+@click.option('-custom_type', help = 'What type of atlas? (label, maps, or spheres). Not needed if specified in config.')
+@click.option('-radius', help = "If a sphere atlas, what radius sphere, in mm. Not needed if specified in config.", default = '5')
+@click.option('-overlap_ok', is_flag=True, default=False, help = "Are overlapping ROIs allowed?")
+@click.option('-overwrite', is_flag=True, default=False, help = "Overwrite existing ROI timeseries?")
+@click.option('-log_output_dir', type=click.Path(dir_okay=True, file_okay=False),
+              help='Where to put HPC output files (such as SLURM output files). If not specified, defaults to <outputDir>/batchOutput.')
+@click.option('-submit', is_flag=True, default=False, help='Flag to submit commands to the HPC')
+@click.option('-single', is_flag=True, default=False, help='Flag to directly run command. Used internally.')
+@click.option('-debug', is_flag=True, help='Flag to enable detailed error messages and traceback')
+def fmri_roi_extraction_cli(subjects, config_file, target_dir, target_suffix, 
+                            output_dir, task, log_output_dir, atlas_name, custom_atlas,
+                            custom_label, custom_type, radius, submit, single, 
+                            overlap_ok, debug, overwrite):
+    """Extract ROIs with a given atlas."""
+    from .roi_extractor import fmri_roi_extraction
+    fmri_roi_extraction(
+        subjects=subjects,config_file=config_file, target_dir=target_dir,
+        target_suffix=target_suffix, output_dir=output_dir, task=task,
+        log_output_dir=log_output_dir, atlas_name=atlas_name, custom_atlas=custom_atlas,
+        custom_label=custom_label, custom_type=custom_type, radius=radius,
+        submit=submit, single=single, overlap_ok=overlap_ok, debug=debug,
+        overwrite=overwrite)
+
+
+@click.command("atlases")
+def get_availablea_atlases_cli():
+    """Display all available atlases."""
+    from .roi_extractor import get_available_atlases
+    get_available_atlases()
 
 
 @click.command(OUTLIERS_COMMAND_NAME, no_args_is_help=True)
