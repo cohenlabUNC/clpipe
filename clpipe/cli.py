@@ -54,9 +54,9 @@ def cli(ctx, version):
     """Welcome to clpipe. Please choose a processing command.
     
     You can get more help about about any of the below commands by running them
-    with the '-h' flag:
+    without arguments:
 
-    > clpipe setup -h
+    > clpipe setup
 
     If you're not sure where to begin, please see the documentation at:
     https://clpipe.readthedocs.io/en/latest/index.html
@@ -135,7 +135,7 @@ def project_setup_cli(project_title=None, project_dir=None, source_data=None,
         symlink_source_data=symlink_source_data,debug=debug)
 
 
-@click.command(CONVERSION_COMMAND_NAME)
+@click.command(CONVERSION_COMMAND_NAME, no_args_is_help=True)
 @click.argument('subjects', nargs=-1, required=False, default=None)
 @click.option('-config_file', '-c', type=CLICK_FILE_TYPE_EXISTS, default=None,
               help=CONFIG_HELP)
@@ -185,7 +185,7 @@ def convert2bids_cli(dicom_dir, dicom_dir_format, bids_dir,
         longitudinal=longitudinal, submit=submit, status_cache=status_cache, debug=debug, dcm2bids=dcm2bids)
 
 
-@click.command(VALIDATOR_COMMAND_NAME)
+@click.command(VALIDATOR_COMMAND_NAME, no_args_is_help=True)
 @click.argument('bids_dir', type=CLICK_DIR_TYPE_EXISTS, required=False)
 @click.option('-config_file', type=CLICK_FILE_TYPE_EXISTS, default=None, 
               help=CONFIG_HELP)
@@ -212,7 +212,7 @@ def bids_validate_cli(bids_dir, config_file, log_dir, interactive, submit,
         interactive=interactive, submit=submit, verbose=verbose, debug=debug)
 
 
-@click.command(FMRIPREP_COMMAND_NAME)
+@click.command(FMRIPREP_COMMAND_NAME, no_args_is_help=True)
 @click.argument('subjects', nargs=-1, required=False, default=None)
 @click.option('-config_file', default=None, type=CLICK_FILE_TYPE_EXISTS, 
               help=CONFIG_HELP)
@@ -244,7 +244,7 @@ def fmriprep_process_cli(bids_dir, working_dir, output_dir, config_file,
         status_cache=status_cache)
 
 
-@click.command(POSTPROCESS_COMMAND_NAME)
+@click.command(POSTPROCESS_COMMAND_NAME, no_args_is_help=True)
 @click.argument('subjects', nargs=-1, required=False, default=None)
 @click.option('-config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True), default=None, help = 'Use a given configuration file. If left blank, uses the default config file, requiring definition of BIDS, working and output directories.')
 @click.option('-target_dir', type=click.Path(exists=True, dir_okay=True, file_okay=False), help='Which fmriprep directory to process. If a configuration file is provided with a BIDS directory, this argument is not necessary. Note, must point to the ``fmriprep`` directory, not its parent directory.')
@@ -281,7 +281,7 @@ def fmri_postprocess_cli(config_file=None, subjects=None, target_dir=None,
         debug=debug, beta_series=beta_series)
 
 
-@click.command(POSTPROCESS2_COMMAND_NAME)
+@click.command(POSTPROCESS2_COMMAND_NAME, no_args_is_help=True)
 @click.argument('subjects', nargs=-1, required=False, default=None)
 @click.option('-config_file', '-c', type=CLICK_FILE_TYPE_EXISTS, default=None, 
               required=True, help=CONFIG_HELP)
