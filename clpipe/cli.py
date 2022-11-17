@@ -93,7 +93,7 @@ def _add_commands():
     cli.add_command(glm_cli)
 
 
-@click.command(SETUP_COMMAND_NAME)
+@click.command(SETUP_COMMAND_NAME, no_args_is_help=True)
 @click.option('-project_title', required=True, default=None)
 @click.option('-project_dir', required=True ,type=CLICK_DIR_TYPE_NOT_EXIST,
               default=None, help=PROJECT_DIR_HELP)
@@ -269,7 +269,7 @@ def fmri_postprocess2_cli(subjects, config_file, fmriprep_dir, output_dir,
         refresh_index=refresh_index, debug=debug, cache=cache)
 
 
-@click.command(GLM_SETUP_COMMAND_NAME)
+@click.command(GLM_SETUP_COMMAND_NAME, no_args_is_help=True)
 @click.argument('subjects', nargs=-1, required=False, default=None)
 @click.option('-config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True), default=None, required = True,
               help='Use a given configuration file.')
@@ -292,7 +292,7 @@ def glm_setup_cli(subjects, config_file, glm_config_file, submit, batch, debug,
         submit=submit, batch=batch, debug=debug, drop_tps=drop_tps)
 
 
-@click.command(L1_PREPARE_FSF_COMMAND_NAME)
+@click.command(L1_PREPARE_FSF_COMMAND_NAME, no_args_is_help=True)
 @click.option('-glm_config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True), default=None, required = True,
               help='Use a given GLM configuration file.')
 @click.option('-l1_name',  default=None, required = True,
@@ -305,7 +305,7 @@ def glm_l1_preparefsf_cli(glm_config_file, l1_name, debug):
         glm_config_file=glm_config_file, l1_name=l1_name, debug=debug)
 
 
-@click.command(L2_PREPARE_FSF_COMMAND_NAME)
+@click.command(L2_PREPARE_FSF_COMMAND_NAME, no_args_is_help=True)
 @click.option('-glm_config_file', type=CLICK_FILE_TYPE_EXISTS, default=None,
               required=True, help='Use a given GLM configuration file.')
 @click.option('-l2_name', default=None, required=True,
@@ -319,7 +319,7 @@ def glm_l2_preparefsf_cli(glm_config_file, l2_name, debug):
                       debug=debug)
 
 
-@click.command(APPLY_MUMFORD_COMMAND_NAME)
+@click.command(APPLY_MUMFORD_COMMAND_NAME, no_args_is_help=True)
 @click.option('-glm_config_file', type=CLICK_FILE_TYPE_EXISTS, default=None,
               required=False,
               help='Location of your GLM config file.')
@@ -344,7 +344,7 @@ def glm_apply_mumford_workaround_cli(glm_config_file, l1_feat_folders_path,
     )
 
 
-@click.command(GLM_LAUNCH_COMMAND_NAME)
+@click.command(GLM_LAUNCH_COMMAND_NAME, no_args_is_help=True)
 @click.argument('level')
 @click.argument('model')
 @click.option('-glm_config_file', type=click.Path(exists=True, dir_okay=False, 
@@ -364,7 +364,7 @@ def glm_launch_cli(level, model, glm_config_file, test_one, submit, debug):
                           submit=submit, debug=debug)
 
 
-@click.command()
+@click.command(no_args_is_help=True)
 @click.option('-glm_config_file', type=click.Path(exists=True, dir_okay=False, 
               file_okay=True), default=None, required = True,
               help=CONFIG_HELP)
@@ -383,7 +383,7 @@ def glm_l1_launch_cli(glm_config_file, l1_name, test_one, submit, debug):
                           test_one=test_one, submit=submit, debug=debug)
 
 
-@click.command()
+@click.command(no_args_is_help=True)
 @click.option('-glm_config_file', type=click.Path(exists=True, dir_okay=False, 
               file_okay=True), default=None, required = True,
               help=CONFIG_HELP)
@@ -403,7 +403,7 @@ def glm_l2_launch_cli(glm_config_file, l2_name, test_one, submit, debug):
                           debug=debug)
 
 
-@click.command(ONSET_EXTRACT_COMMAND_NAME)
+@click.command(ONSET_EXTRACT_COMMAND_NAME, no_args_is_help=True)
 @click.option('-config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True), 
               default=None, required = True,
               help='Use a given configuration file.')
@@ -419,7 +419,7 @@ def fsl_onset_extract_cli(config_file, glm_config_file, debug):
         config_file=config_file, glm_config_file=glm_config_file, debug=debug)
 
 
-@click.command(OUTLIERS_COMMAND_NAME)
+@click.command(OUTLIERS_COMMAND_NAME, no_args_is_help=True)
 @click.option('--confounds_dir', type=click.Path(exists=True, dir_okay=True, file_okay=False), 
               help="Path to a directory containing subjects and confounds files.")
 @click.option('--confounds_file', type=click.Path(exists=True, dir_okay=False, file_okay=True), 

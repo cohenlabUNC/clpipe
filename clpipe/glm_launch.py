@@ -15,7 +15,6 @@ DEFAULT_L2_MEMORY_USAGE = "5G"
 DEFAULT_L2_TIME_USAGE = "5:00:00"
 DEFAULT_L2_N_THREADS = "4"
 
-
 STEP_NAME = "glm-launch"
 
 # Unset PYTHONPATH to ensure FSL uses its own internal python
