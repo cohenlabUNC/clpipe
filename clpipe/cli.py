@@ -51,12 +51,9 @@ class OrderedHelpGroup(click.Group):
 @click.option("-v", "--version", is_flag=True, default=False, 
         help=VERSION_HELP)
 def cli(ctx, version):
-    """Welcome to clpipe. Please choose a processing command.
+    """Welcome to clpipe.
     
-    You can get more help about about any of the below commands by running them
-    without arguments:
-
-    > clpipe setup
+    Please choose one of the commands below for more information.
 
     If you're not sure where to begin, please see the documentation at:
     https://clpipe.readthedocs.io/en/latest/index.html
@@ -75,16 +72,26 @@ def cli(ctx, version):
 
 @click.group("glm", cls=OrderedHelpGroup)
 def glm_cli():
-    """General Linear Model (GLM) Commands."""
+    """General Linear Model (GLM) Commands.
+    
+    Please choose one of the commands below for more
+    information.
+    """
 
 
 @click.group("bids")
 def bids_cli():
-    """BIDS Commands."""
+    """BIDS Commands.
+    
+    Please choose one of the commands below for more information.
+    """
 
 @click.group("roi", cls=OrderedHelpGroup)
 def roi_cli():
-    """Region of Interest (ROI) Commands."""
+    """Region of Interest (ROI) Commands.
+    
+    Please choose one of the commands below for more information.
+    """
 
 def _add_commands():
     cli.add_command(project_setup_cli, help_priority=1)
