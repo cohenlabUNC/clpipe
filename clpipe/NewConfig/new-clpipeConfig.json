@@ -1,0 +1,42 @@
+{
+    "ProjectTitle": "Config Generation Project",
+    "Authors": "Will Asciutto",
+    "ProjectDirectory": "/proj/mnhallqlab/studies/momentum/clpipe",
+    "EmailAddress": "wasciutto@unc.edu",
+    "TempDirectory": "",
+    "DICOMToBIDSOptions": {
+        "DICOMDirectory": "/nas/longleaf/home/mbhavith/DEPENd_Lab/clpipe/clpipe/NewConfig",
+        "BIDSDirectory": "/proj/mnhallqlab/studies/momentum/clpipe/data_BIDS",
+        "ConversionConfig": "/proj/mnhallqlab/studies/momentum/clpipe/conversion_config_unc.json",
+        "DICOMFormatString": "{subject}",
+        "TimeUsage": "1:0:0",
+        "MemUsage": "5000",
+        "CoreUsage": "2",
+        "LogDirectory": "/proj/mnhallqlab/studies/momentum/clpipe/logs/DCM2BIDS_logs"
+    },
+    "FMRIPrepOptions": {
+        "BIDSDirectory": "/proj/mnhallqlab/studies/momentum/clpipe/data_BIDS",
+        "WorkingDirectory": "/pine/scr/w/i/willasc/momentum-fmriprep/",
+        "OutputDirectory": "/proj/mnhallqlab/studies/momentum/clpipe/data_fmriprep",
+        "FMRIPrepPath": "/proj/hng/singularity_imgs/fmriprep-20.2.1.simg",
+        "FreesurferLicensePath": "/proj/mnhallqlab/studies/momentum/clpipe/license.txt",
+        "CommandLineOpts": "--use-aroma",
+        "TemplateFlowToggle": true,
+        "TemplateFlowPath": "/proj/hng/singularity_imgs/template_flow",
+        "TemplateFlowTemplates": [
+            "MNI152NLin2009cAsym",
+            "MNI152NLin6Asym",
+            "OASIS30ANTs",
+            "MNIPediatricAsym",
+            "MNIInfant"
+        ],
+        "FMapCleanupROIs": 5,
+        "FMRIPrepMemoryUsage": "100000",
+        "FMRIPrepTimeUsage": "120:0:0",
+        "NThreads": "12",
+        "LogDirectory": "/proj/mnhallqlab/studies/momentum/clpipe/logs/FMRIprep_logs",
+        "DockerToggle": false,
+        "DockerFMRIPrepVersion": "",
+        "UseAROMA": true
+    }
+}
