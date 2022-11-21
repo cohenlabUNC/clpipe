@@ -2,6 +2,13 @@
 Configuration Files
 ===================
 
+.. autoclass:: clpipe.new_config.Config
+	:members:
+
+.. autoclass:: clpipe.new_config.FMRIPrep
+	:members:
+
+
 Most command line functions in clpipe can take a configuration file in the '-configFile' option. These configuration files are JSONs that contain all aspects of the preprocessing and postprocessing streams that you want applied to your dataset. To create a configuration file for your dataset use the following command
 
 .. code-block:: console
