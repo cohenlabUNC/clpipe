@@ -63,7 +63,7 @@ def _glm_l2_propagate(l2_block, glm_setup_options, logger):
                 if not os.path.exists(feat):
                     raise FileNotFoundError("Cannot find "+ feat)
                 else:
-                    _apply_mumford_workaround(feat, logger)
+                    _apply_mumford_workaround(feat, logger, remove_reg_standard=True)
                     new_fsf[image_files_ind[counter - 1]] = "set feat_files(" + str(counter) + ") \"" + os.path.abspath(
                         feat) + "\"\n"
                     counter = counter + 1
@@ -85,6 +85,7 @@ def _glm_l2_propagate(l2_block, glm_setup_options, logger):
 
 def glm_apply_mumford_workaround(glm_config_file=None, 
                                  l1_feat_folders_path=None,
+                                 remove_reg_standard=False,
                                  debug=False):
 
     logger = get_logger(APPLY_MUMFORD_COMMAND_NAME, debug=debug)
@@ -97,12 +98,13 @@ def glm_apply_mumford_workaround(glm_config_file=None,
     for l1_feat_folder in os.scandir(l1_feat_folders_path):
         if os.path.isdir(l1_feat_folder):
             logger.info(f"Processing L1 FEAT folder: {l1_feat_folder.path}")
-            _apply_mumford_workaround(l1_feat_folder, logger)
+            _apply_mumford_workaround(l1_feat_folder, logger,
+                remove_reg_standard=remove_reg_standard)
 
     logger.info(f"Finished applying Mumford workaround.")
 
 
-def _apply_mumford_workaround(l1_feat_folder, logger):
+def _apply_mumford_workaround(l1_feat_folder, logger, remove_reg_standard=False):
     """
     When using an image registration other than FSL's, such as fMRIPrep's,
     this work-around is necessary to run FEAT L2 analysis in FSL.
@@ -123,11 +125,12 @@ def _apply_mumford_workaround(l1_feat_folder, logger):
             logger.debug(f"Removing: {mat}")
             os.remove(mat)
 
-    # Delete the reg_standard folder if it exists
-    reg_standard_path = l1_feat_folder / "reg_standard"
-    if reg_standard_path.exists():
-        logger.debug(f"Removing: {reg_standard_path}")
-        shutil.rmtree(reg_standard_path)
+    if remove_reg_standard:
+        # Delete the reg_standard folder if it exists
+        reg_standard_path = l1_feat_folder / "reg_standard"
+        if reg_standard_path.exists():
+            logger.debug(f"Removing: {reg_standard_path}")
+            shutil.rmtree(reg_standard_path)
 
     try:
         # Grab the FSLDIR environment var to get path to standard matrices
