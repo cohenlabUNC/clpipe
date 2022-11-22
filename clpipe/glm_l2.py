@@ -92,7 +92,6 @@ def glm_apply_mumford_workaround(glm_config_file=None,
     if glm_config_file:
         glm_config = GLMConfigParser(glm_config_file).config
         l1_feat_folders_path = glm_config["Level1Setups"]["OutputDir"]
-    logger.info(f"Applying Mumford workaround to: {l1_feat_folders_path}")
 
     logger.info(f"Applying Mumford workaround to: {l1_feat_folders_path}")
     for l1_feat_folder in os.scandir(l1_feat_folders_path):
