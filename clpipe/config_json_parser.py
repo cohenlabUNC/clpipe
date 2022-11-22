@@ -6,6 +6,8 @@ import collections
 import click
 from pkg_resources import resource_stream, resource_filename
 import shutil
+from pathlib import Path
+from .utils import meta_config_search
 
 @click.command()
 @click.option('-config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True),
@@ -43,7 +45,13 @@ class ClpipeConfigParser:
 
     def config_updater(self, new_config):
         if new_config is None:
-            None
+            meta_config_path = meta_config_search()
+            if meta_config_path is not None:
+                meta_config = config_json_parser(meta_config_path)
+                self.meta_config = meta_config
+                new_config = config_json_parser(meta_config["defaultConfig"])
+                self.config = update(self.config, new_config)
+                
         else:
             new_config = config_json_parser(new_config)
             self.config = update(self.config, new_config)

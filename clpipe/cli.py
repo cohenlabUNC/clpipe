@@ -192,7 +192,7 @@ def convert2bids_cli(dicom_dir, dicom_dir_format, bids_dir,
         longitudinal=longitudinal, submit=submit, status_cache=status_cache, debug=debug, dcm2bids=dcm2bids)
 
 
-@click.command(VALIDATOR_COMMAND_NAME, no_args_is_help=True)
+@click.command(VALIDATOR_COMMAND_NAME)
 @click.argument('bids_dir', type=CLICK_DIR_TYPE_EXISTS, required=False)
 @click.option('-config_file', type=CLICK_FILE_TYPE_EXISTS, default=None, 
               help=CONFIG_HELP)

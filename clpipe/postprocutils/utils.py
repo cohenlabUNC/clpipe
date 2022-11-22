@@ -132,4 +132,13 @@ def notch_filter(motion_params, band, tr):
     return filt_fd
 
 
+from pathlib import Path
+def meta_config_search(start_path: Path):
+    if start_path is None:
+        start_path = Path.cwd()
+    for path in start_path.iterdir():
+        print(f"Searching: {path}")
+        if path.name == ".clpipe":
+            return path
+    meta_config_search(start_path.parent())
 

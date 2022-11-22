@@ -75,3 +75,18 @@ def add_file_handler(log_dir: os.PathLike, f_name: str="clpipe.log",
 
     # Add handler to the logger
     logger.addHandler(f_handler)
+
+from pathlib import Path
+MAX_DEPTH = 6
+def meta_config_search(start_path: Path=None, depth=0):
+    if start_path is None:
+        start_path = Path.cwd()
+    if start_path == Path(Path.home().root):
+        return None
+    if depth > MAX_DEPTH:
+        return None
+    print(f"Searching: {start_path}")
+    for path in start_path.iterdir():
+        if path.name == ".clpipe":
+            return path
+    meta_config_search(start_path.parent, depth + 1)
