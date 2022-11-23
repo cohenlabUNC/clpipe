@@ -24,20 +24,6 @@ DEFAULT_CACHE_PATH = "./.pipeline/status_log.csv"
 DEFAULT_STEP = STEPS[1]
 DEFAULT_EVENT = "submitted"
 DEFAULT_NOTE = "clpipe generated"
-CACHE_FILE_HELP = "Path to your status cache file."
-
-COMMAND_NAME = "status"
-
-
-#TODO: Move cli commands back to specific modules to avoid circular import here 
-@click.command(COMMAND_NAME)
-@click.option('-config_file', type=CLICK_FILE_TYPE_EXISTS,
-              help=CONFIG_HELP, required=False)
-@click.option('-cache_file', type=CLICK_FILE_TYPE_EXISTS,
-              help=CACHE_FILE_HELP, required=False)
-def status_cli(config_file, cache_file):
-    """Check the status of your project"""
-    show_latest_by_step(config_file=config_file, cache_path=cache_file)
 
 
 def _load_records(cache_path: os.PathLike) -> pd.DataFrame:

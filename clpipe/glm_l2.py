@@ -2,56 +2,15 @@ import os
 import logging
 import shutil
 from pathlib import Path
-import click
 import pandas as pd
 
+from .config import *
 from .config_json_parser import GLMConfigParser
 from .utils import get_logger
-from .config import CLICK_FILE_TYPE_EXISTS, CLICK_DIR_TYPE_EXISTS
-
-PREPARE_FSF_COMMAND_NAME = "l2_prepare_fsf"
-APPLY_MUMFORD_COMMAND_NAME = "apply_mumford"
-
-
-@click.command(PREPARE_FSF_COMMAND_NAME)
-@click.option('-glm_config_file', type=CLICK_FILE_TYPE_EXISTS, default=None,
-              required=True, help='Use a given GLM configuration file.')
-@click.option('-l2_name', default=None, required=True,
-              help='Name for a given L2 model')
-@click.option('-debug', is_flag=True,
-              help='Flag to enable detailed error messages and traceback')
-def glm_l2_preparefsf_cli(glm_config_file, l2_name, debug):
-    """Propagate an .fsf file template for L2 GLM analysis"""
-    glm_l2_preparefsf(glm_config_file=glm_config_file, l2_name=l2_name,
-                      debug=debug)
-
-
-@click.command(APPLY_MUMFORD_COMMAND_NAME)
-@click.option('-glm_config_file', type=CLICK_FILE_TYPE_EXISTS, default=None,
-              required=False,
-              help='Location of your GLM config file.')
-@click.option('-l1_feat_folders_path', type=CLICK_DIR_TYPE_EXISTS,
-              default=None, required=False,
-              help='Location of your L1 FEAT folders.')
-@click.option('-debug', is_flag=True,
-              help='Flag to enable detailed error messages and traceback')
-def glm_apply_mumford_workaround_cli(glm_config_file, l1_feat_folders_path,
-                                     debug):
-    """
-    Apply the Mumford registration workaround to L1 FEAT folders. 
-    Applied by default in glm-l2-preparefsf.
-    """
-    if not (glm_config_file or l1_feat_folders_path):
-        click.echo(("Error: At least one of either option '-glm_config_file' "
-                    "or '-l1_feat_folders_path' required."))
-    glm_apply_mumford_workaround(
-        glm_config_file=glm_config_file,
-        l1_feat_folders_path=l1_feat_folders_path, debug=debug
-    )
 
 
 def glm_l2_preparefsf(glm_config_file=None, l2_name=None, debug=None):
-    logger = get_logger(APPLY_MUMFORD_COMMAND_NAME, debug=debug)
+    logger = get_logger(L1_PREPARE_FSF_COMMAND_NAME, debug=debug)
 
     glm_config = GLMConfigParser(glm_config_file)
 
@@ -104,7 +63,7 @@ def _glm_l2_propagate(l2_block, glm_setup_options, logger):
                 if not os.path.exists(feat):
                     raise FileNotFoundError("Cannot find "+ feat)
                 else:
-                    _apply_mumford_workaround(feat, logger)
+                    _apply_mumford_workaround(feat, logger, remove_reg_standard=True)
                     new_fsf[image_files_ind[counter - 1]] = "set feat_files(" + str(counter) + ") \"" + os.path.abspath(
                         feat) + "\"\n"
                     counter = counter + 1
@@ -126,24 +85,25 @@ def _glm_l2_propagate(l2_block, glm_setup_options, logger):
 
 def glm_apply_mumford_workaround(glm_config_file=None, 
                                  l1_feat_folders_path=None,
+                                 remove_reg_standard=False,
                                  debug=False):
 
     logger = get_logger(APPLY_MUMFORD_COMMAND_NAME, debug=debug)
     if glm_config_file:
-        glm_config = GLMConfigParser(glm_config_file)
+        glm_config = GLMConfigParser(glm_config_file).config
         l1_feat_folders_path = glm_config["Level1Setups"]["OutputDir"]
-    logger.info(f"Applying Mumford workaround to: {l1_feat_folders_path}")
 
     logger.info(f"Applying Mumford workaround to: {l1_feat_folders_path}")
     for l1_feat_folder in os.scandir(l1_feat_folders_path):
         if os.path.isdir(l1_feat_folder):
             logger.info(f"Processing L1 FEAT folder: {l1_feat_folder.path}")
-            _apply_mumford_workaround(l1_feat_folder, logger)
+            _apply_mumford_workaround(l1_feat_folder, logger,
+                remove_reg_standard=remove_reg_standard)
 
     logger.info(f"Finished applying Mumford workaround.")
 
 
-def _apply_mumford_workaround(l1_feat_folder, logger):
+def _apply_mumford_workaround(l1_feat_folder, logger, remove_reg_standard=False):
     """
     When using an image registration other than FSL's, such as fMRIPrep's,
     this work-around is necessary to run FEAT L2 analysis in FSL.
@@ -164,11 +124,12 @@ def _apply_mumford_workaround(l1_feat_folder, logger):
             logger.debug(f"Removing: {mat}")
             os.remove(mat)
 
-    # Delete the reg_standard folder if it exists
-    reg_standard_path = l1_feat_folder / "reg_standard"
-    if reg_standard_path.exists():
-        logger.debug(f"Removing: {reg_standard_path}")
-        shutil.rmtree(reg_standard_path)
+    if remove_reg_standard:
+        # Delete the reg_standard folder if it exists
+        reg_standard_path = l1_feat_folder / "reg_standard"
+        if reg_standard_path.exists():
+            logger.debug(f"Removing: {reg_standard_path}")
+            shutil.rmtree(reg_standard_path)
 
     try:
         # Grab the FSLDIR environment var to get path to standard matrices

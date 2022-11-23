@@ -12,26 +12,10 @@ import os
 import glob
 import logging
 import sys
-import click
 import nibabel as nib
 
 from .config_json_parser import GLMConfigParser
 from .error_handler import exception_handler
-
-PREPARE_FSF_COMMAND_NAME = "l1_prepare_fsf"
-
-
-@click.command(PREPARE_FSF_COMMAND_NAME)
-@click.option('-glm_config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True), default=None, required = True,
-              help='Use a given GLM configuration file.')
-@click.option('-l1_name',  default=None, required = True,
-              help='Name for a given L1 model')
-@click.option('-debug', is_flag=True, help='Flag to enable detailed error messages and traceback')
-def glm_l1_preparefsf_cli(glm_config_file, l1_name, debug):
-    """Propagate an .fsf file template for L1 GLM analysis"""
-    
-    glm_l1_preparefsf(
-        glm_config_file=glm_config_file, l1_name=l1_name, debug=debug)
 
 
 def glm_l1_preparefsf(glm_config_file=None, l1_name=None, debug=None):

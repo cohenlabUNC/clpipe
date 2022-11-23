@@ -18,29 +18,7 @@ from pkg_resources import resource_stream, resource_filename
 import glob
 import shutil
 
-@click.command()
-@click.argument('subjects', nargs=-1, required=False, default=None)
-@click.option('-config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True), default=None,
-              help='Use a given configuration file. If left blank, uses the default config file, requiring definition of BIDS, working and output directories. This will extract all ROI sets specified in the configuration file.')
-@click.option('-target_dir', type=click.Path(exists=True, dir_okay=True, file_okay=False),
-              help='Which postprocessed directory to process. If a configuration file is provided with a target directory, this argument is not necessary.')
-@click.option('-target_suffix',
-              help='Which target suffix to process. If a configuration file is provided with a target suffix, this argument is not necessary.')
-@click.option('-output_dir', type=click.Path(dir_okay=True, file_okay=False),
-              help='Where to put the ROI extracted data. If a configuration file is provided with a output directory, this argument is not necessary.')
-@click.option('-task', help = 'Which task to process. If none, then all tasks are processed.')
-@click.option('-atlas_name', help = "What atlas to use. Please refer to documentation, or use the command get_available_atlases to see which are available. When specified for a custom atlas, this is what the output files will be named.")
-@click.option('-custom_atlas', help = 'A custom atlas image, in .nii or .nii.gz for label or maps, or a .txt tab delimited set of ROI coordinates if for a sphere atlas. Not needed if specified in config.')
-@click.option('-custom_label', help = 'A custom atlas label file. Not needed if specified in config.')
-@click.option('-custom_type', help = 'What type of atlas? (label, maps, or spheres). Not needed if specified in config.')
-@click.option('-radius', help = "If a sphere atlas, what radius sphere, in mm. Not needed if specified in config.", default = '5')
-@click.option('-overlap_ok', is_flag=True, default=False, help = "Are overlapping ROIs allowed?")
-@click.option('-overwrite', is_flag=True, default=False, help = "Overwrite existing ROI timeseries?")
-@click.option('-log_output_dir', type=click.Path(dir_okay=True, file_okay=False),
-              help='Where to put HPC output files (such as SLURM output files). If not specified, defaults to <outputDir>/batchOutput.')
-@click.option('-submit', is_flag=True, default=False, help='Flag to submit commands to the HPC')
-@click.option('-single', is_flag=True, default=False, help='Flag to directly run command. Used internally.')
-@click.option('-debug', is_flag=True, help='Flag to enable detailed error messages and traceback')
+
 def fmri_roi_extraction(subjects=None,config_file=None, target_dir=None, target_suffix = None, output_dir=None, task=None, log_output_dir=None,
                         atlas_name = None,
                         custom_atlas = None,
@@ -273,7 +251,6 @@ def _fmri_roi_extract_image(data,  atlas_path, atlas_type, radius, overlap_ok,ma
     return timeseries
 
 
-@click.command()
 def get_available_atlases():
 
     with resource_stream(__name__, 'data/atlasLibrary.json') as at_lib:
