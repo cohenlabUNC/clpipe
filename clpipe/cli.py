@@ -46,7 +46,8 @@ class OrderedHelpGroup(click.Group):
         return super().add_command(cmd, name)
 
 
-@click.group(cls=OrderedHelpGroup, context_settings=CONTEXT_SETTINGS)
+@click.group(cls=OrderedHelpGroup, context_settings=CONTEXT_SETTINGS,
+    invoke_without_command=True)
 @click.pass_context
 @click.option("-v", "--version", is_flag=True, default=False, 
         help=VERSION_HELP)
