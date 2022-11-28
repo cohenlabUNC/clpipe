@@ -572,7 +572,7 @@ def report_outliers_cli(confounds_dir, confounds_file, output_file,
         get_image_confounds(confounds_file)
 
 
-@click.command(STATUS_COMMAND_NAME)
+@click.command(STATUS_COMMAND_NAME, no_args_is_help=True)
 @click.option('-config_file', type=CLICK_FILE_TYPE_EXISTS,
               help=CONFIG_HELP, required=False)
 @click.option('-cache_file', type=CLICK_FILE_TYPE_EXISTS,
