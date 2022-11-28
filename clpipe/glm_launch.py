@@ -2,7 +2,7 @@ import os
 import sys
 from pathlib import Path
 
-from .config import DEFAULT_BATCH_CONFIG_PATH
+from .config import *
 from .config_json_parser import GLMConfigParser, ClpipeConfigParser
 from .batch_manager import BatchManager, Job
 from .utils import add_file_handler, get_logger
@@ -20,11 +20,6 @@ STEP_NAME = "glm-launch"
 # Unset PYTHONPATH to ensure FSL uses its own internal python
 #   libraries
 SUBMISSION_STRING_TEMPLATE = ("unset PYTHONPATH; feat {fsf_file}")
-
-VALID_L1 = ["1", "L1", "l1", "level1"]
-VALID_L2 = ["2", "L2", "l2", "level2"]
-L1 = VALID_L1[1]
-L2 = VALID_L2[1]
 
 
 def glm_launch(glm_config_file: str=None, level: int=L1,
