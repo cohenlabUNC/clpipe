@@ -438,9 +438,7 @@ def glm_apply_mumford_workaround_cli(glm_config_file, l1_feat_folders_path,
 def glm_launch_cli(level, model, glm_config_file, test_one, submit, debug):
     """Launch all prepared .fsf files for L1 or L2 GLM analysis.
     
-    L1 can be any of: 1, L1, l1, or level1.
-
-    L2 can be any of: 2, L2, l2, or level2.
+    LEVEL is the level of anlaysis, L1 or L2
 
     MODEL must be a a corresponding L1 or L2 model from your GLM configuration file.
     """
