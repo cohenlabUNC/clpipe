@@ -27,7 +27,7 @@ L1 = VALID_L1[1]
 L2 = VALID_L2[1]
 
 
-def glm_launch_controller(glm_config_file: str=None, level: int=L1,
+def glm_launch(glm_config_file: str=None, level: int=L1,
                           model: str=None, test_one: bool=False, 
                           submit: bool=False, debug: bool=False):
     glm_config_parser = GLMConfigParser(glm_config_file)
@@ -97,8 +97,18 @@ def glm_launch_controller(glm_config_file: str=None, level: int=L1,
         memory_usage=memory_usage, time_usage=time_usage, n_threads=n_threads,
         email=email)
 
-    glm_launch(fsf_dir, batch_manager, test_one=test_one,
-               submit=submit, logger=logger)
+    submission_strings = _create_submission_strings(
+        fsf_dir, test_one=test_one)
+   
+    num_jobs = len(submission_strings)
+
+    if batch_manager:
+        _populate_batch_manager(batch_manager, submission_strings)
+        if submit:
+            logger.info(f"Running {num_jobs} job(s) in batch mode")
+            batch_manager.submit_jobs()
+        else:
+            batch_manager.print_jobs()
 
 
 def _setup_batch_manager(batch_config_path: str, log_dir: str, 
@@ -115,23 +125,6 @@ def _setup_batch_manager(batch_config_path: str, log_dir: str,
         batch_manager.update_email(email)
 
     return batch_manager
-
-
-def glm_launch(fsf_dir: str, batch_manager: BatchManager,
-               test_one:bool=False, submit: bool=False, logger=None):
-
-    submission_strings = _create_submission_strings(
-        fsf_dir, test_one=test_one)
-   
-    num_jobs = len(submission_strings)
-
-    if batch_manager:
-        _populate_batch_manager(batch_manager, submission_strings)
-        if submit:
-            logger.info(f"Running {num_jobs} job(s) in batch mode")
-            batch_manager.submit_jobs()
-        else:
-            batch_manager.print_jobs()
 
  
 def _create_submission_strings(fsf_files: os.PathLike, 

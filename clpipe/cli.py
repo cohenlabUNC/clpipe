@@ -443,8 +443,8 @@ def glm_launch_cli(level, model, glm_config_file, test_one, submit, debug):
 
     MODEL must be a a corresponding L1 or L2 model from your GLM configuration file.
     """
-    from .glm_launch import glm_launch_controller
-    glm_launch_controller(glm_config_file=glm_config_file, level=level, 
+    from .glm_launch import glm_launch
+    glm_launch(glm_config_file=glm_config_file, level=level, 
                           model=model, test_one=test_one, 
                           submit=submit, debug=debug)
 
