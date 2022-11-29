@@ -13,13 +13,13 @@ be extracted without respect to the brain mask, and then ROIs with
 fewer than "PropVoxels" voxels will be set to NAN. This is a workaround for 
 the limitations on Nilearn's ROI extractor functions.
 
-.. click:: clpipe.roi_extractor:fmri_roi_extraction
+.. click:: clpipe.cli:fmri_roi_extraction_cli
 	:prog: fmri_roi_extraction
 	:nested: full
 
 To view the available built-in atlases, you can use the ``get_available_atlases`` 
 command.
 
-.. click:: clpipe.roi_extractor:get_available_atlases
+.. click:: clpipe.cli:get_available_atlases_cli
 	:prog: get_available_atlases
 	:nested: full

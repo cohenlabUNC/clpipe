@@ -8,7 +8,7 @@ processing steps that need to be taken after the minimal preprocessing of fMRIPr
 clpipe implements these steps in Python, and a fMRIprep preprocessed dataset can 
 be postprocessed using the following command:
 
-.. click:: clpipe.fmri_postprocess:fmri_postprocess_cli
+.. click:: clpipe.cli:fmri_postprocess_cli
 	:prog: fmri_postprocess
 	:nested: full
 
