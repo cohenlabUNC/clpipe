@@ -112,7 +112,7 @@ def _add_commands():
     glm_cli.add_command(fsl_onset_extract_cli, help_priority=2)
     glm_cli.add_command(report_outliers_cli, help_priority=7)
 
-    roi_cli.add_command(get_availablea_atlases_cli, help_priority=1)
+    roi_cli.add_command(get_available_atlases_cli, help_priority=1)
     roi_cli.add_command(fmri_roi_extraction_cli, help_priority=2)
 
     cli.add_command(bids_cli, help_priority=2)
@@ -542,7 +542,7 @@ def fmri_roi_extraction_cli(subjects, config_file, target_dir, target_suffix,
 
 
 @click.command("atlases")
-def get_availablea_atlases_cli():
+def get_available_atlases_cli():
     """Display all available atlases."""
     from .roi_extractor import get_available_atlases
     get_available_atlases()
