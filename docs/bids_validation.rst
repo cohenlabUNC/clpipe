@@ -9,6 +9,6 @@ This function uses a Singularity image of the
 The output of this command will appear in your `logs/bids_validation_logs` folder
 by default.
 
-.. click:: clpipe.bids_validator:bids_validate_cli
+.. click:: clpipe.cli:bids_validate_cli
    :prog: bids_validate
    :nested: full

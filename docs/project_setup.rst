@@ -40,6 +40,6 @@ This command will create the necessary directory structures, as well as create a
     |   |-- ROI_extraction_logs
     |-- scripts
 
-.. click:: clpipe.project_setup:project_setup_cli
+.. click:: clpipe.cli:project_setup_cli
 	:prog: project_setup
 	:nested: full

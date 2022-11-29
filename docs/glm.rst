@@ -160,26 +160,26 @@ run the ``project_setup`` function.
 Commands
 -------------------------------
 
-.. click:: clpipe.glm_setup:glm_setup_cli
+.. click:: clpipe.cli:glm_setup_cli
 	:prog: glm_setup
 	:nested: full
 
-.. click:: clpipe.fsl_onset_extract:fsl_onset_extract_cli
+.. click:: clpipe.cli:fsl_onset_extract_cli
 	:prog: fsl_onset_extract
 	:nested: full
 
-.. click:: clpipe.glm_l1:glm_l1_preparefsf_cli
+.. click:: clpipe.cli:glm_l1_preparefsf_cli
 	:prog: glm_l1_preparefsf
 	:nested: full
 
-.. click:: clpipe.glm_launch:glm_l1_launch_cli
+.. click:: clpipe.cli:glm_l1_launch_cli
 	:prog: glm_l1_launch
 	:nested: full
 
-.. click:: clpipe.glm_l2:glm_l2_preparefsf_cli
+.. click:: clpipe.cli:glm_l2_preparefsf_cli
 	:prog: glm_l2_preparefsf
 	:nested: full
 
-.. click:: clpipe.glm_launch:glm_l2_launch_cli
+.. click:: clpipe.cli:glm_l2_launch_cli
 	:prog: glm_l2_launch
 	:nested: full
