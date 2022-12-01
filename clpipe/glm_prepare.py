@@ -49,10 +49,10 @@ def glm_prepare(glm_config_file: str=None, level: int=L1,
             if x['ModelName'] == str(model)]
     if len(block) is not 1:
         raise ValueError("Model not found, or multiple entries found.")
-    glm_setup_options = block[0]
+    model_options = block[0]
 
     if level == L1:
-        _glm_l1_propagate(block, glm_setup_options, logger)
+        _glm_l1_propagate(model_options, glm_setup_options, logger)
     elif level == L2:
         pass
 
