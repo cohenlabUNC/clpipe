@@ -53,10 +53,10 @@ def glm_launch(glm_config_file: str=None, level: int=L1,
             if x['ModelName'] == str(model)]
     if len(block) is not 1:
         raise ValueError("Model not found, or multiple entries found.")
-    glm_setup_options = block[0]
+    model_options = block[0]
 
     try:
-        batch_options = glm_setup_options["BatchOptions"]
+        batch_options = model_options["BatchOptions"]
 
         memory_usage = batch_options["MemoryUsage"]
         time_usage = batch_options["TimeUsage"]
@@ -76,13 +76,13 @@ def glm_launch(glm_config_file: str=None, level: int=L1,
         batch_config_path = DEFAULT_BATCH_CONFIG_PATH
         email = None
 
-    fsf_dir = glm_setup_options["FSFDir"]
+    fsf_dir = model_options["FSFDir"]
     logger.info(f"Targeting .fsfs in dir: {fsf_dir}")
-    out_dir = glm_setup_options["OutputDir"]
+    out_dir = model_options["OutputDir"]
     logger.info(f"Output dir: {out_dir}")
 
     try:
-        log_dir = glm_setup_options["LogDir"]
+        log_dir = model_options["LogDir"]
     except KeyError:
         log_dir = out_dir
     logger.info(f"Using log dir: {log_dir}")
