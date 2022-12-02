@@ -43,7 +43,7 @@ def glm_prepare(glm_config_file: str=None, level: int=L1,
         logger.error(f"Level must be {L1} or {L2}")
         sys.exit(0)
 
-    logger.info(f"Targeting {level} model {model}")
+    logger.info(f"Targeting {level} model: {model}")
 
     block = [x for x in glm_config[setup] \
             if x['ModelName'] == str(model)]
@@ -94,7 +94,7 @@ def _glm_l1_propagate(l1_block, glm_setup_options, logger):
             logger.info("Creating FSF File for " + file)
             img_data = nib.load(file)
             total_tps = img_data.shape[3]
-            ev_conf = _get_ev_confound_mat(file, l1_block)
+            ev_conf = _get_ev_confound_mat(file, l1_block, logger)
             out_dir = os.path.join(l1_block['OutputDir'],os.path.basename(file).replace(l1_block["TargetSuffix"], ".feat"))
             out_fsf = os.path.join(l1_block['FSFDir'],
                                    os.path.basename(file).replace(l1_block["TargetSuffix"], ".fsf"))
@@ -119,10 +119,12 @@ def _glm_l1_propagate(l1_block, glm_setup_options, logger):
             logger.exception(err)
 
 
-def _get_ev_confound_mat(file_name, l1_block):
+def _get_ev_confound_mat(file_name, l1_block, logger):
 
     file_prefix = os.path.basename(file_name).replace(l1_block["TargetSuffix"], "")
-    EV_files = [glob.glob(os.path.join(l1_block["EVDirectory"],"**",file_prefix + EV), recursive=True) for EV in l1_block['EVFileSuffices']]
+    logger.debug(f"File prefix: {file_prefix}")
+    EV_files = [glob.glob(os.path.join(l1_block["EVDirectory"],"**",file_prefix + EV), 
+        recursive=True) for EV in l1_block['EVFileSuffices']]
     EV_files = [item for sublist in EV_files for item in sublist]
 
     if len(EV_files) is not len(l1_block['EVFileSuffices']):
