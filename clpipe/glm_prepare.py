@@ -43,7 +43,7 @@ def glm_prepare(glm_config_file: str=None, level: int=L1,
         logger.error(f"Level must be {L1} or {L2}")
         sys.exit(0)
 
-    logger.info(f"Targeting {level} model: {model}")
+    logger.info(f"Targeting task-{glm_setup_options['TaskName']} {level} model: {model}")
 
     block = [x for x in glm_config[setup] \
             if x['ModelName'] == str(model)]
