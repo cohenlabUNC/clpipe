@@ -120,9 +120,11 @@ def _glm_l1_propagate(l1_block, glm_setup_options, logger):
             logger.warn(fnfe)
 
 
-def _get_ev_confound_mat(file_name, l1_block, logger):
+def _get_ev_confound_mat(file, l1_block, logger):
 
-    file_prefix = os.path.basename(file_name).replace(l1_block["TargetSuffix"], "")
+    file_name = os.path.basename(file)
+
+    file_prefix = os.path.basename(file).replace(l1_block["TargetSuffix"], "")
     logger.debug(f"File prefix: {file_prefix}")
     EV_files = [glob.glob(os.path.join(l1_block["EVDirectory"],"**",file_prefix + EV), 
         recursive=True) for EV in l1_block['EVFileSuffices']]
@@ -130,7 +132,7 @@ def _get_ev_confound_mat(file_name, l1_block, logger):
 
     if len(EV_files) is not len(l1_block['EVFileSuffices']):
         raise FileNotFoundError((
-            f"Did not find enough EV files for scan {file_name}. "
+            f"Did not find enough EV files for image: {file_name}. "
             f"Only found {len(EV_files)} and need "
             f"{len(l1_block['EVFileSuffices'])}"
         ))
@@ -139,7 +141,7 @@ def _get_ev_confound_mat(file_name, l1_block, logger):
         confound_file = glob.glob(os.path.join(l1_block["ConfoundDirectory"],"**",
             file_prefix + l1_block['ConfoundSuffix']), recursive = True)
         if len(confound_file) is not 1:
-            raise FileNotFoundError("Did not find a confound file for this scan")
+            raise FileNotFoundError(f"Did not find a confound file for image: {file_name}")
         return {"EVs": EV_files, "Confounds": confound_file}
 
     return {"EVs": EV_files}
