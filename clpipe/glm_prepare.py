@@ -16,6 +16,7 @@ import nibabel as nib
 from .config_json_parser import GLMConfigParser, ClpipeConfigParser
 from .utils import add_file_handler, get_logger
 from .config import *
+from .errors import ConfoundsNotFoundError, EVFileNotFoundError
 
 STEP_NAME = "prepare"
 
@@ -92,7 +93,7 @@ def _glm_l1_propagate(l1_block, glm_setup_options, logger):
         os.mkdir(l1_block['FSFDir'])
     for file in image_files:
         try:
-            logger.debug("Creating FSF File for " + file)
+            logger.debug("Creating FSF File for image:" + os.path.basename(file))
             img_data = nib.load(file)
             total_tps = img_data.shape[3]
             ev_conf = _get_ev_confound_mat(file, l1_block, logger)
@@ -108,7 +109,7 @@ def _glm_l1_propagate(l1_block, glm_setup_options, logger):
             if glm_setup_options['ReferenceImage'] is not "":
                 new_fsf[regstandard_ind[0]] = "set fmri(regstandard) \"" + os.path.abspath(glm_setup_options['ReferenceImage']) + "\"\n"
             if l1_block['ConfoundSuffix'] is not "":
-                new_fsf[confound_file_ind[0]] = "set confoundev_files(1) \"" + os.path.abspath(ev_conf['Confounds'][0]) + "\"\n"
+                new_fsf[confound_file_ind[0]] = "set confoundev_files(1) \"" + os.path.abspath(ev_conf['Confounds']) + "\"\n"
 
             for i, e in enumerate(ev_conf['EVs']):
                 new_fsf[ev_file_inds[i]] = "set fmri(custom" + str(i +1) + ") \"" + os.path.abspath(e) + "\"\n"
@@ -116,8 +117,8 @@ def _glm_l1_propagate(l1_block, glm_setup_options, logger):
             with open(out_fsf, "w") as fsf_file:
                 fsf_file.writelines(new_fsf)
 
-        except FileNotFoundError as fnfe:
-            logger.warn(fnfe)
+        except (EVFileNotFoundError, ConfoundsNotFoundError) as nfe:
+            logger.warn(nfe)
 
 
 def _get_ev_confound_mat(file, l1_block, logger):
@@ -125,24 +126,38 @@ def _get_ev_confound_mat(file, l1_block, logger):
     file_name = os.path.basename(file)
 
     file_prefix = os.path.basename(file).replace(l1_block["TargetSuffix"], "")
-    logger.debug(f"File prefix: {file_prefix}")
-    EV_files = [glob.glob(os.path.join(l1_block["EVDirectory"],"**",file_prefix + EV), 
-        recursive=True) for EV in l1_block['EVFileSuffices']]
-    EV_files = [item for sublist in EV_files for item in sublist]
+
+    EV_files = []
+    for EV in l1_block['EVFileSuffices']:
+        try:
+            search_path = os.path.join(l1_block["EVDirectory"],"**",file_prefix + EV)
+            logger.debug(f"EV search path: {search_path}")
+            search_results = glob.glob((search_path), recursive = True)
+            if len(search_results) < 1:
+                raise EVFileNotFoundError(f"EV file not found: {EV}")
+            elif len(search_results) > 1:
+                raise EVFileNotFoundError(f"Found more than one EV file matching pattern: {search_path}")
+            EV_files.append(search_results[0])
+        except EVFileNotFoundError as evfnfe:
+            logger.debug(evfnfe)
 
     if len(EV_files) is not len(l1_block['EVFileSuffices']):
-        raise FileNotFoundError((
+        raise EVFileNotFoundError((
             f"Did not find enough EV files for image: {file_name}. "
             f"Only found {len(EV_files)} and need "
             f"{len(l1_block['EVFileSuffices'])}"
         ))
 
     if l1_block["ConfoundSuffix"] is not "":
-        confound_file = glob.glob(os.path.join(l1_block["ConfoundDirectory"],"**",
-            file_prefix + l1_block['ConfoundSuffix']), recursive = True)
-        if len(confound_file) is not 1:
-            raise FileNotFoundError(f"Did not find a confound file for image: {file_name}")
-        return {"EVs": EV_files, "Confounds": confound_file}
+        search_path = os.path.join(l1_block["ConfoundDirectory"],"**",
+            file_prefix + l1_block['ConfoundSuffix'])
+        logger.debug(f"Confound search path: {search_path}")
+        search_results = glob.glob((search_path), recursive = True)
+        if len(search_results) < 1:
+            raise ConfoundsNotFoundError(f"Did not find a confound file for image: {file_name}")
+        elif len(search_results) > 1:
+            raise ConfoundsNotFoundError(f"Found more than one confounds file matching pattern: {search_path}")
+        return {"EVs": EV_files, "Confounds": search_results[0]}
 
     return {"EVs": EV_files}
 
