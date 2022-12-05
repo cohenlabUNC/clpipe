@@ -91,7 +91,7 @@ def _glm_l1_propagate(l1_block, glm_setup_options, logger):
         os.mkdir(l1_block['FSFDir'])
     for file in image_files:
         try:
-            logger.info("Creating FSF File for " + file)
+            logger.debug("Creating FSF File for " + file)
             img_data = nib.load(file)
             total_tps = img_data.shape[3]
             ev_conf = _get_ev_confound_mat(file, l1_block, logger)
@@ -115,8 +115,8 @@ def _glm_l1_propagate(l1_block, glm_setup_options, logger):
             with open(out_fsf, "w") as fsf_file:
                 fsf_file.writelines(new_fsf)
 
-        except Exception as err:
-            logger.exception(err)
+        except FileNotFoundError as fnfe:
+            logger.warn(fnfe)
 
 
 def _get_ev_confound_mat(file_name, l1_block, logger):
@@ -135,7 +135,8 @@ def _get_ev_confound_mat(file_name, l1_block, logger):
         ))
 
     if l1_block["ConfoundSuffix"] is not "":
-        confound_file = glob.glob(os.path.join(l1_block["ConfoundDirectory"],"**",file_prefix + l1_block['ConfoundSuffix']), recursive = True)
+        confound_file = glob.glob(os.path.join(l1_block["ConfoundDirectory"],"**",
+            file_prefix + l1_block['ConfoundSuffix']), recursive = True)
         if len(confound_file) is not 1:
             raise FileNotFoundError("Did not find a confound file for this scan")
         return {"EVs": EV_files, "Confounds": confound_file}
