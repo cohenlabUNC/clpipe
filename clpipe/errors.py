@@ -40,3 +40,6 @@ class ImplementationNotFoundError(ValueError):
 
 class FSFFileNotFoundError(FileNotFoundError):
     pass
+
+class ModelNotFoundError(ValueError):
+    pass

@@ -19,7 +19,7 @@ from pathlib import Path
 from .config_json_parser import GLMConfigParser, ClpipeConfigParser
 from .utils import add_file_handler, get_logger
 from .config import *
-from .errors import ConfoundsNotFoundError, EVFileNotFoundError, FSFFileNotFoundError
+from .errors import *
 
 STEP_NAME = "prepare"
 
@@ -45,10 +45,9 @@ def glm_prepare(glm_config_file: str=None, level: int=L1,
         setup = 'Level2Setups'
     else:
         logger.error(f"Level must be {L1} or {L2}")
-        sys.exit(0)
+        sys.exit(1)
 
     logger.info(f"Targeting task-{glm_setup_options['TaskName']} {level} model: {model}")
-    logger.info("Propogating fsf files...")
 
     block = [x for x in glm_config[setup] \
             if x['ModelName'] == str(model)]
@@ -59,7 +58,11 @@ def glm_prepare(glm_config_file: str=None, level: int=L1,
     if level == L1:
         _glm_l1_propagate(model_options, glm_setup_options, logger)
     elif level == L2:
-        _glm_l2_propagate(model_options, glm_setup_options, logger)
+        try:
+            _glm_l2_propagate(model_options, glm_setup_options, logger)
+        except ModelNotFoundError as mnfe:
+            logger.error(mnfe)
+            sys.exit(1)
 
 
 def _glm_l1_propagate(l1_block, glm_setup_options, logger):
@@ -94,6 +97,8 @@ def _glm_l1_propagate(l1_block, glm_setup_options, logger):
 
     if not os.path.exists(l1_block['FSFDir']):
         os.mkdir(l1_block['FSFDir'])
+
+    logger.info("Propogating fsf files...")
     for file in image_files:
         try:
             file_name = os.path.basename(file)
@@ -174,6 +179,13 @@ def _glm_l2_propagate(l2_block, glm_setup_options, logger):
     logger.info(f"Reading subject file: {subject_file}")
     sub_tab = pd.read_csv(subject_file)
 
+    sub_tab = sub_tab.loc[sub_tab['L2_name'] == l2_block['ModelName']]
+
+    fsf_names = sub_tab.fsf_name.unique()
+
+    if len(fsf_names) == 0:
+        raise ModelNotFoundError(f"No records found in subject file for model: {l2_block['ModelName']}")
+
     logger.info(f"Opening prototype file: {prototype_file}")
     with open(prototype_file) as f:
         fsf_file_template=f.readlines()
@@ -188,13 +200,10 @@ def _glm_l2_propagate(l2_block, glm_setup_options, logger):
         i for i, e in enumerate(fsf_file_template) if "set fmri(regstandard)" in e
     ]
 
-    sub_tab = sub_tab.loc[sub_tab['L2_name'] == l2_block['ModelName']]
-
-    fsf_names = sub_tab.fsf_name.unique()
-
     if not os.path.exists(l2_block['FSFDir']):
         os.mkdir(l2_block['FSFDir'])
 
+    logger.info("Propogating fsf files...")
     for fsf in fsf_names:
         try:
             new_fsf = fsf_file_template
