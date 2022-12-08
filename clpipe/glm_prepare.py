@@ -19,7 +19,7 @@ from pathlib import Path
 from .config_json_parser import GLMConfigParser, ClpipeConfigParser
 from .utils import add_file_handler, get_logger
 from .config import *
-from .errors import ConfoundsNotFoundError, EVFileNotFoundError
+from .errors import ConfoundsNotFoundError, EVFileNotFoundError, FSFFileNotFoundError
 
 STEP_NAME = "prepare"
 
@@ -221,8 +221,8 @@ def _glm_l2_propagate(l2_block, glm_setup_options, logger):
             with open(out_fsf, "w") as fsf_file:
                 fsf_file.writelines(new_fsf)
 
-        except Exception as err:
-            logger.exception(err)
+        except FSFFileNotFoundError as err:
+            logger.warn(err)
 
 
 def glm_apply_mumford_workaround(glm_config_file=None, 

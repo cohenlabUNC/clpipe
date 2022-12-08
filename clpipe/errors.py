@@ -37,3 +37,6 @@ class NoiseFileNotFoundError(FileNotFoundError):
 
 class ImplementationNotFoundError(ValueError):
     pass
+
+class FSFFileNotFoundError(FileNotFoundError):
+    pass
