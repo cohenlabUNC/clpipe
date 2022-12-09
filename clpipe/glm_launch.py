@@ -83,6 +83,8 @@ def glm_launch(glm_config_file: str=None, level: int=L1,
 
     try:
         log_dir = model_options["LogDir"]
+        if log_dir == "":
+            log_dir = out_dir
     except KeyError:
         log_dir = out_dir
     logger.info(f"Using log dir: {log_dir}")
