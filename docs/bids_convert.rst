@@ -154,6 +154,6 @@ This command will create convert an entire folder's data, and create a temporary
 Once you have updated your conversion configuration file, you can convert your entire dataset with:
 
 
-.. click:: clpipe.bids_conversion:convert2bids_cli
+.. click:: clpipe.cli:convert2bids_cli
    :prog: convert2bids
    :nested: full
