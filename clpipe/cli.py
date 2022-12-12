@@ -46,7 +46,8 @@ class OrderedHelpGroup(click.Group):
         return super().add_command(cmd, name)
 
 
-@click.group(cls=OrderedHelpGroup, context_settings=CONTEXT_SETTINGS)
+@click.group(cls=OrderedHelpGroup, context_settings=CONTEXT_SETTINGS,
+    invoke_without_command=True)
 @click.pass_context
 @click.option("-v", "--version", is_flag=True, default=False, 
         help=VERSION_HELP)
@@ -110,7 +111,7 @@ def _add_commands():
     glm_cli.add_command(fsl_onset_extract_cli, help_priority=2)
     glm_cli.add_command(report_outliers_cli, help_priority=7)
 
-    roi_cli.add_command(get_availablea_atlases_cli, help_priority=1)
+    roi_cli.add_command(get_available_atlases_cli, help_priority=1)
     roi_cli.add_command(fmri_roi_extraction_cli, help_priority=2)
 
     cli.add_command(bids_cli, help_priority=2)
@@ -456,9 +457,7 @@ def glm_apply_mumford_workaround_cli(glm_config_file, l1_feat_folders_path,
 def glm_launch_cli(level, model, glm_config_file, test_one, submit, debug):
     """Launch all prepared .fsf files for L1 or L2 GLM analysis.
     
-    L1 can be any of: 1, L1, l1, or level1.
-
-    L2 can be any of: 2, L2, l2, or level2.
+    LEVEL is the level of anlaysis, L1 or L2
 
     MODEL must be a a corresponding L1 or L2 model from your GLM configuration file.
     """
@@ -562,7 +561,7 @@ def fmri_roi_extraction_cli(subjects, config_file, target_dir, target_suffix,
 
 
 @click.command("atlases")
-def get_availablea_atlases_cli():
+def get_available_atlases_cli():
     """Display all available atlases."""
     from .roi_extractor import get_available_atlases
     get_available_atlases()
@@ -590,7 +589,7 @@ def report_outliers_cli(confounds_dir, confounds_file, output_file,
         get_image_confounds(confounds_file)
 
 
-@click.command(STATUS_COMMAND_NAME)
+@click.command(STATUS_COMMAND_NAME, no_args_is_help=True)
 @click.option('-config_file', type=CLICK_FILE_TYPE_EXISTS,
               help=CONFIG_HELP, required=False)
 @click.option('-cache_file', type=CLICK_FILE_TYPE_EXISTS,

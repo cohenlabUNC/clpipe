@@ -12,7 +12,7 @@ increase the `[FMRIPrepOptions][FMRIPrepMemoryUsage]` option in the configuratio
 To submit your dataset for preprocessing, 
 use the following command:
 
-.. click:: clpipe.fmri_preprocess:fmriprep_process_cli
+.. click:: clpipe.cli:fmriprep_process_cli
    :prog: fmriprep_process
    :nested: full
 
