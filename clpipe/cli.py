@@ -94,12 +94,18 @@ def roi_cli():
     Please choose one of the commands below for more information.
     """
 
+@click.group("reports", cls=OrderedHelpGroup)
+def reports_cli():
+    """Generate reports for your project.
+    
+    Please choose one of the commands below for more information.
+    """
+
 def _add_commands():
     cli.add_command(project_setup_cli, help_priority=1)
     cli.add_command(fmriprep_process_cli, help_priority=3)
     cli.add_command(fmri_postprocess_cli, help_priority=4)
-    cli.add_command(fmri_postprocess2_cli, help_priority=4)
-    cli.add_command(status_cli)
+    cli.add_command(fmri_postprocess2_cli, help_priority=5)
 
     bids_cli.add_command(convert2bids_cli)
     bids_cli.add_command(bids_validate_cli)
@@ -115,9 +121,13 @@ def _add_commands():
     roi_cli.add_command(get_available_atlases_cli, help_priority=1)
     roi_cli.add_command(fmri_roi_extraction_cli, help_priority=2)
 
+    reports_cli.add_command(get_fmriprep_reports_cli)
+
     cli.add_command(bids_cli, help_priority=2)
-    cli.add_command(glm_cli)
-    cli.add_command(roi_cli)
+    cli.add_command(glm_cli, help_priority=6)
+    cli.add_command(roi_cli, help_priority=7)
+    cli.add_command(reports_cli, help_priority=8)
+    cli.add_command(status_cli, help_priority=9)
 
 
 @click.command(SETUP_COMMAND_NAME, no_args_is_help=True)
@@ -250,6 +260,20 @@ def fmriprep_process_cli(bids_dir, working_dir, output_dir, config_file,
         output_dir=output_dir, config_file=config_file, 
         subjects=subjects, log_dir=log_dir, submit=submit, debug=debug, 
         status_cache=status_cache)
+
+
+@click.command("fmriprep", no_args_is_help=True)
+@click.option('-config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True), required=True, default=None,
+              help='The configuration file for the current data processing setup.')
+@click.option('-output_name', default='Report_Archive',
+              help='Path and name of the output archive. Defaults to current working directory and "Report_Archive.zip"')
+@click.option('-debug', is_flag=True, help='Print traceback on errors.')
+def get_fmriprep_reports_cli(config_file, output_name, debug):
+    """
+    Create a .zip directory of all fMRIPrep reports.
+    """
+    from .get_reports import get_reports
+    get_reports(config_file, output_name, debug)
 
 
 @click.command(POSTPROCESS_COMMAND_NAME, no_args_is_help=True)

@@ -1,4 +1,3 @@
-import click
 from .config_json_parser import ClpipeConfigParser
 import os
 import glob
@@ -9,12 +8,6 @@ import logging
 from .error_handler import exception_handler
 
 
-@click.command()
-@click.option('-config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True), required=True, default=None,
-              help='The configuration file for the current data processing setup.')
-@click.option('-output_name', default='Report_Archive',
-              help='Path and name of the output archive. Defaults to current working directory and "Report_Archive.zip"')
-@click.option('-debug', is_flag=True, help='Print traceback on errors.')
 def get_reports(config_file, output_name, debug):
     """This command creates a zip archive of fmriprep QC reports for download."""
     if not debug:
