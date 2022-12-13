@@ -20,6 +20,7 @@ class OrderedHelpGroup(click.Group):
     """
     def __init__(self, *args, **kwargs):
         self.help_priorities = {}
+        self.hidden_commands = []
         super(OrderedHelpGroup, self).__init__(*args, **kwargs)
 
     def get_help(self, ctx):
@@ -29,19 +30,24 @@ class OrderedHelpGroup(click.Group):
     def list_commands_for_help(self, ctx):
         """reorder the list of commands when listing the help"""
         commands = super(OrderedHelpGroup, self).list_commands(ctx)
-        return (c[1] for c in sorted(
-            (self.help_priorities.get(command, 1), command)
+        commands = (c[1] for c in sorted(
+            (self.help_priorities.get(command, 1), command if command not in self.hidden_commands else None)
                 for command in commands)
         )
+        #commands = [command if command not in self.hidden_commands else None for command in commands]
+        return commands
 
     def add_command(self, cmd: click.Command, name: str = None, 
-                    help_priority: int=DEFAULT_HELP_PRIORITY) -> None:
+                    help_priority: int=DEFAULT_HELP_PRIORITY,
+                    hidden: bool=False) -> None:
         """
         Behaves the same as `click.Group.add_command()`, except capture
         a priority for listing command names in help.
         """
         help_priorities = self.help_priorities
         help_priorities[cmd.name] = help_priority
+        if hidden:
+            self.hidden_commands.append(cmd.name)
         
         return super().add_command(cmd, name)
 
@@ -127,7 +133,7 @@ def _add_commands():
     cli.add_command(glm_cli, help_priority=6)
     cli.add_command(roi_cli, help_priority=7)
     cli.add_command(reports_cli, help_priority=8)
-    cli.add_command(status_cli, help_priority=9)
+    cli.add_command(status_cli, help_priority=9, hidden=True)
 
 
 @click.command(SETUP_COMMAND_NAME, no_args_is_help=True)
