@@ -38,27 +38,26 @@ def get_reports(config_file, output_name, debug, clear_temp=True):
     logger.info(f"Copying figures:")
     for sub in tqdm([x for x in image_dirs if 'sub-' in x], ascii=' #'):
         copy_tree(os.path.join(sub, 'figures'),
-                  os.path.join(config.config['FMRIPrepOptions']['WorkingDirectory'], 'reports_temp',
+                  os.path.join(config.config['FMRIPrepOptions']['WorkingDirectory'], 'reports_temp', 'fmriprep_reports',
                                os.path.basename(sub), 'figures'))
         ses_dirs = [f.path for f in os.scandir(sub) if f.is_dir()]
         for ses in [x for x in ses_dirs if 'ses-' in x]:
             if os.path.isdir(os.path.join(ses, 'figures')):
                    copy_tree(os.path.join(ses, 'figures'),
-                        os.path.join(config.config['FMRIPrepOptions']['WorkingDirectory'], 'reports_temp',
+                        os.path.join(config.config['FMRIPrepOptions']['WorkingDirectory'], 'reports_temp', 'fmriprep_reports',
                                    os.path.basename(sub),os.path.basename(ses), 'figures'))
     images = glob.glob(os.path.join(fmriprepdir, 'fmriprep', '*.html'))
 
     logger.info(f"Copying reports...")
     for report in images:
         shutil.copy(report,
-                    os.path.join(config.config['FMRIPrepOptions']['WorkingDirectory'], 'reports_temp',
+                    os.path.join(config.config['FMRIPrepOptions']['WorkingDirectory'], 'reports_temp', 'fmriprep_reports',
                                  os.path.basename(report)))
 
-    # edit this so that the correct root/base dir is used
     logger.info(f"Creating ZIP archive...")
     shutil.make_archive(base_name=output_name,
-                        root_dir=os.path.join(config.config['FMRIPrepOptions']['WorkingDirectory']),
-                        base_dir=os.path.join(config.config['FMRIPrepOptions']['WorkingDirectory'], 'reports_temp'),
+                        root_dir=os.path.join(config.config['FMRIPrepOptions']['WorkingDirectory'], 'reports_temp'),
+                        base_dir='fmriprep_reports',
                         format='zip')
 
     if clear_temp:
