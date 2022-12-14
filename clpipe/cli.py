@@ -273,13 +273,14 @@ def fmriprep_process_cli(bids_dir, working_dir, output_dir, config_file,
               help='The configuration file for the current data processing setup.')
 @click.option('-output_name', default='Report_Archive',
               help='Path and name of the output archive. Defaults to current working directory and "Report_Archive.zip"')
+@click.option('-clear_temp/-keep_temp', is_flag=True, default=True, help='Keep or clear the built temporary directory. Defaults to clear_temp.')
 @click.option('-debug', is_flag=True, help='Print traceback on errors.')
-def get_fmriprep_reports_cli(config_file, output_name, debug):
+def get_fmriprep_reports_cli(config_file, output_name, clear_temp, debug):
     """
     Create a .zip directory of all fMRIPrep reports.
     """
     from .get_reports import get_reports
-    get_reports(config_file, output_name, debug)
+    get_reports(config_file, output_name, debug, clear_temp=clear_temp)
 
 
 @click.command(POSTPROCESS_COMMAND_NAME, no_args_is_help=True)

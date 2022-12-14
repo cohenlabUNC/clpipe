@@ -28,7 +28,8 @@ setup(name='clpipe',
                         'deepdiff',
                         "pydantic",
                         "matplotlib",
-                        "heudiconv>=0.10.0"],
+                        "heudiconv>=0.10.0",
+                        "tqdm"],
       package_data={'clpipe': ['R_scripts/*.R']},
       entry_points='''
       [console_scripts]
@@ -48,7 +49,7 @@ setup(name='clpipe',
       glm_l2_launch=clpipe.cli:glm_l2_launch_cli
       fsl_onset_extract=clpipe.cli:fsl_onset_extract_cli
       fmri_process_check=clpipe.fmri_process_check:fmri_process_check
-      get_reports=clpipe.get_reports:get_reports
+      get_reports=clpipe.cli:get_fmriprep_reports_cli
       get_config_file=clpipe.grab_config_file:get_config_file
       get_glm_config_file=clpipe.grab_config_file:get_glm_config_file
       fmri_roi_extraction=clpipe.cli:fmri_roi_extraction_cli
