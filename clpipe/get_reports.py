@@ -57,7 +57,7 @@ def get_reports(config_file, output_name, debug, clear_temp=True):
     # edit this so that the correct root/base dir is used
     logger.info(f"Creating ZIP archive...")
     shutil.make_archive(base_name=output_name,
-                        root_dir=os.path.join(config.config['FMRIPrepOptions']['WorkingDirectory'], 'reports_temp'),
+                        root_dir=os.path.join(config.config['FMRIPrepOptions']['WorkingDirectory']),
                         base_dir=os.path.join(config.config['FMRIPrepOptions']['WorkingDirectory'], 'reports_temp'),
                         format='zip')
 
