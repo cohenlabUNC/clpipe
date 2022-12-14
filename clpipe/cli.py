@@ -271,8 +271,8 @@ def fmriprep_process_cli(bids_dir, working_dir, output_dir, config_file,
 @click.command("fmriprep", no_args_is_help=True)
 @click.option('-config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True), required=True, default=None,
               help='The configuration file for the current data processing setup.')
-@click.option('-output_name', default='Report_Archive',
-              help='Path and name of the output archive. Defaults to current working directory and "Report_Archive.zip"')
+@click.option('-output_name', default='fMRIPrep_Reports',
+              help='Path and name of the output archive. Defaults to current working directory and "fMRIPrep_Reports.zip"')
 @click.option('-clear_temp/-keep_temp', is_flag=True, default=True, help='Keep or clear the built temporary directory. Defaults to clear_temp.')
 @click.option('-debug', is_flag=True, help='Print traceback on errors.')
 def get_fmriprep_reports_cli(config_file, output_name, clear_temp, debug):
