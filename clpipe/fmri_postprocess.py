@@ -13,7 +13,10 @@ import re
 
 from pkg_resources import resource_filename
 
-import clpipe.postprocutils
+from .postprocutils.utils import (
+    scrub_setup, calc_filter, apply_filter, regress, scrub_image, notch_filter
+)
+from .postprocutils.spec_interpolate import spec_inter
 from .batch_manager import BatchManager, Job
 from .config_json_parser import ClpipeConfigParser
 from .error_handler import exception_handler
@@ -225,7 +228,7 @@ def _fmri_postprocess_image(config, file, task = None, tr=None, beta_series = Fa
             if config.config['PostProcessingOptions']['RespNotchFilter']:
                 fdts = _notch_filter_fd(config,  confound_regressors, tr, drop_tps)
 
-            scrubTargets = clpipe.postprocutils.utils.scrub_setup(fdts, fd_thres, scrub_behind, scrub_ahead, scrub_contig)
+            scrubTargets = scrub_setup(fdts, fd_thres, scrub_behind, scrub_ahead, scrub_contig)
 
         hp = float(config.config['PostProcessingOptions']['FilteringHighPass'])
         lp = float(config.config['PostProcessingOptions']['FilteringLowPass'])
@@ -234,15 +237,15 @@ def _fmri_postprocess_image(config, file, task = None, tr=None, beta_series = Fa
             logging.info('Filtering Toggle Activated')
             filter_toggle = True
             order = int(config.config['PostProcessingOptions']['FilteringOrder'])
-            filt = clpipe.postprocutils.utils.calc_filter(hp, lp, tr, order)
-            confounds = clpipe.postprocutils.utils.apply_filter(filt, confounds)
+            filt = calc_filter(hp, lp, tr, order)
+            confounds = apply_filter(filt, confounds)
 
         if scrub_toggle and filter_toggle:
             logging.info('Using Spectral Interpolation')
             ofreq = int(config.config['PostProcessingOptions']['OversamplingFreq'])
             hfreq = float(config.config['PostProcessingOptions']['PercentFreqSample'])
             logging.debug('Memory Usage Before Spectral Interpolation:' +str(psutil.virtual_memory().total >> 30) +' GB')
-            data = clpipe.postprocutils.spec_interpolate.spec_inter(data, tr, ofreq, scrubTargets, hfreq, binSize=config.config['PostProcessingOptions']["SpectralInterpolationBinSize"])
+            data = spec_inter(data, tr, ofreq, scrubTargets, hfreq, binSize=config.config['PostProcessingOptions']["SpectralInterpolationBinSize"])
 
         gc.collect()
 
@@ -252,15 +255,15 @@ def _fmri_postprocess_image(config, file, task = None, tr=None, beta_series = Fa
 
         if filter_toggle:
             logging.info('Filtering Data Now')
-            data = clpipe.postprocutils.utils.apply_filter(filt, data)
+            data = apply_filter(filt, data)
         if regress_toggle:
             logging.info('Regressing Data Now')
             logging.debug(str(confounds.shape))
             logging.debug(str(data.shape))
-            data = clpipe.postprocutils.utils.regress(confounds, data)
+            data = regress(confounds, data)
         if scrub_toggle:
             logging.info('Scrubbing data Now')
-            data = clpipe.postprocutils.utils.scrub_image(data, scrubTargets)
+            data = scrub_image(data, scrubTargets)
 
         data = (data + row_means)
 
@@ -314,8 +317,8 @@ def _fmri_postprocess_image(config, file, task = None, tr=None, beta_series = Fa
                 logging.info('Filtering Toggle Activated')
                 filter_toggle = True
                 order = int(config.config['BetaSeriesOptions']['FilteringOrder'])
-                filt = clpipe.postprocutils.utils.calc_filter(hp, lp, tr, order)
-                confounds = clpipe.postprocutils.utils.apply_filter(filt, confounds)
+                filt = calc_filter(hp, lp, tr, order)
+                confounds = apply_filter(filt, confounds)
             filt_ev_array, valid_events = _ev_mat_prep(events_file, filt, tr, ntp, beta_series_options)
 
             image = nib.load(file)
@@ -372,7 +375,7 @@ def _ev_mat_prep(event_file, filt, TR, ntp, config_block):
         ev_loop = ev_loop[indexSample]
         eventArray[:, index] = ev_loop
     if filt is not None:
-        filt_event_array = clpipe.postprocutils.utils.apply_filter(filt, eventArray)
+        filt_event_array = apply_filter(filt, eventArray)
     else:
         filt_event_array = eventArray
     return filt_event_array, valid_events
@@ -548,7 +551,7 @@ def _notch_filter_fd(config, confounds_filepath, tr, drop_tps = None):
         confounds = confounds.iloc[:(confounds.shape[0]-drop_tps)]
     confounds = numpy.array(confounds[config.config["PostProcessingOptions"]["MotionVars"]])
     band = config.config['PostProcessingOptions']['RespNotchFilterBand']
-    filt_fd = clpipe.postprocutils.utils.notch_filter(confounds, band, tr)
+    filt_fd = notch_filter(confounds, band, tr)
     return filt_fd
 
 def regex_wildcard(string):
