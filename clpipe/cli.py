@@ -237,17 +237,17 @@ def bids_validate_cli(bids_dir, config_file, log_dir, interactive, submit,
 
 @click.command(FMRIPREP_COMMAND_NAME, no_args_is_help=True)
 @click.argument('subjects', nargs=-1, required=False, default=None)
-@click.option('-config_file', default=None, type=CLICK_FILE_TYPE_EXISTS, 
+@click.option('-config_file', '-c', default=None, type=CLICK_FILE_TYPE_EXISTS, 
               help=CONFIG_HELP)
-@click.option('-bids_dir', type=CLICK_DIR_TYPE_EXISTS,
+@click.option('-bids_dir', '-i', type=CLICK_DIR_TYPE_EXISTS,
               help=BIDS_DIR_HELP)
 @click.option('-working_dir', type=CLICK_DIR_TYPE, 
               help=WORKING_DIR_HELP)
-@click.option('-output_dir', type=CLICK_DIR_TYPE,
+@click.option('-output_dir', '-o', type=CLICK_DIR_TYPE,
               help=FMRIPREP_OUTPUT_DIR_HELP)
 @click.option('-log_dir', type=CLICK_DIR_TYPE, help=LOG_DIR_HELP)
-@click.option('-submit', is_flag=True, default=False, help=SUBMIT_HELP)
-@click.option('-debug', is_flag=True, help=DEBUG_HELP)
+@click.option('-submit', '-s', is_flag=True, default=False, help=SUBMIT_HELP)
+@click.option('-debug', '-d', is_flag=True, help=DEBUG_HELP)
 @click.option('-status_cache', default=None, type=CLICK_FILE_TYPE, 
               help=STATUS_CACHE_HELP, hidden=True)
 def fmriprep_process_cli(bids_dir, working_dir, output_dir, config_file, 
@@ -268,12 +268,12 @@ def fmriprep_process_cli(bids_dir, working_dir, output_dir, config_file,
 
 
 @click.command("fmriprep", no_args_is_help=True)
-@click.option('-config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True), required=True, default=None,
+@click.option('-config_file', '-c', type=click.Path(exists=True, dir_okay=False, file_okay=True), required=True, default=None,
               help='The configuration file for the current data processing setup.')
-@click.option('-output_name', default='fMRIPrep_Reports',
+@click.option('-output_name', '-o', default='fMRIPrep_Reports',
               help='Path and name of the output archive. Defaults to current working directory and "fMRIPrep_Reports.zip"')
 @click.option('-clear_temp/-keep_temp', is_flag=True, default=True, help='Keep or clear the built temporary directory. Defaults to clear_temp.')
-@click.option('-debug', is_flag=True, help='Print traceback on errors.')
+@click.option('-debug', '-d', is_flag=True, help='Print traceback on errors.')
 def get_fmriprep_reports_cli(config_file, output_name, clear_temp, debug):
     """
     Create a .zip directory of all fMRIPrep reports.
@@ -284,19 +284,19 @@ def get_fmriprep_reports_cli(config_file, output_name, clear_temp, debug):
 
 @click.command(POSTPROCESS_COMMAND_NAME, no_args_is_help=True)
 @click.argument('subjects', nargs=-1, required=False, default=None)
-@click.option('-config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True), default=None, help = 'Use a given configuration file. If left blank, uses the default config file, requiring definition of BIDS, working and output directories.')
-@click.option('-target_dir', type=click.Path(exists=True, dir_okay=True, file_okay=False), help='Which fmriprep directory to process. If a configuration file is provided with a BIDS directory, this argument is not necessary. Note, must point to the ``fmriprep`` directory, not its parent directory.')
+@click.option('-config_file', '-c', type=click.Path(exists=True, dir_okay=False, file_okay=True), default=None, help = 'Use a given configuration file. If left blank, uses the default config file, requiring definition of BIDS, working and output directories.')
+@click.option('-target_dir', '-i', type=click.Path(exists=True, dir_okay=True, file_okay=False), help='Which fmriprep directory to process. If a configuration file is provided with a BIDS directory, this argument is not necessary. Note, must point to the ``fmriprep`` directory, not its parent directory.')
 @click.option('-target_suffix', help= 'Which file suffix to use. If a configuration file is provided with a target suffix, this argument is not necessary. Defaults to "preproc_bold.nii.gz"')
-@click.option('-output_dir', type=click.Path(dir_okay=True, file_okay=False), help = 'Where to put the postprocessed data. If a configuration file is provided with a output directory, this argument is not necessary.')
+@click.option('-output_dir', '-o', type=click.Path(dir_okay=True, file_okay=False), help = 'Where to put the postprocessed data. If a configuration file is provided with a output directory, this argument is not necessary.')
 @click.option('-output_suffix', help = 'What suffix to append to the postprocessed files. If a configuration file is provided with a output suffix, this argument is not necessary.')
 @click.option('-task', help = 'Which task to postprocess. If left blank, defaults to all tasks.')
 @click.option('-TR', help = 'The TR of the scans. If a config file is not provided, this option is required. If a config file is provided, this information is found from the sidecar jsons.')
-@click.option('-processing_stream', help = 'Optional processing stream selector.')
+@click.option('-processing_stream', '-p', help = 'Optional processing stream selector.')
 @click.option('-log_dir', type=click.Path(dir_okay=True, file_okay=False), help = 'Where to put HPC output files. If not specified, defaults to <outputDir>/batchOutput.')
 @click.option('-beta_series', is_flag = True, default = False, help = "Flag to activate beta-series correlation correlation. ADVANCED METHOD, refer to the documentation.")
-@click.option('-submit', is_flag = True, default=False, help = 'Flag to submit commands to the HPC.')
+@click.option('-submit', '-s', is_flag = True, default=False, help = 'Flag to submit commands to the HPC.')
 @click.option('-batch/-single', default=True, help = 'Submit to batch, or run in current session. Mainly used internally.')
-@click.option('-debug', is_flag = True, default=False, help = 'Print detailed processing information and traceback for errors.')
+@click.option('-debug', '-d', is_flag = True, default=False, help = 'Print detailed processing information and traceback for errors.')
 def fmri_postprocess_cli(config_file=None, subjects=None, target_dir=None, 
                          target_suffix=None, output_dir=None,
                          output_suffix=None, log_dir=None,
@@ -329,7 +329,7 @@ def fmri_postprocess_cli(config_file=None, subjects=None, target_dir=None,
               help=OUTPUT_DIR_HELP)
 @click.option('-processing_stream', '-p', default=DEFAULT_PROCESSING_STREAM, 
 required=False, help=PROCESSING_STREAM_HELP)
-@click.option('-log_dir', '-l', type=CLICK_DIR_TYPE_EXISTS, default=None, 
+@click.option('-log_dir', type=CLICK_DIR_TYPE_EXISTS, default=None, 
               required=False, help=LOG_DIR_HELP)
 @click.option('-index_dir', type=CLICK_DIR_TYPE, default=None, required=False,
               help=INDEX_HELP)
