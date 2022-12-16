@@ -327,7 +327,7 @@ def fmri_postprocess_cli(config_file=None, subjects=None, target_dir=None,
               help=FMRIPREP_DIR_HELP)
 @click.option('-output_dir', '-o', type=CLICK_DIR_TYPE, default=None, required=False,
               help=OUTPUT_DIR_HELP)
-@click.option('-processing_stream', '-p', default=DEFAULT_PROCESSING_STREAM_NAME, 
+@click.option('-processing_stream', '-p', default=DEFAULT_PROCESSING_STREAM, 
 required=False, help=PROCESSING_STREAM_HELP)
 @click.option('-log_dir', '-l', type=CLICK_DIR_TYPE_EXISTS, default=None, 
               required=False, help=LOG_DIR_HELP)

@@ -54,7 +54,7 @@ SUBJECT_SUBMISSION_STRING_TEMPLATE = (
 
 def postprocess_subjects(
         subjects=None, config_file=None, bids_dir=None, fmriprep_dir=None, 
-        output_dir=None, processing_stream=DEFAULT_PROCESSING_STREAM_NAME, 
+        output_dir=None, processing_stream=DEFAULT_PROCESSING_STREAM, 
         batch=False, submit=False, log_dir=None, pybids_db_path=None, 
         refresh_index=False, debug=False, cache=True):
     """
