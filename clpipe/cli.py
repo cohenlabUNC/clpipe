@@ -210,16 +210,16 @@ def convert2bids_cli(dicom_dir, dicom_dir_format, bids_dir,
 
 @click.command(VALIDATOR_COMMAND_NAME, no_args_is_help=True)
 @click.argument('bids_dir', type=CLICK_DIR_TYPE_EXISTS, required=False)
-@click.option('-config_file', type=CLICK_FILE_TYPE_EXISTS, default=None, 
+@click.option('-config_file', '-c', type=CLICK_FILE_TYPE_EXISTS, default=None, 
               help=CONFIG_HELP)
 @click.option('-log_dir', type=CLICK_FILE_TYPE_EXISTS, default=None,
               help=LOG_DIR_HELP)
-@click.option('-verbose', is_flag=True, default=False,
+@click.option('-verbose', '-v', is_flag=True, default=False,
               help=VERBOSE_HELP)
-@click.option('-submit', is_flag=True, help=SUBMIT_HELP)
+@click.option('-submit', '-s', is_flag=True, help=SUBMIT_HELP)
 @click.option('-interactive', is_flag=True, default=False,
               help=INTERACTIVE_HELP)
-@click.option('-debug', is_flag=True, help=DEBUG_HELP)
+@click.option('-debug', '-d', is_flag=True, help=DEBUG_HELP)
 def bids_validate_cli(bids_dir, config_file, log_dir, interactive, submit,
                       verbose, debug):
     """Validate if a directory BIDS standard.
