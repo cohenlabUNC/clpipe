@@ -19,17 +19,27 @@ class SubjectNotFoundError(ValueError):
     pass
 
 
-class ConfoundsNotFoundError(ValueError):
+class ConfoundsNotFoundError(FileNotFoundError):
     pass
 
 
-class MixingFileNotFoundError(ValueError):
+class EVFileNotFoundError(FileNotFoundError):
     pass
 
 
-class NoiseFileNotFoundError(ValueError):
+class MixingFileNotFoundError(FileNotFoundError):
+    pass
+
+
+class NoiseFileNotFoundError(FileNotFoundError):
     pass
 
 
 class ImplementationNotFoundError(ValueError):
+    pass
+
+class FSFFileNotFoundError(FileNotFoundError):
+    pass
+
+class ModelNotFoundError(ValueError):
     pass

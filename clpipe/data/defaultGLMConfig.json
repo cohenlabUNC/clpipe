@@ -64,6 +64,7 @@
       ],
       "ConfoundSuffix": "confounds.tsv",
       "OutputDir": "./test_l1feat",
+      "LogDir": "",
       "BatchOptions": {
 				"MemoryUsage": "10G",
 				"TimeUsage": "10:0:0",
@@ -79,6 +80,7 @@
       "SubjectFile": "l2_sublist.csv",
       "FSFDir": "",
       "OutputDir": "",
+      "LogDir": "",
       "BatchOptions": {
         "MemoryUsage": "5G",
         "TimeUsage": "5:0:0",

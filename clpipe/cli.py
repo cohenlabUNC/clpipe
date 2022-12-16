@@ -117,9 +117,8 @@ def _add_commands():
     bids_cli.add_command(bids_validate_cli)
 
     glm_cli.add_command(glm_setup_cli, help_priority=1)
-    glm_cli.add_command(glm_l1_preparefsf_cli, help_priority=3)
+    glm_cli.add_command(glm_prepare_cli, help_priority=3)
     glm_cli.add_command(glm_launch_cli, help_priority=4)
-    glm_cli.add_command(glm_l2_preparefsf_cli, help_priority=6)
     glm_cli.add_command(glm_apply_mumford_workaround_cli, help_priority=5)
     glm_cli.add_command(fsl_onset_extract_cli, help_priority=2)
     glm_cli.add_command(report_outliers_cli, help_priority=7)
@@ -388,6 +387,26 @@ def glm_setup_cli(subjects, config_file, glm_config_file, submit, batch, debug,
         submit=submit, batch=batch, debug=debug, drop_tps=drop_tps)
 
 
+@click.command(GLM_PREPARE_COMMAND_NAME, no_args_is_help=True)
+@click.argument('level')
+@click.argument('model')
+@click.option('-glm_config_file', type=click.Path(exists=True, dir_okay=False, 
+              file_okay=True), default=None, required = True,
+              help=CONFIG_HELP)
+@click.option('-debug', is_flag=True, 
+              help=DEBUG_HELP)
+def glm_prepare_cli(level, model, glm_config_file, debug):
+    """Propagate an .fsf file template for L1 or L2 GLM analysis.
+    
+    LEVEL is the level of anlaysis, L1 or L2
+
+    MODEL must be a a corresponding L1 or L2 model from your GLM configuration file.
+    """
+    from .glm_prepare import glm_prepare
+    glm_prepare(glm_config_file=glm_config_file, level=level, 
+                model=model, debug=debug)
+
+
 @click.command(L1_PREPARE_FSF_COMMAND_NAME, no_args_is_help=True)
 @click.option('-glm_config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True), default=None, required = True,
               help='Your GLM configuration file.')
@@ -473,8 +492,8 @@ def glm_launch_cli(level, model, glm_config_file, test_one, submit, debug):
 
     MODEL must be a a corresponding L1 or L2 model from your GLM configuration file.
     """
-    from .glm_launch import glm_launch_controller
-    glm_launch_controller(glm_config_file=glm_config_file, level=level, 
+    from .glm_launch import glm_launch
+    glm_launch(glm_config_file=glm_config_file, level=level, 
                           model=model, test_one=test_one, 
                           submit=submit, debug=debug)
 

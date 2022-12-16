@@ -11,6 +11,12 @@ CLICK_DIR_TYPE_EXISTS = click.Path(exists=True, dir_okay=True, file_okay=False)
 CLICK_DIR_TYPE_NOT_EXIST = click.Path(
     exists=False, dir_okay=True, file_okay=False)
 
+# GLM Levels
+VALID_L1 = ["1", "L1", "l1", "level1"]
+VALID_L2 = ["2", "L2", "l2", "level2"]
+L1 = VALID_L1[1]
+L2 = VALID_L2[1]
+
 # Default paths
 DEFAULT_BATCH_CONFIG_PATH = "slurmUNCConfig.json"
 DEFAULT_CONFIG_PATH = "data/defaultConvConfig.json"
@@ -120,6 +126,9 @@ L2_PREPARE_FSF_COMMAND_NAME = "l2_prepare_fsf"
 APPLY_MUMFORD_COMMAND_NAME = "apply_mumford"
 ONSET_EXTRACT_COMMAND_NAME = "fsl_onset_extract"
 OUTLIERS_COMMAND_NAME = "report_outliers"
+
+# GLM Prepare
+GLM_PREPARE_COMMAND_NAME = "prepare"
 
 # GLM Launch Help
 GLM_LAUNCH_COMMAND_NAME = "launch"

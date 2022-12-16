@@ -2,7 +2,7 @@ import os
 import sys
 from pathlib import Path
 
-from .config import DEFAULT_BATCH_CONFIG_PATH
+from .config import *
 from .config_json_parser import GLMConfigParser, ClpipeConfigParser
 from .batch_manager import BatchManager, Job
 from .utils import add_file_handler, get_logger
@@ -21,13 +21,8 @@ STEP_NAME = "glm-launch"
 #   libraries
 SUBMISSION_STRING_TEMPLATE = ("unset PYTHONPATH; feat {fsf_file}")
 
-VALID_L1 = ["1", "L1", "l1", "level1"]
-VALID_L2 = ["2", "L2", "l2", "level2"]
-L1 = VALID_L1[1]
-L2 = VALID_L2[1]
 
-
-def glm_launch_controller(glm_config_file: str=None, level: int=L1,
+def glm_launch(glm_config_file: str=None, level: int=L1,
                           model: str=None, test_one: bool=False, 
                           submit: bool=False, debug: bool=False):
     glm_config_parser = GLMConfigParser(glm_config_file)
@@ -58,10 +53,10 @@ def glm_launch_controller(glm_config_file: str=None, level: int=L1,
             if x['ModelName'] == str(model)]
     if len(block) is not 1:
         raise ValueError("Model not found, or multiple entries found.")
-    glm_setup_options = block[0]
+    model_options = block[0]
 
     try:
-        batch_options = glm_setup_options["BatchOptions"]
+        batch_options = model_options["BatchOptions"]
 
         memory_usage = batch_options["MemoryUsage"]
         time_usage = batch_options["TimeUsage"]
@@ -81,13 +76,15 @@ def glm_launch_controller(glm_config_file: str=None, level: int=L1,
         batch_config_path = DEFAULT_BATCH_CONFIG_PATH
         email = None
 
-    fsf_dir = glm_setup_options["FSFDir"]
+    fsf_dir = model_options["FSFDir"]
     logger.info(f"Targeting .fsfs in dir: {fsf_dir}")
-    out_dir = glm_setup_options["OutputDir"]
+    out_dir = model_options["OutputDir"]
     logger.info(f"Output dir: {out_dir}")
 
     try:
-        log_dir = glm_setup_options["LogDir"]
+        log_dir = model_options["LogDir"]
+        if log_dir == "":
+            log_dir = out_dir
     except KeyError:
         log_dir = out_dir
     logger.info(f"Using log dir: {log_dir}")
@@ -97,8 +94,18 @@ def glm_launch_controller(glm_config_file: str=None, level: int=L1,
         memory_usage=memory_usage, time_usage=time_usage, n_threads=n_threads,
         email=email)
 
-    glm_launch(fsf_dir, batch_manager, test_one=test_one,
-               submit=submit, logger=logger)
+    submission_strings = _create_submission_strings(
+        fsf_dir, test_one=test_one)
+   
+    num_jobs = len(submission_strings)
+
+    if batch_manager:
+        _populate_batch_manager(batch_manager, submission_strings)
+        if submit:
+            logger.info(f"Running {num_jobs} job(s) in batch mode")
+            batch_manager.submit_jobs()
+        else:
+            batch_manager.print_jobs()
 
 
 def _setup_batch_manager(batch_config_path: str, log_dir: str, 
@@ -115,23 +122,6 @@ def _setup_batch_manager(batch_config_path: str, log_dir: str,
         batch_manager.update_email(email)
 
     return batch_manager
-
-
-def glm_launch(fsf_dir: str, batch_manager: BatchManager,
-               test_one:bool=False, submit: bool=False, logger=None):
-
-    submission_strings = _create_submission_strings(
-        fsf_dir, test_one=test_one)
-   
-    num_jobs = len(submission_strings)
-
-    if batch_manager:
-        _populate_batch_manager(batch_manager, submission_strings)
-        if submit:
-            logger.info(f"Running {num_jobs} job(s) in batch mode")
-            batch_manager.submit_jobs()
-        else:
-            batch_manager.print_jobs()
 
  
 def _create_submission_strings(fsf_files: os.PathLike, 
