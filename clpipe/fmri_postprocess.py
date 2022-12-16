@@ -17,6 +17,7 @@ import clpipe.postprocutils
 from .batch_manager import BatchManager, Job
 from .config_json_parser import ClpipeConfigParser
 from .error_handler import exception_handler
+from .errors import SubjectNotFoundError
 
 
 def fmri_postprocess(config_file=None, subjects=None, target_dir=None, target_suffix=None, output_dir=None,
@@ -142,6 +143,8 @@ def _fmri_postprocess_subject(config, subject, task, tr=None, beta_series = Fals
                      "*" + config.config[output_type]['TargetSuffix']))
 
     subject_files = glob.glob(search_string, recursive=True)
+    if len(subject_files) == 0:
+        raise SubjectNotFoundError(f"No subjects found on search path: {search_string}")
     if config.config['PostProcessingOptions']["DropCSV"] is not "":
         drop_tps = pandas.read_csv(config.config['PostProcessingOptions']["DropCSV"])
 
