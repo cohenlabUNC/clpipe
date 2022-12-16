@@ -77,6 +77,14 @@ def cli(ctx, version):
             ctx.exit()
 
 
+@click.group("dicom")
+def dicom_cli():
+    """Raw Data Commands.
+    
+    Please choose one of the commands below for more information.
+    """
+
+
 @click.group("glm", cls=OrderedHelpGroup)
 def glm_cli():
     """General Linear Model (GLM) Commands.
@@ -629,5 +637,18 @@ def status_cli(config_file, cache_file):
     """Check the status of your project."""
     from .status import show_latest_by_step
     show_latest_by_step(config_file=config_file, cache_path=cache_file)
+
+
+@click.command("sync")
+@click.option('-config_file', type=CLICK_FILE_TYPE_EXISTS,
+              help=CONFIG_HELP, required=False)
+def sync_cli(config_file):
+    """Sync your project's DICOMs with flywheel."""
+    from .config_json_parser import ClpipeConfigParser
+    import os
+    config_parser = ClpipeConfigParser(config_file)
+    config = config_parser.config
+
+    os.system(f"fw")
 
 _add_commands()
