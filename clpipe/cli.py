@@ -657,6 +657,23 @@ def sync_cli(config_file, source_path, sync_dir, link_dir, debug):
     config = config_parser.config
 
     dicom_dir = config["DICOMToBIDSOptions"]["DICOMDirectory"]
+    if not sync_dir:
+        try:
+            sync_dir = config["DICOMToBIDSOptions"]["SyncDirectory"]
+        except KeyError:
+            pass
+
+    if not link_dir:
+        try:
+            link_dir = config["DICOMToBIDSOptions"]["LinkDirectory"]
+        except KeyError:
+            pass
+
+    if not source_path:
+        try:
+            source_path = config["DICOMToBIDSOptions"]["SourcePath"]
+        except KeyError:
+            pass
 
     # TODO
     # If neither sync nor link is specified in options or config file
