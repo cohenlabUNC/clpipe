@@ -4,7 +4,7 @@ import glob
 import shutil
 from distutils.dir_util import copy_tree, remove_tree
 from tqdm import tqdm
-from .utils import add_file_handler, get_logger
+from .utils import add_file_handler, get_logger, resolve_fmriprep_dir
 
 STEP_NAME = "reports_fmriprep"
 
@@ -26,14 +26,9 @@ def get_reports(config_file, output_name, debug, clear_temp=True):
     logger.info(f"Generating an fMRIPrep report targeting: {fmriprepdir}")
     logger.debug(f"Using config file: {config_file}")
 
-    # Check to see if a subdirectory named fmriprep is in the target directory
-    # Version < 21 of fMRIPrep has a folder named 'fmriprep' nested within its output
-    old_fmriprep_layer = os.path.join(fmriprepdir, 'fmriprep')
-    scan_path = fmriprepdir
-    if os.path.exists(old_fmriprep_layer):
-        scan_path = old_fmriprep_layer
+    fmriprepdir = resolve_fmriprep_dir(fmriprepdir)
 
-    image_dirs = [f.path for f in os.scandir(scan_path) if f.is_dir()]
+    image_dirs = [f.path for f in os.scandir(fmriprepdir) if f.is_dir()]
 
     logger.info(f"Copying figures:")
     for sub in tqdm([x for x in image_dirs if 'sub-' in x], ascii=' #'):

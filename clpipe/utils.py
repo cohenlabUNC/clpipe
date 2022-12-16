@@ -40,6 +40,25 @@ def append_suffix(original_path, suffix_to_add):
     return out_file
 
 
+def resolve_fmriprep_dir(fmriprep_dir):
+    """Support fMRIPrep the folder structure in version < 21 or version > 21.
+    
+    Check to see if a subdirectory named fmriprep is in the target directory
+    version < 21 of fMRIPrep has a folder named 'fmriprep' nested within its output.
+    If this exists, return this path as fmriprep's root directory.
+    If not, use the given fmriprep path directly.
+
+    Even if the user is using < 21 and overspecifies the path as data_fmriprep/fmriprep,
+    this will still give the desired root fmriprep directory.
+    """
+    old_fmriprep_layer = os.path.join(fmriprep_dir, 'fmriprep')
+    fmriprep_root = fmriprep_dir
+    if os.path.exists(old_fmriprep_layer):
+        fmriprep_root = old_fmriprep_layer
+
+    return fmriprep_root
+
+
 def get_logger(name, debug=False, log_dir=None, f_name="clpipe.log"):
     logger = logging.getLogger("clpipe").getChild(name)
 

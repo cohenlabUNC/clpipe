@@ -33,7 +33,7 @@ from .postprocutils.workflows import build_image_postprocessing_workflow, \
     build_postprocessing_workflow
 from .postprocutils.confounds_workflows import \
     build_confounds_processing_workflow
-from .utils import add_file_handler, get_logger
+from .utils import add_file_handler, get_logger, resolve_fmriprep_dir
 from .errors import *
 
 DEFAULT_GRAPH_STYLE = "colored"
@@ -76,8 +76,7 @@ def postprocess_subjects(
     if not fmriprep_dir:
         # Look for a target dir configuration - if empty or not present,
         # assume the fmriprep dir
-        default_path = \
-            Path(config["FMRIPrepOptions"]["OutputDirectory"]) / "fmriprep"
+        default_path = resolve_fmriprep_dir(config["FMRIPrepOptions"]["OutputDirectory"])
         try:
             fmriprep_dir = config["PostProcessingOptions2"]["TargetDirectory"]
             if fmriprep_dir == "":
@@ -564,6 +563,11 @@ def _fetch_postprocessing_stream_config(
         postprocessing_config, postprocessing_description_file)
 
     return postprocessing_config
+
+
+def _list_available_streams(postprocessing_config: dict):
+
+    return postprocessing_config.keys()
 
 
 def _write_processing_description_file(
