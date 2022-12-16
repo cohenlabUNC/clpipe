@@ -561,7 +561,7 @@ def fsl_onset_extract_cli(config_file, glm_config_file, debug):
               help='Which postprocessed directory to process. If a configuration file is provided with a target directory, this argument is not necessary.')
 @click.option('-target_suffix',
               help='Which target suffix to process. If a configuration file is provided with a target suffix, this argument is not necessary.')
-@click.option('-output_dir', type=click.Path(dir_okay=True, file_okay=False),
+@click.option('-output_dir', '-o', type=click.Path(dir_okay=True, file_okay=False),
               help='Where to put the ROI extracted data. If a configuration file is provided with a output directory, this argument is not necessary.')
 @click.option('-task', help = 'Which task to process. If none, then all tasks are processed.')
 @click.option('-atlas_name', help = "What atlas to use. Please refer to documentation, or use the command get_available_atlases to see which are available. When specified for a custom atlas, this is what the output files will be named.")
@@ -573,9 +573,9 @@ def fsl_onset_extract_cli(config_file, glm_config_file, debug):
 @click.option('-overwrite', is_flag=True, default=False, help = "Overwrite existing ROI timeseries?")
 @click.option('-log_output_dir', type=click.Path(dir_okay=True, file_okay=False),
               help='Where to put HPC output files (such as SLURM output files). If not specified, defaults to <outputDir>/batchOutput.')
-@click.option('-submit', is_flag=True, default=False, help='Flag to submit commands to the HPC')
+@click.option('-submit', '-s', is_flag=True, default=False, help='Flag to submit commands to the HPC')
 @click.option('-single', is_flag=True, default=False, help='Flag to directly run command. Used internally.')
-@click.option('-debug', is_flag=True, help='Flag to enable detailed error messages and traceback')
+@click.option('-debug', '-d', is_flag=True, help='Flag to enable detailed error messages and traceback')
 def fmri_roi_extraction_cli(subjects, config_file, target_dir, target_suffix, 
                             output_dir, task, log_output_dir, atlas_name, custom_atlas,
                             custom_label, custom_type, radius, submit, single, 
@@ -621,7 +621,7 @@ def report_outliers_cli(confounds_dir, confounds_file, output_file,
 
 
 @click.command(STATUS_COMMAND_NAME, no_args_is_help=True)
-@click.option('-config_file', type=CLICK_FILE_TYPE_EXISTS,
+@click.option('-config_file', '-c', type=CLICK_FILE_TYPE_EXISTS,
               help=CONFIG_HELP, required=False)
 @click.option('-cache_file', type=CLICK_FILE_TYPE_EXISTS,
               help=CACHE_FILE_HELP, required=False)
