@@ -691,14 +691,27 @@ def sync_cli(config_file, source_path, sync_dir, link_dir, debug):
     # OR maybe if link_dir is given, assume it is data_DICOMs if no path provided
 
     logger = get_logger("sync", debug=debug)
+    
+    
+    logger.info("Starting up Flywheel...")
+    # os.system(f"fw sync --include dicom {source_path} {sync_dir}")
 
-    os.system(f"fw sync --include dicom {source_path} {sync_dir}")
+    # flywheel_generated_temp_dir = os.path.join(os.getcwd(), "<TemporaryDirectory '")
+    # print(f"To remove: {flywheel_generated_temp_dir}")
+    # import shutil
+    # shutil.rmtree(flywheel_generated_temp_dir)
+    # if click.confirm('Remove generated Flywheel directory at {}'):
+    # click.echo('Well done!')
+    
 
     if link_dir:
         _symlink_flywheel_dir(sync_dir, link_dir, logger)
 
 import os
+from pathlib import Path
 def _symlink_flywheel_dir(flywheel_dir: os.PathLike, link_dir: os.PathLike, logger):
+    flywheel_dir = Path(flywheel_dir)
+    link_dir = Path(link_dir)
     if not link_dir.exists():
         logger.info(f"Creating top-level link directory: {str(link_dir)}")
         link_dir.mkdir()
@@ -733,15 +746,18 @@ def _symlink_flywheel_dir(flywheel_dir: os.PathLike, link_dir: os.PathLike, logg
                 file_dirs = acquisition_dir / 'FILES'
             
                 for files_dir in file_dirs.glob('*'):
-                    if files_dir.is_file():
-                        os.symlink(files_dir.parent, acquisition_link_dir)
-                        break
-                    
-                    file_name = files_dir.name
-                    file_link_dir = session_link_dir / file_name
-
-                    if not file_link_dir.exists():
-                        os.symlink(files_dir, file_link_dir)
+                    try:
+                        if files_dir.is_file():
+                            os.symlink(files_dir.parent, acquisition_link_dir)
+                            break
+                        
+                        file_name = files_dir.name
+                        file_link_dir = session_link_dir / file_name
+                        
+                        if not file_link_dir.exists():
+                            os.symlink(files_dir, file_link_dir)
+                    except FileExistsError:
+                        pass
 
 
 _add_commands()
