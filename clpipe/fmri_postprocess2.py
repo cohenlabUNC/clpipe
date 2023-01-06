@@ -631,7 +631,6 @@ def _submit_jobs(batch_manager, submission_strings, logger, submit=True):
     if batch_manager:
         _populate_batch_manager(batch_manager, submission_strings, logger)
         if submit:
-            logger.info(f"Running {num_jobs} job(s) in batch mode")
             batch_manager.submit_jobs()
         else:
             batch_manager.print_jobs()
