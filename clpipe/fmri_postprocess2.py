@@ -181,7 +181,7 @@ def postprocess_subjects(
 @click.argument('bids_dir', type=click.Path(dir_okay=True, file_okay=False))
 @click.argument('fmriprep_dir', type=CLICK_DIR_TYPE)
 @click.argument('output_dir', type=click.Path(dir_okay=True, file_okay=False))
-@click.argument('processing_stream', default=DEFAULT_PROCESSING_STREAM_NAME)
+@click.argument('processing_stream', default=DEFAULT_PROCESSING_STREAM)
 @click.argument('config_file', type=click.Path(dir_okay=False, file_okay=True))
 @click.argument('index_dir', type=click.Path(dir_okay=True, file_okay=False))
 @click.argument('log_dir', type=click.Path(dir_okay=True, file_okay=False))
@@ -201,7 +201,7 @@ def postprocess_subject_cli(subject_id, bids_dir, fmriprep_dir, output_dir,
 
 def postprocess_subject(
     subject_id, bids_dir, fmriprep_dir, output_dir, config_file, index_dir, 
-    batch, submit, log_dir, processing_stream=DEFAULT_PROCESSING_STREAM_NAME,
+    batch, submit, log_dir, processing_stream=DEFAULT_PROCESSING_STREAM,
     debug=False):
     """
     Parse configuration and (TODO) sanitize inputs for image job distribution.
@@ -287,7 +287,7 @@ def postprocess_subject(
 @click.argument('index_dir', type=click.Path(dir_okay=True, file_okay=False))
 @click.argument('out_dir', type=click.Path(dir_okay=True, file_okay=False))
 @click.argument('subject_out_dir', type=CLICK_DIR_TYPE)
-@click.argument('processing_stream', default=DEFAULT_PROCESSING_STREAM_NAME)
+@click.argument('processing_stream', default=DEFAULT_PROCESSING_STREAM)
 @click.argument('subject_working_dir', type=CLICK_DIR_TYPE)
 @click.argument('log_dir', type=click.Path(dir_okay=True, file_okay=False))
 @click.option('-debug', is_flag = True, default=False, help=DEBUG_HELP)
@@ -304,7 +304,7 @@ def postprocess_image_cli(config_file, image_path, bids_dir, fmriprep_dir,
 def postprocess_image(
     config_file, image_path, bids_dir, fmriprep_dir, pybids_db_path, out_dir,
     subject_out_dir, subject_working_dir, log_dir, 
-    processing_stream=DEFAULT_PROCESSING_STREAM_NAME, confounds_only=False,
+    processing_stream=DEFAULT_PROCESSING_STREAM, confounds_only=False,
     debug=False):
     """
     Setup the workflows specified in the postprocessing configuration.
@@ -541,7 +541,7 @@ def _plot_image_sample(image_path: os.PathLike,
 
 def _fetch_postprocessing_stream_config(
     config: dict, output_dir: os.PathLike, 
-    processing_stream:str=DEFAULT_PROCESSING_STREAM_NAME):
+    processing_stream:str=DEFAULT_PROCESSING_STREAM):
     """
     The postprocessing stream config is a subset of the main 
     configuration's postprocessing config, based on
@@ -590,13 +590,13 @@ def _write_processing_description_file(
 
 def _postprocessing_config_apply_processing_stream(
     config: dict,
-    processing_stream:str=DEFAULT_PROCESSING_STREAM_NAME):
+    processing_stream:str=DEFAULT_PROCESSING_STREAM):
 
     postprocessing_config = _get_postprocessing_config(config)
     processing_streams = _get_processing_streams(config)
     
     # If using the default stream, no need to update postprocessing config
-    if processing_stream == DEFAULT_PROCESSING_STREAM_NAME:
+    if processing_stream == DEFAULT_PROCESSING_STREAM:
         return
 
     # Iterate through the available processing streams and see 
