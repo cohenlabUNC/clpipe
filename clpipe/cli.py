@@ -640,15 +640,88 @@ def status_cli(config_file, cache_file):
 
 
 @click.command("sync")
-@click.option('-config_file', type=CLICK_FILE_TYPE_EXISTS,
+@click.option('-config_file', '-c', type=CLICK_FILE_TYPE_EXISTS,
               help=CONFIG_HELP, required=False)
-def sync_cli(config_file):
-    """Sync your project's DICOMs with flywheel."""
+@click.option('-source_path', help='The path to your project in Flywheel. Starts with fw://')
+@click.option('-sync_dir', type=CLICK_DIR_TYPE, 
+              help="Where to sync your files.")
+@click.option('-link_dir', type=CLICK_DIR_TYPE, 
+              help="BETA - Build a symbolic link directory pointing to your synced files, but with less intermediary folders.")
+@click.option('-debug', '-d', is_flag = True, default=False, help=DEBUG_HELP)
+def sync_cli(config_file, source_path, sync_dir, link_dir, debug):
+    """Sync your project's DICOMs with Flywheel."""
     from .config_json_parser import ClpipeConfigParser
+    from .utils import get_logger
     import os
     config_parser = ClpipeConfigParser(config_file)
     config = config_parser.config
 
-    os.system(f"fw")
+    dicom_dir = config["DICOMToBIDSOptions"]["DICOMDirectory"]
+
+    # TODO
+    # If neither sync nor link is specified in options or config file
+    # as something other than data_DICOMs,
+    # request one be provided - only one can be assumed to be data_DICOMs
+
+    # If only sync or link is given, and it isn't data_DICOMs, assume the
+    # other is data_DICOMs
+
+    # If both are given and neither is data_DICOMs, just use given
+    
+    # OR maybe if link_dir is given, assume it is data_DICOMs if no path provided
+
+    logger = get_logger("sync", debug=debug)
+
+    os.system(f"fw sync --include dicom {source_path} {sync_dir}")
+
+    if link_dir:
+        _symlink_flywheel_dir(sync_dir, link_dir, logger)
+
+import os
+def _symlink_flywheel_dir(flywheel_dir: os.PathLike, link_dir: os.PathLike, logger):
+    if not link_dir.exists():
+        logger.info(f"Creating top-level link directory: {str(link_dir)}")
+        link_dir.mkdir()
+
+    for subject_dir in flywheel_dir.glob('SUBJECTS/*'):
+        subject_id = subject_dir.name
+
+        subject_link_dir = link_dir / subject_id
+
+        if not subject_link_dir.exists():
+            logger.info(f"Creating link folder for subject: {subject_id}")
+            subject_link_dir.mkdir()
+
+        session_dirs = subject_dir / 'SESSIONS'
+
+        for session_dir in session_dirs.glob('*'):
+            session_name = session_dir.name
+
+            session_link_dir = subject_link_dir / session_name
+
+            if not session_link_dir.exists():
+                logger.info(f"Creating link folder for session: {session_name}")
+                session_link_dir.mkdir()
+
+            acquisition_dirs = session_dir / 'ACQUISITIONS'
+
+            for acquisition_dir in acquisition_dirs.glob('*'):
+                acquisition_name = acquisition_dir.name
+
+                acquisition_link_dir = session_link_dir / acquisition_name
+
+                file_dirs = acquisition_dir / 'FILES'
+            
+                for files_dir in file_dirs.glob('*'):
+                    if files_dir.is_file():
+                        os.symlink(files_dir.parent, acquisition_link_dir)
+                        break
+                    
+                    file_name = files_dir.name
+                    file_link_dir = session_link_dir / file_name
+
+                    if not file_link_dir.exists():
+                        os.symlink(files_dir, file_link_dir)
+
 
 _add_commands()
