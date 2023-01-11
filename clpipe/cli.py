@@ -79,7 +79,7 @@ def cli(ctx, version):
 
 @click.group("dicom")
 def dicom_cli():
-    """Raw Data Commands.
+    """Raw DICOM Data Commands.
     
     Please choose one of the commands below for more information.
     """
@@ -642,122 +642,29 @@ def status_cli(config_file, cache_file):
     show_latest_by_step(config_file=config_file, cache_path=cache_file)
 
 
-@click.command("sync")
+@click.command("sync", no_args_is_help=True)
 @click.option('-config_file', '-c', type=CLICK_FILE_TYPE_EXISTS,
               help=CONFIG_HELP, required=False)
-@click.option('-source_path', help='The path to your project in Flywheel. Starts with fw://')
+@click.option('-source_url', help='The path to your project in Flywheel. Starts with fw://. You can browse your available projects with "fw ls"')
 @click.option('-sync_dir', type=CLICK_DIR_TYPE, 
-              help="Where to sync your files.")
-@click.option('-link_dir', type=CLICK_DIR_TYPE, 
-              help="BETA - Build a symbolic link directory pointing to your synced files, but with less intermediary folders.")
+              help="Where to sync your files. Defaults to your DICOMDirectory.")
+@click.option('-submit', '-s', is_flag=True, default=False, help=SUBMIT_HELP)
 @click.option('-debug', '-d', is_flag = True, default=False, help=DEBUG_HELP)
-def sync_cli(config_file, source_path, sync_dir, link_dir, debug):
-    """Sync your project's DICOMs with Flywheel."""
-    from .config_json_parser import ClpipeConfigParser
-    from .utils import get_logger
-    import os
-    config_parser = ClpipeConfigParser(config_file)
-    config = config_parser.config
+def sync_cli(config_file, source_url, sync_dir, submit, debug):
+    """
+    Sync your DICOM data with a remote source. Currently supports Flywheel.
 
-    dicom_dir = config["DICOMToBIDSOptions"]["DICOMDirectory"]
-    if not sync_dir:
-        try:
-            sync_dir = config["DICOMToBIDSOptions"]["SyncDirectory"]
-        except KeyError:
-            pass
+    You will first need to login to Flywheel via the Flywheel CLI to use this command. 
+    Navigate to the Flywheel web portal. In the upper right, click on your profile drop down menu, select
+    'profile.' Scroll down and copy the command under 'Getting Started With the CLI.'
+    It should look like: 'fw login <FLYWHEEL URL>::<TOKEN>'. Run this command to login.
 
-    if not link_dir:
-        try:
-            link_dir = config["DICOMToBIDSOptions"]["LinkDirectory"]
-        except KeyError:
-            pass
+    """
+    from .sync import sync_flywheel
 
-    if not source_path:
-        try:
-            source_path = config["DICOMToBIDSOptions"]["SourcePath"]
-        except KeyError:
-            pass
-
-    # TODO
-    # If neither sync nor link is specified in options or config file
-    # as something other than data_DICOMs,
-    # request one be provided - only one can be assumed to be data_DICOMs
-
-    # If only sync or link is given, and it isn't data_DICOMs, assume the
-    # other is data_DICOMs
-
-    # If both are given and neither is data_DICOMs, just use given
-    
-    # OR maybe if link_dir is given, assume it is data_DICOMs if no path provided
-
-    logger = get_logger("sync", debug=debug)
-    
-    
-    logger.info("Starting up Flywheel...")
-    # os.system(f"fw sync --include dicom {source_path} {sync_dir}")
-
-    # flywheel_generated_temp_dir = os.path.join(os.getcwd(), "<TemporaryDirectory '")
-    # print(f"To remove: {flywheel_generated_temp_dir}")
-    # import shutil
-    # shutil.rmtree(flywheel_generated_temp_dir)
-    # if click.confirm('Remove generated Flywheel directory at {}'):
-    # click.echo('Well done!')
-    
-
-    if link_dir:
-        _symlink_flywheel_dir(sync_dir, link_dir, logger)
-
-import os
-from pathlib import Path
-def _symlink_flywheel_dir(flywheel_dir: os.PathLike, link_dir: os.PathLike, logger):
-    flywheel_dir = Path(flywheel_dir)
-    link_dir = Path(link_dir)
-    if not link_dir.exists():
-        logger.info(f"Creating top-level link directory: {str(link_dir)}")
-        link_dir.mkdir()
-
-    for subject_dir in flywheel_dir.glob('SUBJECTS/*'):
-        subject_id = subject_dir.name
-
-        subject_link_dir = link_dir / subject_id
-
-        if not subject_link_dir.exists():
-            logger.info(f"Creating link folder for subject: {subject_id}")
-            subject_link_dir.mkdir()
-
-        session_dirs = subject_dir / 'SESSIONS'
-
-        for session_dir in session_dirs.glob('*'):
-            session_name = session_dir.name
-
-            session_link_dir = subject_link_dir / session_name
-
-            if not session_link_dir.exists():
-                logger.info(f"Creating link folder for session: {session_name}")
-                session_link_dir.mkdir()
-
-            acquisition_dirs = session_dir / 'ACQUISITIONS'
-
-            for acquisition_dir in acquisition_dirs.glob('*'):
-                acquisition_name = acquisition_dir.name
-
-                acquisition_link_dir = session_link_dir / acquisition_name
-
-                file_dirs = acquisition_dir / 'FILES'
-            
-                for files_dir in file_dirs.glob('*'):
-                    try:
-                        if files_dir.is_file():
-                            os.symlink(files_dir.parent, acquisition_link_dir)
-                            break
-                        
-                        file_name = files_dir.name
-                        file_link_dir = session_link_dir / file_name
-                        
-                        if not file_link_dir.exists():
-                            os.symlink(files_dir, file_link_dir)
-                    except FileExistsError:
-                        pass
+    sync_flywheel(config_file=config_file, 
+                  source_url=source_url, sync_dir=sync_dir, 
+                  submit=submit, debug=debug)
 
 
 _add_commands()
