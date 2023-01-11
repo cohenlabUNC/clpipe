@@ -122,8 +122,8 @@ def _add_commands():
     cli.add_command(fmri_postprocess2_cli, help_priority=35)
 
     dicom_cli.add_command(sync_cli)
+    dicom_cli.add_command(convert2bids_cli)
 
-    bids_cli.add_command(convert2bids_cli)
     bids_cli.add_command(bids_validate_cli)
 
     glm_cli.add_command(glm_setup_cli, help_priority=1)
