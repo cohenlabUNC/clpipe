@@ -1,8 +1,8 @@
 ===========================
-Unified CLI - NEW
+Unified CLI
 ===========================
 
-clpipe now provides a unifed command line interface under the "clpipe" command.
+clpipe provides a unifed command line interface under the "clpipe" command.
 This interface uses the same processing functions as clpipe's traditional commands,
 except the are grouped together and given slightly different names. Unifying the
 commands makes them easier to find and conceptualize in relation to one another without
