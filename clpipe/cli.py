@@ -77,6 +77,14 @@ def cli(ctx, version):
             ctx.exit()
 
 
+@click.group("dicom")
+def dicom_cli():
+    """Raw DICOM Data Commands.
+    
+    Please choose one of the commands below for more information.
+    """
+
+
 @click.group("glm", cls=OrderedHelpGroup)
 def glm_cli():
     """General Linear Model (GLM) Commands.
@@ -108,12 +116,14 @@ def reports_cli():
     """
 
 def _add_commands():
-    cli.add_command(project_setup_cli, help_priority=1)
-    cli.add_command(fmriprep_process_cli, help_priority=3)
-    cli.add_command(fmri_postprocess_cli, help_priority=4)
-    cli.add_command(fmri_postprocess2_cli, help_priority=5)
+    cli.add_command(project_setup_cli, help_priority=0)
+    cli.add_command(fmriprep_process_cli, help_priority=20)
+    cli.add_command(fmri_postprocess_cli, help_priority=30)
+    cli.add_command(fmri_postprocess2_cli, help_priority=35)
 
-    bids_cli.add_command(convert2bids_cli)
+    dicom_cli.add_command(flywheel_sync_cli)
+    dicom_cli.add_command(convert2bids_cli)
+
     bids_cli.add_command(bids_validate_cli)
 
     glm_cli.add_command(glm_setup_cli, help_priority=1)
@@ -128,11 +138,12 @@ def _add_commands():
 
     reports_cli.add_command(get_fmriprep_reports_cli)
 
-    cli.add_command(bids_cli, help_priority=2)
-    cli.add_command(glm_cli, help_priority=6)
-    cli.add_command(roi_cli, help_priority=7)
-    cli.add_command(reports_cli, help_priority=8)
-    cli.add_command(status_cli, help_priority=9, hidden=True)
+    cli.add_command(bids_cli, help_priority=10)
+    cli.add_command(dicom_cli, help_priority=5)
+    cli.add_command(glm_cli, help_priority=40)
+    cli.add_command(roi_cli, help_priority=50)
+    cli.add_command(reports_cli, help_priority=60)
+    cli.add_command(status_cli, help_priority=70, hidden=True)
 
 
 @click.command(SETUP_COMMAND_NAME, no_args_is_help=True)
@@ -629,5 +640,28 @@ def status_cli(config_file, cache_file):
     """Check the status of your project."""
     from .status import show_latest_by_step
     show_latest_by_step(config_file=config_file, cache_path=cache_file)
+
+
+@click.command("flywheel_sync", no_args_is_help=True)
+@click.option('-config_file', '-c', type=CLICK_FILE_TYPE_EXISTS,
+              help=CONFIG_HELP, required=False)
+@click.option('-source_url', help='The path to your project in Flywheel. Starts with fw://. You can browse your available projects with "fw ls"')
+@click.option('-dropoff_dir', type=CLICK_DIR_TYPE, 
+              help="Where to sync your files.")
+@click.option('-submit', '-s', is_flag=True, default=False, help=SUBMIT_HELP)
+@click.option('-debug', '-d', is_flag = True, default=False, help=DEBUG_HELP)
+def flywheel_sync_cli(config_file, source_url, dropoff_dir, submit, debug):
+    """
+    Sync your DICOM data with Flywheel.
+
+    You must first login to Flywheel with 'fw login' to sync. See the clpipe
+    documentation on flywheel_sync for further help.
+    """
+    from .source import flywheel_sync
+
+    flywheel_sync(config_file=config_file, 
+                  source_url=source_url, dropoff_dir=dropoff_dir, 
+                  submit=submit, debug=debug)
+
 
 _add_commands()

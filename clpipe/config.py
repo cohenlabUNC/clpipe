@@ -50,7 +50,7 @@ SYM_LINK_HELP = \
     "Symlink the source data into project/data_dicoms. Usually safe to do."
 
 # BIDS conversion help
-CONVERSION_COMMAND_NAME = "convert"
+CONVERSION_COMMAND_NAME = "convert2bids"
 CONVERSION_CONFIG_HELP = (
     "A conversion definition file, either a dcm2bids conversion config .json "
     "file or a heudiconv heuristic .py file."

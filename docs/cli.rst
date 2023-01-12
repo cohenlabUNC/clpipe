@@ -1,8 +1,8 @@
 ===========================
-Unified CLI - NEW
+Unified CLI
 ===========================
 
-clpipe now provides a unifed command line interface under the "clpipe" command.
+clpipe provides a unifed command line interface under the "clpipe" command.
 This interface uses the same processing functions as clpipe's traditional commands,
 except the are grouped together and given slightly different names. Unifying the
 commands makes them easier to find and conceptualize in relation to one another without
@@ -25,6 +25,7 @@ in the order that they are intended to be used:
 
     Commands:
     setup         Set up a clpipe project
+    dicom         Raw DICOM Data Commands.
     bids          BIDS Commands
     preprocess    Submit BIDS-formatted images to fMRIPrep
     postprocess   Additional preprocessing for connectivity analysis
@@ -80,8 +81,7 @@ which can be viewed by calling the top command:
     --help  Show this message and exit.
 
     Commands:
-    convert   Convert DICOM files to BIDS format
-    validate  Check that the given directory conforms to the BIDS standard
+        validate  Check that the given directory conforms to the BIDS standard
 
 These commands contain their own help dialouge as well:
 
@@ -94,16 +94,16 @@ These commands contain their own help dialouge as well:
     Check that the given directory conforms to the BIDS standard
 
     Options:
-    -config_file FILE  Uses a given configuration file
-    -log_dir FILE      Where to put HPC output files (such as SLURM output
-                        files)
-    -verbose           Creates verbose validator output. Use if you want to see
-                        ALL files with errors/warnings.
-    -submit            Flag to submit commands to the HPC
-    -interactive       Run in an interactive session. Only use in an interactive
-                        compute session.
-    -debug             Flag to enable detailed error messages and traceback
-    --help             Show this message and exit.
+        -config_file FILE  Uses a given configuration file
+        -log_dir FILE      Where to put HPC output files (such as SLURM output
+                            files)
+        -verbose           Creates verbose validator output. Use if you want to see
+                            ALL files with errors/warnings.
+        -submit            Flag to submit commands to the HPC
+        -interactive       Run in an interactive session. Only use in an interactive
+                            compute session.
+        -debug             Flag to enable detailed error messages and traceback
+        --help             Show this message and exit.
 
 Here we perform the command equivalent to "bids_validate":
 
