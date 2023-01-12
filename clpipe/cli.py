@@ -654,11 +654,8 @@ def flywheel_sync_cli(config_file, source_url, dropoff_dir, submit, debug):
     """
     Sync your DICOM data with Flywheel.
 
-    You will first need to login to Flywheel via the Flywheel CLI to use this command. 
-    Navigate to the Flywheel web portal. In the upper right, click on your profile drop down menu, select
-    'profile.' Scroll down and copy the command under 'Getting Started With the CLI.'
-    It should look like: 'fw login <FLYWHEEL URL>::<TOKEN>'. Run this command to login.
-
+    You must first login to Flywheel with 'fw login' to sync. See the clpipe
+    documentation on flywheel_sync for further help.
     """
     from .source import flywheel_sync
 
