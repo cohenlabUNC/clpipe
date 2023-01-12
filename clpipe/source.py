@@ -7,28 +7,22 @@ from .batch_manager import BatchManager, Job
 
 FLYWHEEL_TEMP_DIR_NAME = "'<TemporaryDirectory '\\'''/"
 
-def sync_flywheel(config_file, source_url=None, sync_dir=None, submit=False, debug=False):
+def flywheel_sync(config_file, source_url=None, dropoff_dir=None, submit=False, debug=False):
     """Sync your project's DICOMs with Flywheel."""
     
     config_parser = ClpipeConfigParser(config_file)
     config = config_parser.config
 
-    if not sync_dir:
-        try:
-            sync_dir = config["DICOMToBIDSOptions"]["DICOMDirectory"]
-        except KeyError:
-            pass
+    if not dropoff_dir:
+        dropoff_dir = config["SourceOptions"]["DropoffDirectory"]
 
     if not source_url:
-        try:
-            source_url = config["DICOMToBIDSOptions"]["SourceURL"]
-        except KeyError:
-            pass
-
+        source_url = config["SourceOptions"]["SourceURL"]
+        
     batch_config = config['BatchConfig']
-    mem_usage = config['DICOMToBIDSOptions']['MemUsage']
-    time_usage = config['DICOMToBIDSOptions']['TimeUsage']
-    n_threads = config['DICOMToBIDSOptions']['CoreUsage']
+    mem_usage = config['SourceOptions']['MemUsage']
+    time_usage = config['SourceOptions']['TimeUsage']
+    n_threads = config['SourceOptions']['CoreUsage']
 
     log_dir = Path(config["ProjectDirectory"]) / "logs" / "sync_logs"
     if not log_dir.exists:
@@ -41,17 +35,17 @@ def sync_flywheel(config_file, source_url=None, sync_dir=None, submit=False, deb
     batch_manager.update_time(time_usage)
     batch_manager.update_nthreads(n_threads)
 
-    logger = get_logger("sync", debug=debug)
+    logger = get_logger("flywheel_sync", debug=debug)
 
-    logger.debug(f"Using sync dir: {sync_dir}")
+    logger.debug(f"Using sync dir: {dropoff_dir}")
     logger.debug(f"Using source URL: {source_url}")
 
     flywheel_generated_temp_dir = os.path.join(os.getcwd(), FLYWHEEL_TEMP_DIR_NAME)
 
-    logger.info(f"Removing Temporary Directory: {flywheel_generated_temp_dir}")
+    logger.debug(f"Temporary Directory: {flywheel_generated_temp_dir}")
     
-    submission_string = f"fw sync --include dicom {source_url} {sync_dir}; rm -r {flywheel_generated_temp_dir}"
-    job_id = f"sync_DICOM"
+    submission_string = f"fw sync --include dicom {source_url} {dropoff_dir}; rm -r {flywheel_generated_temp_dir}"
+    job_id = f"flywheel_sync_DICOM"
 
     job = Job(job_id, submission_string)
 

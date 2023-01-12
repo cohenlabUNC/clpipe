@@ -121,7 +121,7 @@ def _add_commands():
     cli.add_command(fmri_postprocess_cli, help_priority=30)
     cli.add_command(fmri_postprocess2_cli, help_priority=35)
 
-    dicom_cli.add_command(sync_cli)
+    dicom_cli.add_command(flywheel_sync_cli)
     dicom_cli.add_command(convert2bids_cli)
 
     bids_cli.add_command(bids_validate_cli)
@@ -642,17 +642,17 @@ def status_cli(config_file, cache_file):
     show_latest_by_step(config_file=config_file, cache_path=cache_file)
 
 
-@click.command("sync", no_args_is_help=True)
+@click.command("flywheel_sync", no_args_is_help=True)
 @click.option('-config_file', '-c', type=CLICK_FILE_TYPE_EXISTS,
               help=CONFIG_HELP, required=False)
 @click.option('-source_url', help='The path to your project in Flywheel. Starts with fw://. You can browse your available projects with "fw ls"')
-@click.option('-sync_dir', type=CLICK_DIR_TYPE, 
-              help="Where to sync your files. Defaults to your DICOMDirectory.")
+@click.option('-dropoff_dir', type=CLICK_DIR_TYPE, 
+              help="Where to sync your files.")
 @click.option('-submit', '-s', is_flag=True, default=False, help=SUBMIT_HELP)
 @click.option('-debug', '-d', is_flag = True, default=False, help=DEBUG_HELP)
-def sync_cli(config_file, source_url, sync_dir, submit, debug):
+def flywheel_sync_cli(config_file, source_url, dropoff_dir, submit, debug):
     """
-    Sync your DICOM data with a remote source. Currently supports Flywheel.
+    Sync your DICOM data with Flywheel.
 
     You will first need to login to Flywheel via the Flywheel CLI to use this command. 
     Navigate to the Flywheel web portal. In the upper right, click on your profile drop down menu, select
@@ -660,10 +660,10 @@ def sync_cli(config_file, source_url, sync_dir, submit, debug):
     It should look like: 'fw login <FLYWHEEL URL>::<TOKEN>'. Run this command to login.
 
     """
-    from .sync import sync_flywheel
+    from .source import flywheel_sync
 
-    sync_flywheel(config_file=config_file, 
-                  source_url=source_url, sync_dir=sync_dir, 
+    flywheel_sync(config_file=config_file, 
+                  source_url=source_url, dropoff_dir=dropoff_dir, 
                   submit=submit, debug=debug)
 
 
