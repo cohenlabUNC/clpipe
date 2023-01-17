@@ -15,7 +15,7 @@ import nipype.pipeline.engine as pe
 from .workflows import build_image_postprocessing_workflow
 
 # A list of the temporal-based processing steps applicable to confounds
-CONFOUND_STEPS = {"TemporalFiltering", "AROMARegression", "IntensityNormalization", "TrimTimepoints"}
+CONFOUND_STEPS = {"TemporalFiltering", "AROMARegression", "TrimTimepoints"}
 
 
 def build_confounds_processing_workflow(postprocessing_config: dict, confounds_file: os.PathLike=None, 
