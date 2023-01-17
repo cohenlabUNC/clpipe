@@ -501,13 +501,7 @@ def _draw_graph(wf: pe.Workflow, graph_name: str, out_dir: Path,
     if logger:
         logger.info(f"Drawing confounds workflow graph: {graph_image_path}")
     
-        wf.write_graph(dotfilename = graph_image_path, graph2use=graph_style)
-    
-    # Delete the unessecary dot file
-    # Due to parallel compute, an exists check guards the unlink 
-    # incase it is deleted early by another process
-    if graph_image_path.exists():
-        graph_image_path.unlink()
+        wf.write_graph(dotfilename=graph_image_path, graph2use=graph_style)
     
 
 def _plot_image_sample(image_path: os.PathLike, 
