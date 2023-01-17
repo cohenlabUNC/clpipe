@@ -258,7 +258,16 @@ def postprocess_subject(
 
         working_dir = postprocessing_config["WorkingDirectory"]
         subject_working_dir = _get_subject_working_dir(
-            working_dir, output_dir, subject_id, processing_stream) 
+            working_dir, output_dir, subject_id, processing_stream)
+
+        if not subject_out_dir.exists():
+            logger.info(f"Creating subject directory: {subject_out_dir}")
+            subject_out_dir.mkdir(parents=True)
+
+        if not subject_working_dir.exists():
+            logger.info(
+                f"Creating subject working directory: {subject_working_dir}")
+            subject_working_dir.mkdir(parents=True, exist_ok=False) 
 
         submission_strings = _create_image_submission_strings(
             images_to_process, bids_dir, fmriprep_dir, index_dir, 
@@ -407,15 +416,6 @@ def postprocess_image(
     
     if postprocessing_config["WriteProcessGraph"]:
         _draw_graph(postproc_wf, "processing_graph", stream_dir, logger=logger)
-
-    if not subject_out_dir.exists():
-        logger.info(f"Creating subject directory: {subject_out_dir}")
-        subject_out_dir.mkdir(parents=True)
-
-    if not subject_working_dir.exists():
-        logger.info(
-            f"Creating subject working directory: {subject_working_dir}")
-        subject_working_dir.mkdir(parents=True)
 
     postproc_wf.inputs.inputnode.in_file = image_path
     postproc_wf.inputs.inputnode.confounds_file = confounds_path
