@@ -2,6 +2,7 @@ import os
 import glob
 import click
 from .batch_manager import BatchManager, Job
+from .postprocutils.utils import scrub_setup
 from .config_json_parser import ClpipeConfigParser, GLMConfigParser
 import logging
 import sys
@@ -17,7 +18,6 @@ from nipype.interfaces.utility import IdentityInterface
 import nibabel as nib
 import pandas
 import re
-import clpipe.postprocutils
 import numpy as np
 
 
@@ -210,7 +210,7 @@ def _glm_prep(glm_config, subject, task, drop_tps):
                     logging.info("Contiguous: " + str(glm_config.config["GLMSetupOptions"]['ScrubContiguous']))
                     fdts = confounds[glm_config.config["GLMSetupOptions"]['ScrubVar']]
                     logging.debug(str(fdts))
-                    scrub_targets = clpipe.postprocutils.utils.scrub_setup(fdts, glm_config.config["GLMSetupOptions"]['Threshold'], glm_config.config["GLMSetupOptions"]['ScrubBehind'], glm_config.config["GLMSetupOptions"]['ScrubAhead'], glm_config.config["GLMSetupOptions"]['ScrubContiguous'])
+                    scrub_targets = scrub_setup(fdts, glm_config.config["GLMSetupOptions"]['Threshold'], glm_config.config["GLMSetupOptions"]['ScrubBehind'], glm_config.config["GLMSetupOptions"]['ScrubAhead'], glm_config.config["GLMSetupOptions"]['ScrubContiguous'])
                     logging.debug(str(scrub_targets))
             if drop_tps is not None:
                 img_data = nib.load(image)
@@ -226,10 +226,11 @@ def _glm_prep(glm_config, subject, task, drop_tps):
                     if confounds is not None:
                         confounds_mat = confounds_mat.head(total_tps)
                         fdts = fdts.iloc[:(fdts.shape[0]-(tps_drop))]
-                    scrub_targets = clpipe.postprocutils.utils.scrub_setup(fdts, glm_config.config["GLMSetupOptions"]['Threshold'],
-                                                                            glm_config.config["GLMSetupOptions"]['ScrubBehind'],
-                                                                            glm_config.config["GLMSetupOptions"]['ScrubAhead'],
-                                                                            glm_config.config["GLMSetupOptions"]['ScrubContiguous'])
+                    scrub_targets = scrub_setup(fdts,
+                                                glm_config.config["GLMSetupOptions"]['Threshold'],
+                                                glm_config.config["GLMSetupOptions"]['ScrubBehind'],
+                                                glm_config.config["GLMSetupOptions"]['ScrubAhead'],
+                                                glm_config.config["GLMSetupOptions"]['ScrubContiguous'])
                 logging.info("Total timepoints are " + str(total_tps))
                 glm_setup.inputs.drop_tps.t_size = total_tps
             glm_setup.inputs.input.in_file = os.path.abspath(image)

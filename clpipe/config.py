@@ -11,6 +11,12 @@ CLICK_DIR_TYPE_EXISTS = click.Path(exists=True, dir_okay=True, file_okay=False)
 CLICK_DIR_TYPE_NOT_EXIST = click.Path(
     exists=False, dir_okay=True, file_okay=False)
 
+# GLM Levels
+VALID_L1 = ["1", "L1", "l1", "level1"]
+VALID_L2 = ["2", "L2", "l2", "level2"]
+L1 = VALID_L1[1]
+L2 = VALID_L2[1]
+
 # Default paths
 DEFAULT_BATCH_CONFIG_PATH = "slurmUNCConfig.json"
 DEFAULT_CONFIG_PATH = "data/defaultConvConfig.json"
@@ -44,7 +50,7 @@ SYM_LINK_HELP = \
     "Symlink the source data into project/data_dicoms. Usually safe to do."
 
 # BIDS conversion help
-CONVERSION_COMMAND_NAME = "convert"
+CONVERSION_COMMAND_NAME = "convert2bids"
 CONVERSION_CONFIG_HELP = (
     "A conversion definition file, either a dcm2bids conversion config .json "
     "file or a heudiconv heuristic .py file."
@@ -111,7 +117,7 @@ PROCESSING_STREAM_HELP = \
 INDEX_HELP = 'Give the path to an existing pybids index database.'
 REFRESH_INDEX_HELP = \
     'Refresh the pybids index database to reflect new fmriprep artifacts.'
-DEFAULT_PROCESSING_STREAM_NAME = "smooth-filter-normalize"
+DEFAULT_PROCESSING_STREAM = "smooth-filter-normalize"
 
 # GLM Help
 GLM_SETUP_COMMAND_NAME = "setup"
@@ -120,6 +126,9 @@ L2_PREPARE_FSF_COMMAND_NAME = "l2_prepare_fsf"
 APPLY_MUMFORD_COMMAND_NAME = "apply_mumford"
 ONSET_EXTRACT_COMMAND_NAME = "fsl_onset_extract"
 OUTLIERS_COMMAND_NAME = "report_outliers"
+
+# GLM Prepare
+GLM_PREPARE_COMMAND_NAME = "prepare"
 
 # GLM Launch Help
 GLM_LAUNCH_COMMAND_NAME = "launch"

@@ -33,7 +33,7 @@ from .postprocutils.workflows import build_image_postprocessing_workflow, \
     build_postprocessing_workflow
 from .postprocutils.confounds_workflows import \
     build_confounds_processing_workflow
-from .utils import add_file_handler, get_logger
+from .utils import add_file_handler, get_logger, resolve_fmriprep_dir
 from .errors import *
 
 DEFAULT_GRAPH_STYLE = "colored"
@@ -54,7 +54,7 @@ SUBJECT_SUBMISSION_STRING_TEMPLATE = (
 
 def postprocess_subjects(
         subjects=None, config_file=None, bids_dir=None, fmriprep_dir=None, 
-        output_dir=None, processing_stream=DEFAULT_PROCESSING_STREAM_NAME, 
+        output_dir=None, processing_stream=DEFAULT_PROCESSING_STREAM, 
         batch=False, submit=False, log_dir=None, pybids_db_path=None, 
         refresh_index=False, debug=False, cache=True):
     """
@@ -76,8 +76,7 @@ def postprocess_subjects(
     if not fmriprep_dir:
         # Look for a target dir configuration - if empty or not present,
         # assume the fmriprep dir
-        default_path = \
-            Path(config["FMRIPrepOptions"]["OutputDirectory"]) / "fmriprep"
+        default_path = resolve_fmriprep_dir(config["FMRIPrepOptions"]["OutputDirectory"])
         try:
             fmriprep_dir = config["PostProcessingOptions2"]["TargetDirectory"]
             if fmriprep_dir == "":
@@ -182,7 +181,7 @@ def postprocess_subjects(
 @click.argument('bids_dir', type=click.Path(dir_okay=True, file_okay=False))
 @click.argument('fmriprep_dir', type=CLICK_DIR_TYPE)
 @click.argument('output_dir', type=click.Path(dir_okay=True, file_okay=False))
-@click.argument('processing_stream', default=DEFAULT_PROCESSING_STREAM_NAME)
+@click.argument('processing_stream', default=DEFAULT_PROCESSING_STREAM)
 @click.argument('config_file', type=click.Path(dir_okay=False, file_okay=True))
 @click.argument('index_dir', type=click.Path(dir_okay=True, file_okay=False))
 @click.argument('log_dir', type=click.Path(dir_okay=True, file_okay=False))
@@ -202,7 +201,7 @@ def postprocess_subject_cli(subject_id, bids_dir, fmriprep_dir, output_dir,
 
 def postprocess_subject(
     subject_id, bids_dir, fmriprep_dir, output_dir, config_file, index_dir, 
-    batch, submit, log_dir, processing_stream=DEFAULT_PROCESSING_STREAM_NAME,
+    batch, submit, log_dir, processing_stream=DEFAULT_PROCESSING_STREAM,
     debug=False):
     """
     Parse configuration and (TODO) sanitize inputs for image job distribution.
@@ -259,7 +258,16 @@ def postprocess_subject(
 
         working_dir = postprocessing_config["WorkingDirectory"]
         subject_working_dir = _get_subject_working_dir(
-            working_dir, output_dir, subject_id, processing_stream) 
+            working_dir, output_dir, subject_id, processing_stream)
+
+        if not subject_out_dir.exists():
+            logger.info(f"Creating subject directory: {subject_out_dir}")
+            subject_out_dir.mkdir(parents=True)
+
+        if not subject_working_dir.exists():
+            logger.info(
+                f"Creating subject working directory: {subject_working_dir}")
+            subject_working_dir.mkdir(parents=True, exist_ok=False) 
 
         submission_strings = _create_image_submission_strings(
             images_to_process, bids_dir, fmriprep_dir, index_dir, 
@@ -288,7 +296,7 @@ def postprocess_subject(
 @click.argument('index_dir', type=click.Path(dir_okay=True, file_okay=False))
 @click.argument('out_dir', type=click.Path(dir_okay=True, file_okay=False))
 @click.argument('subject_out_dir', type=CLICK_DIR_TYPE)
-@click.argument('processing_stream', default=DEFAULT_PROCESSING_STREAM_NAME)
+@click.argument('processing_stream', default=DEFAULT_PROCESSING_STREAM)
 @click.argument('subject_working_dir', type=CLICK_DIR_TYPE)
 @click.argument('log_dir', type=click.Path(dir_okay=True, file_okay=False))
 @click.option('-debug', is_flag = True, default=False, help=DEBUG_HELP)
@@ -305,7 +313,7 @@ def postprocess_image_cli(config_file, image_path, bids_dir, fmriprep_dir,
 def postprocess_image(
     config_file, image_path, bids_dir, fmriprep_dir, pybids_db_path, out_dir,
     subject_out_dir, subject_working_dir, log_dir, 
-    processing_stream=DEFAULT_PROCESSING_STREAM_NAME, confounds_only=False,
+    processing_stream=DEFAULT_PROCESSING_STREAM, confounds_only=False,
     debug=False):
     """
     Setup the workflows specified in the postprocessing configuration.
@@ -409,15 +417,6 @@ def postprocess_image(
     if postprocessing_config["WriteProcessGraph"]:
         _draw_graph(postproc_wf, "processing_graph", stream_dir, logger=logger)
 
-    if not subject_out_dir.exists():
-        logger.info(f"Creating subject directory: {subject_out_dir}")
-        subject_out_dir.mkdir(parents=True)
-
-    if not subject_working_dir.exists():
-        logger.info(
-            f"Creating subject working directory: {subject_working_dir}")
-        subject_working_dir.mkdir(parents=True)
-
     postproc_wf.inputs.inputnode.in_file = image_path
     postproc_wf.inputs.inputnode.confounds_file = confounds_path
 
@@ -502,13 +501,7 @@ def _draw_graph(wf: pe.Workflow, graph_name: str, out_dir: Path,
     if logger:
         logger.info(f"Drawing confounds workflow graph: {graph_image_path}")
     
-        wf.write_graph(dotfilename = graph_image_path, graph2use=graph_style)
-    
-    # Delete the unessecary dot file
-    # Due to parallel compute, an exists check guards the unlink 
-    # incase it is deleted early by another process
-    if graph_image_path.exists():
-        graph_image_path.unlink()
+        wf.write_graph(dotfilename=graph_image_path, graph2use=graph_style)
     
 
 def _plot_image_sample(image_path: os.PathLike, 
@@ -542,7 +535,7 @@ def _plot_image_sample(image_path: os.PathLike,
 
 def _fetch_postprocessing_stream_config(
     config: dict, output_dir: os.PathLike, 
-    processing_stream:str=DEFAULT_PROCESSING_STREAM_NAME):
+    processing_stream:str=DEFAULT_PROCESSING_STREAM):
     """
     The postprocessing stream config is a subset of the main 
     configuration's postprocessing config, based on
@@ -566,6 +559,11 @@ def _fetch_postprocessing_stream_config(
     return postprocessing_config
 
 
+def _list_available_streams(postprocessing_config: dict):
+
+    return postprocessing_config.keys()
+
+
 def _write_processing_description_file(
     postprocessing_config: dict, processing_description_file: os.PathLike):
 
@@ -586,13 +584,13 @@ def _write_processing_description_file(
 
 def _postprocessing_config_apply_processing_stream(
     config: dict,
-    processing_stream:str=DEFAULT_PROCESSING_STREAM_NAME):
+    processing_stream:str=DEFAULT_PROCESSING_STREAM):
 
     postprocessing_config = _get_postprocessing_config(config)
     processing_streams = _get_processing_streams(config)
     
     # If using the default stream, no need to update postprocessing config
-    if processing_stream == DEFAULT_PROCESSING_STREAM_NAME:
+    if processing_stream == DEFAULT_PROCESSING_STREAM:
         return
 
     # Iterate through the available processing streams and see 
@@ -627,7 +625,6 @@ def _submit_jobs(batch_manager, submission_strings, logger, submit=True):
     if batch_manager:
         _populate_batch_manager(batch_manager, submission_strings, logger)
         if submit:
-            logger.info(f"Running {num_jobs} job(s) in batch mode")
             batch_manager.submit_jobs()
         else:
             batch_manager.print_jobs()
