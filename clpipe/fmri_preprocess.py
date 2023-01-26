@@ -80,7 +80,7 @@ def fmriprep_process(bids_dir=None, working_dir=None, output_dir=None,
 
     template_1 = ""
     template_2 = ""
-    if config['FMRIPrepOptions']['TemplateFlowToggle']:
+    if config['FMRIPrepOptions']['TemplateFlowToggle'] != "":
         logger.debug("Template Flow toggle: ON")
         logger.debug(f"Template Flow path: {template_flow_path}")
         template_1 = TEMPLATE_1.format(
