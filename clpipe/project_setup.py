@@ -20,7 +20,7 @@ def project_setup(project_title=None, project_dir=None,
     org_source = os.path.abspath(source_data)
 
     add_file_handler(os.path.join(project_dir, "logs"))
-    os.chmod(os.path.join(os.path.join(project_dir, "logs"), "clpipe.log"), stat.S_IRWXO)
+    os.chmod(os.path.join(os.path.join(project_dir, "logs"), "clpipe.log"), stat.S_IRWXG)
     logger = get_logger(STEP_NAME, debug=debug)
 
     org_source = os.path.abspath(source_data)
