@@ -92,7 +92,8 @@ def add_file_handler(log_dir: os.PathLike, f_name: str="clpipe.log",
         f_handler.setLevel(logging.DEBUG)
     
         # Create log format
-        f_format = logging.Formatter('%(asctime)s - %(username)s - %(levelname)s: %(name)s - %(message)s')
+        f_format = logging.Formatter('%(asctime)s - %(username)s - %(levelname)s: %(name)s - %(message)s', 
+                                     datefmt="%Y-%m-%d %H:%M:%S")
         f_handler.setFormatter(f_format)
 
         # Add handler to the logger
