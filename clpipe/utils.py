@@ -85,12 +85,19 @@ def add_file_handler(log_dir: os.PathLike, f_name: str="clpipe.log",
 
     # Create log handler
     logger.debug(f"Using log file: {log_file}")
-    f_handler = logging.FileHandler(log_file)
-    f_handler.setLevel(logging.DEBUG)
-    
-    # Create log format
-    f_format = logging.Formatter('%(asctime)s - %(levelname)s: %(name)s - %(message)s')
-    f_handler.setFormatter(f_format)
 
-    # Add handler to the logger
-    logger.addHandler(f_handler)
+    if((not log_file.is_file()) or (log_file.is_file() and os.access(log_file, os.W_OK))):
+        f_handler = logging.FileHandler(log_file)
+        f_handler.setLevel(logging.DEBUG)
+    
+        # Create log format
+        f_format = logging.Formatter('%(asctime)s - %(username)s - %(levelname)s: %(name)s - %(message)s')
+        f_handler.setFormatter(f_format)
+
+        # Add handler to the logger
+        logger.addHandler(f_handler)
+        return
+    else:
+        logger.error(f"User does not have write permissions for the Log File at: {log_file}")
+        exit(1)
+    
