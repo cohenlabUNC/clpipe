@@ -21,11 +21,8 @@ def project_setup(project_title=None, project_dir=None,
     org_source = os.path.abspath(source_data)
 
     add_file_handler(os.path.join(project_dir, "logs"))
-    os.chmod(os.path.join(os.path.join(project_dir, "logs"), "clpipe.log"), stat.S_IRWXU)
+    # os.chmod(os.path.join(os.path.join(project_dir, "logs"), "clpipe.log"), stat.S_IRWXU)
     logger = get_logger(STEP_NAME, debug=debug)
-    #ADD THESE LINES TO GET USERNAME IN EVERY LOG STATEMENT
-    extra = {"username": str(os.getlogin())}
-    logger = logging.LoggerAdapter(logger, extra)
 
     org_source = os.path.abspath(source_data)
     if move_source_data or symlink_source_data:

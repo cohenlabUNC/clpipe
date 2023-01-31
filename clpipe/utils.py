@@ -68,8 +68,9 @@ def get_logger(name, debug=False, log_dir=None, f_name="clpipe.log"):
     if log_dir:
         add_file_handler(log_dir, f_name, logger=logger)
 
+    uName = {"username": os.getlogin()}
+    logger = logging.LoggerAdapter(logger, uName)
     return logger
-
 
 def add_file_handler(log_dir: os.PathLike, f_name: str="clpipe.log", 
                      logger: logging.Logger = None):
