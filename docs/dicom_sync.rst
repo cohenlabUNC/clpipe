@@ -55,19 +55,17 @@ flywheel_sync Options
 Using with convert2bids
 -------------------------------
 
-Unfortunately, Flywheel creates a DICOM folder structure that is too deep for the
+Flywheel creates a DICOM folder structure that is too deep for the
 default depth setting of dcm2niix, which both dcm2bids and heudiconv use to discover
-DICOM files in your source directory.
-
-To fix this issue, you must pass through the argument `-d 9` to dcm2niix, which
-sets the default search depth to the maximum.
+DICOM files in your source directory. However, dcm2niix can be configured to search
+deeper with the `-d` option:
 
  
 dcm2bids (clpipe default)
 ----------------
 
-You can set the depth flag with dcm2bids by copying the `dcm2niixOptions`
-key to your conversion_config.json file, like this:
+dcm2bids provides a method of passing options through to dcm2niix by adding a
+`dcm2niixOptions` item to your conversion conversion_config.json file, like this:
 
 .. code-block :: json
 
@@ -90,11 +88,15 @@ key to your conversion_config.json file, like this:
 You must include all options shown, because this argument overwrites the dcm2niixOptions,
 as opposed to just appending to them.
 
+The options above add the `-d 9` option, setting dcm2niix's search depth to the maximum
+value.
+
 heudiconv
 ----------------
 
-By default, heudiconv searches deeply enough to find DICOM files within Flywheel's
-output structure.
+By default, heudiconv sets the search depth of dcm2niix high enough to find 
+DICOM files within Flywheel's output structure, so no changes are required if you
+use this converter.
 
 
 -------------------------------
