@@ -15,8 +15,7 @@
 				"TaskName": "srt"
 			},
             "criteria": {
-				"SeriesDescription":"*_srt",
-                "ImageType": ["ORIG*", "PRIMARY", "M", "ND", "MOSAIC"]
+				"SeriesDescription":"*_srt"
             }
         },
         {
