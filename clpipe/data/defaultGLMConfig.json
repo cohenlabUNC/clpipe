@@ -8,7 +8,6 @@
     "TargetSuffix": "space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz",
     "WorkingDirectory": "FILL THIS IN",
     "TaskName": "gng_example",
-    "Python2Path": "/nas/longleaf/apps/python/2.7.12/bin/python",
     "ReferenceImage": "SET REFERENCE",
     "DummyScans": 0,
     "ApplyFMRIPREPMask": true,
