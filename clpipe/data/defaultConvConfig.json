@@ -12,5 +12,6 @@
                 "ImageType": ["ORIG*", "PRIMARY", "M", "ND", "MOSAIC"]
             }
         }
-    ]
+    ],
+    "dcm2niixOptions": "-b y -ba y -z y -f '%3s_%f_%p_%t' -d 9"
 }
