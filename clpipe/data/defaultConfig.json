@@ -15,6 +15,7 @@
         "LogDirectory": ""
 	},
 	"BIDSValidationOptions": {
+		"BIDSValidatorImage": "/proj/hng/singularity_imgs/validator.simg",
 		"LogDirectory": ""
 	},
 	"FMRIPrepOptions": {
@@ -70,7 +71,6 @@
 		"PostProcessingTimeUsage": "8:0:0",
 		"NThreads": "1",
 		"SpectralInterpolationBinSize": 5000,
-		"BIDSValidatorImage": "/proj/hng/singularity_imgs/validator.simg",
         "LogDirectory": ""
 	},
 	"PostProcessingOptions2": {
