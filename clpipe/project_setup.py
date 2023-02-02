@@ -1,5 +1,4 @@
 import os, stat
-import click
 from .config_json_parser import ClpipeConfigParser
 from pkg_resources import resource_stream
 import json

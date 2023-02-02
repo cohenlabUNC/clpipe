@@ -6,6 +6,8 @@ Installation
 Python Environment Setup
 -----------------------
 
+clpipe requires Python v3.7
+
 If you have priviledges to add python packages to a system, 
 you can install the most recent version of clpipe with:
 
@@ -27,6 +29,22 @@ Pip will automatically install all required Python package dependencies.
 External Dependencies
 -----------------------
 
+Singularity & Images
+-----------------------
+
+clpipe uses Singularity to run certain dependencies as images. clpipe has been
+tested against:
+
+- Singularity == v3.2.1
+
+If you are a UNC-CH Longleaf user, Singularity is made available by default when launching
+jobs, so you do not need to explicitly add this dependency.
+
+The following programs are required as images:
+
+- fMRIPrep >= v20
+- BIDS-validator >= v0.0.0
+
 If you don't already have a Singularity image of fMRIprep, head over to their 
 `site <https://fmriprep.readthedocs.io/en/latest/index.html>`_ and follow the 
 directions. You will have to change the fMRIprep image path in 
@@ -35,13 +53,16 @@ your configuration file.
 Similarly, if you do not have a copy of the BIDS-validator Singularity image, 
 you'll need to obtain `this image <https://hub.docker.com/r/bids/validator>`_ as well:
 
+Other Dependencies
+-----------------------
+
 Additionally, clpipe requires the following tools to be installed in order
 to run its postprocessing and analysis steps (UNC-CH Users - this is handled
 by the clpipe module):
 
-- FSL (recommended v6.0.0 +)
-- AFNI (recommended v20.0.00 +)
-- R (v4.0.0 +)
+- FSL >= v6.0.0
+- AFNI >= v20.0.00
+- R >= v4.0.0
 
 -----------------------
 A Note for UNC-CH Users

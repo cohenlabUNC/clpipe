@@ -4,6 +4,15 @@
 	"ProjectDirectory": "",
 	"EmailAddress": "",
 	"TempDirectory": "",
+	"SourceOptions": {
+		"SourceURL": "",
+		"DropoffDirectory": "",
+		"TempDirectory": "",
+		"CommandLineOpts": "",
+		"TimeUsage": "1:0:0",
+		"MemUsage": "10000",
+		"CoreUsage": "1"
+	},
 	"DICOMToBIDSOptions": {
 		"DICOMDirectory": "",
 		"BIDSDirectory": "",
@@ -15,6 +24,7 @@
         "LogDirectory": ""
 	},
 	"BIDSValidationOptions": {
+		"BIDSValidatorImage": "/proj/hng/singularity_imgs/validator.simg",
 		"LogDirectory": ""
 	},
 	"FMRIPrepOptions": {
@@ -27,7 +37,13 @@
 		"CommandLineOpts": "",
 		"TemplateFlowToggle": true,
 		"TemplateFlowPath": "",
-		"TemplateFlowTemplates": ["MNI152NLin2009cAsym", "MNI152NLin6Asym", "OASIS30ANTs", "MNIPediatricAsym", "MNIInfant"],
+		"TemplateFlowTemplates": [
+			"MNI152NLin2009cAsym", 
+			"MNI152NLin6Asym", 
+			"OASIS30ANTs", 
+			"MNIPediatricAsym", 
+			"MNIInfant"
+		],
 		"FMapCleanupROIs": 3,
 		"FMRIPrepMemoryUsage": "50000",
 		"FMRIPrepTimeUsage": "16:0:0",
@@ -44,14 +60,26 @@
 		"ConfoundSuffix": "desc-confounds_regressors.tsv",
 		"DropCSV": "",
 		"Regress": true,
-	    "Confounds": ["trans_x", "trans_y", "trans_z", "rot_x", "rot_y", "rot_z",
-   		 "csf", "white_matter", "global_signal", "a_comp_cor.*"],
-		"ConfoundsQuad": ["trans_x", "trans_y", "trans_z", "rot_x", "rot_y", "rot_z",
-    	 "csf", "white_matter", "global_signal"],
-		"ConfoundsDerive": ["trans_x", "trans_y", "trans_z", "rot_x", "rot_y", "rot_z",
-    	 "csf", "white_matter", "global_signal"],
-		"ConfoundsQuadDerive": ["trans_x", "trans_y", "trans_z", "rot_x", "rot_y", "rot_z",
-    	 "csf", "white_matter", "global_signal"],
+	    "Confounds": [
+			"trans_x", "trans_y", "trans_z", 
+			"rot_x", "rot_y", "rot_z",
+   		 	"csf", "white_matter", "global_signal", "a_comp_cor.*"
+		],
+		"ConfoundsQuad": [
+			"trans_x", "trans_y", "trans_z", 
+			"rot_x", "rot_y", "rot_z",
+    	 	"csf", "white_matter", "global_signal"
+		],
+		"ConfoundsDerive": [
+			"trans_x", "trans_y", "trans_z", 
+			"rot_x", "rot_y", "rot_z",
+    	 	"csf", "white_matter", "global_signal"
+		],
+		"ConfoundsQuadDerive": [
+			"trans_x", "trans_y", "trans_z", 
+			"rot_x", "rot_y", "rot_z",
+    	 	"csf", "white_matter", "global_signal"
+		],
 		"FilteringHighPass": 0.008,
 		"FilteringLowPass": -1,
 		"FilteringOrder": 2,
@@ -64,13 +92,15 @@
 		"ScrubBehind": 1,
 		"ScrubContig": 2,
 		"RespNotchFilter": true,
-		"MotionVars": ["trans_x", "trans_y", "trans_z", "rot_x", "rot_y", "rot_z"],
+		"MotionVars": [
+			"trans_x", "trans_y", "trans_z", 
+			"rot_x", "rot_y", "rot_z"
+		],
 		"RespNotchFilterBand":[0.31,0.43],
 		"PostProcessingMemoryUsage": "20000",
 		"PostProcessingTimeUsage": "8:0:0",
 		"NThreads": "1",
 		"SpectralInterpolationBinSize": 5000,
-		"BIDSValidatorImage": "/proj/hng/singularity_imgs/validator.simg",
         "LogDirectory": ""
 	},
 	"PostProcessingOptions2": {
@@ -116,7 +146,10 @@
 			}
 		},
 		"ConfoundOptions": {
-			"Columns": ["csf", "csf_derivative1", "white_matter", "white_matter_derivative1"],
+			"Columns": [
+				"csf", "csf_derivative1", 
+				"white_matter", "white_matter_derivative1"
+			],
 			"MotionOutliers": {
 				"Include": true,
 				"ScrubVar": "framewise_displacement",
