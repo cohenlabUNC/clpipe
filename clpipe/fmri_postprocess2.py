@@ -591,7 +591,7 @@ def _postprocessing_config_apply_processing_stream(
     
     # If using the default stream, no need to update postprocessing config
     if processing_stream == DEFAULT_PROCESSING_STREAM:
-        return
+        return postprocessing_config
 
     # Iterate through the available processing streams and see 
     #   if one matches the one requested
