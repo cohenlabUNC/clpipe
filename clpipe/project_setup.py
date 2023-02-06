@@ -36,16 +36,6 @@ def project_setup(project_title=None, project_dir=None,
     config = config_parser.config
 
     # Create the project directory
-    if not os.path.exists(project_dir):
-        os.makedirs(project_dir)
-
-    bids_dir = config['DICOMToBIDSOptions']['BIDSDirectory']
-    project_dir = config['ProjectDirectory']
-    conv_config_path = config['DICOMToBIDSOptions']['ConversionConfig']
-    
-    config = config_parser.config
-
-    # Create the project directory
     os.makedirs(project_dir, exist_ok=True)
     logger.info(f"Created project directory at: {project_dir}")
 
