@@ -199,7 +199,9 @@ class ClpipeConfigParser:
         if not os.path.exists(bids_ignore_path):
             with open(bids_ignore_path, 'w') as bids_ignore_file:
                 # Ignore dcm2bid's auto-generated directory
-                bids_ignore_file.write("tmp_dcm2bids")
+                bids_ignore_file.write("tmp_dcm2bids\n")
+                # Ignore heudiconv's auto-generated scan file
+                bids_ignore_file.write("scans.json\n")
 
     def setup_bids_validation(self, log_dir=None):
         if log_dir is not None:
