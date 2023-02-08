@@ -295,13 +295,13 @@ def _apply_mumford_workaround(l1_feat_folder, logger, remove_reg_standard=False)
         logger.debug((
             f"Copying identity matrix {identity_matrix_path}"
             f" to {func_to_standard_path}"))
-        shutil.copy(identity_matrix_path, func_to_standard_path)
+        shutil.copyfile(identity_matrix_path, func_to_standard_path)
 
         # Copy in the mean_func image as the reg folder standard,
         # imitating multiplication with the identity matrix.
         logger.debug(
             f"Copying mean func image {mean_func_path} to {standard_path}")
-        shutil.copy(mean_func_path, standard_path)
+        shutil.copyfile(mean_func_path, standard_path)
     except FileNotFoundError as e:
         print(e, "- skipping")
 

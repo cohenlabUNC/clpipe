@@ -45,7 +45,7 @@ def get_reports(config_file, output_name, debug, clear_temp=True):
 
     logger.info(f"Copying reports...")
     for report in images:
-        shutil.copy(report,
+        shutil.copyfile(report,
                     os.path.join(config.config['FMRIPrepOptions']['WorkingDirectory'], 'reports_temp', 'fmriprep_reports',
                                  os.path.basename(report)))
 
