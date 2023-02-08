@@ -429,9 +429,9 @@ def glm_l1_preparefsf_cli(glm_config_file, l1_name, debug):
     
     You must create a template .fsf file in FSL's FEAT GUI first.
     """
-    from .glm_l1 import glm_l1_preparefsf
-    glm_l1_preparefsf(
-        glm_config_file=glm_config_file, l1_name=l1_name, debug=debug)
+    from .glm_prepare import glm_prepare
+    glm_prepare(glm_config_file=glm_config_file, level="L1", model=l1_name,
+                debug=debug)
 
 
 @click.command(L2_PREPARE_FSF_COMMAND_NAME, no_args_is_help=True)
@@ -446,9 +446,9 @@ def glm_l2_preparefsf_cli(glm_config_file, l2_name, debug):
     
     You must create a group-level template .fsf file in FSL's FEAT GUI first.
     """
-    from .glm_l2 import glm_l2_preparefsf
-    glm_l2_preparefsf(glm_config_file=glm_config_file, l2_name=l2_name,
-                      debug=debug)
+    from .glm_prepare import glm_prepare
+    glm_prepare(glm_config_file=glm_config_file, level="L2", model=l2_name,
+                debug=debug)
 
 
 @click.command(APPLY_MUMFORD_COMMAND_NAME, no_args_is_help=True)
