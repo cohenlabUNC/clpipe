@@ -203,16 +203,19 @@ def _glm_l2_propagate(l2_block, glm_setup_options, logger):
     if not os.path.exists(l2_block['FSFDir']):
         os.mkdir(l2_block['FSFDir'])
 
+    error_count = 0
+
     logger.info("Propogating fsf files...")
     for fsf in fsf_names:
         try:
             new_fsf = fsf_file_template
             target_dirs = sub_tab.loc[sub_tab["fsf_name"] == fsf].feat_folders
             counter = 1
-            logger.info("Creating " + fsf)
+            logger.info("Creating L2 FEAT directory for: " + fsf)
             for feat in target_dirs:
                 if not os.path.exists(feat):
-                    raise FileNotFoundError("Cannot find "+ feat)
+                    error_count += 1
+                    raise FileNotFoundError("ERROR: Could not find L1 FEAT directory:  "+ feat)
                 else:
                     _apply_mumford_workaround(feat, logger, remove_reg_standard=True)
                     new_fsf[image_files_ind[counter - 1]] = "set feat_files(" + str(counter) + ") \"" + os.path.abspath(
@@ -230,8 +233,14 @@ def _glm_l2_propagate(l2_block, glm_setup_options, logger):
             with open(out_fsf, "w") as fsf_file:
                 fsf_file.writelines(new_fsf)
 
-        except FSFFileNotFoundError as err:
+        except FileNotFoundError as err:
             logger.warn(err)
+
+    error_msg = ""
+    if error_count > 0:
+        error_msg = f" with {error_count} error(s)"
+
+    logger.info(f"Job completed{error_msg}")
 
 
 def glm_apply_mumford_workaround(glm_config_file=None, 
