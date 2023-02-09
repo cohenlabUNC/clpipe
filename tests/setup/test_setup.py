@@ -1,8 +1,12 @@
 import pytest
 from pathlib import Path
 
+def test_setup():
+    
+    pass
 
-def test_setup_project_missing(clpipe_dir, project_paths):
+
+def test_setup_missing(clpipe_dir, project_paths):
     """Check if any expected clpipe setup fails to create any expect folders or files."""    
     missing = project_paths
     
@@ -14,7 +18,7 @@ def test_setup_project_missing(clpipe_dir, project_paths):
     assert len(missing) == 0, f"Missing expected paths: {missing}"
 
 
-def test_setup_project_extra(clpipe_dir, project_paths):
+def test_setup_extra(clpipe_dir, project_paths):
     """Check to see if clpipe setup creates any extra, unexpected folders or files."""
     extra = []
 
