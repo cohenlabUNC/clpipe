@@ -25,9 +25,8 @@ def project_setup(project_title=None, project_dir=None,
 
     org_source = os.path.abspath(source_data)
     if move_source_data or symlink_source_data:
-        source_data = os.path.join(os.path.abspath(project_dir), 
-            DEFAULT_DICOM_DIR)
-        logger.debug(f"Created path for source directory at: {source_data}")
+        source_data = os.path.join(os.path.abspath(project_dir), DEFAULT_DICOM_DIR)
+        logger.debug(f"Using source directory: {source_data}")
     
     logger.info(f"Starting project setup with title: {project_title}")
 
