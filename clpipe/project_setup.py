@@ -26,6 +26,9 @@ def project_setup(project_title=None, project_dir=None,
 
     default_dicom_dir = os.path.join(os.path.abspath(project_dir), DEFAULT_DICOM_DIR)
     
+    if symlink_source_data and move_source_data:
+        logger.error("Cannot choose to both move and symlink the source data.")
+        sys.exit(1)
     if symlink_source_data and not source_data:
         logger.error("A source data path is required when using a symlinked source.")
         sys.exit(1)
