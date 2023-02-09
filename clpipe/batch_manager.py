@@ -27,7 +27,7 @@ class BatchManager:
 
         if os.path.exists(os.path.abspath(batch_system_config)):
             self.logger.debug(f"Using batch config at: {batch_system_config}")
-            with os.open(os.path.abspath(batch_system_config)) as bat_config:
+            with open(os.path.abspath(batch_system_config)) as bat_config:
                 self.config = json.load(bat_config)
         else:
             with resource_stream(
