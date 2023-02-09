@@ -17,7 +17,6 @@ def project_setup(project_title=None, project_dir=None,
                   symlink_source_data=None, debug=False):
 
     config_parser = ClpipeConfigParser()
-    org_source = os.path.abspath(source_data)
 
     add_file_handler(os.path.join(project_dir, "logs"))
     # Set permissions to clpipe.log file to allow for group write
@@ -48,6 +47,8 @@ def project_setup(project_title=None, project_dir=None,
             os.path.abspath(org_source),
             default_dicom_dir
         )
+    elif move_source_data:
+        raise NotImplementedError("Option -move_source_data is not yet implemented.")
     
     # Create an empty BIDS directory
     os.system(DCM2BIDS_SCAFFOLD_TEMPLATE.format(bids_dir))
