@@ -41,7 +41,7 @@ def get_reports(config_file, output_name, debug, clear_temp=True):
                    copy_tree(os.path.join(ses, 'figures'),
                         os.path.join(config.config['FMRIPrepOptions']['WorkingDirectory'], 'reports_temp', 'fmriprep_reports',
                                    os.path.basename(sub),os.path.basename(ses), 'figures'))
-    images = glob.glob(os.path.join(fmriprepdir, 'fmriprep', '*.html'))
+    images = glob.glob(os.path.join(fmriprepdir, '*.html'))
 
     logger.info(f"Copying reports...")
     for report in images:
