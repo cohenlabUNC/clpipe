@@ -1,8 +1,47 @@
 import pytest
 from pathlib import Path
 
-def test_setup():
+def test_setup_no_source():
+    """Check that clpipe creates an empty data_DICOMs folder in the project
+    directory when no source is provided.
+
+    project_setup(project_title="Test", project_dir="TestDir", 
+                  source_data=None, move_source_data=False,
+                  symlink_source_data=False, debug=False)
+    """
+    pass
+
+def test_setup_referenced_source():
+    """Check that clpipe's generated config file references a specified source
+    directory that is not within the clpipe project directory. This variant
+    should not create a data_DICOMs directory.
     
+    project_setup(project_title="Test", project_dir="TestDir", 
+                  source_data="TestSource", move_source_data=False,
+                  symlink_source_data=False, debug=False)
+    """
+    pass
+
+def test_setup_symlink_source():
+    """Check that clpipe creates a data_DICOMs dir and symlinks it to the given
+    source data.
+
+    project_setup(project_title="Test", project_dir="TestDir", 
+                  source_data="TestSource", move_source_data=False,
+                  symlink_source_data=True, debug=False)
+    """
+    pass
+
+def test_setup_move_source():
+    """Note: this is currently NOT IMPLEMENTED in project setup.
+    
+    Check that clpipe creates a data_DICOMs dir and moves the data from a given
+    source directory to this directory. Data should not remain in the source directory.
+    
+    project_setup(project_title="Test", project_dir="TestDir", 
+                  source_data="TestSource", move_source_data=True,
+                  symlink_source_data=False, debug=False)
+    """
     pass
 
 
