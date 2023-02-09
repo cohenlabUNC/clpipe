@@ -2,7 +2,7 @@ import os, stat
 from .config_json_parser import ClpipeConfigParser
 from pkg_resources import resource_stream
 import json
-import logging
+import sys
 
 from .config import DEFAULT_CONFIG_PATH, DEFAULT_CONFIG_FILE_NAME
 from .utils import get_logger, add_file_handler
@@ -13,8 +13,8 @@ DCM2BIDS_SCAFFOLD_TEMPLATE = 'dcm2bids_scaffold -o {}'
 
 
 def project_setup(project_title=None, project_dir=None, 
-                  source_data=None, move_source_data=None,
-                  symlink_source_data=None, debug=False):
+                  source_data=None, move_source_data=False,
+                  symlink_source_data=False, debug=False):
 
     config_parser = ClpipeConfigParser()
 
@@ -24,8 +24,20 @@ def project_setup(project_title=None, project_dir=None,
              stat.S_IREAD | stat.S_IWRITE | stat.S_IRGRP | stat.S_IWGRP)
     logger = get_logger(STEP_NAME, debug=debug)
 
-    org_source = os.path.abspath(source_data)
     default_dicom_dir = os.path.join(os.path.abspath(project_dir), DEFAULT_DICOM_DIR)
+    
+    if symlink_source_data and not source_data:
+        logger.error("A source data path is required when using a symlinked source.")
+        sys.exit(1)
+    elif move_source_data and not source_data:
+        logger.error("A source data path is required when moving source data.")
+        sys.exit(1)
+    elif source_data:
+        logger.info(f"Referencing source data: {source_data}")
+        source_data = os.path.abspath(source_data)
+    else:
+        logger.info(f"No source data specified.")
+        source_data = default_dicom_dir
     
     logger.info(f"Starting project setup with title: {project_title}")
 
@@ -44,7 +56,7 @@ def project_setup(project_title=None, project_dir=None,
     if symlink_source_data:
         logger.info(f'Creating SymLink for source data to {default_dicom_dir}')
         os.symlink(
-            os.path.abspath(org_source),
+            source_data,
             default_dicom_dir
         )
     elif move_source_data:
