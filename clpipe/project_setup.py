@@ -26,9 +26,7 @@ def project_setup(project_title=None, project_dir=None,
     logger = get_logger(STEP_NAME, debug=debug)
 
     org_source = os.path.abspath(source_data)
-    if move_source_data or symlink_source_data:
-        source_data = os.path.join(os.path.abspath(project_dir), DEFAULT_DICOM_DIR)
-        logger.debug(f"Using source directory: {source_data}")
+    default_dicom_dir = os.path.join(os.path.abspath(project_dir), DEFAULT_DICOM_DIR)
     
     logger.info(f"Starting project setup with title: {project_title}")
 
@@ -45,10 +43,10 @@ def project_setup(project_title=None, project_dir=None,
     conv_config_path = config['DICOMToBIDSOptions']['ConversionConfig']
 
     if symlink_source_data:
-        logger.info('Creating SymLink for source data to project/data_DICOMs')
+        logger.info(f'Creating SymLink for source data to {default_dicom_dir}')
         os.symlink(
             os.path.abspath(org_source),
-            os.path.join(os.path.abspath(project_dir), DEFAULT_DICOM_DIR)
+            default_dicom_dir
         )
     
     # Create an empty BIDS directory
