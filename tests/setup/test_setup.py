@@ -1,17 +1,21 @@
 import pytest
 from pathlib import Path
 
-def test_setup_no_source():
+from clpipe.project_setup import project_setup
+
+PROJECT_TITLE = "test_project"
+
+def test_setup_no_source(project_dir):
     """Check that clpipe creates an empty data_DICOMs folder in the project
     directory when no source is provided.
-
-    project_setup(project_title="Test", project_dir="TestDir", 
-                  source_data=None, move_source_data=False,
-                  symlink_source_data=False, debug=False)
     """
-    pass
+    
+    project_setup(project_title=PROJECT_TITLE, project_dir=project_dir)
 
-def test_setup_referenced_source():
+    assert Path(project_dir / "data_DICOMs").exists()
+
+
+def test_setup_referenced_source(project_dir):
     """Check that clpipe's generated config file references a specified source
     directory that is not within the clpipe project directory. This variant
     should not create a data_DICOMs directory.
@@ -20,9 +24,10 @@ def test_setup_referenced_source():
                   source_data="TestSource", move_source_data=False,
                   symlink_source_data=False, debug=False)
     """
-    pass
+    assert False
 
-def test_setup_symlink_source():
+
+def test_setup_symlink_source(project_dir):
     """Check that clpipe creates a data_DICOMs dir and symlinks it to the given
     source data.
 
@@ -30,9 +35,11 @@ def test_setup_symlink_source():
                   source_data="TestSource", move_source_data=False,
                   symlink_source_data=True, debug=False)
     """
-    pass
+    assert False
 
-def test_setup_move_source():
+
+@pytest.mark.skip(reason="Feature Not implemented")
+def test_setup_move_source(project_dir):
     """Note: this is currently NOT IMPLEMENTED in project setup.
     
     Check that clpipe creates a data_DICOMs dir and moves the data from a given
