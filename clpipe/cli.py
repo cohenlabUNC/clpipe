@@ -471,7 +471,7 @@ def glm_apply_mumford_workaround_cli(glm_config_file, l1_feat_folders_path,
 
     Must provide GLM config file OR a path to your L1 FEAT folders.
     """
-    from .glm_l2 import glm_apply_mumford_workaround
+    from .glm_prepare import glm_apply_mumford_workaround
     if not (glm_config_file or l1_feat_folders_path):
         click.echo(("Error: At least one of either option '-glm_config_file' "
                     "or '-l1_feat_folders_path' required."))
