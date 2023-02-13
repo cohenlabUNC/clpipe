@@ -23,10 +23,10 @@ HEUDICONV_BASE_CMD = '''heudiconv --files {subject_dicom_dir} -s {subject} '''\
 
 
 def convert2bids(dicom_dir=None, dicom_dir_format=None, bids_dir=None, 
-                 conv_config_file=None, config_file=None, overwrite=None, 
+                 conv_config_file=None, config_file=None, overwrite=False, 
                  clear_cache=False, clear_outputs=False, log_dir=None, subject=None,
                  subjects=None, session=None, 
-                 longitudinal=False, status_cache=None, submit=None, debug=False, 
+                 longitudinal=False, status_cache=None, submit=False, debug=False, 
                  dcm2bids=True, batch=False):
     
     config_parser = ClpipeConfigParser()
