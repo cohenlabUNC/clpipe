@@ -2,7 +2,6 @@ import pytest
 
 from clpipe.bids_conversion import convert2bids
 
-@pytest.mark.skip(reason="Erroneously causing submission.")
 def test_dcm2bids(clpipe_dicom_dir, config_file):
     convert2bids(
         dcm2bids = True,
@@ -13,7 +12,6 @@ def test_dcm2bids(clpipe_dicom_dir, config_file):
 
     assert True
 
-@pytest.mark.skip(reason="Erroneously causing submission.")
 def test_dcm2bids_sub_session(clpipe_dicom_dir, config_file):
     convert2bids(
         dcm2bids = True,
@@ -24,7 +22,6 @@ def test_dcm2bids_sub_session(clpipe_dicom_dir, config_file):
 
     assert True
 
-@pytest.mark.skip(reason="Erroneously causing submission.")
 def test_dcm2bids_sub_session_flat(clpipe_dicom_dir, config_file):
     convert2bids(
         dcm2bids = True,
@@ -35,7 +32,6 @@ def test_dcm2bids_sub_session_flat(clpipe_dicom_dir, config_file):
 
     assert True
 
-@pytest.mark.skip(reason="Erroneously causing submission.")
 def test_dcm2bids_session_sub(clpipe_dicom_dir, config_file):
     convert2bids(
         dcm2bids = True,
@@ -46,7 +42,6 @@ def test_dcm2bids_session_sub(clpipe_dicom_dir, config_file):
 
     assert True
 
-@pytest.mark.skip(reason="Erroneously causing submission.")
 def test_dcm2bids_session_sub_flat(clpipe_dicom_dir, config_file):
     convert2bids(
         dcm2bids = True,
@@ -57,7 +52,6 @@ def test_dcm2bids_session_sub_flat(clpipe_dicom_dir, config_file):
 
     assert True
 
-@pytest.mark.skip(reason="Erroneously causing submission.")
 def test_heudiconv(clpipe_dicom_dir, config_file):
     convert2bids(
         dcm2bids = False,
