@@ -300,7 +300,7 @@ def build_100_voxel_mean_workflow(in_file: os.PathLike=None, out_file: os.PathLi
         div_math = BinaryMaths(operation='div')
     div_mean_node = pe.Node(div_math, name="div_mean") #operand_file=mean_path
 
-    workflow = pe.Workflow(name="100_Voxel_Mean", base_dir=base_dir)
+    workflow = pe.Workflow(name="IntensityNormalization_100_Voxel_Mean", base_dir=base_dir)
     if crashdump_dir is not None:
         workflow.config['execution']['crashdump_dir'] = crashdump_dir
 
@@ -324,7 +324,7 @@ def build_SUSAN_workflow(in_file: os.PathLike=None, mask_path: os.PathLike=None,
         pe.Workflow: A SUSAN smoothing workflow.
     """
     
-    workflow = pe.Workflow(name="SUSAN", base_dir=base_dir)
+    workflow = pe.Workflow(name="SpatialSmoothing_SUSAN", base_dir=base_dir)
     if crashdump_dir is not None:
         workflow.config['execution']['crashdump_dir'] = crashdump_dir
     
@@ -426,7 +426,7 @@ def _setup_usans_input(tmean_image, susan_threshold: float):
 def build_butterworth_filter_workflow(hp: float, lp: float, tr: float, order: float=None, in_file: os.PathLike=None, 
     out_file: os.PathLike=None, base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None):
     
-    workflow = pe.Workflow(name="Butterworth", base_dir=base_dir)
+    workflow = pe.Workflow(name="TemporalFilter_Butterworth", base_dir=base_dir)
     if crashdump_dir is not None:
         workflow.config['execution']['crashdump_dir'] = crashdump_dir
 
@@ -452,7 +452,7 @@ def build_butterworth_filter_workflow(hp: float, lp: float, tr: float, order: fl
 def build_fslmath_temporal_filter(hp: float, lp: float, tr: float, order: float=None, in_file: os.PathLike=None, 
     out_file: os.PathLike=None, base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None):
 
-    workflow = pe.Workflow(name="fslmaths_Temporal_Filter", base_dir=base_dir)
+    workflow = pe.Workflow(name="TemporalFilter_fslmaths", base_dir=base_dir)
     if crashdump_dir is not None:
         workflow.config['execution']['crashdump_dir'] = crashdump_dir
 
@@ -492,7 +492,7 @@ def build_confound_regression_fsl_glm_workflow(in_file: os.PathLike=None, out_fi
     base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None):
     #TODO: This function currently returns an empy image
 
-    workflow = pe.Workflow(name="Confound_Regression", base_dir=base_dir)
+    workflow = pe.Workflow(name="ConfoundRegression_fsl_glm", base_dir=base_dir)
     if crashdump_dir is not None:
         workflow.config['execution']['crashdump_dir'] = crashdump_dir
 
@@ -528,7 +528,7 @@ def build_confound_regression_afni_3dTproject(in_file: os.PathLike=None, out_fil
 
     # Something specific to confound_regression's setup is not letting it work in postproc wf builder
 
-    workflow = pe.Workflow(name="Confound_Regression", base_dir=base_dir)
+    workflow = pe.Workflow(name="ConfoundRegression_3dTproject", base_dir=base_dir)
     if crashdump_dir is not None:
         workflow.config['execution']['crashdump_dir'] = crashdump_dir
 
@@ -560,7 +560,7 @@ def build_confound_regression_afni_3dTproject(in_file: os.PathLike=None, out_fil
 def build_aroma_workflow_fsl_regfilt(in_file: os.PathLike=None, out_file: os.PathLike=None, mixing_file: os.PathLike=None, noise_file: os.PathLike=None,  
     mask_file: os.PathLike=None, base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None):
 
-    workflow = pe.Workflow(name="Apply_AROMA", base_dir=base_dir)
+    workflow = pe.Workflow(name="ApplyAROMA_fsl_regfilt", base_dir=base_dir)
     if crashdump_dir is not None:
         workflow.config['execution']['crashdump_dir'] = crashdump_dir
 
@@ -599,7 +599,7 @@ def build_aroma_workflow_fsl_regfilt_R(in_file: os.PathLike=None, out_file: os.P
     clpipe.postprocutils.r_setup.setup_clpipe_R_lib()
     fsl_regfilt_R_script_path = pkg_resources.resource_filename("clpipe", "data/R_scripts/fsl_regfilt.R")
 
-    workflow = pe.Workflow(name="Apply_AROMA_fsl_regfilt_R", base_dir=base_dir)
+    workflow = pe.Workflow(name="ApplyAROMA_fsl_regfilt_R", base_dir=base_dir)
     if crashdump_dir is not None:
         workflow.config['execution']['crashdump_dir'] = crashdump_dir
 
@@ -630,7 +630,7 @@ def build_aroma_workflow_fsl_regfilt_R(in_file: os.PathLike=None, out_file: os.P
 def build_apply_mask_workflow(in_file: os.PathLike=None, 
     out_file: os.PathLike=None, mask_file:os.PathLike=None, base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None):
 
-    workflow = pe.Workflow(name="Apply_Mask", base_dir=base_dir)
+    workflow = pe.Workflow(name="ApplyMask", base_dir=base_dir)
     if crashdump_dir is not None:
         workflow.config['execution']['crashdump_dir'] = crashdump_dir
 
@@ -655,7 +655,7 @@ def build_apply_mask_workflow(in_file: os.PathLike=None,
 
 def build_trim_timepoints_workflow(in_file: os.PathLike=None, 
     out_file: os.PathLike=None, trim_from_beginning=None, trim_from_end=None, base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None):
-    workflow = pe.Workflow(name="Trim_Timepoints", base_dir=base_dir)
+    workflow = pe.Workflow(name="TrimTimepoints", base_dir=base_dir)
     if crashdump_dir is not None:
         workflow.config['execution']['crashdump_dir'] = crashdump_dir
 
