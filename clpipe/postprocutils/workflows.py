@@ -23,9 +23,30 @@ from .nodes import build_input_node, build_output_node, ButterworthFilter, Regre
 from ..errors import ImplementationNotFoundError
 import clpipe.postprocutils.r_setup
 
-RESCALING_10000_GLOBALMEDIAN = "globalmedian_10000"
-RESCALING_100_VOXELMEAN = "voxelmean_100"
-NORMALIZATION_METHODS = (RESCALING_10000_GLOBALMEDIAN, RESCALING_100_VOXELMEAN)
+#TODO: Set these values up as hierarchical, maybe with enums
+
+STEP_TEMPORAL_FILTERING = "TemporalFiltering"
+IMPLEMENTATION_BUTTERWORTH = "Butterworth"
+IMPLEMENTATION_FSLMATHS = "fslmaths"
+
+STEP_INTENSITY_NORMALIZATION = "IntensityNormalization"
+IMPLEMENTATION_10000_GLOBAL_MEDIAN = "10000_GlobalMedian"
+IMPLEMENTATION_100_VOXEL_MEAN = "100_voxelmean"
+
+STEP_SPATIAL_SMOOTHING = "SpatialSmoothing"
+IMPLEMENTATION_SUSAN = "SUSAN"
+
+STEP_AROMA_REGRESSION = "AROMARegression"
+IMPLEMENTATION_FSL_REGFILT = "fsl_regfilt"
+IMPLEMENTATION_FSL_REGFILT_R = "fsl_regfilt_R"
+
+STEP_CONFOUND_REGRESSION = "ConfoundRegression"
+IMPLEMENTATION_FSL_GLM = "fsl_glm"
+IMPLEMENTATION_AFNI_3DTPROJECT = "afni_3dTproject"
+
+STEP_APPLY_MASK = "ApplyMask"
+STEP_TRIM_TIMEPOINTS = "TrimTimepoints"
+STEP_RESAMPLE = "Resample"
 
 
 def build_postprocessing_workflow(image_wf: pe.Workflow=None, confounds_wf: pe.Workflow=None, name: str="Postprocessing_Pipeline", confound_regression: bool=False, 
@@ -107,7 +128,7 @@ def build_image_postprocessing_workflow(postprocessing_config: dict, in_file: os
     # Iterate through list of processing steps, adding a new sub workflow for each step
     for index, step in enumerate(processing_steps):
         # Decide which wf to add next
-        if step == "TemporalFiltering":
+        if step == STEP_TEMPORAL_FILTERING:
             if not tr:
                 raise ValueError(f"Missing TR corresponding to image: {in_file}")
             hp = postprocessing_config["ProcessingStepOptions"][step]["FilteringHighPass"]
@@ -119,14 +140,14 @@ def build_image_postprocessing_workflow(postprocessing_config: dict, in_file: os
 
             current_wf = temporal_filter_implementation(hp=hp,lp=lp, tr=tr, order=order, base_dir=postproc_wf.base_dir, crashdump_dir=crashdump_dir)
         
-        elif step == "IntensityNormalization":
+        elif step == STEP_INTENSITY_NORMALIZATION:
             implementation_name = postprocessing_config["ProcessingStepOptions"][step]["Implementation"]
 
             intensity_normalization_implementation = _getIntensityNormalizationImplementation(implementation_name)
 
             current_wf = intensity_normalization_implementation(base_dir=postproc_wf.base_dir, mask_file=mask_file, crashdump_dir=crashdump_dir)
         
-        elif step == "SpatialSmoothing":
+        elif step == STEP_SPATIAL_SMOOTHING:
             fwhm_mm= postprocessing_config["ProcessingStepOptions"][step]["FWHM"]
             #brightness_threshold = postprocessing_config["ProcessingStepOptions"][step]["BrightnessThreshold"]
             implementation_name = postprocessing_config["ProcessingStepOptions"][step]["Implementation"]
@@ -135,14 +156,14 @@ def build_image_postprocessing_workflow(postprocessing_config: dict, in_file: os
 
             current_wf = spatial_smoothing_implementation(base_dir=postproc_wf.base_dir, mask_path=mask_file, fwhm_mm=fwhm_mm, crashdump_dir=crashdump_dir)
 
-        elif step == "AROMARegression":
+        elif step == STEP_AROMA_REGRESSION:
             implementation_name = postprocessing_config["ProcessingStepOptions"][step]["Implementation"]
 
             apply_aroma_implementation = _getAROMARegressionImplementation(implementation_name)
 
             current_wf = apply_aroma_implementation(mixing_file=mixing_file, noise_file=noise_file, mask_file=mask_file, base_dir=postproc_wf.base_dir, crashdump_dir=crashdump_dir)
 
-        elif step == "ConfoundRegression":
+        elif step == STEP_CONFOUND_REGRESSION:
             implementation_name = postprocessing_config["ProcessingStepOptions"][step]["Implementation"]
 
             confound_regression_implementation = _getConfoundRegressionImplementation(implementation_name)
@@ -151,17 +172,17 @@ def build_image_postprocessing_workflow(postprocessing_config: dict, in_file: os
 
             postproc_wf.connect(input_node, "confounds_file", current_wf, "inputnode.confounds_file")
             
-        elif step == "ApplyMask":
+        elif step == STEP_APPLY_MASK:
             current_wf = build_apply_mask_workflow(mask_file=mask_file, base_dir=postproc_wf.base_dir, crashdump_dir=crashdump_dir)
 
-        elif step == "TrimTimepoints":
+        elif step == STEP_TRIM_TIMEPOINTS:
             trim_from_beginning = postprocessing_config["ProcessingStepOptions"][step]["FromEnd"]
             trim_from_end = postprocessing_config["ProcessingStepOptions"][step]["FromBeginning"]
 
             current_wf = build_trim_timepoints_workflow(trim_from_beginning=trim_from_beginning, trim_from_end=trim_from_end, 
                 base_dir=postproc_wf.base_dir, crashdump_dir=crashdump_dir)
         
-        elif step == "Resample":
+        elif step == STEP_RESAMPLE:
             reference_image = postprocessing_config["ProcessingStepOptions"][step]["ReferenceImage"]
             if reference_image == "SET REFERENCE IMAGE":
                 raise ValueError("No reference image provided. Please set a path to reference in clpipe_config.json")
@@ -189,44 +210,44 @@ def build_image_postprocessing_workflow(postprocessing_config: dict, in_file: os
 
 
 def _getTemporalFilterImplementation(implementationName: str):
-    if implementationName == "Butterworth":
+    if implementationName == IMPLEMENTATION_BUTTERWORTH:
         return build_butterworth_filter_workflow
-    elif implementationName == "fslmaths":
+    elif implementationName == IMPLEMENTATION_FSLMATHS:
         return build_fslmath_temporal_filter
     else:
-        raise ImplementationNotFoundError(f"Temporal filtering implementation not found: {implementationName}")
+        raise ImplementationNotFoundError(f"{STEP_TEMPORAL_FILTERING} implementation not found: {implementationName}")
 
 
 def _getIntensityNormalizationImplementation(implementationName: str):
-    if implementationName == "10000_GlobalMedian":
+    if implementationName == IMPLEMENTATION_10000_GLOBAL_MEDIAN:
         return build_10000_global_median_workflow
     else:
-        raise ImplementationNotFoundError(f"Intensity normalization implementation not found: {implementationName}")
+        raise ImplementationNotFoundError(f"{STEP_INTENSITY_NORMALIZATION} implementation not found: {implementationName}")
 
 
 def _getSpatialSmoothingImplementation(implementationName: str):
-    if implementationName == "SUSAN":
+    if implementationName == IMPLEMENTATION_SUSAN:
         return build_SUSAN_workflow
     else:
-        raise ImplementationNotFoundError(f"Spatial smoothing implementation not found: {implementationName}")
+        raise ImplementationNotFoundError(f"{STEP_SPATIAL_SMOOTHING} implementation not found: {implementationName}")
 
 
 def _getAROMARegressionImplementation(implementationName: str):
-    if implementationName == "fsl_regfilt":
+    if implementationName == IMPLEMENTATION_FSL_REGFILT:
         return build_aroma_workflow_fsl_regfilt
-    if implementationName == "fsl_regfilt_R":
+    if implementationName == IMPLEMENTATION_FSL_REGFILT_R:
         return build_aroma_workflow_fsl_regfilt_R
     else:
-        raise ImplementationNotFoundError(f"AROMA regression implementation not found: {implementationName}")
+        raise ImplementationNotFoundError(f"{STEP_AROMA_REGRESSION} implementation not found: {implementationName}")
 
 
 def _getConfoundRegressionImplementation(implementationName: str):
-    if implementationName == "fsl_glm":
+    if implementationName == IMPLEMENTATION_FSL_GLM:
         return build_confound_regression_fsl_glm_workflow
-    elif implementationName == "afni_3dTproject":
+    elif implementationName == IMPLEMENTATION_AFNI_3DTPROJECT:
         return build_confound_regression_afni_3dTproject
     else:
-        raise ImplementationNotFoundError(f"Confound regression implementation not found: {implementationName}")
+        raise ImplementationNotFoundError(f"{STEP_CONFOUND_REGRESSION} implementation not found: {implementationName}")
 
 
 def build_10000_global_median_workflow(in_file: os.PathLike=None, out_file:os.PathLike=None,
@@ -257,7 +278,7 @@ def build_10000_global_median_workflow(in_file: os.PathLike=None, out_file:os.Pa
         median_node.inputs.op_string = "-k %s -p 50"
 
 
-    workflow = pe.Workflow(name="10000_Global_Median", base_dir=base_dir)
+    workflow = pe.Workflow(name=f"{STEP_INTENSITY_NORMALIZATION}_{IMPLEMENTATION_10000_GLOBAL_MEDIAN}", base_dir=base_dir)
     if crashdump_dir is not None:
         workflow.config['execution']['crashdump_dir'] = crashdump_dir
 
@@ -300,7 +321,7 @@ def build_100_voxel_mean_workflow(in_file: os.PathLike=None, out_file: os.PathLi
         div_math = BinaryMaths(operation='div')
     div_mean_node = pe.Node(div_math, name="div_mean") #operand_file=mean_path
 
-    workflow = pe.Workflow(name="IntensityNormalization_100_Voxel_Mean", base_dir=base_dir)
+    workflow = pe.Workflow(name=f"{STEP_INTENSITY_NORMALIZATION}_{IMPLEMENTATION_100_VOXEL_MEAN}", base_dir=base_dir)
     if crashdump_dir is not None:
         workflow.config['execution']['crashdump_dir'] = crashdump_dir
 
@@ -324,7 +345,7 @@ def build_SUSAN_workflow(in_file: os.PathLike=None, mask_path: os.PathLike=None,
         pe.Workflow: A SUSAN smoothing workflow.
     """
     
-    workflow = pe.Workflow(name="SpatialSmoothing_SUSAN", base_dir=base_dir)
+    workflow = pe.Workflow(name=f"{STEP_SPATIAL_SMOOTHING}_{IMPLEMENTATION_SUSAN}", base_dir=base_dir)
     if crashdump_dir is not None:
         workflow.config['execution']['crashdump_dir'] = crashdump_dir
     
@@ -426,7 +447,7 @@ def _setup_usans_input(tmean_image, susan_threshold: float):
 def build_butterworth_filter_workflow(hp: float, lp: float, tr: float, order: float=None, in_file: os.PathLike=None, 
     out_file: os.PathLike=None, base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None):
     
-    workflow = pe.Workflow(name="TemporalFilter_Butterworth", base_dir=base_dir)
+    workflow = pe.Workflow(name=f"{STEP_TEMPORAL_FILTERING}_{IMPLEMENTATION_BUTTERWORTH}", base_dir=base_dir)
     if crashdump_dir is not None:
         workflow.config['execution']['crashdump_dir'] = crashdump_dir
 
@@ -452,7 +473,7 @@ def build_butterworth_filter_workflow(hp: float, lp: float, tr: float, order: fl
 def build_fslmath_temporal_filter(hp: float, lp: float, tr: float, order: float=None, in_file: os.PathLike=None, 
     out_file: os.PathLike=None, base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None):
 
-    workflow = pe.Workflow(name="TemporalFilter_fslmaths", base_dir=base_dir)
+    workflow = pe.Workflow(name=f"{STEP_TEMPORAL_FILTERING}_{IMPLEMENTATION_FSLMATHS}", base_dir=base_dir)
     if crashdump_dir is not None:
         workflow.config['execution']['crashdump_dir'] = crashdump_dir
 
@@ -492,7 +513,7 @@ def build_confound_regression_fsl_glm_workflow(in_file: os.PathLike=None, out_fi
     base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None):
     #TODO: This function currently returns an empy image
 
-    workflow = pe.Workflow(name="ConfoundRegression_fsl_glm", base_dir=base_dir)
+    workflow = pe.Workflow(name=f"{STEP_CONFOUND_REGRESSION}_{IMPLEMENTATION_FSL_GLM}", base_dir=base_dir)
     if crashdump_dir is not None:
         workflow.config['execution']['crashdump_dir'] = crashdump_dir
 
@@ -528,7 +549,7 @@ def build_confound_regression_afni_3dTproject(in_file: os.PathLike=None, out_fil
 
     # Something specific to confound_regression's setup is not letting it work in postproc wf builder
 
-    workflow = pe.Workflow(name="ConfoundRegression_3dTproject", base_dir=base_dir)
+    workflow = pe.Workflow(name=f"{STEP_CONFOUND_REGRESSION}_{IMPLEMENTATION_AFNI_3DTPROJECT}", base_dir=base_dir)
     if crashdump_dir is not None:
         workflow.config['execution']['crashdump_dir'] = crashdump_dir
 
@@ -560,7 +581,7 @@ def build_confound_regression_afni_3dTproject(in_file: os.PathLike=None, out_fil
 def build_aroma_workflow_fsl_regfilt(in_file: os.PathLike=None, out_file: os.PathLike=None, mixing_file: os.PathLike=None, noise_file: os.PathLike=None,  
     mask_file: os.PathLike=None, base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None):
 
-    workflow = pe.Workflow(name="ApplyAROMA_fsl_regfilt", base_dir=base_dir)
+    workflow = pe.Workflow(name=f"{STEP_AROMA_REGRESSION}_{IMPLEMENTATION_FSL_REGFILT}", base_dir=base_dir)
     if crashdump_dir is not None:
         workflow.config['execution']['crashdump_dir'] = crashdump_dir
 
@@ -599,7 +620,7 @@ def build_aroma_workflow_fsl_regfilt_R(in_file: os.PathLike=None, out_file: os.P
     clpipe.postprocutils.r_setup.setup_clpipe_R_lib()
     fsl_regfilt_R_script_path = pkg_resources.resource_filename("clpipe", "data/R_scripts/fsl_regfilt.R")
 
-    workflow = pe.Workflow(name="ApplyAROMA_fsl_regfilt_R", base_dir=base_dir)
+    workflow = pe.Workflow(name=f"{STEP_AROMA_REGRESSION}_{IMPLEMENTATION_FSL_REGFILT_R}", base_dir=base_dir)
     if crashdump_dir is not None:
         workflow.config['execution']['crashdump_dir'] = crashdump_dir
 
@@ -630,7 +651,7 @@ def build_aroma_workflow_fsl_regfilt_R(in_file: os.PathLike=None, out_file: os.P
 def build_apply_mask_workflow(in_file: os.PathLike=None, 
     out_file: os.PathLike=None, mask_file:os.PathLike=None, base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None):
 
-    workflow = pe.Workflow(name="ApplyMask", base_dir=base_dir)
+    workflow = pe.Workflow(name=STEP_APPLY_MASK, base_dir=base_dir)
     if crashdump_dir is not None:
         workflow.config['execution']['crashdump_dir'] = crashdump_dir
 
@@ -655,7 +676,7 @@ def build_apply_mask_workflow(in_file: os.PathLike=None,
 
 def build_trim_timepoints_workflow(in_file: os.PathLike=None, 
     out_file: os.PathLike=None, trim_from_beginning=None, trim_from_end=None, base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None):
-    workflow = pe.Workflow(name="TrimTimepoints", base_dir=base_dir)
+    workflow = pe.Workflow(name=STEP_TRIM_TIMEPOINTS, base_dir=base_dir)
     if crashdump_dir is not None:
         workflow.config['execution']['crashdump_dir'] = crashdump_dir
 
@@ -681,7 +702,7 @@ def build_trim_timepoints_workflow(in_file: os.PathLike=None,
 def build_resample_workflow(reference_image:os.PathLike=None, in_file: os.PathLike=None, 
     out_file: os.PathLike=None, base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None):
     
-    workflow = pe.Workflow(name="Resample", base_dir=base_dir)
+    workflow = pe.Workflow(name=STEP_RESAMPLE, base_dir=base_dir)
     if crashdump_dir is not None:
         workflow.config['execution']['crashdump_dir'] = crashdump_dir
 
