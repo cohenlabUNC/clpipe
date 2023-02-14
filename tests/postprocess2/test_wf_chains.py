@@ -10,8 +10,8 @@ def test_postprocess2_wf_2_steps(artifact_dir, postprocessing_config, request, s
     test_path = helpers.create_test_dir(artifact_dir, request.node.name)
     out_path = test_path / "postProcessed.nii.gz"
     
-    wf = build_postprocessing_workflow(postprocessing_config, in_file=sample_raw_image, out_file=out_path, tr=2, mask_file=sample_raw_image_mask,
-        confound_file=sample_confounds_timeseries,
+    wf = build_image_postprocessing_workflow(postprocessing_config, in_file=sample_raw_image, export_path=out_path, tr=2, mask_file=sample_raw_image_mask,
+        confounds_file=sample_confounds_timeseries,
         base_dir=test_path, crashdump_dir=test_path)
     
     wf.run()
@@ -33,8 +33,8 @@ def test_postprocess2_wf_3_steps(artifact_dir, postprocessing_config, request, s
     test_path = helpers.create_test_dir(artifact_dir, request.node.name)
     out_path = test_path / "postProcessed.nii.gz"
     
-    wf = build_postprocessing_workflow(postprocessing_config, in_file=sample_raw_image, out_file=out_path, tr=2, mask_file=sample_raw_image_mask,
-        confound_file=sample_confounds_timeseries,
+    wf = build_image_postprocessing_workflow(postprocessing_config, in_file=sample_raw_image, export_path=out_path, tr=2, mask_file=sample_raw_image_mask,
+        confounds_file=sample_confounds_timeseries,
         base_dir=test_path, crashdump_dir=test_path)
     
     wf.run()
@@ -56,8 +56,8 @@ def test_postprocess2_wf_1_step(artifact_dir, postprocessing_config, request, sa
     test_path = helpers.create_test_dir(artifact_dir, request.node.name)
     out_path = test_path / "postProcessed.nii.gz"
     
-    wf = build_postprocessing_workflow(postprocessing_config, in_file=sample_raw_image, out_file=out_path, tr=2, mask_file=sample_raw_image_mask,
-        confound_file=sample_confounds_timeseries,
+    wf = build_image_postprocessing_workflow(postprocessing_config, in_file=sample_raw_image, export_path=out_path, tr=2, mask_file=sample_raw_image_mask,
+        confounds_file=sample_confounds_timeseries,
         base_dir=test_path, crashdump_dir=test_path)
     
     wf.run()
@@ -80,8 +80,8 @@ def test_postprocess2_wf_confound_regression_last(artifact_dir, postprocessing_c
     test_path = helpers.create_test_dir(artifact_dir, request.node.name)
     out_path = test_path / "postProcessed.nii.gz"
     
-    wf = build_postprocessing_workflow(postprocessing_config, in_file=sample_raw_image, out_file=out_path, tr=2, mask_file=sample_raw_image_mask,
-        confound_file=sample_confounds_timeseries,
+    wf = build_image_postprocessing_workflow(postprocessing_config, in_file=sample_raw_image, export_path=out_path, tr=2, mask_file=sample_raw_image_mask,
+        confounds_file=sample_confounds_timeseries,
         base_dir=test_path, crashdump_dir=test_path)
     
     wf.run()
@@ -103,8 +103,8 @@ def test_postprocess2_wf_confound_regression_first(artifact_dir, postprocessing_
     test_path = helpers.create_test_dir(artifact_dir, request.node.name)
     out_path = test_path / "postProcessed.nii.gz"
     
-    wf = build_postprocessing_workflow(postprocessing_config, in_file=sample_raw_image, out_file=out_path, tr=2, mask_file=sample_raw_image_mask,
-        confound_file=sample_confounds_timeseries,
+    wf = build_image_postprocessing_workflow(postprocessing_config, in_file=sample_raw_image, export_path=out_path, tr=2, mask_file=sample_raw_image_mask,
+        confounds_file=sample_confounds_timeseries,
         base_dir=test_path, crashdump_dir=test_path)
     
     wf.run()
@@ -126,7 +126,7 @@ def test_postprocess2_wf_aroma(artifact_dir, postprocessing_config, request, sam
     test_path = helpers.create_test_dir(artifact_dir, request.node.name)
     out_path = test_path / "postProcessed.nii.gz"
     
-    wf = build_postprocessing_workflow(postprocessing_config, in_file=sample_raw_image, out_file=out_path, tr=2, mask_file=sample_raw_image_mask,
+    wf = build_image_postprocessing_workflow(postprocessing_config, in_file=sample_raw_image, export_path=out_path, tr=2, mask_file=sample_raw_image_mask,
         mixing_file=sample_melodic_mixing, noise_file=sample_aroma_noise_ics,
         base_dir=test_path, crashdump_dir=test_path)
     
@@ -149,7 +149,7 @@ def test_postprocess2_wf_aroma_last(artifact_dir, postprocessing_config, request
     test_path = helpers.create_test_dir(artifact_dir, request.node.name)
     out_path = test_path / "postProcessed.nii.gz"
     
-    wf = build_postprocessing_workflow(postprocessing_config, in_file=sample_raw_image, out_file=out_path, tr=2, mask_file=sample_raw_image_mask,
+    wf = build_image_postprocessing_workflow(postprocessing_config, in_file=sample_raw_image, export_path=out_path, tr=2, mask_file=sample_raw_image_mask,
         mixing_file=sample_melodic_mixing, noise_file=sample_aroma_noise_ics,
         base_dir=test_path, crashdump_dir=test_path)
     
@@ -169,7 +169,10 @@ def test_postprocess2_wf_no_mask(artifact_dir, postprocessing_config, request, s
     test_path = helpers.create_test_dir(artifact_dir, request.node.name)
     out_path = test_path / "postProcessed.nii.gz"
     
-    wf = build_postprocessing_workflow(postprocessing_config, sample_raw_image, out_path, 2,
+    postprocessing_config["ProcessingSteps"] = ["TemporalFiltering", "SpatialSmoothing", "IntensityNormalization"]
+
+    wf = build_image_postprocessing_workflow(
+        postprocessing_config, sample_raw_image, out_path, tr=2,
         base_dir=test_path, crashdump_dir=test_path)
     
     wf.run()
@@ -192,8 +195,8 @@ def test_postprocess2_wf_fslmaths_temporal_filter(artifact_dir, postprocessing_c
     test_path = helpers.create_test_dir(artifact_dir, request.node.name)
     out_path = test_path / "postProcessed.nii.gz"
     
-    wf = build_postprocessing_workflow(postprocessing_config, in_file=sample_raw_image, out_file=out_path, tr=2, mask_file=sample_raw_image_mask,
-        confound_file=sample_confounds_timeseries,
+    wf = build_image_postprocessing_workflow(postprocessing_config, in_file=sample_raw_image, export_path=out_path, tr=2, mask_file=sample_raw_image_mask,
+        confounds_file=sample_confounds_timeseries,
         base_dir=test_path, crashdump_dir=test_path)
     
     wf.run()
@@ -215,7 +218,7 @@ def test_postprocess2_wf_resample(artifact_dir, postprocessing_config, request, 
     test_path = helpers.create_test_dir(artifact_dir, request.node.name)
     out_path = test_path / "postProcessed.nii.gz"
     
-    wf = build_postprocessing_workflow(postprocessing_config, in_file=sample_raw_image, out_file=out_path, tr=2, mask_file=sample_raw_image_mask,
+    wf = build_image_postprocessing_workflow(postprocessing_config, in_file=sample_raw_image, export_path=out_path, tr=2, mask_file=sample_raw_image_mask,
         base_dir=test_path, crashdump_dir=test_path)
     
     wf.run()

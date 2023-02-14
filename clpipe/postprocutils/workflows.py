@@ -173,6 +173,8 @@ def build_image_postprocessing_workflow(postprocessing_config: dict, in_file: os
             postproc_wf.connect(input_node, "confounds_file", current_wf, "inputnode.confounds_file")
             
         elif step == STEP_APPLY_MASK:
+            if mask_file is None:
+                raise ValueError(f"{STEP_APPLY_MASK}: No mask file provided.")
             current_wf = build_apply_mask_workflow(mask_file=mask_file, base_dir=postproc_wf.base_dir, crashdump_dir=crashdump_dir)
 
         elif step == STEP_TRIM_TIMEPOINTS:
