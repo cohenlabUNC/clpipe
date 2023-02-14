@@ -14,7 +14,6 @@ def test_postprocess_subjects_dir(clpipe_fmriprep_dir, artifact_dir, helpers, re
     log_dir = Path(test_dir / "logs" / "postproc_logs")
     log_dir.mkdir(parents=True, exist_ok=True)
 
-
     with pytest.raises(SystemExit):
         postprocess_subjects(config_file=config, fmriprep_dir=fmriprep_dir, bids_dir=bids_dir,
             output_dir=postproc_dir, log_dir=log_dir)
@@ -23,14 +22,14 @@ def test_postprocess_subjects_dir(clpipe_fmriprep_dir, artifact_dir, helpers, re
 def test_postprocess_subjects_dir(clpipe_fmriprep_dir, artifact_dir, helpers, request):
     fmriprep_dir = clpipe_fmriprep_dir / "data_fmriprep" / "fmriprep"
     config = clpipe_fmriprep_dir / "clpipe_config.json"
-    glm_config = clpipe_fmriprep_dir / "glm_config.json"
     test_dir = helpers.create_test_dir(artifact_dir, request.node.name)
     postproc_dir = Path(test_dir / "data_postprocessed")
     log_dir = Path(test_dir / "logs" / "postproc_logs")
     log_dir.mkdir(parents=True, exist_ok=True)
 
-    postprocess_subjects(config_file=config, glm_config_file=glm_config, fmriprep_dir=fmriprep_dir,
-        output_dir=postproc_dir, log_dir=log_dir)
+    with pytest.raises(SystemExit):
+        postprocess_subjects(config_file=config, fmriprep_dir=fmriprep_dir,
+            output_dir=postproc_dir, log_dir=log_dir)
 
 
 def test_postprocess_subjects_dir_config_only(clpipe_fmriprep_dir):
@@ -43,30 +42,14 @@ def test_postprocess_subjects_dir_config_only(clpipe_fmriprep_dir):
 def test_postprocess_subjects_dir_invalid_subject(clpipe_fmriprep_dir, artifact_dir, helpers, request):
     fmriprep_dir = clpipe_fmriprep_dir / "data_fmriprep" / "fmriprep"
     config = clpipe_fmriprep_dir / "clpipe_config.json"
-    glm_config = clpipe_fmriprep_dir / "glm_config.json"
     test_dir = helpers.create_test_dir(artifact_dir, request.node.name)
     postproc_dir = Path(test_dir / "data_postprocessed")
     log_dir = Path(test_dir / "logs" / "postproc_logs")
     log_dir.mkdir(parents=True, exist_ok=True)
 
-    postprocess_subjects(subjects=['99'], config_file=config, glm_config_file=glm_config, fmriprep_dir=fmriprep_dir,
-        output_dir=postproc_dir, log_dir=log_dir)
-
-
-def test_postprocess_subjects_job(clpipe_fmriprep_dir, artifact_dir, helpers, request):
-    config = clpipe_fmriprep_dir / "clpipe_config.json"
-    bids_dir = clpipe_fmriprep_dir / "data_BIDS"
-    fmriprep_dir = clpipe_fmriprep_dir / "data_fmriprep" / "fmriprep"
-    test_dir = helpers.create_test_dir(artifact_dir, request.node.name)
-    postproc_dir = Path(test_dir / "data_postprocessed")
-    #pybids_db_path = Path(test_dir / "bids_index")
-    pybids_db_path = None
-
-    log_dir = Path(test_dir / "logs" / "postproc_logs")
-    log_dir.mkdir(parents=True, exist_ok=True)
-
-    postprocess_subjects(bids_dir, fmriprep_dir, postproc_dir, config,
-        log_dir=log_dir, pybids_db_path=pybids_db_path)
+    with pytest.raises(SystemExit):
+        postprocess_subjects(subjects=['99'], config_file=config, fmriprep_dir=fmriprep_dir,
+            output_dir=postproc_dir, log_dir=log_dir)
 
 
 def test_prepare_confounds(sample_confounds_timeseries, postprocessing_config, artifact_dir, helpers, request):
