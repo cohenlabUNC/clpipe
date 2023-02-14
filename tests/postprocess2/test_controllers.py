@@ -52,35 +52,6 @@ def test_postprocess_subjects_dir_invalid_subject(clpipe_fmriprep_dir, artifact_
             output_dir=postproc_dir, log_dir=log_dir)
 
 
-def test_prepare_confounds(sample_confounds_timeseries, postprocessing_config, artifact_dir, helpers, request):
-    test_path = helpers.create_test_dir(artifact_dir, request.node.name)
-    out_path = test_path / "new_confounds.tsv"
-
-    cf_workflow = build_confounds_processing_workflow(postprocessing_config, confound_file=sample_confounds_timeseries,
-        out_file=out_path, base_dir=test_path, crashdump_dir=test_path, tr=2)
-
-    cf_workflow.run()
-    
-    assert True
-
-
-def test_prepare_confounds_aroma(sample_confounds_timeseries, postprocessing_config, sample_melodic_mixing, sample_aroma_noise_ics,
-    artifact_dir, helpers, request):
-
-    test_path = helpers.create_test_dir(artifact_dir, request.node.name)
-    out_path = test_path / "new_confounds.tsv"
-
-    postprocessing_config["ProcessingSteps"] = ["AROMARegression", "TemporalFiltering", "IntensityNormalization"]
-
-    cf_workflow = build_confounds_processing_workflow(postprocessing_config, confound_file=sample_confounds_timeseries,
-        out_file=out_path, mixing_file=sample_melodic_mixing, noise_file=sample_aroma_noise_ics,
-        base_dir=test_path, crashdump_dir=test_path, tr=2)
-
-    cf_workflow.run()
-    
-    assert True
-
-
 def test_postprocess_subject_job_setup(clpipe_fmriprep_dir, artifact_dir, helpers, request):
     fmriprep_dir = clpipe_fmriprep_dir / "data_fmriprep" / "fmriprep"
     bids_dir = clpipe_fmriprep_dir / "data_BIDS"
