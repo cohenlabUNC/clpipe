@@ -119,7 +119,7 @@ def test_confound_regression_afni_3dTproject_wf(artifact_dir, sample_raw_image, 
 
     regressed_path = test_path / "sample_raw_regressed.nii.gz"
 
-    wf = build_confound_regression_afni_3dTproject(confound_file = sample_postprocessed_confounds, in_file=sample_raw_image, out_file=regressed_path, 
+    wf = build_confound_regression_afni_3dTproject(confounds_file=sample_postprocessed_confounds, in_file=sample_raw_image, out_file=regressed_path, 
         mask_file=sample_raw_image_mask, base_dir=test_path, crashdump_dir=test_path)
     wf.run()
 
