@@ -109,6 +109,10 @@ def postprocess_subjects(
     else:
         logger.info(f"Using working directory: {working_dir}")
 
+    stream_output_dir = output_dir / processing_stream
+    if not stream_output_dir.exists():
+        stream_output_dir.mkdir(parents=True)
+
     if not log_dir:
         log_dir = Path(project_dir) / "logs" / "postproc2_logs"
     log_dir = Path(log_dir)
@@ -218,14 +222,15 @@ def postprocess_subject(
     config = _parse_config(config_file)
     config_file = Path(config_file)
 
+    output_dir = Path(output_dir)
+
+    stream_output_dir = output_dir / processing_stream
     postprocessing_config = _fetch_postprocessing_stream_config(
-        config, output_dir, processing_stream=processing_stream)
+        config, stream_output_dir, processing_stream=processing_stream)
 
     batch_manager = None
     if batch:
         batch_manager = _setup_batch_manager(config, log_dir)
-
-    output_dir = Path(output_dir)
 
     try:
         bids:BIDSLayout = get_bids(
@@ -325,10 +330,9 @@ def postprocess_image(
     config = _parse_config(config_file)
     config_file = Path(config_file)
 
+    stream_output_dir = Path(out_dir) / processing_stream
     postprocessing_config = _fetch_postprocessing_stream_config(
-        config, out_dir, processing_stream=processing_stream)
-
-    stream_dir = Path(out_dir) / processing_stream
+        config, stream_output_dir, processing_stream=processing_stream)
 
     image_path = Path(image_path)
     subject_working_dir = Path(subject_working_dir)
@@ -415,7 +419,7 @@ def postprocess_image(
         base_dir=subject_working_dir, crashdump_dir=log_dir)
     
     if postprocessing_config["WriteProcessGraph"]:
-        _draw_graph(postproc_wf, "processing_graph", stream_dir, logger=logger)
+        _draw_graph(postproc_wf, "processing_graph", stream_output_dir, logger=logger)
 
     postproc_wf.inputs.inputnode.in_file = image_path
     postproc_wf.inputs.inputnode.confounds_file = confounds_path
@@ -534,7 +538,7 @@ def _plot_image_sample(image_path: os.PathLike,
 
 
 def _fetch_postprocessing_stream_config(
-    config: dict, output_dir: os.PathLike, 
+    config: dict, stream_output_dir: os.PathLike, 
     processing_stream:str=DEFAULT_PROCESSING_STREAM):
     """
     The postprocessing stream config is a subset of the main 
@@ -545,9 +549,6 @@ def _fetch_postprocessing_stream_config(
     file at the level of the output folder / stream folder and
     is referred to by the workflow builders.
     """
-    stream_output_dir = Path(output_dir) / processing_stream
-    if not stream_output_dir.exists():
-        stream_output_dir.mkdir(parents=True)
 
     postprocessing_description_file = \
         Path(stream_output_dir) / PROCESSING_DESCRIPTION_FILE_NAME
@@ -591,7 +592,7 @@ def _postprocessing_config_apply_processing_stream(
     
     # If using the default stream, no need to update postprocessing config
     if processing_stream == DEFAULT_PROCESSING_STREAM:
-        return
+        return postprocessing_config
 
     # Iterate through the available processing streams and see 
     #   if one matches the one requested
