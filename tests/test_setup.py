@@ -25,7 +25,7 @@ def test_setup_referenced_source(project_dir, source_data):
                   source_data=source_data, move_source_data=False,
                   symlink_source_data=False, debug=False)
 
-    assert not Path(project_dir / "data_DICOMs").exists() and Path(project_dir / source_data).exists()
+    assert not Path(project_dir / "data_DICOMs").exists() and Path(source_data).exists()
 
 
 def test_setup_symlink_source(project_dir, source_data):
