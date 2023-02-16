@@ -1,5 +1,6 @@
 import pytest
 from pathlib import Path
+import os
 
 from clpipe.project_setup import project_setup
 
@@ -15,28 +16,28 @@ def test_setup_no_source(project_dir):
     assert Path(project_dir / "data_DICOMs").exists()
 
 
-def test_setup_referenced_source(project_dir):
+def test_setup_referenced_source(project_dir, source_data):
     """Check that clpipe's generated config file references a specified source
     directory that is not within the clpipe project directory. This variant
     should not create a data_DICOMs directory.
-    
-    project_setup(project_title="Test", project_dir="TestDir", 
-                  source_data="TestSource", move_source_data=False,
-                  symlink_source_data=False, debug=False)
     """
-    assert False
+    project_setup(project_title=PROJECT_TITLE, project_dir=project_dir, 
+                  source_data=source_data, move_source_data=False,
+                  symlink_source_data=False, debug=False)
+
+    assert not Path(project_dir / "data_DICOMs").exists() and Path(project_dir / source_data).exists()
 
 
-def test_setup_symlink_source(project_dir):
+def test_setup_symlink_source(project_dir, source_data):
     """Check that clpipe creates a data_DICOMs dir and symlinks it to the given
     source data.
-
-    project_setup(project_title="Test", project_dir="TestDir", 
-                  source_data="TestSource", move_source_data=False,
-                  symlink_source_data=True, debug=False)
     """
-    assert False
 
+    project_setup(project_title=PROJECT_TITLE, project_dir=project_dir, 
+                  source_data=source_data, move_source_data=False,
+                  symlink_source_data=True, debug=False)
+    
+    assert Path(project_dir / "data_DICOMs").exists() and os.path.islink(project_dir / "data_DICOMs")
 
 @pytest.mark.skip(reason="Feature Not implemented")
 def test_setup_move_source(project_dir):

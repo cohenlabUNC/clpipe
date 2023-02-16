@@ -92,6 +92,12 @@ def project_dir(tmp_path_factory):
     proj_path = tmp_path_factory.mktemp(PROJECT_TITLE)
     return Path(proj_path)
 
+@pytest.fixture(scope="function")
+def source_data(tmp_path_factory):
+    """Fixture which provides a temporary space for a source data folder."""
+    source_path = tmp_path_factory.mktemp("source_data")
+    return Path(source_path)
+
 
 @pytest.fixture(scope="module")
 def clpipe_dir(tmp_path_factory):
