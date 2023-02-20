@@ -311,6 +311,12 @@ def config_file(clpipe_dir):
     return clpipe_dir / "clpipe_config.json"
 
 @pytest.fixture(scope="module")
+def clpipe_config(config_file):
+    with open(config_file, 'r') as f:
+        config_dict = json.load(f)
+        return config_dict
+
+@pytest.fixture(scope="module")
 def config_file_confounds(clpipe_config_default, config_file):
     clpipe_config_default["PostProcessingOptions2"]["ConfoundOptions"]["Include"] = True
 

@@ -2,10 +2,26 @@ import pytest
 
 from clpipe.config import *
 
+@pytest.mark.skip(reason="Test Not Implemented")
+def test_json_load(config_file):
+    """ Ensure that the config class loads in .json data as expected. """
+
+    assert False
+
+
+@pytest.mark.skip(reason="Feature Not Implemented")
+def test_yaml_load():
+    """ Ensure that the config class loads from .yaml as expected. """
+
+    assert False
+
+
+# Using dictionaries over file references from this point on - no need to test
+#   json.load()
 
 @pytest.mark.skip(reason="Test Not Implemented")
-def test_config_default(clpipe_config_default):
-    """ Ensure that the default config file (data/defaltConfig.json)
+def test_default(clpipe_config_default):
+    """ Ensure that data from the default config file (data/defaltConfig.json)
     is successfully loaded into the configuration object.
     """
 
@@ -16,27 +32,21 @@ def test_config_default(clpipe_config_default):
 
 
 @pytest.mark.skip(reason="Test Not Implemented")
-def test_config_extra_fields(config_file):
+def test_extra_fields(clpipe_config):
     """ Ensure that the intial config for a test project is successfully loaded."""
     assert False
 
 
-# Could consider creating test config files for these case-specific config tests
-#   that follow. These could go in tests/data/config_files
-# Or we could just load in a base config file and modify the dictionary in code to
-#   get the test case we want.
-
-
 @pytest.mark.skip(reason="Test Not Implemented")
-def test_config_wrong_order():
-    """ Ensure that a config file with fields in an unexpected order will successfully
+def test_wrong_order(clpipe_config):
+    """ Ensure that a configuration with fields in an unexpected order will successfully
     load.
     """
     assert False
 
 
 @pytest.mark.skip(reason="Test Not Implemented")
-def test_config_author_contributor():
+def test_author_contributor(clpipe_config):
     """ Check that the conversion of the Authors/Contributors to just 'Contributors'
     works successfully.
     """
