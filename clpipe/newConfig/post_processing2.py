@@ -68,7 +68,7 @@ class SpatialSmoothing:
         if value is not None:
             self._Implementation = value
 
-    FWHM: str
+    FWHM: int
     @property
     def FWHM(self):
         return self._FWHM
@@ -98,14 +98,14 @@ class AROMARegression:
 
 @dataclass
 class Resample:
-    Implementation: str
+    ReferenceImage: str
     @property
-    def Implementation(self):
-        return self._Implementation
-    @Implementation.setter
-    def Implementation(self, value):
+    def ReferenceImage(self):
+        return self._ReferenceImage
+    @ReferenceImage.setter
+    def ReferenceImage(self, value):
         if value is not None:
-            self._Implementation = value
+            self._ReferenceImage = value
 
     #Add this class to get a ordered dictionary in the dump method
     class Meta:
