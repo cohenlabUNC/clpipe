@@ -371,7 +371,7 @@ def postprocess_image(
 
     if confounds_path is not None:
         try:
-            confounds_export_path = _build_export_path(
+            confounds_export_path = build_export_path(
                 confounds_path, query_params["subject"], 
                 fmriprep_dir, subject_out_dir)
 
@@ -386,7 +386,7 @@ def postprocess_image(
             logger.warn("Skipping confounds processing")
 
     if not confounds_only:
-        image_export_path = _build_export_path(
+        image_export_path = build_export_path(
             image_path, query_params["subject"], fmriprep_dir, subject_out_dir)
 
         image_wf = _setup_image_workflow(
@@ -446,9 +446,9 @@ def _setup_image_workflow(
     return wf
 
 
-def _build_export_path(image_path: os.PathLike, subject_id: str, 
+def build_export_path(image_path: os.PathLike, subject_id: str, 
                        fmriprep_dir: os.PathLike, 
-                       subject_out_dir: os.PathLike):
+                       subject_out_dir: os.PathLike) -> Path:
     """Builds a new name for a processed image.
 
     Args:
