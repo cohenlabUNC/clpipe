@@ -1,17 +1,21 @@
 import pytest
+from pathlib import Path
 
 from clpipe.config import *
 
 @pytest.mark.skip(reason="Test Not Implemented")
-def test_json_load(config_file):
+def test_json_load(config_file: Path):
     """ Ensure that the config class loads in .json data as expected. """
 
     assert False
 
 
 @pytest.mark.skip(reason="Feature Not Implemented")
-def test_yaml_load():
-    """ Ensure that the config class loads from .yaml as expected. """
+def test_yaml_load(yaml_config_file: Path):
+    """ Ensure that the config class loads from .yaml as expected. 
+    
+        yaml_config_file fixture does not yet exist
+    """
 
     assert False
 
@@ -20,7 +24,7 @@ def test_yaml_load():
 #   json.load()
 
 @pytest.mark.skip(reason="Test Not Implemented")
-def test_default(clpipe_config_default):
+def test_default(clpipe_config_default: dict):
     """ Ensure that data from the default config file (data/defaltConfig.json)
     is successfully loaded into the configuration object.
     """
@@ -32,13 +36,13 @@ def test_default(clpipe_config_default):
 
 
 @pytest.mark.skip(reason="Test Not Implemented")
-def test_extra_fields(clpipe_config):
+def test_extra_fields(clpipe_config: dict):
     """ Ensure that the intial config for a test project is successfully loaded."""
     assert False
 
 
 @pytest.mark.skip(reason="Test Not Implemented")
-def test_wrong_order(clpipe_config):
+def test_wrong_order(clpipe_config: dict):
     """ Ensure that a configuration with fields in an unexpected order will successfully
     load.
     """
@@ -46,7 +50,7 @@ def test_wrong_order(clpipe_config):
 
 
 @pytest.mark.skip(reason="Test Not Implemented")
-def test_author_contributor(clpipe_config):
+def test_author_contributor(clpipe_config: dict):
     """ Check that the conversion of the Authors/Contributors to just 'Contributors'
     works successfully.
     """

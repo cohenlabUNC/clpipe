@@ -1,8 +1,9 @@
 import pytest
+from pathlib import Path
 
 from clpipe.bids_conversion import convert2bids
 
-def test_dcm2bids(clpipe_dicom_dir, config_file):
+def test_dcm2bids(clpipe_dicom_dir: Path, config_file: Path):
     convert2bids(
         dcm2bids = True,
         config_file = config_file,
@@ -12,7 +13,7 @@ def test_dcm2bids(clpipe_dicom_dir, config_file):
 
     assert True
 
-def test_dcm2bids_sub_session(clpipe_dicom_dir, config_file):
+def test_dcm2bids_sub_session(clpipe_dicom_dir: Path, config_file: Path):
     convert2bids(
         dcm2bids = True,
         config_file = config_file,
@@ -22,7 +23,7 @@ def test_dcm2bids_sub_session(clpipe_dicom_dir, config_file):
 
     assert True
 
-def test_dcm2bids_sub_session_flat(clpipe_dicom_dir, config_file):
+def test_dcm2bids_sub_session_flat(clpipe_dicom_dir: Path, config_file: Path):
     convert2bids(
         dcm2bids = True,
         config_file = config_file,
@@ -32,7 +33,7 @@ def test_dcm2bids_sub_session_flat(clpipe_dicom_dir, config_file):
 
     assert True
 
-def test_dcm2bids_session_sub(clpipe_dicom_dir, config_file):
+def test_dcm2bids_session_sub(clpipe_dicom_dir: Path, config_file: Path):
     convert2bids(
         dcm2bids = True,
         config_file = config_file,
@@ -42,7 +43,7 @@ def test_dcm2bids_session_sub(clpipe_dicom_dir, config_file):
 
     assert True
 
-def test_dcm2bids_session_sub_flat(clpipe_dicom_dir, config_file):
+def test_dcm2bids_session_sub_flat(clpipe_dicom_dir: Path, config_file: Path):
     convert2bids(
         dcm2bids = True,
         config_file = config_file,
@@ -52,7 +53,7 @@ def test_dcm2bids_session_sub_flat(clpipe_dicom_dir, config_file):
 
     assert True
 
-def test_heudiconv(clpipe_dicom_dir, config_file):
+def test_heudiconv(clpipe_dicom_dir: Path, config_file: Path):
     convert2bids(
         dcm2bids = False,
         config_file = config_file,

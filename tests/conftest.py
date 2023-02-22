@@ -205,7 +205,7 @@ def clpipe_fmriprep_dir(clpipe_bids_dir, sample_raw_image, sample_raw_image_mask
     return clpipe_bids_dir
 
 @pytest.fixture(scope="module")
-def clpipe_config_default():
+def clpipe_config_default() -> dict:
     return ClpipeConfigParser().config
 
 @pytest.fixture(scope="module")
@@ -324,7 +324,7 @@ def glm_config_file(clpipe_fmriprep_dir: Path) -> Path:
     return clpipe_fmriprep_dir / "glm_config.json"
 
 @pytest.fixture(scope="module")
-def clpipe_config(config_file):
+def clpipe_config(config_file) -> dict:
     with open(config_file, 'r') as f:
         config_dict = json.load(f)
         return config_dict
