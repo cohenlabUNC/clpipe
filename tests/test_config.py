@@ -1,12 +1,12 @@
 import pytest
 
 from clpipe.config import *
+from clpipe.newConfig.clpipe_config import getConfig
 
-@pytest.mark.skip(reason="Test Not Implemented")
 def test_json_load(config_file):
     """ Ensure that the config class loads in .json data as expected. """
-
-    assert False
+    config = getConfig(json_file=config_file)
+    assert config is not None
 
 
 @pytest.mark.skip(reason="Feature Not Implemented")

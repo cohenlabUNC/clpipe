@@ -9,6 +9,10 @@ from .beta_series import BetaSeries
 from .post_processing import PostProcessing
 from .roi import ROIOptions
 from .susan import SusanOptions
+from .source_options import SourceOptions
+from .post_processing2 import PostProcessing2
+from .reho import ReHoExtraction
+from .t2star import T2StarExtraction
 
 @dataclass
 class Config:
@@ -58,6 +62,15 @@ class Config:
         if value is not None:
             self._TempDirectory = value
 
+    SourceOptions: SourceOptions
+    @property
+    def SourceOptions(self):
+        return self._SourceOptions
+    @SourceOptions.setter
+    def SourceOptions(self, value):
+        if value is not None:
+            self._SourceOptions = value
+
     DICOMToBIDSOptions: DICOM_to_BIDS
     @property
     def DICOMToBIDSOptions(self):
@@ -94,6 +107,15 @@ class Config:
         if value is not None:
             self._PostProcessingOptions = value
 
+    PostProcessingOptions2: PostProcessing2
+    @property
+    def PostProcessingOptions2(self):
+        return self._PostProcessingOptions2
+    @PostProcessingOptions2.setter
+    def PostProcessingOptions2(self, value):
+        if value is not None:
+            self._PostProcessingOptions2 = value
+
     BetaSeriesOptions: BetaSeries
     @property
     def BetaSeriesOptions(self):
@@ -112,6 +134,15 @@ class Config:
         if value is not None:
             self._SUSANOptions = value
 
+    ProcessingStreams: list
+    @property
+    def ProcessingStreams(self):
+        return self._ProcessingStreams
+    @ProcessingStreams.setter
+    def ProcessingStreams(self, value):
+        if value is not None:
+            self._ProcessingStreams = value
+
     ROIExtractionOptions: ROIOptions
     @property
     def ROIExtractionOptions(self):
@@ -121,6 +152,24 @@ class Config:
         if value is not None:
             self._ROIExtractionOptions = value
 
+    ReHoExtraction: ReHoExtraction
+    @property
+    def ReHoExtraction(self):
+        return self._ReHoExtraction
+    @ReHoExtraction.setter
+    def ReHoExtraction(self, value):
+        if value is not None:
+            self._ReHoExtraction = value
+
+    T2StarExtraction: T2StarExtraction
+    @property
+    def T2StarExtraction(self):
+        return self._T2StarExtraction
+    @T2StarExtraction.setter
+    def T2StarExtraction(self, value):
+        if value is not None:
+            self._T2StarExtraction = value
+
     RunLog: list
     @property
     def RunLog(self):
@@ -129,6 +178,15 @@ class Config:
     def RunLog(self, value):
         if value is not None:
             self._RunLog = value
+
+    StatusCache: str
+    @property
+    def StatusCache(self):
+        return self._StatusCache
+    @StatusCache.setter
+    def StatusCache(self, value):
+        if value is not None:
+            self._StatusCache = value
 
     BatchConfig: str
     @property
