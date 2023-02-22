@@ -28,25 +28,25 @@ def convertConfig(oldConf, newConf):
 
     return newConf
 
-# Run the Method
-schema_path = 'clpipeConfigs/clpipeTestSchema.json'
-with open(schema_path,'r') as f:
-    schema = json.load(f)
+# # Run the Method
+# schema_path = 'clpipeConfigs/clpipeTestSchema.json'
+# with open(schema_path,'r') as f:
+#     schema = json.load(f)
 
-oldConf_path = 'clpipeConfigs/clpipeOldConfigTest.json'
-with open(oldConf_path,'r') as f:
-    oldConfig = json.load(f)
+# oldConf_path = 'clpipeConfigs/clpipeOldConfigTest.json'
+# with open(oldConf_path,'r') as f:
+#     oldConfig = json.load(f)
 
-schema = convertConfig(oldConfig, schema)
+# schema = convertConfig(oldConfig, schema)
 
-# Write the JSON file
-with open('newSchema.json', 'w') as file:
-    json.dump(schema, file)
+# # Write the JSON file
+# with open('newSchema.json', 'w') as file:
+#     json.dump(schema, file)
 
-#This gives a list of the extra keys that the old config has
-extraKeys = list(oldConfig.keys())
+# #This gives a list of the extra keys that the old config has
+# extraKeys = list(oldConfig.keys())
 
-if(len(extraKeys) > 0):
-    print("Here is a list of keys that need to be copied to the new config manually.")
-    for key in extraKeys:
-        print(key)
+# if(len(extraKeys) > 0):
+#     print("Here is a list of keys that need to be copied to the new config manually.")
+#     for key in extraKeys:
+#         print(key)

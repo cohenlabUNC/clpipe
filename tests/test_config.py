@@ -4,6 +4,12 @@ import yaml
 
 from clpipe.config import *
 from clpipe.newConfig.clpipe_config import getConfig
+from clpipe.newConfig.config_converter import convertConfig
+
+"""
+Removed tests for lack of fields and extra fields as this test will always pass
+because we will always load the config object from the new config file only
+"""
 
 def test_json_load(config_file):
     """ Ensure that the config class loads in .json data as expected. """
@@ -36,19 +42,28 @@ def test_default(clpipe_config_default):
     assert config.Authors == clpipe_config_default["Authors/Contributors"]
     assert config.SourceOptions.MemUsage == clpipe_config_default["SourceOptions"]["MemUsage"]
 
-@pytest.mark.skip(reason="Test Not Implemented")
-def test_extra_fields(clpipe_config):
-    """ Ensure that the intial config for a test project is successfully loaded."""
-    assert False
-
-
-@pytest.mark.skip(reason="Test Not Implemented")
+"""
+Fix how the test is run. Maybe it should run without creating new files
+"""
 def test_wrong_order(clpipe_config):
     """ Ensure that a configuration with fields in an unexpected order will successfully
     load.
     """
-    assert False
+    schema_path = '/nas/longleaf/home/mbhavith/DEPENd_Lab/clpipe/clpipe/data/defaultConfig.json'
+    with open(schema_path,'r') as f:
+        schema = json.load(f)
 
+    oldConf_path = '/nas/longleaf/home/mbhavith/DEPENd_Lab/clpipe/clpipe/data/wrongOrder_defaultConfig.json'
+    with open(oldConf_path,'r') as f:
+        oldConfig = json.load(f)
+
+    schema = convertConfig(oldConfig, schema)
+    with open('newSchema.json', 'w') as file:
+        json.dump(schema, file)
+
+    convertedConfig = getConfig(json_file='newSchema.json')
+    correctConfig = getConfig()
+    assert correctConfig == convertedConfig
 
 def test_author_contributor(config_file):
     """ Check that the conversion of the Authors/Contributors to just 'Contributors'
