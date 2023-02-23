@@ -8,7 +8,6 @@
     "TargetSuffix": "space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz",
     "WorkingDirectory": "FILL THIS IN",
     "TaskName": "gng_example",
-    "Python2Path": "/nas/longleaf/apps/python/2.7.12/bin/python",
     "ReferenceImage": "SET REFERENCE",
     "DummyScans": 0,
     "ApplyFMRIPREPMask": true,
@@ -23,8 +22,14 @@
     "OutputSuffix": "resampled.nii.gz",
     "PrepareConfounds": true,
     "ConfoundSuffix": "desc-confounds_regressors.tsv",
-    "Confounds": ["trans_x", "trans_y", "trans_z", "rot_x", "rot_y", "rot_z"],
-    "ConfoundsDerive": ["trans_x", "trans_y", "trans_z", "rot_x", "rot_y", "rot_z"],
+    "Confounds": [
+      "trans_x", "trans_y", "trans_z", 
+      "rot_x", "rot_y", "rot_z"
+    ],
+    "ConfoundsDerive": [
+      "trans_x", "trans_y", "trans_z",
+      "rot_x", "rot_y", "rot_z"
+    ],
     "ConfoundsQuad": [],
     "ConfoundsQuadDerive": [],
     "MotionOutliers": true,
@@ -57,10 +62,11 @@
       "FSFDir": "./fsf_test",
       "EVDirectory": "./EV_test",
       "ConfoundDirectory": "./confound_test",
-      "EVFileSuffices": ["gohit.txt",
-                         "goomission.txt",
-                         "comission.txt",
-                         "correct.txt"
+      "EVFileSuffices": [
+        "gohit.txt",
+        "goomission.txt",
+        "comission.txt",
+        "correct.txt"
       ],
       "ConfoundSuffix": "confounds.tsv",
       "OutputDir": "./test_l1feat",
@@ -75,7 +81,8 @@
     }
   ],
   "Level2Setups": [
-    { "ModelName": "tworun_gngreg",
+    { 
+      "ModelName": "tworun_gngreg",
       "FSFPrototype": "",
       "SubjectFile": "l2_sublist.csv",
       "FSFDir": "",
@@ -89,6 +96,5 @@
         "BatchConfig": "slurmUNCConfig.json"
       }
     }
-    
   ]
 }

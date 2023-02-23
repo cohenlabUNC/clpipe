@@ -171,7 +171,7 @@ def project_setup_cli(project_title=None, project_dir=None, source_data=None,
 
 @click.command(CONVERSION_COMMAND_NAME, no_args_is_help=True)
 @click.argument('subjects', nargs=-1, required=False, default=None)
-@click.option('-config_file', '-c', type=CLICK_FILE_TYPE_EXISTS, default=None,
+@click.option('-config_file', '-c', type=CLICK_FILE_TYPE_EXISTS, required=True,
               help=CONFIG_HELP)
 @click.option('-conv_config_file', type=CLICK_FILE_TYPE_EXISTS, default=None, 
               help=CONVERSION_CONFIG_HELP)
@@ -221,7 +221,7 @@ def convert2bids_cli(dicom_dir, dicom_dir_format, bids_dir,
 
 @click.command(VALIDATOR_COMMAND_NAME, no_args_is_help=True)
 @click.argument('bids_dir', type=CLICK_DIR_TYPE_EXISTS, required=False)
-@click.option('-config_file', '-c', type=CLICK_FILE_TYPE_EXISTS, default=None, 
+@click.option('-config_file', '-c', type=CLICK_FILE_TYPE_EXISTS, required=True, 
               help=CONFIG_HELP)
 @click.option('-log_dir', type=CLICK_FILE_TYPE_EXISTS, default=None,
               help=LOG_DIR_HELP)
@@ -248,7 +248,7 @@ def bids_validate_cli(bids_dir, config_file, log_dir, interactive, submit,
 
 @click.command(FMRIPREP_COMMAND_NAME, no_args_is_help=True)
 @click.argument('subjects', nargs=-1, required=False, default=None)
-@click.option('-config_file', '-c', default=None, type=CLICK_FILE_TYPE_EXISTS, 
+@click.option('-config_file', '-c', required=True, type=CLICK_FILE_TYPE_EXISTS, 
               help=CONFIG_HELP)
 @click.option('-bids_dir', '-i', type=CLICK_DIR_TYPE_EXISTS,
               help=BIDS_DIR_HELP)
@@ -295,7 +295,7 @@ def get_fmriprep_reports_cli(config_file, output_name, clear_temp, debug):
 
 @click.command(POSTPROCESS_COMMAND_NAME, no_args_is_help=True)
 @click.argument('subjects', nargs=-1, required=False, default=None)
-@click.option('-config_file', '-c', type=click.Path(exists=True, dir_okay=False, file_okay=True), default=None, help = 'Use a given configuration file. If left blank, uses the default config file, requiring definition of BIDS, working and output directories.')
+@click.option('-config_file', '-c', type=click.Path(exists=True, dir_okay=False, file_okay=True), required=True, help = 'Use a given configuration file. If left blank, uses the default config file, requiring definition of BIDS, working and output directories.')
 @click.option('-target_dir', '-i', type=click.Path(exists=True, dir_okay=True, file_okay=False), help='Which fmriprep directory to process. If a configuration file is provided with a BIDS directory, this argument is not necessary. Note, must point to the ``fmriprep`` directory, not its parent directory.')
 @click.option('-target_suffix', help= 'Which file suffix to use. If a configuration file is provided with a target suffix, this argument is not necessary. Defaults to "preproc_bold.nii.gz"')
 @click.option('-output_dir', '-o', type=click.Path(dir_okay=True, file_okay=False), help = 'Where to put the postprocessed data. If a configuration file is provided with a output directory, this argument is not necessary.')
@@ -332,8 +332,7 @@ def fmri_postprocess_cli(config_file=None, subjects=None, target_dir=None,
 
 @click.command(POSTPROCESS2_COMMAND_NAME, no_args_is_help=True)
 @click.argument('subjects', nargs=-1, required=False, default=None)
-@click.option('-config_file', '-c', type=CLICK_FILE_TYPE_EXISTS, default=None, 
-              required=True, help=CONFIG_HELP)
+@click.option('-config_file', '-c', type=CLICK_FILE_TYPE_EXISTS, required=True, help=CONFIG_HELP)
 @click.option('-fmriprep_dir', '-i', type=CLICK_DIR_TYPE_EXISTS, 
               help=FMRIPREP_DIR_HELP)
 @click.option('-output_dir', '-o', type=CLICK_DIR_TYPE, default=None, required=False,
@@ -371,11 +370,11 @@ def fmri_postprocess2_cli(subjects, config_file, fmriprep_dir, output_dir,
 
 @click.command(GLM_SETUP_COMMAND_NAME, no_args_is_help=True)
 @click.argument('subjects', nargs=-1, required=False, default=None)
-@click.option('-config_file', '-c', type=click.Path(exists=True, dir_okay=False, file_okay=True), default=None, required = True,
+@click.option('-config_file', '-c', type=click.Path(exists=True, dir_okay=False, file_okay=True), required=True,
               help='Use a given configuration file.')
-@click.option('-glm_config_file', '-g', type=click.Path(exists=True, dir_okay=False, file_okay=True), default=None, required = True,
+@click.option('-glm_config_file', '-g', type=click.Path(exists=True, dir_okay=False, file_okay=True), default=None, required=True,
               help='Use a given GLM configuration file.')
-@click.option('-drop_tps', type=click.Path(exists=True, dir_okay=False, file_okay=True), default=None, required = False,
+@click.option('-drop_tps', type=click.Path(exists=True, dir_okay=False, file_okay=True), default=None, required=False,
               help='Drop timepoints csv sheet')
 @click.option('-submit', '-s', is_flag=True, default=False, help='Flag to submit commands to the HPC.')
 @click.option('-batch/-single', default=True,
@@ -402,8 +401,7 @@ def glm_setup_cli(subjects, config_file, glm_config_file, submit, batch, debug,
 @click.argument('level')
 @click.argument('model')
 @click.option('-glm_config_file', '-g', type=click.Path(exists=True, dir_okay=False, 
-              file_okay=True), default=None, required = True,
-              help=CONFIG_HELP)
+              file_okay=True), required=True, help=CONFIG_HELP)
 @click.option('-debug', '-d', is_flag=True, 
               help=DEBUG_HELP)
 def glm_prepare_cli(level, model, glm_config_file, debug):
@@ -419,7 +417,7 @@ def glm_prepare_cli(level, model, glm_config_file, debug):
 
 
 @click.command(L1_PREPARE_FSF_COMMAND_NAME, no_args_is_help=True)
-@click.option('-glm_config_file', '-g', type=click.Path(exists=True, dir_okay=False, file_okay=True), default=None, required = True,
+@click.option('-glm_config_file', '-g', type=click.Path(exists=True, dir_okay=False, file_okay=True), required=True,
               help='Your GLM configuration file.')
 @click.option('-l1_name',  default=None, required = True,
               help='Name for a given L1 model as defined in your GLM configuration file.')
@@ -429,9 +427,9 @@ def glm_l1_preparefsf_cli(glm_config_file, l1_name, debug):
     
     You must create a template .fsf file in FSL's FEAT GUI first.
     """
-    from .glm_l1 import glm_l1_preparefsf
-    glm_l1_preparefsf(
-        glm_config_file=glm_config_file, l1_name=l1_name, debug=debug)
+    from .glm_prepare import glm_prepare
+    glm_prepare(glm_config_file=glm_config_file, level="L1", model=l1_name,
+                debug=debug)
 
 
 @click.command(L2_PREPARE_FSF_COMMAND_NAME, no_args_is_help=True)
@@ -446,9 +444,9 @@ def glm_l2_preparefsf_cli(glm_config_file, l2_name, debug):
     
     You must create a group-level template .fsf file in FSL's FEAT GUI first.
     """
-    from .glm_l2 import glm_l2_preparefsf
-    glm_l2_preparefsf(glm_config_file=glm_config_file, l2_name=l2_name,
-                      debug=debug)
+    from .glm_prepare import glm_prepare
+    glm_prepare(glm_config_file=glm_config_file, level="L2", model=l2_name,
+                debug=debug)
 
 
 @click.command(APPLY_MUMFORD_COMMAND_NAME, no_args_is_help=True)
@@ -473,7 +471,7 @@ def glm_apply_mumford_workaround_cli(glm_config_file, l1_feat_folders_path,
 
     Must provide GLM config file OR a path to your L1 FEAT folders.
     """
-    from .glm_l2 import glm_apply_mumford_workaround
+    from .glm_prepare import glm_apply_mumford_workaround
     if not (glm_config_file or l1_feat_folders_path):
         click.echo(("Error: At least one of either option '-glm_config_file' "
                     "or '-l1_feat_folders_path' required."))
@@ -488,7 +486,7 @@ def glm_apply_mumford_workaround_cli(glm_config_file, l1_feat_folders_path,
 @click.argument('level')
 @click.argument('model')
 @click.option('-glm_config_file', '-g', type=click.Path(exists=True, dir_okay=False, 
-              file_okay=True), default=None, required = True,
+              file_okay=True), required=True,
               help=CONFIG_HELP)
 @click.option('-test_one', is_flag=True,
               help=TEST_ONE_HELP)
@@ -511,9 +509,9 @@ def glm_launch_cli(level, model, glm_config_file, test_one, submit, debug):
 
 @click.command(no_args_is_help=True)
 @click.option('-glm_config_file', '-g', type=click.Path(exists=True, dir_okay=False, 
-              file_okay=True), default=None, required = True,
+              file_okay=True), required=True,
               help=CONFIG_HELP)
-@click.option('-l1_name',  default=None, required = True,
+@click.option('-l1_name', required=True,
               help=L1_MODEL_HELP)
 @click.option('-test_one', is_flag=True,
               help=TEST_ONE_HELP)
@@ -530,9 +528,9 @@ def glm_l1_launch_cli(glm_config_file, l1_name, test_one, submit, debug):
 
 @click.command(no_args_is_help=True)
 @click.option('-glm_config_file', '-g', type=click.Path(exists=True, dir_okay=False, 
-              file_okay=True), default=None, required = True,
+              file_okay=True), required=True,
               help=CONFIG_HELP)
-@click.option('-l2_name',  default=None, required = True,
+@click.option('-l2_name', required=True,
               help=L2_MODEL_HELP)
 @click.option('-test_one', is_flag=True,
               help=TEST_ONE_HELP)
@@ -550,7 +548,7 @@ def glm_l2_launch_cli(glm_config_file, l2_name, test_one, submit, debug):
 
 @click.command(ONSET_EXTRACT_COMMAND_NAME, no_args_is_help=True)
 @click.option('-config_file', '-c', type=click.Path(exists=True, dir_okay=False, file_okay=True), 
-              default=None, required = True,
+              required=True,
               help='Use a given configuration file.')
 @click.option('-glm_config_file', '-g', type=click.Path(exists=True, dir_okay=False, file_okay=True), 
               default=None, required = True,

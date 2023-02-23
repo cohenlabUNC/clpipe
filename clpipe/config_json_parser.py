@@ -126,10 +126,12 @@ class ClpipeConfigParser:
         os.mkdir(os.path.join(project_path, "l2_fsfs"))
         os.mkdir(os.path.join(project_path, "l2_gfeat_folders"))
 
-        glm_config.config_json_dump(project_path, "glm_config.json")
-        shutil.copy(resource_filename('clpipe', 'data/l2_sublist.csv'), os.path.join(project_path, "l2_sublist.csv"))
         glm_config.config['GLMSetupOptions']['LogDirectory'] = os.path.join(project_path, "logs", "glm_setup_logs")
         os.mkdir(os.path.join(project_path, "logs", "glm_setup_logs"))
+
+        glm_config.config_json_dump(project_path, "glm_config.json")
+        shutil.copyfile(resource_filename('clpipe', 'data/l2_sublist.csv'), os.path.join(project_path, "l2_sublist.csv"))
+        
 
     def setup_fmriprep_directories(self, bidsDir, workingDir, outputDir, log_dir = None):
         if bidsDir is not None:
@@ -199,7 +201,9 @@ class ClpipeConfigParser:
         if not os.path.exists(bids_ignore_path):
             with open(bids_ignore_path, 'w') as bids_ignore_file:
                 # Ignore dcm2bid's auto-generated directory
-                bids_ignore_file.write("tmp_dcm2bids")
+                bids_ignore_file.write("tmp_dcm2bids\n")
+                # Ignore heudiconv's auto-generated scan file
+                bids_ignore_file.write("scans.json\n")
 
     def setup_bids_validation(self, log_dir=None):
         if log_dir is not None:

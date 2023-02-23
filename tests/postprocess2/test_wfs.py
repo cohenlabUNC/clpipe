@@ -1,19 +1,12 @@
 import pytest
 
-import nipype.pipeline.engine as pe
-import nibabel as nib
-from nilearn import plotting
-from nilearn.image import load_img, index_img
-import os
-from pathlib import Path
-
 from clpipe.postprocutils.workflows import *
 
 def test_spatial_smoothing_wf(artifact_dir, request, sample_raw_image, sample_raw_image_mask, plot_img, write_graph, helpers):
     test_path = helpers.create_test_dir(artifact_dir, request.node.name)
     
     out_path = test_path / "smoothed.nii.gz"
-    wf = build_spatial_smoothing_workflow(in_file=sample_raw_image, out_file=out_path, fwhm_mm=6, 
+    wf = build_SUSAN_workflow(in_file=sample_raw_image, out_file=out_path, fwhm_mm=6, 
         mask_path=sample_raw_image_mask, base_dir=test_path, crashdump_dir=test_path)
     wf.run()
 
@@ -29,7 +22,7 @@ def test_spatial_smoothing_wf_no_mask(artifact_dir, request, sample_raw_image, p
     test_path = helpers.create_test_dir(artifact_dir, request.node.name)
     
     out_path = test_path / "smoothed.nii.gz"
-    wf = build_spatial_smoothing_workflow(in_file=sample_raw_image, out_file=out_path, fwhm_mm=6, 
+    wf = build_SUSAN_workflow(in_file=sample_raw_image, out_file=out_path, fwhm_mm=6, 
         base_dir=test_path, crashdump_dir=test_path)
     wf.run()
 
@@ -111,7 +104,7 @@ def test_confound_regression_fsl_glm_wf(artifact_dir, sample_raw_image, sample_p
 
     regressed_path = test_path / "sample_raw_regressed.nii"
 
-    wf = build_confound_regression_fsl_glm_wf(confound_file = sample_postprocessed_confounds, in_file=sample_raw_image, out_file=regressed_path, 
+    wf = build_confound_regression_fsl_glm_workflow(confound_file = sample_postprocessed_confounds, in_file=sample_raw_image, out_file=regressed_path, 
         mask_file=sample_raw_image_mask, base_dir=test_path, crashdump_dir=test_path)
     wf.run()
 
@@ -126,7 +119,7 @@ def test_confound_regression_afni_3dTproject_wf(artifact_dir, sample_raw_image, 
 
     regressed_path = test_path / "sample_raw_regressed.nii.gz"
 
-    wf = build_confound_regression_afni_3dTproject(confound_file = sample_postprocessed_confounds, in_file=sample_raw_image, out_file=regressed_path, 
+    wf = build_confound_regression_afni_3dTproject(confounds_file=sample_postprocessed_confounds, in_file=sample_raw_image, out_file=regressed_path, 
         mask_file=sample_raw_image_mask, base_dir=test_path, crashdump_dir=test_path)
     wf.run()
 

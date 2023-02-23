@@ -26,7 +26,7 @@ All clpipe commands should now be accessible.
 ### Manual Installation
 
 1. Open a Longleaf terminal session
-2. Switch to python 3.6.6 using `module add python/3.6.6`
+2. Switch to python 3.7 using `module add python/3.7.14`
 3. Install clpipe from GitHub with 
 ```pip3 install --user --upgrade  git+https://github.com/cohenlabUNC/clpipe.git```
 
