@@ -3,7 +3,7 @@ from pathlib import Path
 import os
 from typing import List
 
-from clpipe.project_setup import project_setup
+from clpipe.project_setup import project_setup, SourceDataError
 
 PROJECT_TITLE = "test_project"
 
@@ -54,6 +54,31 @@ def test_setup_move_source(project_dir: Path):
     pass
 
 
+def test_setup_symlink_and_move(project_dir: Path):
+    """Ensure exception thrown if users tries to both symlink and move source data."""
+
+    with pytest.raises(SourceDataError):
+        project_setup(project_title=PROJECT_TITLE, project_dir=project_dir, 
+                      move_source_data=True, symlink_source_data=True)
+
+
+def test_setup_symlink_no_source(project_dir: Path):
+    """Ensure exception thrown if users tries to symlink without a source."""
+
+    with pytest.raises(SourceDataError):
+        project_setup(project_title=PROJECT_TITLE, project_dir=project_dir, 
+                      symlink_source_data=True)
+        
+
+def test_setup_move_no_source(project_dir: Path):
+    """Ensure exception thrown if users tries to move without a source."""
+
+    with pytest.raises(SourceDataError):
+        project_setup(project_title=PROJECT_TITLE, project_dir=project_dir, 
+                      move_source_data=True)
+
+
+
 def test_setup_missing(clpipe_dir: Path, project_paths: List[Path]):
     """Check if any expected clpipe setup fails to create any expect folders or files."""    
     missing = project_paths
@@ -76,6 +101,11 @@ def test_setup_extra(clpipe_dir: Path, project_paths: List[Path]):
             extra.append(rel_path)
         
     assert len(extra) == 0, f"Project directory contains unexpected paths: {extra}"
+
+
+
+
+
 
 
 @pytest.fixture()
