@@ -24,7 +24,6 @@ def project_setup(project_title=None, project_dir=None,
     project_dir = Path(project_dir).resolve()
     logs_dir = project_dir / "logs"
 
-    add_file_handler(logs_dir)
     # Set permissions to clpipe.log file to allow for group write
     os.chmod(logs_dir / "clpipe.log", 
              stat.S_IREAD | stat.S_IWRITE | stat.S_IRGRP | stat.S_IWGRP)
