@@ -12,6 +12,8 @@ STEP_NAME = "project-setup"
 DEFAULT_DICOM_DIR = 'data_DICOMs'
 DCM2BIDS_SCAFFOLD_TEMPLATE = 'dcm2bids_scaffold -o {}'
 
+class SourceDataError(ValueError):
+    pass
 
 def project_setup(project_title=None, project_dir=None, 
                   source_data=None, move_source_data=False,
@@ -31,14 +33,11 @@ def project_setup(project_title=None, project_dir=None,
     default_dicom_dir = project_dir / DEFAULT_DICOM_DIR
     
     if symlink_source_data and move_source_data:
-        logger.error("Cannot choose to both move and symlink the source data.")
-        sys.exit(1)
+        raise SourceDataError("Cannot choose to both move and symlink the source data.")
     if symlink_source_data and not source_data:
-        logger.error("A source data path is required when using a symlinked source.")
-        sys.exit(1)
+        raise SourceDataError("A source data path is required when using a symlinked source.")
     elif move_source_data and not source_data:
-        logger.error("A source data path is required when moving source data.")
-        sys.exit(1)
+        raise SourceDataError("A source data path is required when moving source data.")
     elif source_data:
         logger.info(f"Referencing source data: {source_data}")
         source_data = Path(source_data).resolve()
