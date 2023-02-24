@@ -5,10 +5,10 @@
 	"EmailAddress": "",
 	"TempDirectory": "",
 	"SourceOptions": {
-		"SourceURL": "",
+		"SourceURL": "fw://",
 		"DropoffDirectory": "",
 		"TempDirectory": "",
-		"CommandLineOpts": "",
+		"CommandLineOpts": "-y",
 		"TimeUsage": "1:0:0",
 		"MemUsage": "10000",
 		"CoreUsage": "1"
