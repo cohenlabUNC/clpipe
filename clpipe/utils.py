@@ -68,8 +68,21 @@ def get_logger(name, debug=False, log_dir=None, f_name="clpipe.log"):
     if log_dir:
         add_file_handler(log_dir, f_name, logger=logger)
 
-    uName = {"username": os.getlogin()}
-    logger = logging.LoggerAdapter(logger, uName)
+    user_name = ""
+
+    try:
+        user_name = os.getlogin()
+    except OSError:
+        # Fallback for if first option fails, usually due to running clpipe on a
+        #   compute node
+        user_name = Path.home().stem
+    except:
+        # Ultimate fallback if neither works
+        user_name = "unknown"
+
+    log_args = {"username": user_name}
+
+    logger = logging.LoggerAdapter(logger, log_args)
     return logger
 
 def add_file_handler(log_dir: os.PathLike, f_name: str="clpipe.log", 
