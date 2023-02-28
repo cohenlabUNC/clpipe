@@ -1,5 +1,7 @@
 # Deployment script
 # UNC-specific but can be adapted for other clusters with a module system
+# Run like this, where x.y.z is the version:
+#   source deploy_clpipe.sh x.y.z
 
 DEV_PYTHON_PATH="venv/bin/activate"
 PYTHON_VERSION="3.7.14"
@@ -14,7 +16,6 @@ if [ $# -eq 0 ]
 fi
 
 version=$1
-patch=$2
 
 # Ensure dev env is loaded
 source $DEV_PYTHON_PATH
