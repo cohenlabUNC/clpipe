@@ -1,7 +1,8 @@
 from setuptools import setup, find_packages
 
-VERSION = '1.7.4'
 PACKAGE_NAME = 'clpipe'
+VERSION = '1.7.4'
+PYTHON_VERSION = '3.7'
 
 setup(
       name=PACKAGE_NAME,
@@ -14,7 +15,7 @@ setup(
       ),
       author_email='ycp6wm@virginia.edu',
       license='MIT',
-      python_requires='>=3.7',
+      python_requires=f'>={PYTHON_VERSION}',
       include_package_data=True,
       packages=find_packages(),
       install_requires=[
