@@ -1,5 +1,5 @@
 ===========================
-Flywheel Sync - NEW
+Flywheel Sync
 ===========================
 
 clpipe now provides an avenue for syncing DICOM data with a remote source through

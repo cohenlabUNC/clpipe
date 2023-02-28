@@ -1,0 +1,49 @@
+-- -*- lua -*-
+------------------------------------------------------------------------
+-- clpipe {{ clpipe_version }}
+------------------------------------------------------------------------
+
+help([[
+clpipe {{ clpipe_version }}
+]])
+
+whatis("Description: clpipe {{ clpipe_version }}")
+whatis("URL: https://github.com/cohenlabUNC/clpipe")
+
+-- ensure any other Python packages are unloaded
+unload("python")
+
+-- load in clpipe dependencies
+load("fsl/6.0.3")
+load("freesurfer/6.0.0")
+load("afni/20.3.00")
+load("r/4.2.1")
+load("dcm2niix/1.0.20211006")
+load("flywheel/16.4.0")
+
+-- setup the various Python environment variables
+local root = "/proj/hng/software/venvs/clpipe/clpipe-{{ clpipe_version }}"
+local lib_root = pathJoin(root, "lib/{{ python_version }}")
+local package_root = pathJoin(lib_root, "site-packages")
+
+local bin_root = pathJoin(root,"bin")
+prepend_path("PATH", bin_root)
+
+setenv("PYTHONPATH", lib_root .. ":" .. package_root)
+
+local lib = pathJoin(root, "lib")
+prepend_path("LD_LIBRARY_PATH", lib)
+
+local man = pathJoin(root, "share/man")
+prepend_path("MANPATH", man)
+
+local pc = pathJoin(root,"lib/pkgconfig")
+prepend_path("PKG_CONFIG_PATH", pc)
+
+local include = pathJoin(root, "include")
+prepend_path("C_INCLUDE_PATH",include)
+prepend_path("CPLUS_INCLUDE_PATH",include)
+
+-- Run script activating auto-completion for clpipe
+local complete_file = pathJoin(bin_root, ".clpipe-complete")
+execute{cmd="source " .. complete_file, modeA={"load"}}

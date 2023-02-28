@@ -12,6 +12,8 @@ STEP_NAME = "project-setup"
 DEFAULT_DICOM_DIR = 'data_DICOMs'
 DCM2BIDS_SCAFFOLD_TEMPLATE = 'dcm2bids_scaffold -o {}'
 
+class SourceDataError(ValueError):
+    pass
 
 def project_setup(project_title=None, project_dir=None, 
                   source_data=None, move_source_data=False,
@@ -22,23 +24,16 @@ def project_setup(project_title=None, project_dir=None,
     project_dir = Path(project_dir).resolve()
     logs_dir = project_dir / "logs"
 
-    add_file_handler(logs_dir)
-    # Set permissions to clpipe.log file to allow for group write
-    os.chmod(logs_dir / "clpipe.log", 
-             stat.S_IREAD | stat.S_IWRITE | stat.S_IRGRP | stat.S_IWGRP)
     logger = get_logger(STEP_NAME, debug=debug)
 
     default_dicom_dir = project_dir / DEFAULT_DICOM_DIR
     
     if symlink_source_data and move_source_data:
-        logger.error("Cannot choose to both move and symlink the source data.")
-        sys.exit(1)
+        raise SourceDataError("Cannot choose to both move and symlink the source data.")
     if symlink_source_data and not source_data:
-        logger.error("A source data path is required when using a symlinked source.")
-        sys.exit(1)
+        raise SourceDataError("A source data path is required when using a symlinked source.")
     elif move_source_data and not source_data:
-        logger.error("A source data path is required when moving source data.")
-        sys.exit(1)
+        raise SourceDataError("A source data path is required when moving source data.")
     elif source_data:
         logger.info(f"Referencing source data: {source_data}")
         source_data = Path(source_data).resolve()
@@ -51,6 +46,11 @@ def project_setup(project_title=None, project_dir=None,
 
     logger.info(f"Creating new clpipe project in directory: {str(project_dir)}")
     config_parser.setup_project(project_title, str(project_dir), source_data)
+
+    add_file_handler(logs_dir)
+    # Set permissions to clpipe.log file to allow for group write
+    os.chmod(logs_dir / "clpipe.log", 
+             stat.S_IREAD | stat.S_IWRITE | stat.S_IRGRP | stat.S_IWGRP)
 
     config = config_parser.config
 

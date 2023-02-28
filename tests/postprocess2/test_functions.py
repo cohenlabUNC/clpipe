@@ -37,3 +37,38 @@ def test_postprocess_subjects_dir_invalid_subject(clpipe_fmriprep_dir, artifact_
     with pytest.raises(SystemExit):
         postprocess_subjects(subjects=['99'], config_file=config, fmriprep_dir=fmriprep_dir,
             output_dir=postproc_dir, log_dir=log_dir)
+        
+
+def test_build_export_path_image(clpipe_fmriprep_dir: Path):
+    """Test that the correct export path for given inputs is constructed."""
+    
+    # Build the fMRIPrep input image path
+    image_name = "sub-0_task-rest_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz"
+    fmriprep_dir = clpipe_fmriprep_dir / "data_fmriprep" / "fmriprep"
+    image_path =  fmriprep_dir / "sub-0" / "func" / image_name
+
+    # Build the output path
+    subject_out_dir = clpipe_fmriprep_dir / "data_postproc2" / "sub-0"
+
+    # Build full export path
+    export_path = build_export_path(image_path, '0', fmriprep_dir, subject_out_dir)
+
+    assert str(export_path) == str(subject_out_dir / "func" / "sub-0_task-rest_space-MNI152NLin2009cAsym_desc-postproc_bold.nii.gz")
+
+
+def test_build_export_path_confounds(clpipe_fmriprep_dir: Path):
+    """Test that the correct export path for given inputs is constructed."""
+    
+    # Build the fMRIPrep input image path
+    confounds_name = "sub-0_task-rest_desc-confounds_timeseries.tsv"
+    fmriprep_dir = clpipe_fmriprep_dir / "data_fmriprep" / "fmriprep"
+    confounds_path =  fmriprep_dir / "sub-0" / "func" / confounds_name
+
+    # Build the output path
+    subject_out_dir = clpipe_fmriprep_dir / "data_postproc2" / "sub-0"
+
+    # Build full export path
+    export_path = build_export_path(confounds_path, '0', fmriprep_dir, subject_out_dir)
+
+    assert str(export_path) == str(subject_out_dir / "func" / "sub-0_task-rest_desc-confounds_timeseries.tsv")
+    
