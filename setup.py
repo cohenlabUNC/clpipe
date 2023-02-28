@@ -29,7 +29,8 @@ setup(name='clpipe',
                         "pydantic",
                         "matplotlib",
                         "heudiconv>=0.10.0",
-                        "tqdm"],
+                        "tqdm",
+                        "marshmallow-dataclass"],
       package_data={'clpipe': ['R_scripts/*.R']},
       entry_points='''
       [console_scripts]
