@@ -61,6 +61,7 @@ crashlytics-build.properties
 staticfiles
 .env
 TestFiles/
+tests/temp
 tests/artifacts
 deploy.sh
 

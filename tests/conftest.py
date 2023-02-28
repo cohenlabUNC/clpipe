@@ -161,10 +161,13 @@ def clpipe_bids_dir(clpipe_dir):
 #TODO: seperate AROMA into its own type of fmriprep dir
 @pytest.fixture(scope="module")
 def clpipe_fmriprep_dir(clpipe_bids_dir, sample_raw_image, sample_raw_image_mask, 
-    sample_confounds_timeseries, sample_melodic_mixing, sample_aroma_noise_ics, sample_fmriprep_dataset_description):
-    """Fixture which adds fmriprep subject folders and mock fmriprep output data to data_fmriprep directory."""
+    sample_confounds_timeseries, sample_melodic_mixing, sample_aroma_noise_ics, 
+    sample_fmriprep_dataset_description) -> Path:
+    """ Fixture which adds fmriprep subject folders and mock 
+    fmriprep output data to data_fmriprep directory.
+    """
 
-    tasks = ["rest", "task1", "task2_run-1", "task2_run-2"]
+    tasks = ["rest", "1", "2_run-1", "2_run-2"]
 
     image_space = "space-MNI152NLin2009cAsym"
     bold_suffix = "desc-preproc_bold.nii.gz"
@@ -206,7 +209,7 @@ def clpipe_fmriprep_dir(clpipe_bids_dir, sample_raw_image, sample_raw_image_mask
     return clpipe_bids_dir
 
 @pytest.fixture(scope="module")
-def clpipe_config_default():
+def clpipe_config_default() -> dict:
     return ClpipeConfigParser().config
 
 @pytest.fixture(scope="module")
@@ -312,7 +315,20 @@ def config_file(clpipe_dir):
     return clpipe_dir / "clpipe_config.json"
 
 @pytest.fixture(scope="module")
-def clpipe_config(config_file):
+def glm_config_file(clpipe_fmriprep_dir: Path) -> Path:
+    """Provides a reference to a glm_config.json file that
+    has been setup in the context of a mock project.
+
+    Args:
+        clpipe_fmriprep_dir (Path): Path to a mock fmriprep clpipe project
+
+    Returns:
+        Path: Reference to mock glm_config.json file.
+    """
+    return clpipe_fmriprep_dir / "glm_config.json"
+
+@pytest.fixture(scope="module")
+def clpipe_config(config_file) -> dict:
     with open(config_file, 'r') as f:
         config_dict = json.load(f)
         return config_dict

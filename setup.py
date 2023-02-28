@@ -1,38 +1,46 @@
 from setuptools import setup, find_packages
 
-setup(name='clpipe',
-      version='1.7.3',
-      description='clpipe: MRI processing pipeline for high performance clusters',
-      url='https://github.com/cohenlabUNC/clpipe',
-      author='Maintainer: Teague Henry, Maintainer: Will Asciutto, Contributor: Deepak Melwani',
-      author_email='trhenry@email.unc.edu',
-      license='MIT',
-      python_requires='>=3.7',
-      include_package_data=True,
-      packages=find_packages(),
-      install_requires=['jsonschema',
-                        'click',
-                        'nipy',
-                        'numpy>=1.18.5',
-                        'pandas',
-                        'nibabel>=3',
-                        'scipy==1.2.2',
-                        'sphinx_rtd_theme',
-                        'psutil',
-                        'parse',
-                        'nilearn',
-                        'dcm2bids',
-                        'nipype',
-                        'pybids>=0.14.0',
-                        'templateflow',
-                        'deepdiff',
-                        "pydantic",
-                        "matplotlib",
-                        "heudiconv>=0.10.0",
-                        "tqdm",
-                        "marshmallow-dataclass"],
-      package_data={'clpipe': ['R_scripts/*.R']},
-      entry_points='''
+PACKAGE_NAME = 'clpipe'
+VERSION = '1.7.4'
+
+DESCRIPTION = 'clpipe: MRI processing pipeline for high performance clusters'
+REPO_URL = 'https://github.com/cohenlabUNC/clpipe'
+AUTHORS = (
+      'Author/Maintainer: Teague Henry, Maintainer: Will Asciutto, '
+      'Contributor: Bhvaith Manapoty, Contributor: Deepak Melwani'
+)
+AUTHOR_EMAIL = 'ycp6wm@virginia.edu'
+LICENSE = 'MIT'
+
+PYTHON_VERSION = '3.7'
+PYTHON_REQUIRES = f'>={PYTHON_VERSION}'
+INSTALL_REQUIRES = [
+      'jsonschema',
+      'click',
+      'nipy',
+      'numpy>=1.18.5',
+      'pandas',
+      'nibabel>=3',
+      'scipy==1.2.2',
+      'sphinx_rtd_theme',
+      'psutil',
+      'parse',
+      'nilearn',
+      'dcm2bids',
+      'nipype',
+      'pybids>=0.14.0',
+      'templateflow',
+      'deepdiff',
+      "pydantic",
+      "matplotlib",
+      "heudiconv>=0.10.0",
+      "tqdm",
+      "marshmallow-dataclass"
+],
+
+PACKAGE_DATA = {'clpipe': ['R_scripts/*.R']}
+
+ENTRY_POINTS = '''
       [console_scripts]
       clpipe=clpipe.cli:cli
       project_setup=clpipe.cli:project_setup_cli
@@ -63,6 +71,22 @@ setup(name='clpipe',
       fmap_cleanup=clpipe.fmap_cleanup:fmap_cleanup
       reho_extract=clpipe.reho_extract:reho_extract
       t2star_extract=clpipe.t2star_extract:t2star_extract
-      ''',
-      zip_safe=False
+'''
+
+if __name__ == "__main__":
+      setup(
+            name=PACKAGE_NAME,
+            version=VERSION,
+            description=DESCRIPTION,
+            url=REPO_URL,
+            author=AUTHORS,
+            author_email=AUTHOR_EMAIL,
+            license=LICENSE,
+            python_requires=PYTHON_REQUIRES,
+            install_requires=INSTALL_REQUIRES,
+            include_package_data=True,
+            packages=find_packages(),
+            package_data=PACKAGE_DATA,
+            entry_points=ENTRY_POINTS,
+            zip_safe=False
       )

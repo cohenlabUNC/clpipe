@@ -5,10 +5,10 @@
 	"EmailAddress": "",
 	"TempDirectory": "",
 	"SourceOptions": {
-		"SourceURL": "",
+		"SourceURL": "fw://",
 		"DropoffDirectory": "",
 		"TempDirectory": "",
-		"CommandLineOpts": "",
+		"CommandLineOpts": "-y",
 		"TimeUsage": "1:0:0",
 		"MemUsage": "10000",
 		"CoreUsage": "1"
@@ -31,7 +31,7 @@
 		"BIDSDirectory": "",
 		"WorkingDirectory": "",
 		"OutputDirectory": "",
-		"FMRIPrepPath": "/proj/hng/singularity_imgs/fmriprep_21.0.2.sif",
+		"FMRIPrepPath": "/proj/hng/singularity_imgs/fmriprep_22.1.1.sif",
 		"FreesurferLicensePath": "/proj/hng/singularity_imgs/license.txt",
 		"UseAROMA": false,
 		"CommandLineOpts": "",
