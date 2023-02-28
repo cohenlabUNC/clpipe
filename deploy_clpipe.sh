@@ -46,6 +46,11 @@ pip install wheel
 echo "Installing clpipe"
 pip install "dist/clpipe-${version}-py3-none-any.whl"
 
+# Build bash auto-completion script
+echo "Building auto-completion bash script"
+source generate_autocomplete
+
+# Deploy auto-completion script
 echo "Deploying auto-completion bash script"
 cp dist/.clpipe-complete "${venv_path}/bin"
 

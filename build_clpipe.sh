@@ -13,8 +13,4 @@ python -m build --wheel
 echo "Building Documentation"
 (cd docs; make html)
 
-# Build bash auto-completion script
-echo "Building auto-completion bash script"
-source generate_autocomplete
-
 echo "Build complete"
