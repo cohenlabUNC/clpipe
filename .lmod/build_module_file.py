@@ -1,5 +1,3 @@
-import jinja2
-
 import sys 
 sys.path.append("..")
 import setup
