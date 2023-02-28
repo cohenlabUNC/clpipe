@@ -1,9 +1,10 @@
 # Deployment script
 # UNC-specific but can be adapted for other clusters with a module system
 
+DEV_PYTHON_PATH="venv/bin/activate"
 PYTHON_VERSION="3.7.14"
-PYTHON_PATH="/nas/longleaf/rhel8/apps/python/${PYTHON_VERSION}/bin/python"
 DEPLOY_ROOT="/proj/hng/software"
+MODULE_ROOT="${DEPLOY_ROOT}/modules/clpipe"
 VENVS="${DEPLOY_ROOT}/venvs/clpipe"
 
 if [ $# -eq 0 ]
@@ -15,20 +16,23 @@ fi
 version=$1
 patch=$2
 
+# Ensure dev env is loaded
+source $DEV_PYTHON_PATH
+
 # Run build script
 source build_clpipe.sh
 
-# Turn off your virtual environment
-deactivate
-
 echo "Deploying version ${version}"
 venv_path="${VENVS}/clpipe-${version}"
+ 
+# Turn off dev virtual environment
+deactivate
 
-# Remove prior venv
+# Remove prior venv if needed
 echo "Removing any prior virtual environment with same version"
 rm -rf $venv_path
 
-# Add a module for clpipe
+# Add a new venv for this release
 module purge
 module add "python/${PYTHON_VERSION}"
 echo "Creating virtual environment at: ${venv_path}"
@@ -55,4 +59,16 @@ echo "Deploying auto-completion bash script"
 cp dist/.clpipe-complete "${venv_path}/bin"
 
 echo "Deployment complete"
+
+# Turn off the deployment venv
 deactivate
+
+# Turn back on the dev venv
+source $DEV_PYTHON_PATH
+
+# Build the module file
+python .lmod/build_module_file.py
+
+# Deploy the module file
+echo "Deploying module file"
+cp "dist/${version}.lua" ${MODULE_ROOT}
