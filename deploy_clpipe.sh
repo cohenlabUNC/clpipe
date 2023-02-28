@@ -47,6 +47,7 @@ echo "Installing clpipe"
 pip install "dist/clpipe-${version}-py3-none-any.whl"
 
 echo "Deploying auto-completion bash script"
-cp build/.clpipe-complete "${venv_path}/bin"
+cp dist/.clpipe-complete "${venv_path}/bin"
 
+echo "Deployment complete"
 deactivate
