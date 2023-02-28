@@ -2,6 +2,7 @@ import pytest
 import json
 import yaml
 import os
+from pathlib import Path
 
 from clpipe.config import *
 from clpipe.newConfig.clpipe_config import getConfig
@@ -31,7 +32,6 @@ def test_yaml_load(config_file, project_dir):
     assert config.ProjectTitle == "test_project"
     assert config.PostProcessingOptions2.ProcessingStepOptions.TemporalFiltering.FilteringHighPass == 0.008
 
-
 # Using dictionaries over file references from this point on - no need to test
 #   json.load()
 
@@ -43,11 +43,8 @@ def test_default(clpipe_config_default):
     assert config.ProjectTitle == clpipe_config_default["ProjectTitle"]
     assert config.Authors == clpipe_config_default["Authors/Contributors"]
     assert config.SourceOptions.MemUsage == clpipe_config_default["SourceOptions"]["MemUsage"]
-
-"""
-Fix how the test is run. Maybe it should run without creating new files
-"""
-def test_wrong_order(config_file, project_dir):
+    
+def test_wrong_order(clpipe_config: dict):
     """ Ensure that a configuration with fields in an unexpected order will successfully
     load.
     """

@@ -236,8 +236,8 @@ def test_prepare_confounds(sample_confounds_timeseries, postprocessing_config, a
     test_path = helpers.create_test_dir(artifact_dir, request.node.name)
     out_path = test_path / "new_confounds.tsv"
 
-    cf_workflow = build_confounds_processing_workflow(postprocessing_config, confound_file=sample_confounds_timeseries,
-        out_file=out_path, base_dir=test_path, crashdump_dir=test_path, tr=2)
+    cf_workflow = build_confounds_processing_workflow(postprocessing_config, confounds_file=sample_confounds_timeseries,
+        export_file=out_path, base_dir=test_path, crashdump_dir=test_path, tr=2)
 
     cf_workflow.run()
     
@@ -252,8 +252,8 @@ def test_prepare_confounds_aroma(sample_confounds_timeseries, postprocessing_con
 
     postprocessing_config["ProcessingSteps"] = ["AROMARegression", "TemporalFiltering", "IntensityNormalization"]
 
-    cf_workflow = build_confounds_processing_workflow(postprocessing_config, confound_file=sample_confounds_timeseries,
-        out_file=out_path, mixing_file=sample_melodic_mixing, noise_file=sample_aroma_noise_ics,
+    cf_workflow = build_confounds_processing_workflow(postprocessing_config, confounds_file=sample_confounds_timeseries,
+        export_file=out_path, mixing_file=sample_melodic_mixing, noise_file=sample_aroma_noise_ics,
         base_dir=test_path, crashdump_dir=test_path, tr=2)
 
     cf_workflow.run()

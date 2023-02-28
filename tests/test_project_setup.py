@@ -1,12 +1,13 @@
 import pytest
 from pathlib import Path
 import os
+from typing import List
 
-from clpipe.project_setup import project_setup
+from clpipe.project_setup import project_setup, SourceDataError
 
 PROJECT_TITLE = "test_project"
 
-def test_setup_no_source(project_dir):
+def test_project_setup_no_source(project_dir: Path):
     """Check that clpipe creates an empty data_DICOMs folder in the project
     directory when no source is provided.
     """
@@ -16,7 +17,7 @@ def test_setup_no_source(project_dir):
     assert Path(project_dir / "data_DICOMs").exists()
 
 
-def test_setup_referenced_source(project_dir, source_data):
+def test_project_setup_referenced_source(project_dir: Path, source_data: Path):
     """Check that clpipe's generated config file references a specified source
     directory that is not within the clpipe project directory. This variant
     should not create a data_DICOMs directory.
@@ -28,7 +29,7 @@ def test_setup_referenced_source(project_dir, source_data):
     assert not Path(project_dir / "data_DICOMs").exists() and Path(source_data).exists()
 
 
-def test_setup_symlink_source(project_dir, source_data):
+def test_project_setup_symlink_source(project_dir: Path, source_data: Path):
     """Check that clpipe creates a data_DICOMs dir and symlinks it to the given
     source data.
     """
@@ -39,8 +40,9 @@ def test_setup_symlink_source(project_dir, source_data):
     
     assert Path(project_dir / "data_DICOMs").exists() and os.path.islink(project_dir / "data_DICOMs")
 
+
 @pytest.mark.skip(reason="Feature Not implemented")
-def test_setup_move_source(project_dir):
+def test_project_setup_move_source(project_dir: Path):
     """Note: this is currently NOT IMPLEMENTED in project setup.
     
     Check that clpipe creates a data_DICOMs dir and moves the data from a given
@@ -53,7 +55,31 @@ def test_setup_move_source(project_dir):
     pass
 
 
-def test_setup_missing(clpipe_dir, project_paths):
+def test_project_setup_symlink_and_move(project_dir: Path):
+    """Ensure exception thrown if users tries to both symlink and move source data."""
+
+    with pytest.raises(SourceDataError):
+        project_setup(project_title=PROJECT_TITLE, project_dir=project_dir, 
+                      move_source_data=True, symlink_source_data=True)
+
+
+def test_project_setup_symlink_no_source(project_dir: Path):
+    """Ensure exception thrown if users tries to symlink without a source."""
+
+    with pytest.raises(SourceDataError):
+        project_setup(project_title=PROJECT_TITLE, project_dir=project_dir, 
+                      symlink_source_data=True)
+        
+
+def test_project_setup_move_no_source(project_dir: Path):
+    """Ensure exception thrown if users tries to move without a source."""
+
+    with pytest.raises(SourceDataError):
+        project_setup(project_title=PROJECT_TITLE, project_dir=project_dir, 
+                      move_source_data=True)
+
+
+def test_project_setup_missing_paths(clpipe_dir: Path, project_paths: List[Path]):
     """Check if any expected clpipe setup fails to create any expect folders or files."""    
     missing = project_paths
     
@@ -65,7 +91,7 @@ def test_setup_missing(clpipe_dir, project_paths):
     assert len(missing) == 0, f"Missing expected paths: {missing}"
 
 
-def test_setup_extra(clpipe_dir, project_paths):
+def test_project_setup_extra_paths(clpipe_dir: Path, project_paths: List[Path]):
     """Check to see if clpipe setup creates any extra, unexpected folders or files."""
     extra = []
 
@@ -78,15 +104,18 @@ def test_setup_extra(clpipe_dir, project_paths):
 
 
 @pytest.fixture()
-def project_paths():
-    # TODO: We should eventually just pull these constants from central config
+def project_paths() -> List[Path]:
+    """Provides a list of the paths expected from running project_setup.
+    
+    TODO: We should eventually just pull these constants from central config
+    """
 
     data_BIDS = Path("data_BIDS")
     data_postproc = Path("data_postproc")
     data_ROI_ts = Path("data_ROI_ts")
     logs = Path("logs")
 
-    """List of expected relative project paths. Path is used over strings for os abstraction."""
+    # List of expected relative project paths. Path is used over strings for os abstraction.
     return [
         Path("analyses"),
         Path("data_DICOMs"),
