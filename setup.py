@@ -34,7 +34,8 @@ INSTALL_REQUIRES = [
       "pydantic",
       "matplotlib",
       "heudiconv>=0.10.0",
-      "tqdm"
+      "tqdm",
+      "marshmallow-dataclass"
 ],
 
 PACKAGE_DATA = {'clpipe': ['R_scripts/*.R']}
