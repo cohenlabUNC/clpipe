@@ -15,6 +15,7 @@ from click.testing import CliRunner
 sys.path.append('../clpipe')
 from clpipe.project_setup import project_setup
 from clpipe.config_json_parser import ClpipeConfigParser, GLMConfigParser
+# from clpipe.data import wrongOrder_defaultConfig.json
 
 PROJECT_TITLE = "test_project"
 NUM_BIDS_SUBJECTS = 10

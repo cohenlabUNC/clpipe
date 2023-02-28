@@ -1,6 +1,7 @@
 import pytest
 import json
 import yaml
+import os
 
 from clpipe.config import *
 from clpipe.newConfig.clpipe_config import getConfig
@@ -15,19 +16,20 @@ def test_json_load(config_file):
     """ Ensure that the config class loads in .json data as expected. """
     config = getConfig(json_file=config_file)
     assert config is not None
-    assert config.ProjectTitle == "TestProject"
-    assert config.PostProcessingOptions2.ProcessingStepOptions.FilteringHighPass == 0.008
+    assert config.ProjectTitle == "test_project"
+    assert config.PostProcessingOptions2.ProcessingStepOptions.TemporalFiltering.FilteringHighPass == 0.008
 
-def test_yaml_load(config_file):
+def test_yaml_load(config_file, project_dir):
     """ Ensure that the config class loads from .yaml as expected. """
     with open(config_file, 'r') as json_file:
         conf_json = json.load(json_file)
-    with open('config.yaml', 'w') as yaml_file:
+        
+    with open(os.path.join(project_dir,'config.yaml'), 'w') as yaml_file:
         yaml.dump(conf_json, yaml_file, sort_keys=False)
-    config = getConfig(yaml_file='config.yaml')
+    config = getConfig(yaml_file=os.path.join(project_dir,'config.yaml'))
     assert config is not None
-    assert config.ProjectTitle == "TestProject"
-    assert config.PostProcessingOptions2.ProcessingStepOptions.FilteringHighPass == 0.008
+    assert config.ProjectTitle == "test_project"
+    assert config.PostProcessingOptions2.ProcessingStepOptions.TemporalFiltering.FilteringHighPass == 0.008
 
 
 # Using dictionaries over file references from this point on - no need to test
@@ -45,23 +47,20 @@ def test_default(clpipe_config_default):
 """
 Fix how the test is run. Maybe it should run without creating new files
 """
-def test_wrong_order(clpipe_config):
+def test_wrong_order(config_file, project_dir):
     """ Ensure that a configuration with fields in an unexpected order will successfully
     load.
     """
-    schema_path = '/nas/longleaf/home/mbhavith/DEPENd_Lab/clpipe/clpipe/data/defaultConfig.json'
-    with open(schema_path,'r') as f:
-        schema = json.load(f)
+    with open(os.path.join(os.path.dirname(__file__),'../clpipe/data/wrongOrder_defaultConfig.json'), 'r') as f:
+        oldConf = json.load(f)
+    with open(config_file, 'r') as f:
+        newConf = json.load(f)
 
-    oldConf_path = '/nas/longleaf/home/mbhavith/DEPENd_Lab/clpipe/clpipe/data/wrongOrder_defaultConfig.json'
-    with open(oldConf_path,'r') as f:
-        oldConfig = json.load(f)
+    convertedConfig = convertConfig(oldConf, newConf)
+    with open(os.path.join(project_dir,'convertedConfig.json'), 'w') as f:
+        json.dump(convertedConfig, f)
 
-    schema = convertConfig(oldConfig, schema)
-    with open('newSchema.json', 'w') as file:
-        json.dump(schema, file)
-
-    convertedConfig = getConfig(json_file='newSchema.json')
+    convertedConfig = getConfig(json_file=os.path.join(project_dir,'convertedConfig.json'))
     correctConfig = getConfig()
     assert correctConfig == convertedConfig
 

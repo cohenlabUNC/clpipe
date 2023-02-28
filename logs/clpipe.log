@@ -1,0 +1,163 @@
+2023-02-23 12:26:33 - mbhavith - INFO: clpipe.bids-validation - Starting BIDS validation targeting: 
+2023-02-23 12:26:33 - mbhavith - INFO: clpipe.batch-manager - Batch job output path: logs/bids_validation_logs
+2023-02-23 12:26:33 - mbhavith - INFO: clpipe.batch-manager - Jobs to run:
+
+	sbatch --no-requeue -n 1 --mem=3000 --time=1:0:0 --cpus-per-task=1 --job-name="BIDSValidator" --output=/nas/longleaf/home/mbhavith/DEPENd_Lab/clpipe/logs/bids_validation_logs/Output-BIDSValidator-jobid-%j.out --wrap="singularity run --cleanenv -B /proj,/pine,/nas02,/nas /proj/hng/singularity_imgs/validator.simg "
+
+Re-run with the '-submit' flag to launch these jobs.
+2023-02-23 12:26:34 - mbhavith - INFO: clpipe.project-setup - Referencing source data: /tmp/pytest-of-mbhavith/pytest-8/test_project0/data_DICOMs
+2023-02-23 12:26:34 - mbhavith - INFO: clpipe.project-setup - Starting project setup with title: test_project
+2023-02-23 12:26:34 - mbhavith - INFO: clpipe.project-setup - Creating new clpipe project in directory: /tmp/pytest-of-mbhavith/pytest-8/test_project0
+2023-02-23 12:26:34 - mbhavith - INFO: clpipe.project-setup - Completed project setup
+2023-02-23 12:26:34 - mbhavith - INFO: clpipe.bids-validation - Starting BIDS validation targeting: /tmp/pytest-of-mbhavith/pytest-8/test_project0/data_BIDS
+2023-02-23 12:26:34 - mbhavith - INFO: clpipe.batch-manager - Batch job output path: /tmp/pytest-of-mbhavith/pytest-8/test_project0/logs/bids_validation_logs
+2023-02-23 12:26:34 - mbhavith - INFO: clpipe.batch-manager - Jobs to run:
+
+	sbatch --no-requeue -n 1 --mem=3000 --time=1:0:0 --cpus-per-task=1 --job-name="BIDSValidator" --output=/tmp/pytest-of-mbhavith/pytest-8/test_project0/logs/bids_validation_logs/Output-BIDSValidator-jobid-%j.out --wrap="singularity run --cleanenv -B /proj,/pine,/nas02,/nas /proj/hng/singularity_imgs/validator.simg /tmp/pytest-of-mbhavith/pytest-8/test_project0/data_BIDS"
+
+Re-run with the '-submit' flag to launch these jobs.
+2023-02-23 12:26:34 - mbhavith - INFO: clpipe.project-setup - Referencing source data: /tmp/pytest-of-mbhavith/pytest-8/test_project1/data_DICOMs
+2023-02-23 12:26:34 - mbhavith - INFO: clpipe.project-setup - Starting project setup with title: test_project
+2023-02-23 12:26:34 - mbhavith - INFO: clpipe.project-setup - Creating new clpipe project in directory: /tmp/pytest-of-mbhavith/pytest-8/test_project1
+2023-02-23 12:26:34 - mbhavith - INFO: clpipe.project-setup - Completed project setup
+2023-02-23 12:26:34 - mbhavith - INFO: clpipe.project-setup - Referencing source data: /tmp/pytest-of-mbhavith/pytest-8/test_project2/data_DICOMs
+2023-02-23 12:26:34 - mbhavith - INFO: clpipe.project-setup - Starting project setup with title: test_project
+2023-02-23 12:26:34 - mbhavith - INFO: clpipe.project-setup - Creating new clpipe project in directory: /tmp/pytest-of-mbhavith/pytest-8/test_project2
+2023-02-23 12:26:34 - mbhavith - INFO: clpipe.project-setup - Completed project setup
+2023-02-23 12:26:34 - mbhavith - INFO: clpipe.batch-manager - Batch job output path: /tmp/pytest-of-mbhavith/pytest-8/test_project2/logs/DCM2BIDS_logs
+2023-02-23 12:26:34 - mbhavith - INFO: clpipe.bids-conversion - Starting BIDS conversion targeting: /tmp/pytest-of-mbhavith/pytest-8/test_project2/data_DICOMs/sub
+2023-02-23 12:26:34 - mbhavith - INFO: clpipe.bids-conversion - Using converter: dcm2bids
+2023-02-23 12:26:34 - mbhavith - INFO: clpipe.batch-manager - Jobs to run:
+
+	sbatch --no-requeue -n 1 --mem=5000 --time=1:0:0 --cpus-per-task=2 --job-name="convert_sub-0" --output=/tmp/pytest-of-mbhavith/pytest-8/test_project2/logs/DCM2BIDS_logs/Output-convert_sub-0-jobid-%j.out --wrap="dcm2bids -d /tmp/pytest-of-mbhavith/pytest-8/test_project2/data_DICOMs/sub/0/ -o /tmp/pytest-of-mbhavith/pytest-8/test_project2/data_BIDS -p 0 -c /tmp/pytest-of-mbhavith/pytest-8/test_project2/conversion_config.json"
+
+	sbatch --no-requeue -n 1 --mem=5000 --time=1:0:0 --cpus-per-task=2 --job-name="convert_sub-1" --output=/tmp/pytest-of-mbhavith/pytest-8/test_project2/logs/DCM2BIDS_logs/Output-convert_sub-1-jobid-%j.out --wrap="dcm2bids -d /tmp/pytest-of-mbhavith/pytest-8/test_project2/data_DICOMs/sub/1/ -o /tmp/pytest-of-mbhavith/pytest-8/test_project2/data_BIDS -p 1 -c /tmp/pytest-of-mbhavith/pytest-8/test_project2/conversion_config.json"
+
+	sbatch --no-requeue -n 1 --mem=5000 --time=1:0:0 --cpus-per-task=2 --job-name="convert_sub-2" --output=/tmp/pytest-of-mbhavith/pytest-8/test_project2/logs/DCM2BIDS_logs/Output-convert_sub-2-jobid-%j.out --wrap="dcm2bids -d /tmp/pytest-of-mbhavith/pytest-8/test_project2/data_DICOMs/sub/2/ -o /tmp/pytest-of-mbhavith/pytest-8/test_project2/data_BIDS -p 2 -c /tmp/pytest-of-mbhavith/pytest-8/test_project2/conversion_config.json"
+
+	sbatch --no-requeue -n 1 --mem=5000 --time=1:0:0 --cpus-per-task=2 --job-name="convert_sub-3" --output=/tmp/pytest-of-mbhavith/pytest-8/test_project2/logs/DCM2BIDS_logs/Output-convert_sub-3-jobid-%j.out --wrap="dcm2bids -d /tmp/pytest-of-mbhavith/pytest-8/test_project2/data_DICOMs/sub/3/ -o /tmp/pytest-of-mbhavith/pytest-8/test_project2/data_BIDS -p 3 -c /tmp/pytest-of-mbhavith/pytest-8/test_project2/conversion_config.json"
+
+	sbatch --no-requeue -n 1 --mem=5000 --time=1:0:0 --cpus-per-task=2 --job-name="convert_sub-4" --output=/tmp/pytest-of-mbhavith/pytest-8/test_project2/logs/DCM2BIDS_logs/Output-convert_sub-4-jobid-%j.out --wrap="dcm2bids -d /tmp/pytest-of-mbhavith/pytest-8/test_project2/data_DICOMs/sub/4/ -o /tmp/pytest-of-mbhavith/pytest-8/test_project2/data_BIDS -p 4 -c /tmp/pytest-of-mbhavith/pytest-8/test_project2/conversion_config.json"
+
+Re-run with the '-submit' flag to launch these jobs.
+2023-02-23 12:26:34 - mbhavith - INFO: clpipe.batch-manager - Batch job output path: /tmp/pytest-of-mbhavith/pytest-8/test_project2/logs/DCM2BIDS_logs
+2023-02-23 12:26:34 - mbhavith - INFO: clpipe.bids-conversion - Starting BIDS conversion targeting: /tmp/pytest-of-mbhavith/pytest-8/test_project2/data_DICOMs/sub_session
+2023-02-23 12:26:34 - mbhavith - INFO: clpipe.bids-conversion - Using converter: dcm2bids
+2023-02-23 12:26:34 - mbhavith - INFO: clpipe.batch-manager - Jobs to run:
+
+	sbatch --no-requeue -n 1 --mem=5000 --time=1:0:0 --cpus-per-task=2 --job-name="convert_sub-0_ses-2000" --output=/tmp/pytest-of-mbhavith/pytest-8/test_project2/logs/DCM2BIDS_logs/Output-convert_sub-0_ses-2000-jobid-%j.out --wrap="dcm2bids -d /tmp/pytest-of-mbhavith/pytest-8/test_project2/data_DICOMs/sub_session/0/2000/ -o /tmp/pytest-of-mbhavith/pytest-8/test_project2/data_BIDS -p 0 -c /tmp/pytest-of-mbhavith/pytest-8/test_project2/conversion_config.json -s 2000"
+
+	sbatch --no-requeue -n 1 --mem=5000 --time=1:0:0 --cpus-per-task=2 --job-name="convert_sub-0_ses-2010" --output=/tmp/pytest-of-mbhavith/pytest-8/test_project2/logs/DCM2BIDS_logs/Output-convert_sub-0_ses-2010-jobid-%j.out --wrap="dcm2bids -d /tmp/pytest-of-mbhavith/pytest-8/test_project2/data_DICOMs/sub_session/0/2010/ -o /tmp/pytest-of-mbhavith/pytest-8/test_project2/data_BIDS -p 0 -c /tmp/pytest-of-mbhavith/pytest-8/test_project2/conversion_config.json -s 2010"
+
+	sbatch --no-requeue -n 1 --mem=5000 --time=1:0:0 --cpus-per-task=2 --job-name="convert_sub-0_ses-2020" --output=/tmp/pytest-of-mbhavith/pytest-8/test_project2/logs/DCM2BIDS_logs/Output-convert_sub-0_ses-2020-jobid-%j.out --wrap="dcm2bids -d /tmp/pytest-of-mbhavith/pytest-8/test_project2/data_DICOMs/sub_session/0/2020/ -o /tmp/pytest-of-mbhavith/pytest-8/test_project2/data_BIDS -p 0 -c /tmp/pytest-of-mbhavith/pytest-8/test_project2/conversion_config.json -s 2020"
+
+	sbatch --no-requeue -n 1 --mem=5000 --time=1:0:0 --cpus-per-task=2 --job-name="convert_sub-1_ses-2000" --output=/tmp/pytest-of-mbhavith/pytest-8/test_project2/logs/DCM2BIDS_logs/Output-convert_sub-1_ses-2000-jobid-%j.out --wrap="dcm2bids -d /tmp/pytest-of-mbhavith/pytest-8/test_project2/data_DICOMs/sub_session/1/2000/ -o /tmp/pytest-of-mbhavith/pytest-8/test_project2/data_BIDS -p 1 -c /tmp/pytest-of-mbhavith/pytest-8/test_project2/conversion_config.json -s 2000"
+
+	sbatch --no-requeue -n 1 --mem=5000 --time=1:0:0 --cpus-per-task=2 --job-name="convert_sub-1_ses-2010" --output=/tmp/pytest-of-mbhavith/pytest-8/test_project2/logs/DCM2BIDS_logs/Output-convert_sub-1_ses-2010-jobid-%j.out --wrap="dcm2bids -d /tmp/pytest-of-mbhavith/pytest-8/test_project2/data_DICOMs/sub_session/1/2010/ -o /tmp/pytest-of-mbhavith/pytest-8/test_project2/data_BIDS -p 1 -c /tmp/pytest-of-mbhavith/pytest-8/test_project2/conversion_config.json -s 2010"
+
+	...and 10 more job(s).
+Re-run with the '-submit' flag to launch these jobs.
+2023-02-23 12:26:34 - mbhavith - INFO: clpipe.batch-manager - Batch job output path: /tmp/pytest-of-mbhavith/pytest-8/test_project2/logs/DCM2BIDS_logs
+2023-02-23 12:26:34 - mbhavith - INFO: clpipe.bids-conversion - Starting BIDS conversion targeting: /tmp/pytest-of-mbhavith/pytest-8/test_project2/data_DICOMs/sub_session_flat
+2023-02-23 12:26:34 - mbhavith - INFO: clpipe.bids-conversion - Using converter: dcm2bids
+2023-02-23 12:26:34 - mbhavith - INFO: clpipe.batch-manager - Jobs to run:
+
+	sbatch --no-requeue -n 1 --mem=5000 --time=1:0:0 --cpus-per-task=2 --job-name="convert_sub-0_ses-2000" --output=/tmp/pytest-of-mbhavith/pytest-8/test_project2/logs/DCM2BIDS_logs/Output-convert_sub-0_ses-2000-jobid-%j.out --wrap="dcm2bids -d /tmp/pytest-of-mbhavith/pytest-8/test_project2/data_DICOMs/sub_session_flat/0_2000/ -o /tmp/pytest-of-mbhavith/pytest-8/test_project2/data_BIDS -p 0 -c /tmp/pytest-of-mbhavith/pytest-8/test_project2/conversion_config.json -s 2000"
+
+	sbatch --no-requeue -n 1 --mem=5000 --time=1:0:0 --cpus-per-task=2 --job-name="convert_sub-0_ses-2010" --output=/tmp/pytest-of-mbhavith/pytest-8/test_project2/logs/DCM2BIDS_logs/Output-convert_sub-0_ses-2010-jobid-%j.out --wrap="dcm2bids -d /tmp/pytest-of-mbhavith/pytest-8/test_project2/data_DICOMs/sub_session_flat/0_2010/ -o /tmp/pytest-of-mbhavith/pytest-8/test_project2/data_BIDS -p 0 -c /tmp/pytest-of-mbhavith/pytest-8/test_project2/conversion_config.json -s 2010"
+
+	sbatch --no-requeue -n 1 --mem=5000 --time=1:0:0 --cpus-per-task=2 --job-name="convert_sub-0_ses-2020" --output=/tmp/pytest-of-mbhavith/pytest-8/test_project2/logs/DCM2BIDS_logs/Output-convert_sub-0_ses-2020-jobid-%j.out --wrap="dcm2bids -d /tmp/pytest-of-mbhavith/pytest-8/test_project2/data_DICOMs/sub_session_flat/0_2020/ -o /tmp/pytest-of-mbhavith/pytest-8/test_project2/data_BIDS -p 0 -c /tmp/pytest-of-mbhavith/pytest-8/test_project2/conversion_config.json -s 2020"
+
+	sbatch --no-requeue -n 1 --mem=5000 --time=1:0:0 --cpus-per-task=2 --job-name="convert_sub-1_ses-2000" --output=/tmp/pytest-of-mbhavith/pytest-8/test_project2/logs/DCM2BIDS_logs/Output-convert_sub-1_ses-2000-jobid-%j.out --wrap="dcm2bids -d /tmp/pytest-of-mbhavith/pytest-8/test_project2/data_DICOMs/sub_session_flat/1_2000/ -o /tmp/pytest-of-mbhavith/pytest-8/test_project2/data_BIDS -p 1 -c /tmp/pytest-of-mbhavith/pytest-8/test_project2/conversion_config.json -s 2000"
+
+	sbatch --no-requeue -n 1 --mem=5000 --time=1:0:0 --cpus-per-task=2 --job-name="convert_sub-1_ses-2010" --output=/tmp/pytest-of-mbhavith/pytest-8/test_project2/logs/DCM2BIDS_logs/Output-convert_sub-1_ses-2010-jobid-%j.out --wrap="dcm2bids -d /tmp/pytest-of-mbhavith/pytest-8/test_project2/data_DICOMs/sub_session_flat/1_2010/ -o /tmp/pytest-of-mbhavith/pytest-8/test_project2/data_BIDS -p 1 -c /tmp/pytest-of-mbhavith/pytest-8/test_project2/conversion_config.json -s 2010"
+
+	...and 10 more job(s).
+Re-run with the '-submit' flag to launch these jobs.
+2023-02-23 12:26:34 - mbhavith - INFO: clpipe.batch-manager - Batch job output path: /tmp/pytest-of-mbhavith/pytest-8/test_project2/logs/DCM2BIDS_logs
+2023-02-23 12:26:34 - mbhavith - INFO: clpipe.bids-conversion - Starting BIDS conversion targeting: /tmp/pytest-of-mbhavith/pytest-8/test_project2/data_DICOMs/session_sub
+2023-02-23 12:26:34 - mbhavith - INFO: clpipe.bids-conversion - Using converter: dcm2bids
+2023-02-23 12:26:34 - mbhavith - INFO: clpipe.batch-manager - Jobs to run:
+
+	sbatch --no-requeue -n 1 --mem=5000 --time=1:0:0 --cpus-per-task=2 --job-name="convert_sub-0_ses-2000" --output=/tmp/pytest-of-mbhavith/pytest-8/test_project2/logs/DCM2BIDS_logs/Output-convert_sub-0_ses-2000-jobid-%j.out --wrap="dcm2bids -d /tmp/pytest-of-mbhavith/pytest-8/test_project2/data_DICOMs/session_sub/2000/0/ -o /tmp/pytest-of-mbhavith/pytest-8/test_project2/data_BIDS -p 0 -c /tmp/pytest-of-mbhavith/pytest-8/test_project2/conversion_config.json -s 2000"
+
+	sbatch --no-requeue -n 1 --mem=5000 --time=1:0:0 --cpus-per-task=2 --job-name="convert_sub-1_ses-2000" --output=/tmp/pytest-of-mbhavith/pytest-8/test_project2/logs/DCM2BIDS_logs/Output-convert_sub-1_ses-2000-jobid-%j.out --wrap="dcm2bids -d /tmp/pytest-of-mbhavith/pytest-8/test_project2/data_DICOMs/session_sub/2000/1/ -o /tmp/pytest-of-mbhavith/pytest-8/test_project2/data_BIDS -p 1 -c /tmp/pytest-of-mbhavith/pytest-8/test_project2/conversion_config.json -s 2000"
+
+	sbatch --no-requeue -n 1 --mem=5000 --time=1:0:0 --cpus-per-task=2 --job-name="convert_sub-2_ses-2000" --output=/tmp/pytest-of-mbhavith/pytest-8/test_project2/logs/DCM2BIDS_logs/Output-convert_sub-2_ses-2000-jobid-%j.out --wrap="dcm2bids -d /tmp/pytest-of-mbhavith/pytest-8/test_project2/data_DICOMs/session_sub/2000/2/ -o /tmp/pytest-of-mbhavith/pytest-8/test_project2/data_BIDS -p 2 -c /tmp/pytest-of-mbhavith/pytest-8/test_project2/conversion_config.json -s 2000"
+
+	sbatch --no-requeue -n 1 --mem=5000 --time=1:0:0 --cpus-per-task=2 --job-name="convert_sub-3_ses-2000" --output=/tmp/pytest-of-mbhavith/pytest-8/test_project2/logs/DCM2BIDS_logs/Output-convert_sub-3_ses-2000-jobid-%j.out --wrap="dcm2bids -d /tmp/pytest-of-mbhavith/pytest-8/test_project2/data_DICOMs/session_sub/2000/3/ -o /tmp/pytest-of-mbhavith/pytest-8/test_project2/data_BIDS -p 3 -c /tmp/pytest-of-mbhavith/pytest-8/test_project2/conversion_config.json -s 2000"
+
+	sbatch --no-requeue -n 1 --mem=5000 --time=1:0:0 --cpus-per-task=2 --job-name="convert_sub-4_ses-2000" --output=/tmp/pytest-of-mbhavith/pytest-8/test_project2/logs/DCM2BIDS_logs/Output-convert_sub-4_ses-2000-jobid-%j.out --wrap="dcm2bids -d /tmp/pytest-of-mbhavith/pytest-8/test_project2/data_DICOMs/session_sub/2000/4/ -o /tmp/pytest-of-mbhavith/pytest-8/test_project2/data_BIDS -p 4 -c /tmp/pytest-of-mbhavith/pytest-8/test_project2/conversion_config.json -s 2000"
+
+	...and 10 more job(s).
+Re-run with the '-submit' flag to launch these jobs.
+2023-02-23 12:26:34 - mbhavith - INFO: clpipe.batch-manager - Batch job output path: /tmp/pytest-of-mbhavith/pytest-8/test_project2/logs/DCM2BIDS_logs
+2023-02-23 12:26:34 - mbhavith - INFO: clpipe.bids-conversion - Starting BIDS conversion targeting: /tmp/pytest-of-mbhavith/pytest-8/test_project2/data_DICOMs/session_sub_flat
+2023-02-23 12:26:34 - mbhavith - INFO: clpipe.bids-conversion - Using converter: dcm2bids
+2023-02-23 12:26:34 - mbhavith - INFO: clpipe.batch-manager - Jobs to run:
+
+	sbatch --no-requeue -n 1 --mem=5000 --time=1:0:0 --cpus-per-task=2 --job-name="convert_sub-0_ses-2000" --output=/tmp/pytest-of-mbhavith/pytest-8/test_project2/logs/DCM2BIDS_logs/Output-convert_sub-0_ses-2000-jobid-%j.out --wrap="dcm2bids -d /tmp/pytest-of-mbhavith/pytest-8/test_project2/data_DICOMs/session_sub_flat/2000_0/ -o /tmp/pytest-of-mbhavith/pytest-8/test_project2/data_BIDS -p 0 -c /tmp/pytest-of-mbhavith/pytest-8/test_project2/conversion_config.json -s 2000"
+
+	sbatch --no-requeue -n 1 --mem=5000 --time=1:0:0 --cpus-per-task=2 --job-name="convert_sub-0_ses-2010" --output=/tmp/pytest-of-mbhavith/pytest-8/test_project2/logs/DCM2BIDS_logs/Output-convert_sub-0_ses-2010-jobid-%j.out --wrap="dcm2bids -d /tmp/pytest-of-mbhavith/pytest-8/test_project2/data_DICOMs/session_sub_flat/2010_0/ -o /tmp/pytest-of-mbhavith/pytest-8/test_project2/data_BIDS -p 0 -c /tmp/pytest-of-mbhavith/pytest-8/test_project2/conversion_config.json -s 2010"
+
+	sbatch --no-requeue -n 1 --mem=5000 --time=1:0:0 --cpus-per-task=2 --job-name="convert_sub-0_ses-2020" --output=/tmp/pytest-of-mbhavith/pytest-8/test_project2/logs/DCM2BIDS_logs/Output-convert_sub-0_ses-2020-jobid-%j.out --wrap="dcm2bids -d /tmp/pytest-of-mbhavith/pytest-8/test_project2/data_DICOMs/session_sub_flat/2020_0/ -o /tmp/pytest-of-mbhavith/pytest-8/test_project2/data_BIDS -p 0 -c /tmp/pytest-of-mbhavith/pytest-8/test_project2/conversion_config.json -s 2020"
+
+	sbatch --no-requeue -n 1 --mem=5000 --time=1:0:0 --cpus-per-task=2 --job-name="convert_sub-1_ses-2000" --output=/tmp/pytest-of-mbhavith/pytest-8/test_project2/logs/DCM2BIDS_logs/Output-convert_sub-1_ses-2000-jobid-%j.out --wrap="dcm2bids -d /tmp/pytest-of-mbhavith/pytest-8/test_project2/data_DICOMs/session_sub_flat/2000_1/ -o /tmp/pytest-of-mbhavith/pytest-8/test_project2/data_BIDS -p 1 -c /tmp/pytest-of-mbhavith/pytest-8/test_project2/conversion_config.json -s 2000"
+
+	sbatch --no-requeue -n 1 --mem=5000 --time=1:0:0 --cpus-per-task=2 --job-name="convert_sub-1_ses-2010" --output=/tmp/pytest-of-mbhavith/pytest-8/test_project2/logs/DCM2BIDS_logs/Output-convert_sub-1_ses-2010-jobid-%j.out --wrap="dcm2bids -d /tmp/pytest-of-mbhavith/pytest-8/test_project2/data_DICOMs/session_sub_flat/2010_1/ -o /tmp/pytest-of-mbhavith/pytest-8/test_project2/data_BIDS -p 1 -c /tmp/pytest-of-mbhavith/pytest-8/test_project2/conversion_config.json -s 2010"
+
+	...and 10 more job(s).
+Re-run with the '-submit' flag to launch these jobs.
+2023-02-23 12:26:34 - mbhavith - INFO: clpipe.batch-manager - Batch job output path: /tmp/pytest-of-mbhavith/pytest-8/test_project2/logs/DCM2BIDS_logs
+2023-02-23 12:26:34 - mbhavith - INFO: clpipe.bids-conversion - Starting BIDS conversion targeting: /tmp/pytest-of-mbhavith/pytest-8/test_project2/data_DICOMs/sub
+2023-02-23 12:26:34 - mbhavith - INFO: clpipe.bids-conversion - Using converter: heudiconv
+2023-02-23 12:26:34 - mbhavith - INFO: clpipe.batch-manager - Jobs to run:
+
+	sbatch --no-requeue -n 1 --mem=5000 --time=1:0:0 --cpus-per-task=2 --job-name="convert_sub-0" --output=/tmp/pytest-of-mbhavith/pytest-8/test_project2/logs/DCM2BIDS_logs/Output-convert_sub-0-jobid-%j.out --wrap="heudiconv --files /tmp/pytest-of-mbhavith/pytest-8/test_project2/data_DICOMs/sub/0/ -s 0 -f /tmp/pytest-of-mbhavith/pytest-8/test_project2/conversion_config.json -o /tmp/pytest-of-mbhavith/pytest-8/test_project2/data_BIDS -b"
+
+	sbatch --no-requeue -n 1 --mem=5000 --time=1:0:0 --cpus-per-task=2 --job-name="convert_sub-1" --output=/tmp/pytest-of-mbhavith/pytest-8/test_project2/logs/DCM2BIDS_logs/Output-convert_sub-1-jobid-%j.out --wrap="heudiconv --files /tmp/pytest-of-mbhavith/pytest-8/test_project2/data_DICOMs/sub/1/ -s 1 -f /tmp/pytest-of-mbhavith/pytest-8/test_project2/conversion_config.json -o /tmp/pytest-of-mbhavith/pytest-8/test_project2/data_BIDS -b"
+
+	sbatch --no-requeue -n 1 --mem=5000 --time=1:0:0 --cpus-per-task=2 --job-name="convert_sub-2" --output=/tmp/pytest-of-mbhavith/pytest-8/test_project2/logs/DCM2BIDS_logs/Output-convert_sub-2-jobid-%j.out --wrap="heudiconv --files /tmp/pytest-of-mbhavith/pytest-8/test_project2/data_DICOMs/sub/2/ -s 2 -f /tmp/pytest-of-mbhavith/pytest-8/test_project2/conversion_config.json -o /tmp/pytest-of-mbhavith/pytest-8/test_project2/data_BIDS -b"
+
+	sbatch --no-requeue -n 1 --mem=5000 --time=1:0:0 --cpus-per-task=2 --job-name="convert_sub-3" --output=/tmp/pytest-of-mbhavith/pytest-8/test_project2/logs/DCM2BIDS_logs/Output-convert_sub-3-jobid-%j.out --wrap="heudiconv --files /tmp/pytest-of-mbhavith/pytest-8/test_project2/data_DICOMs/sub/3/ -s 3 -f /tmp/pytest-of-mbhavith/pytest-8/test_project2/conversion_config.json -o /tmp/pytest-of-mbhavith/pytest-8/test_project2/data_BIDS -b"
+
+	sbatch --no-requeue -n 1 --mem=5000 --time=1:0:0 --cpus-per-task=2 --job-name="convert_sub-4" --output=/tmp/pytest-of-mbhavith/pytest-8/test_project2/logs/DCM2BIDS_logs/Output-convert_sub-4-jobid-%j.out --wrap="heudiconv --files /tmp/pytest-of-mbhavith/pytest-8/test_project2/data_DICOMs/sub/4/ -s 4 -f /tmp/pytest-of-mbhavith/pytest-8/test_project2/conversion_config.json -o /tmp/pytest-of-mbhavith/pytest-8/test_project2/data_BIDS -b"
+
+Re-run with the '-submit' flag to launch these jobs.
+2023-02-23 12:26:34 - mbhavith - INFO: clpipe.project-setup - No source data specified. Defaulting to: /tmp/pytest-of-mbhavith/pytest-8/test_project3/data_DICOMs
+2023-02-23 12:26:34 - mbhavith - INFO: clpipe.project-setup - Starting project setup with title: test_project
+2023-02-23 12:26:34 - mbhavith - INFO: clpipe.project-setup - Creating new clpipe project in directory: /tmp/pytest-of-mbhavith/pytest-8/test_project3
+2023-02-23 12:26:35 - mbhavith - INFO: clpipe.project-setup - Completed project setup
+2023-02-23 12:26:35 - mbhavith - INFO: clpipe.project-setup - Referencing source data: /tmp/pytest-of-mbhavith/pytest-8/source_data0
+2023-02-23 12:26:35 - mbhavith - INFO: clpipe.project-setup - Starting project setup with title: test_project
+2023-02-23 12:26:35 - mbhavith - INFO: clpipe.project-setup - Creating new clpipe project in directory: /tmp/pytest-of-mbhavith/pytest-8/test_project4
+2023-02-23 12:26:35 - mbhavith - INFO: clpipe.project-setup - Completed project setup
+2023-02-23 12:26:35 - mbhavith - INFO: clpipe.project-setup - Referencing source data: /tmp/pytest-of-mbhavith/pytest-8/source_data1
+2023-02-23 12:26:35 - mbhavith - INFO: clpipe.project-setup - Starting project setup with title: test_project
+2023-02-23 12:26:35 - mbhavith - INFO: clpipe.project-setup - Creating new clpipe project in directory: /tmp/pytest-of-mbhavith/pytest-8/test_project5
+2023-02-23 12:26:35 - mbhavith - INFO: clpipe.project-setup - Creating SymLink for source data to /tmp/pytest-of-mbhavith/pytest-8/test_project5/data_DICOMs
+2023-02-23 12:26:35 - mbhavith - INFO: clpipe.project-setup - Completed project setup
+2023-02-23 12:26:35 - mbhavith - INFO: clpipe.project-setup - Referencing source data: /tmp/pytest-of-mbhavith/pytest-8/test_project6/data_DICOMs
+2023-02-23 12:26:35 - mbhavith - INFO: clpipe.project-setup - Starting project setup with title: test_project
+2023-02-23 12:26:35 - mbhavith - INFO: clpipe.project-setup - Creating new clpipe project in directory: /tmp/pytest-of-mbhavith/pytest-8/test_project6
+2023-02-23 12:26:35 - mbhavith - INFO: clpipe.project-setup - Completed project setup
+2023-02-23 12:26:35 - mbhavith - INFO: clpipe.project-setup - Referencing source data: /tmp/pytest-of-mbhavith/pytest-8/test_project7/data_DICOMs
+2023-02-23 12:26:35 - mbhavith - INFO: clpipe.project-setup - Starting project setup with title: test_project
+2023-02-23 12:26:35 - mbhavith - INFO: clpipe.project-setup - Creating new clpipe project in directory: /tmp/pytest-of-mbhavith/pytest-8/test_project7
+2023-02-23 12:26:35 - mbhavith - INFO: clpipe.project-setup - Completed project setup
+2023-02-23 12:26:35 - mbhavith - INFO: clpipe.project-setup - Referencing source data: /tmp/pytest-of-mbhavith/pytest-8/test_project8/data_DICOMs
+2023-02-23 12:26:35 - mbhavith - INFO: clpipe.project-setup - Starting project setup with title: test_project
+2023-02-23 12:26:35 - mbhavith - INFO: clpipe.project-setup - Creating new clpipe project in directory: /tmp/pytest-of-mbhavith/pytest-8/test_project8
+2023-02-23 12:26:35 - mbhavith - INFO: clpipe.project-setup - Completed project setup
+2023-02-23 12:26:35 - mbhavith - INFO: clpipe.postprocess2 - Preparing postprocessing job targeting: /tmp/pytest-of-mbhavith/pytest-8/test_project8/data_fmriprep/fmriprep
+2023-02-23 12:26:36 - mbhavith - INFO: clpipe.postprocess2 - Output directory: /nas/longleaf/home/mbhavith/DEPENd_Lab/clpipe/tests/artifacts/test_postprocess_subjects_dir/data_postprocessed
+2023-02-23 12:26:36 - mbhavith - WARNING: clpipe.postprocess2 - Working directory not set, defaulting to output directory.
+2023-02-23 12:26:36 - mbhavith - INFO: clpipe.postprocess2 - Indexing BIDS directory: /tmp/pytest-of-mbhavith/pytest-8/test_project8/data_BIDS
+2023-02-23 12:26:36 - mbhavith - INFO: clpipe.postprocess2 - This can take a few minutes...
+2023-02-23 12:26:37 - mbhavith - INFO: clpipe.postprocess2 - Processing requested for subject(s): 7,2,5,0,3,6,4,1
+2023-02-23 12:26:37 - mbhavith - INFO: clpipe.postprocess2 - Creating submission string(s)
+2023-02-23 12:26:38 - mbhavith - INFO: clpipe.postprocess2 - Preparing postprocessing job targeting: /tmp/pytest-of-mbhavith/pytest-8/test_project8/data_fmriprep/fmriprep
+2023-02-23 12:26:38 - mbhavith - INFO: clpipe.postprocess2 - Output directory: /tmp/pytest-of-mbhavith/pytest-8/test_project8/data_postproc2
+2023-02-23 12:26:38 - mbhavith - WARNING: clpipe.postprocess2 - Working directory not set, defaulting to output directory.
+2023-02-23 12:26:38 - mbhavith - INFO: clpipe.postprocess2 - Processing requested for subject(s): 7,2,5,0,3,6,4,1
+2023-02-23 12:26:39 - mbhavith - INFO: clpipe.postprocess2 - Creating submission string(s)
