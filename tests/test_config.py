@@ -44,6 +44,7 @@ def test_default(clpipe_config_default):
     assert config.Authors == clpipe_config_default["Authors/Contributors"]
     assert config.SourceOptions.MemUsage == clpipe_config_default["SourceOptions"]["MemUsage"]
 
+
 def test_wrong_order(config_file, project_dir):
     """ Ensure that a configuration with fields in an unexpected order will successfully
     load.
