@@ -82,6 +82,7 @@ if __name__ == "__main__":
             author_email=AUTHOR_EMAIL,
             license=LICENSE,
             python_requires=PYTHON_REQUIRES,
+            install_requires=INSTALL_REQUIRES,
             include_package_data=True,
             packages=find_packages(),
             package_data=PACKAGE_DATA,
