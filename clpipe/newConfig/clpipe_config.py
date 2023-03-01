@@ -441,18 +441,21 @@ class GLMConfigParser:
         return(outpath)
     
 def getConfig(json_file = None, yaml_file = None):
-    if(json_file == None and yaml_file == None):
-        json_file = '/nas/longleaf/home/mbhavith/DEPENd_Lab/clpipe/clpipe/data/defaultConfig.json'
-
     #Generate schema from given dataclasses
     ConfigSchema = marshmallow_dataclass.class_schema(Config)
 
-    if(json_file == None and yaml_file):
-        with open(yaml_file) as f:
-            configDict = yaml.safe_load(f)
+    if(json_file == None and yaml_file == None):
+        # Load default config
+        with resource_stream(__name__, '../data/defaultGLMConfig.json') as def_config:
+                configDict = json.load(def_config)
     else:
-        with open(json_file) as f:
-            configDict = json.load(f)
+        if(json_file == None and yaml_file):
+            with open(yaml_file) as f:
+                configDict = yaml.safe_load(f)
+        else:
+            with open(json_file) as f:
+                configDict = json.load(f)
+    
     #Change key name to 'Authors'
     newNames = list(configDict.keys())
     newNames[1] = 'Authors'
