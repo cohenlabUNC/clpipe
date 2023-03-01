@@ -1,67 +1,35 @@
 {
-    "ProjectTitle": "A Neuroimaging Project",
     "ProjectDirectory": "",
     "Authors/Contributors": "",
-    "StatusCache": "",
     "TempDirectory": "",
     "EmailAddress": "",
+    "RunLog": [],
+    "StatusCache": "",
     "BIDSValidationOptions": {
-        "BIDSValidatorImage": "/proj/hng/singularity_imgs/validator.simg",
-        "LogDirectory": ""
+        "LogDirectory": "",
+        "BIDSValidatorImage": "/proj/hng/singularity_imgs/validator.simg"
     },
     "DICOMToBIDSOptions": {
-        "TimeUsage": "1:0:0",
-        "MemUsage": "5000",
+        "DICOMDirectory": "",
         "ConversionConfig": "",
         "DICOMFormatString": "",
         "BIDSDirectory": "",
-        "DICOMDirectory": "",
-        "CoreUsage": "2",
-        "LogDirectory": ""
+        "TimeUsage": "1:0:0",
+        "LogDirectory": "",
+        "MemUsage": "5000",
+        "CoreUsage": "2"
     },
     "SourceOptions": {
-        "CommandLineOpts": "",
         "DropoffDirectory": "",
+        "CommandLineOpts": "-y",
         "TempDirectory": "",
         "MemUsage": "10000",
-        "SourceURL": "",
         "TimeUsage": "1:0:0",
+        "SourceURL": "fw://",
         "CoreUsage": "1"
     },
-    "FMRIPrepOptions": {
-        "TemplateFlowTemplates": [
-            "MNI152NLin2009cAsym",
-            "MNI152NLin6Asym",
-            "OASIS30ANTs",
-            "MNIPediatricAsym",
-            "MNIInfant"
-        ],
-        "TemplateFlowPath": "",
-        "BIDSDirectory": "",
-        "TemplateFlowToggle": true,
-        "FMRIPrepPath": "/proj/hng/singularity_imgs/fmriprep_21.0.2.sif",
-        "FreesurferLicensePath": "/proj/hng/singularity_imgs/license.txt",
-        "UseAROMA": false,
-        "WorkingDirectory": "",
-        "OutputDirectory": "",
-        "CommandLineOpts": "",
-        "FMapCleanupROIs": 3,
-        "FMRIPrepTimeUsage": "16:0:0",
-        "FMRIPrepMemoryUsage": "50000",
-        "DockerToggle": false,
-        "NThreads": "12",
-        "DockerFMRIPrepVersion": "",
-        "LogDirectory": ""
-    },
     "PostProcessingOptions": {
-        "TargetDirectory": "",
-        "OutputDirectory": "",
-        "TargetSuffix": "space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz",
-        "OutputSuffix": "",
-        "DropCSV": "",
-        "ConfoundSuffix": "desc-confounds_regressors.tsv",
-        "Regress": true,
-        "ConfoundsQuad": [
+        "ConfoundsQuadDerive": [
             "trans_x",
             "trans_y",
             "trans_z",
@@ -72,6 +40,9 @@
             "white_matter",
             "global_signal"
         ],
+        "TargetSuffix": "space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz",
+        "TargetDirectory": "",
+        "ConfoundSuffix": "desc-confounds_regressors.tsv",
         "Confounds": [
             "trans_x",
             "trans_y",
@@ -84,7 +55,9 @@
             "global_signal",
             "a_comp_cor.*"
         ],
-        "ConfoundsQuadDerive": [
+        "OutputDirectory": "",
+        "OutputSuffix": "",
+        "ConfoundsQuad": [
             "trans_x",
             "trans_y",
             "trans_z",
@@ -106,14 +79,20 @@
             "white_matter",
             "global_signal"
         ],
+        "DropCSV": "",
+        "Regress": true,
         "FilteringHighPass": 0.008,
-        "FilteringOrder": 2,
         "FilteringLowPass": -1,
         "OversamplingFreq": 4,
-        "ScrubContig": 2,
-        "RespNotchFilter": true,
-        "Scrubbing": true,
         "PercentFreqSample": 1,
+        "FilteringOrder": 2,
+        "Scrubbing": true,
+        "RespNotchFilter": true,
+        "ScrubAhead": 1,
+        "ScrubBehind": 1,
+        "ScrubContig": 2,
+        "ScrubVar": "framewise_displacement",
+        "ScrubFDThreshold": 0.3,
         "MotionVars": [
             "trans_x",
             "trans_y",
@@ -122,50 +101,71 @@
             "rot_y",
             "rot_z"
         ],
-        "ScrubAhead": 1,
-        "ScrubBehind": 1,
-        "ScrubVar": "framewise_displacement",
-        "ScrubFDThreshold": 0.3,
-        "PostProcessingTimeUsage": "8:0:0",
-        "NThreads": "1",
         "RespNotchFilterBand": [
             0.31,
             0.43
         ],
+        "PostProcessingTimeUsage": "8:0:0",
+        "NThreads": "1",
         "PostProcessingMemoryUsage": "20000",
         "LogDirectory": "",
         "SpectralInterpolationBinSize": 5000
     },
+    "FMRIPrepOptions": {
+        "OutputDirectory": "",
+        "TemplateFlowToggle": true,
+        "CommandLineOpts": "",
+        "TemplateFlowPath": "",
+        "FMRIPrepPath": "/proj/hng/singularity_imgs/fmriprep_22.1.1.sif",
+        "FreesurferLicensePath": "/proj/hng/singularity_imgs/license.txt",
+        "UseAROMA": false,
+        "TemplateFlowTemplates": [
+            "MNI152NLin2009cAsym",
+            "MNI152NLin6Asym",
+            "OASIS30ANTs",
+            "MNIPediatricAsym",
+            "MNIInfant"
+        ],
+        "FMapCleanupROIs": 3,
+        "FMRIPrepMemoryUsage": "50000",
+        "FMRIPrepTimeUsage": "16:0:0",
+        "BIDSDirectory": "",
+        "DockerToggle": false,
+        "DockerFMRIPrepVersion": "",
+        "WorkingDirectory": "",
+        "NThreads": "12",
+        "LogDirectory": ""
+    },
     "PostProcessingOptions2": {
         "WorkingDirectory": "",
-        "TargetDirectory": "",
-        "WriteProcessGraph": true,
-        "TargetAcquisitions": [],
-        "TargetImageSpace": "MNI152NLin2009cAsym",
         "TargetTasks": [],
+        "TargetDirectory": "",
+        "TargetImageSpace": "MNI152NLin2009cAsym",
+        "TargetAcquisitions": [],
+        "OutputDirectory": "",
         "ProcessingSteps": [
             "SpatialSmoothing",
             "TemporalFiltering",
             "IntensityNormalization",
             "ApplyMask"
         ],
-        "OutputDirectory": "",
+        "WriteProcessGraph": true,
         "ProcessingStepOptions": {
-            "SpatialSmoothing": {
-                "FWHM": 6,
-                "Implementation": "SUSAN"
+            "TemporalFiltering": {
+                "Implementation": "fslmaths",
+                "FilteringHighPass": 0.008,
+                "FilteringLowPass": -1,
+                "FilteringOrder": 2
             },
             "IntensityNormalization": {
                 "Implementation": "10000_GlobalMedian"
             },
-            "TemporalFiltering": {
-                "Implementation": "fslmaths",
-                "FilteringLowPass": -1,
-                "FilteringHighPass": 0.008,
-                "FilteringOrder": 2
-            },
             "AROMARegression": {
                 "Implementation": "fsl_regfilt_R"
+            },
+            "SpatialSmoothing": {
+                "Implementation": "SUSAN",
+                "FWHM": 6
             },
             "TrimTimepoints": {
                 "FromEnd": 0,
@@ -178,64 +178,52 @@
                 "Implementation": "afni_3dTproject"
             }
         },
+        "BatchOptions": {
+            "TimeUsage": "2:0:0",
+            "MemoryUsage": "20000",
+            "NThreads": "1"
+        },
         "ConfoundOptions": {
-            "MotionOutliers": {
-                "Include": true,
-                "ScrubVar": "framewise_displacement",
-                "Threshold": 0.9,
-                "ScrubAhead": 0,
-                "ScrubBehind": 0,
-                "ScrubContiguous": 0
-            },
             "Columns": [
                 "csf",
                 "csf_derivative1",
                 "white_matter",
                 "white_matter_derivative1"
-            ]
-        },
-        "BatchOptions": {
-            "TimeUsage": "2:0:0",
-            "MemoryUsage": "20000",
-            "NThreads": "1"
+            ],
+            "MotionOutliers": {
+                "Include": true,
+                "ScrubAhead": 0,
+                "ScrubVar": "framewise_displacement",
+                "Threshold": 0.9,
+                "ScrubBehind": 0,
+                "ScrubContiguous": 0
+            }
         }
     },
     "BetaSeriesOptions": {
-        "TargetSuffix": "preproc_bold.nii.gz",
         "TargetDirectory": "",
-        "NuisanceRegression": "QuadLagged",
+        "OutputSuffix": "betaseries.nii.gz",
+        "ConfoundSuffix": "desc-confounds_regressors.tsv",
+        "TargetSuffix": "preproc_bold.nii.gz",
+        "Regress": true,
         "WhiteMatter": true,
         "CSF": true,
-        "Regress": true,
-        "OutputDirectory": "",
-        "TaskSpecificOptions": [
-            {
-                "Task": "",
-                "ExcludeColumnInfo": "trial_type",
-                "ExcludeTrialTypes": [
-                    "block"
-                ]
-            }
-        ],
-        "OutputSuffix": "betaseries.nii.gz",
+        "NuisanceRegression": "QuadLagged",
+        "LogDirectory": "",
         "GlobalSignalRegression": true,
         "FilteringHighPass": 0.008,
         "FilteringLowPass": -1,
-        "FilteringOrder": 2,
-        "ConfoundSuffix": "desc-confounds_regressors.tsv",
-        "LogDirectory": ""
-    },
-    "SUSANOptions": {
-        "TargetSuffix": "preproc_bold.nii.gz",
         "OutputDirectory": "",
-        "TargetDirectory": "",
-        "BrightnessThreshold": 500,
-        "FWHM": 0,
-        "OutputSuffix": "preproc_susan.nii.gz",
-        "NThreads": "4",
-        "MemoryUsage": "5000",
-        "TimeUsage": "2:0:0",
-        "LogDirectory": ""
+        "FilteringOrder": 2,
+        "TaskSpecificOptions": [
+            {
+                "Task": "",
+                "ExcludeTrialTypes": [
+                    "block"
+                ],
+                "ExcludeColumnInfo": "trial_type"
+            }
+        ]
     },
     "ProcessingStreams": [
         {
@@ -276,44 +264,56 @@
         }
     ],
     "ROIExtractionOptions": {
+        "OutputDirectory": "",
         "Atlases": [
             "power"
         ],
         "TargetDirectory": "",
-        "RequireMask": true,
-        "PropVoxels": 0.5,
-        "OutputDirectory": "",
-        "MemoryUsage": "3000",
         "TargetSuffix": "",
-        "LogDirectory": "",
+        "RequireMask": true,
         "TimeUsage": "2:0:0",
-        "NThreads": "1"
+        "NThreads": "1",
+        "PropVoxels": 0.5,
+        "MemoryUsage": "3000",
+        "LogDirectory": ""
+    },
+    "SUSANOptions": {
+        "TargetDirectory": "",
+        "OutputSuffix": "preproc_susan.nii.gz",
+        "BrightnessThreshold": 500,
+        "FWHM": 0,
+        "TargetSuffix": "preproc_bold.nii.gz",
+        "OutputDirectory": "",
+        "LogDirectory": "",
+        "NThreads": "4",
+        "MemoryUsage": "5000",
+        "TimeUsage": "2:0:0"
     },
     "ReHoExtraction": {
         "TargetDirectory": "",
-        "ExclusionFile": "",
+        "TargetSuffix": "",
         "WorkingDirectory": "",
         "MaskDirectory": "",
-        "TargetSuffix": "",
-        "OutputDirectory": "",
-        "OutputSuffix": "",
-        "MaskSuffix": "space-MNI152NLin2009cAsym_desc-brain_mask.nii.gz",
-        "MaskFileOverride": "",
+        "ExclusionFile": "",
         "Neighborhood": "vertices",
+        "MaskSuffix": "space-MNI152NLin2009cAsym_desc-brain_mask.nii.gz",
+        "OutputSuffix": "",
+        "MaskFileOverride": "",
+        "OutputDirectory": "",
         "LogDirectory": ""
     },
     "T2StarExtraction": {
         "TargetDirectory": "",
         "TargetSuffix": "",
-        "MaskDirectory": "",
-        "MaskFileOverride": "",
         "ExclusionFile": "",
-        "WorkingDirectory": "",
-        "OutputDirectory": "",
-        "OutputSuffix": "",
         "MaskSuffix": "space-MNI152NLin2009cAsym_desc-brain_mask.nii.gz",
-        "LogDirectory": ""
+        "WorkingDirectory": "",
+        "MaskDirectory": "",
+        "OutputSuffix": "",
+        "LogDirectory": "",
+        "MaskFileOverride": "",
+        "OutputDirectory": ""
     },
-    "RunLog": [],
-    "BatchConfig": "slurmUNCConfig.json"
+    "BatchConfig": "slurmUNCConfig.json",
+    "ProjectTitle": "A Neuroimaging Project"
 }

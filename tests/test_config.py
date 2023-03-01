@@ -2,7 +2,7 @@ import pytest
 import json
 import yaml
 import os
-from pathlib import Path
+from pkg_resources import resource_stream
 
 from clpipe.config import *
 from clpipe.newConfig.clpipe_config import getConfig
@@ -48,8 +48,10 @@ def test_wrong_order(config_file, project_dir):
     """ Ensure that a configuration with fields in an unexpected order will successfully
     load.
     """
-    with open(os.path.join(os.path.dirname(__file__),'../clpipe/data/wrongOrder_defaultConfig.json'), 'r') as f:
+
+    with resource_stream(__name__, '../clpipe/data/wrongOrder_defaultConfig.json') as f:
         oldConf = json.load(f)
+        
     with open(config_file, 'r') as f:
         newConf = json.load(f)
 
