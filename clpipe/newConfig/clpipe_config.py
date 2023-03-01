@@ -446,7 +446,7 @@ def getConfig(json_file = None, yaml_file = None):
 
     if(json_file == None and yaml_file == None):
         # Load default config
-        with resource_stream(__name__, '../data/defaultGLMConfig.json') as def_config:
+        with resource_stream(__name__, '../data/defaultConfig.json') as def_config:
                 configDict = json.load(def_config)
     else:
         if(json_file == None and yaml_file):
