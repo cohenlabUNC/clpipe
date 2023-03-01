@@ -49,7 +49,7 @@ def test_wrong_order(config_file, project_dir):
     load.
     """
 
-    with resource_stream(__name__, '../clpipe/data/wrongOrder_defaultConfig.json') as f:
+    with resource_stream(__name__, 'data/wrongOrder_defaultConfig.json') as f:
         oldConf = json.load(f)
         
     with open(config_file, 'r') as f:
