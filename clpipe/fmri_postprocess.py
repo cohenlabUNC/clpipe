@@ -5,10 +5,8 @@ import pandas
 import nibabel as nib
 import json
 import numpy
-import logging
 import gc
 import psutil
-import sys
 import re
 
 from pkg_resources import resource_filename
@@ -19,19 +17,15 @@ from .postprocutils.utils import (
 from .postprocutils.spec_interpolate import spec_inter
 from .batch_manager import BatchManager, Job
 from .config_json_parser import ClpipeConfigParser
-from .error_handler import exception_handler
 from .errors import SubjectNotFoundError
+from .utils import get_logger, add_file_handler
 
+STEP_NAME = "postprocess"
 
 def fmri_postprocess(config_file=None, subjects=None, target_dir=None, target_suffix=None, output_dir=None,
                      output_suffix=None, log_dir=None,
                      submit=False, batch=True, task=None, tr=None, processing_stream = None, debug = False, beta_series = False):
     """This command runs an fMRIprep'ed dataset through additional processing, as defined in the configuration file. To run specific subjects, specify their IDs. If no IDs are specified, all subjects are ran."""
-    if not debug:
-        sys.excepthook = exception_handler
-        logging.basicConfig(level=logging.INFO)
-    else:
-        logging.basicConfig(level=logging.DEBUG)
 
     if config_file is None and tr is None:
         raise ValueError('No config file and no specified TR. Please include one.')
@@ -41,6 +35,10 @@ def fmri_postprocess(config_file=None, subjects=None, target_dir=None, target_su
     config.setup_postproc(target_dir, target_suffix, output_dir, output_suffix, beta_series,
                           log_dir)
     config.validate_config()
+
+    add_file_handler(os.path.join(config.config["ProjectDirectory"], "logs"))
+    logger = get_logger(STEP_NAME, debug=debug)
+
     if beta_series:
           raise ValueError("At this time, the beta series functionality is no longer working due to incompatibilities between packages.")
           output_type = 'BetaSeriesOptions'
@@ -128,15 +126,14 @@ def fmri_postprocess(config_file=None, subjects=None, target_dir=None, target_su
         else:
             batch_manager.createsubmissionhead()
             batch_manager.compilejobstrings()
-            click.echo(batch_manager.print_jobs())
     else:
         for sub in subjects:
-            logging.debug(beta_series)
-            logging.info('Running Subject ' + sub)
-            _fmri_postprocess_subject(config, sub, task, tr, beta_series)
+            logger.debug(beta_series)
+            logger.info('Running Subject ' + sub)
+            _fmri_postprocess_subject(config, sub, task, logger, tr, beta_series)
 
 
-def _fmri_postprocess_subject(config, subject, task, tr=None, beta_series = False):
+def _fmri_postprocess_subject(config, subject, task, logger, tr=None, beta_series = False):
     if beta_series:
           output_type = 'BetaSeriesOptions'
     else:
@@ -151,10 +148,10 @@ def _fmri_postprocess_subject(config, subject, task, tr=None, beta_series = Fals
     if config.config['PostProcessingOptions']["DropCSV"] is not "":
         drop_tps = pandas.read_csv(config.config['PostProcessingOptions']["DropCSV"])
 
-    logging.info('Finding Image Files')
+    logger.info('Finding Image Files')
     for image in subject_files:
         if task is None or 'task-' + task in image:
-            logging.info('Processing ' + image)
+            logger.info('Processing ' + image)
             try:
                 tps_drop = None
                 temp = None
@@ -162,43 +159,43 @@ def _fmri_postprocess_subject(config, subject, task, tr=None, beta_series = Fals
                     temp = drop_tps[drop_tps['file_name'].str.match(os.path.basename(image))]['TR_round']
                     if len(temp) is 1:
                         tps_drop = int(temp)
-                        logging.info('Found drop TP info, will remove last ' + str(tps_drop) + ' time points')
+                        logger.info('Found drop TP info, will remove last ' + str(tps_drop) + ' time points')
                 else:
                         tps_drop = None
-                _fmri_postprocess_image(config, image, task,  tr, beta_series, tps_drop)
+                _fmri_postprocess_image(config, image, logger, task,  tr, beta_series, tps_drop)
             except Exception as err:
-                logging.exception(err)
+                logger.exception(err)
 
 
-def _fmri_postprocess_image(config, file, task = None, tr=None, beta_series = False, drop_tps = None):
+def _fmri_postprocess_image(config, file, logger, task = None, tr=None, beta_series = False, drop_tps = None):
     confound_regressors = _find_confounds(config, file)
-    output_file_path = _build_output_directory_structure(config, file, beta_series)
+    output_file_path = _build_output_directory_structure(config, file, logger, beta_series)
 
     if os.path.exists(output_file_path):
-      logging.info("Output File Exists! Skipping.")
+      logger.info("Output File Exists! Skipping.")
       return 0
 
-    logging.info('Looking for: ' + confound_regressors)
+    logger.info('Looking for: ' + confound_regressors)
 
     if not os.path.exists(confound_regressors):
-        logging.warning('Could not find a confound file for ' + file + ". Moving onto next scan")
+        logger.warning('Could not find a confound file for ' + file + ". Moving onto next scan")
         return
     else:
-        logging.info('Found confound regressors')
-        confounds, fdts = _regression_prep(config, confound_regressors)
+        logger.info('Found confound regressors')
+        confounds, fdts = _regression_prep(config, confound_regressors, logger)
         if drop_tps is not None:
             c_f_t = pandas.DataFrame(confounds)
             c_f_t = c_f_t.iloc[:(c_f_t.shape[0]-(drop_tps))]
             confounds = numpy.asarray(c_f_t)
-            logging.info('Removing last ' + str(drop_tps) + ' time points')
+            logger.info('Removing last ' + str(drop_tps) + ' time points')
             fdts = fdts.iloc[:(fdts.shape[0]-(drop_tps))]
         if tr is None:
-            image_json_path = _find_json(config, file)
+            image_json_path = _find_json(config, file, logger)
             with open(os.path.abspath(image_json_path), "r") as json_path:
                 image_json = json.load(json_path)
             tr = image_json['RepetitionTime']
         tr = float(tr)
-        logging.info('TR found: ' + str(tr))
+        logger.info('TR found: ' + str(tr))
         image = nib.load(file)
         data = image.get_fdata()
         data = data.astype(numpy.float32)
@@ -218,7 +215,7 @@ def _fmri_postprocess_image(config, file, task = None, tr=None, beta_series = Fa
 
         scrub_toggle = False
         if config.config['PostProcessingOptions']['Scrubbing']:
-            logging.debug('Scrubbing Toggle Activated')
+            logger.debug('Scrubbing Toggle Activated')
             scrub_toggle = True
             scrub_ahead = int(config.config['PostProcessingOptions']['ScrubAhead'])
             scrub_behind = int(config.config['PostProcessingOptions']['ScrubBehind'])
@@ -234,35 +231,35 @@ def _fmri_postprocess_image(config, file, task = None, tr=None, beta_series = Fa
         lp = float(config.config['PostProcessingOptions']['FilteringLowPass'])
         filter_toggle = False
         if hp > 0 or lp > 0:
-            logging.info('Filtering Toggle Activated')
+            logger.info('Filtering Toggle Activated')
             filter_toggle = True
             order = int(config.config['PostProcessingOptions']['FilteringOrder'])
             filt = calc_filter(hp, lp, tr, order)
             confounds = apply_filter(filt, confounds)
 
         if scrub_toggle and filter_toggle:
-            logging.info('Using Spectral Interpolation')
+            logger.info('Using Spectral Interpolation')
             ofreq = int(config.config['PostProcessingOptions']['OversamplingFreq'])
             hfreq = float(config.config['PostProcessingOptions']['PercentFreqSample'])
-            logging.debug('Memory Usage Before Spectral Interpolation:' +str(psutil.virtual_memory().total >> 30) +' GB')
+            logger.debug('Memory Usage Before Spectral Interpolation:' +str(psutil.virtual_memory().total >> 30) +' GB')
             data = spec_inter(data, tr, ofreq, scrubTargets, hfreq, binSize=config.config['PostProcessingOptions']["SpectralInterpolationBinSize"])
 
         gc.collect()
 
-        logging.debug('Memory Usage After Spectral Interpolation GC:' +str(psutil.virtual_memory().total >> 30) +' GB')
+        logger.debug('Memory Usage After Spectral Interpolation GC:' +str(psutil.virtual_memory().total >> 30) +' GB')
 
 
 
         if filter_toggle:
-            logging.info('Filtering Data Now')
+            logger.info('Filtering Data Now')
             data = apply_filter(filt, data)
         if regress_toggle:
-            logging.info('Regressing Data Now')
-            logging.debug(str(confounds.shape))
-            logging.debug(str(data.shape))
+            logger.info('Regressing Data Now')
+            logger.debug(str(confounds.shape))
+            logger.debug(str(data.shape))
             data = regress(confounds, data)
         if scrub_toggle:
-            logging.info('Scrubbing data Now')
+            logger.info('Scrubbing data Now')
             data = scrub_image(data, scrubTargets)
 
         data = (data + row_means)
@@ -272,15 +269,15 @@ def _fmri_postprocess_image(config, file, task = None, tr=None, beta_series = Fa
         data32 = numpy.float32(data)
         out_image = nib.Nifti1Image(data32, coordMap)
 
-        output_file_path = _build_output_directory_structure(config, file)
-        logging.info('Saving post processed data to ' + output_file_path)
+        output_file_path = _build_output_directory_structure(config, file, logger)
+        logger.info('Saving post processed data to ' + output_file_path)
         nib.save(out_image, output_file_path)
 
         if scrub_toggle:
             file_name = os.path.basename(file)
             sans_ext = os.path.splitext(os.path.splitext(file_name)[0])[0]
             toOut = numpy.column_stack([numpy.arange(1, len(scrubTargets) + 1, 1), numpy.asarray(scrubTargets), fdts, orig_fdts])
-            logging.info('Saving Scrub Targets to ' + os.path.join(os.path.dirname(output_file_path),
+            logger.info('Saving Scrub Targets to ' + os.path.join(os.path.dirname(output_file_path),
                                                                    sans_ext + "_scrubTargets.csv"))
             numpy.savetxt(os.path.join(os.path.dirname(output_file_path), sans_ext + "_scrubTargets.csv"), toOut,
                           delimiter=",")
@@ -288,11 +285,11 @@ def _fmri_postprocess_image(config, file, task = None, tr=None, beta_series = Fa
         beta_series_options = config.config['BetaSeriesOptions']['TaskSpecificOptions']
 
         avail_tasks = [x['Task'] for x in beta_series_options]
-        logging.debug(avail_tasks)
+        logger.debug(avail_tasks)
         img_task = _find_image_task(file)
-        logging.debug(img_task)
+        logger.debug(img_task)
         if img_task not in avail_tasks:
-            logging.info('Did not find beta series specification for the task ' +img_task+ ' for image ' +file )
+            logger.info('Did not find beta series specification for the task ' +img_task+ ' for image ' +file )
             return
         else:
             beta_series_options = beta_series_options[avail_tasks.index(img_task)]
@@ -302,24 +299,24 @@ def _fmri_postprocess_image(config, file, task = None, tr=None, beta_series = Fa
         lp = float(config.config['BetaSeriesOptions']['FilteringLowPass'])
 
         events_file = _find_events(config, file)
-        logging.debug(events_file)
+        logger.debug(events_file)
         if os.path.exists(events_file):
-            confounds, fdts = _regression_prep(config, confound_regressors, beta_series)
+            confounds, fdts = _regression_prep(config, confound_regressors, beta_series, logger)
             ntp = len(confounds)
             if tr is None:
-                image_json_path = _find_json(config, file)
+                image_json_path = _find_json(config, file, logger)
                 with open(os.path.abspath(image_json_path), "r") as json_path:
                     image_json = json.load(json_path)
                 tr = float(image_json['RepetitionTime'])
             filter_toggle = False
             filt = None
             if hp > 0 or lp > 0:
-                logging.info('Filtering Toggle Activated')
+                logger.info('Filtering Toggle Activated')
                 filter_toggle = True
                 order = int(config.config['BetaSeriesOptions']['FilteringOrder'])
                 filt = calc_filter(hp, lp, tr, order)
                 confounds = apply_filter(filt, confounds)
-            filt_ev_array, valid_events = _ev_mat_prep(events_file, filt, tr, ntp, beta_series_options)
+            filt_ev_array, valid_events = _ev_mat_prep(events_file, filt, tr, ntp, beta_series_options, logger)
 
             image = nib.load(file)
             data = image.get_fdata()
@@ -329,18 +326,18 @@ def _fmri_postprocess_image(config, file, task = None, tr=None, beta_series = Fa
             data = data.reshape((numpy.prod(numpy.shape(data)[:-1]), data.shape[-1]))
             data = numpy.transpose(data)
             data = (data - data.mean(axis=0))
-            logging.debug(filt_ev_array)
-            beta_image_2d = _beta_series_calc(data, filt_ev_array, confounds)
+            logger.debug(filt_ev_array)
+            beta_image_2d = _beta_series_calc(data, filt_ev_array, confounds, logger)
             beta_series_dims = orgImageShape[:-1]
             beta_series_dims =  beta_series_dims + (len(valid_events),)
             beta_3d = beta_image_2d.transpose().reshape(beta_series_dims)
             beta_image = nib.Nifti1Image(beta_3d, coordMap)
-            output_file_path = _build_output_directory_structure(config, file, beta_series)
+            output_file_path = _build_output_directory_structure(config, file, logger, beta_series)
             events_output = os.path.splitext(os.path.splitext(output_file_path)[0])[0] + "_usedevents.tsv"
             nib.save(beta_image, output_file_path)
             valid_events.to_csv(events_output, sep = ' ')
         else:
-            logging.info("Did not find an events file for " + file)
+            logger.info("Did not find an events file for " + file)
             return
 
 def _find_image_task(filename):
@@ -350,12 +347,12 @@ def _find_image_task(filename):
     return task_name
 
 
-def _ev_mat_prep(event_file, filt, TR, ntp, config_block):
+def _ev_mat_prep(event_file, filt, TR, ntp, config_block, logger):
     events = pandas.read_table(event_file)
     #Change back to 'trial_type' once testing is complete
     trial_types = events.loc[:,'trial_type'].tolist()
-    logging.debug(trial_types)
-    logging.debug(config_block['ExcludeTrialTypes'])
+    logger.debug(trial_types)
+    logger.debug(config_block['ExcludeTrialTypes'])
     valid_trials = [ind for ind, x in enumerate(trial_types) if x not in [config_block['ExcludeTrialTypes']]]
     valid_events = events.iloc[valid_trials,:]
 
@@ -381,32 +378,32 @@ def _ev_mat_prep(event_file, filt, TR, ntp, config_block):
     return filt_event_array, valid_events
 
 
-def _beta_series_calc(data, filt_ev_mat, filt_confound_mat):
+def _beta_series_calc(data, filt_ev_mat, filt_confound_mat, logger):
     beta_maker = numpy.zeros(filt_ev_mat.shape)
-    logging.debug(beta_maker.shape)
+    logger.debug(beta_maker.shape)
     for index in range(filt_ev_mat.shape[1]):
-        logging.debug(filt_ev_mat[:,index].shape)
-        logging.debug(filt_confound_mat.shape)
-        logging.debug((numpy.sum(filt_ev_mat,1) - filt_ev_mat[:,index]).shape)
+        logger.debug(filt_ev_mat[:,index].shape)
+        logger.debug(filt_confound_mat.shape)
+        logger.debug((numpy.sum(filt_ev_mat,1) - filt_ev_mat[:,index]).shape)
         temp_mat = numpy.concatenate([numpy.expand_dims(filt_ev_mat[:,index],1), numpy.expand_dims(numpy.sum(filt_ev_mat,1) - filt_ev_mat[:,index],1), filt_confound_mat],1)
         temp_beta = numpy.linalg.pinv(temp_mat)
-        logging.debug(temp_beta.shape)
+        logger.debug(temp_beta.shape)
         beta_maker[:, index] = temp_beta[0,:]
 
     betas = numpy.matmul(beta_maker.transpose(), data)
     return betas
 
 
-def _regression_prep(config, confound_filepath):
+def _regression_prep(config, confound_filepath, logger):
     confounds = pandas.read_table(confound_filepath, dtype="float", na_values="n/a")
     confounds = confounds.fillna(0)
     if len(config.config["PostProcessingOptions"]['Confounds']) > 0:
         cons_re = [re.compile(regex_wildcard(co)) for co in config.config["PostProcessingOptions"]['Confounds']]
         target_cols = []
         for reg in cons_re:
-            logging.debug(str([reg.match(col).group() for col in confounds.columns if reg.match(col) is not None]))
+            logger.debug(str([reg.match(col).group() for col in confounds.columns if reg.match(col) is not None]))
             target_cols.extend([reg.match(col).group() for col in confounds.columns if reg.match(col) is not None])
-        logging.debug("Confound Columns " + str(target_cols))
+        logger.debug("Confound Columns " + str(target_cols))
         confounds_mat = confounds[target_cols]
     if len(config.config["PostProcessingOptions"]['ConfoundsQuad']) > 0:
         cons_re = [re.compile(regex_wildcard(co)) for co in config.config["PostProcessingOptions"]['ConfoundsQuad']]
@@ -414,25 +411,25 @@ def _regression_prep(config, confound_filepath):
         for reg in cons_re:
             target_cols.extend(
                 [reg.match(col).group() for col in confounds.columns if reg.match(col) is not None])
-        logging.debug("Quad Columns " + str(target_cols))
+        logger.debug("Quad Columns " + str(target_cols))
         confounds_quad_mat = confounds[target_cols]
         confounds_quad_mat.rename(columns=lambda x: x + "_quad", inplace=True)
         confounds_quad_mat = confounds_quad_mat ** 2
         confounds_mat = pandas.concat([confounds_mat, confounds_quad_mat], axis=1, ignore_index=True)
-        logging.debug(str(confounds_mat.shape))
+        logger.debug(str(confounds_mat.shape))
     if len(config.config["PostProcessingOptions"]['ConfoundsDerive']) > 0:
         cons_re = [re.compile(regex_wildcard(co)) for co in config.config["PostProcessingOptions"]['ConfoundsDerive']]
         target_cols = []
         for reg in cons_re:
             target_cols.extend(
                 [reg.match(col).group() for col in confounds.columns if reg.match(col) is not None])
-        logging.debug("Lagged Columns " + str(target_cols))
+        logger.debug("Lagged Columns " + str(target_cols))
         confounds_lagged_mat = confounds[target_cols]
         confounds_lagged_mat.rename(columns=lambda x: x + "_lagged", inplace=True)
         confounds_lagged_mat = confounds_lagged_mat.diff()
         confounds_mat = pandas.concat([confounds_mat, confounds_lagged_mat], axis=1, ignore_index=True)
-        logging.debug(str(confounds_mat.shape))
-        logging.debug(str(confounds_mat.head(5)))
+        logger.debug(str(confounds_mat.shape))
+        logger.debug(str(confounds_mat.head(5)))
     if len(config.config["PostProcessingOptions"]['ConfoundsQuadDerive']) > 0:
         cons_re = [re.compile(regex_wildcard(co)) for co in
                    config.config["PostProcessingOptions"]['ConfoundsQuadDerive']]
@@ -440,13 +437,13 @@ def _regression_prep(config, confound_filepath):
         for reg in cons_re:
             target_cols.extend(
                 [reg.match(col).group() for col in confounds.columns if reg.match(col) is not None])
-        logging.debug("Quadlagged Columns " + str(target_cols))
+        logger.debug("Quadlagged Columns " + str(target_cols))
         confounds_qlagged_mat = confounds[target_cols]
         confounds_qlagged_mat = confounds_qlagged_mat.diff()
         confounds_qlagged_mat = confounds_qlagged_mat ** 2
         confounds_qlagged_mat.rename(columns=lambda x: x + "_qlagged", inplace=True)
         confounds_mat = pandas.concat([confounds_mat, confounds_qlagged_mat], axis=1, ignore_index=True)
-        logging.debug(str(confounds_mat.shape))
+        logger.debug(str(confounds_mat.shape))
 
     fd = confounds[config.config["PostProcessingOptions"]["ScrubVar"]]
     confounds_mat = confounds_mat.fillna(0)
@@ -455,22 +452,22 @@ def _regression_prep(config, confound_filepath):
 
 
 # Rewrite find json function, use task information to be very specific.
-def _find_json(config, filepath):
+def _find_json(config, filepath, logger):
     file_name = os.path.basename(filepath)
     sans_ext = os.path.splitext(os.path.splitext(file_name)[0])[0]
     components = sans_ext.split('_')
 
     jsons = glob.glob(os.path.join(config.config['FMRIPrepOptions']['BIDSDirectory'], '**', '*.json'), recursive=True)
-    logging.debug(jsons)
+    logger.debug(jsons)
     task = [task_name for task_name in components if "task-" in task_name][0]
-    logging.debug(task)
+    logger.debug(task)
     top_level_json = [json for json in jsons if task + "_bold.json" in json]
 
     if len(top_level_json) is not 0:
         target_json = top_level_json[0]
 
     sub_level_json = [json for json in jsons if "_".join(components[0:2]) + "_bold.json" in json]
-    logging.debug("_".join(components[0:2]))
+    logger.debug("_".join(components[0:2]))
     if len(sub_level_json) is not 0:
         target_json = sub_level_json[0]
 
@@ -486,9 +483,9 @@ def _find_json(config, filepath):
         scan_level_json = [json for json in jsons if "_".join(components[0:5]) + "_bold.json" in json]
         if len(scan_level_json) is not 0:
             target_json = scan_level_json[0]
-    logging.debug("_".join(components[0:5]))
+    logger.debug("_".join(components[0:5]))
 
-    logging.debug(target_json)
+    logger.debug(target_json)
     return target_json
 
 
@@ -525,22 +522,22 @@ def _find_events(config, filepath):
                                   event_name)
     return event_path
 
-def _build_output_directory_structure(config, filepath, beta_series_toggle = False):
+def _build_output_directory_structure(config, filepath, logger, beta_series_toggle = False):
     output_type = 'PostProcessingOptions'
     if beta_series_toggle:
         output_type = 'BetaSeriesOptions'
-        logging.debug(output_type)
+        logger.debug(output_type)
 
     target_directory = filepath[filepath.find('sub-'):]
     target_directory = os.path.dirname(target_directory)
     target_directory = os.path.join(config.config[output_type]['OutputDirectory'], target_directory)
-    logging.debug(target_directory)
+    logger.debug(target_directory)
     os.makedirs(target_directory, exist_ok=True)
     file_name = os.path.basename(filepath)
     sans_ext = os.path.splitext(os.path.splitext(file_name)[0])[0]
-    logging.debug(config.config[output_type]['OutputSuffix'])
+    logger.debug(config.config[output_type]['OutputSuffix'])
     file_name = sans_ext + '_' + config.config[output_type]['OutputSuffix']
-    logging.debug(file_name)
+    logger.debug(file_name)
     return os.path.join(target_directory, file_name)
 
 
