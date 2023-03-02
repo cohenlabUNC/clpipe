@@ -314,6 +314,12 @@ def config_file(clpipe_dir):
     return clpipe_dir / "clpipe_config.json"
 
 @pytest.fixture(scope="module")
+def config_file_fmriprep(clpipe_fmriprep_dir: Path):
+    """Return config file from the test fmriprep directory."""
+
+    return clpipe_fmriprep_dir / "clpipe_config.json"
+
+@pytest.fixture(scope="module")
 def glm_config_file(clpipe_fmriprep_dir: Path) -> Path:
     """Provides a reference to a glm_config.json file that
     has been setup in the context of a mock project.
