@@ -86,21 +86,14 @@ def sample_raw_image_mask() -> Path:
     
     return Path("tests/data/sample_raw_mask.nii.gz").resolve()
 
-
-@pytest.fixture(scope="function")
-def project_dir(tmp_path_factory):
-    """Fixture which provides a temporary space for a project folder."""
-    proj_path = tmp_path_factory.mktemp(PROJECT_TITLE)
-    return Path(proj_path)
-
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="session")
 def source_data(tmp_path_factory):
     """Fixture which provides a temporary space for a source data folder."""
     source_path = tmp_path_factory.mktemp("source_data")
     return Path(source_path)
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="session")
 def clpipe_dir(tmp_path_factory):
     """Fixture which provides a temporary clpipe project folder."""
     

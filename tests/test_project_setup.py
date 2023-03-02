@@ -7,42 +7,42 @@ from clpipe.project_setup import project_setup, SourceDataError
 
 PROJECT_TITLE = "test_project"
 
-def test_project_setup_no_source(project_dir: Path):
+def test_project_setup_no_source(tmp_path: Path):
     """Check that clpipe creates an empty data_DICOMs folder in the project
     directory when no source is provided.
     """
     
-    project_setup(project_title=PROJECT_TITLE, project_dir=project_dir)
+    project_setup(project_title=PROJECT_TITLE, project_dir=tmp_path)
 
-    assert Path(project_dir / "data_DICOMs").exists()
+    assert Path(tmp_path / "data_DICOMs").exists()
 
 
-def test_project_setup_referenced_source(project_dir: Path, source_data: Path):
+def test_project_setup_referenced_source(tmp_path: Path, source_data: Path):
     """Check that clpipe's generated config file references a specified source
     directory that is not within the clpipe project directory. This variant
     should not create a data_DICOMs directory.
     """
-    project_setup(project_title=PROJECT_TITLE, project_dir=project_dir, 
+    project_setup(project_title=PROJECT_TITLE, project_dir=tmp_path, 
                   source_data=source_data, move_source_data=False,
                   symlink_source_data=False, debug=False)
 
-    assert not Path(project_dir / "data_DICOMs").exists() and Path(source_data).exists()
+    assert not Path(tmp_path / "data_DICOMs").exists() and Path(source_data).exists()
 
 
-def test_project_setup_symlink_source(project_dir: Path, source_data: Path):
+def test_project_setup_symlink_source(tmp_path: Path, source_data: Path):
     """Check that clpipe creates a data_DICOMs dir and symlinks it to the given
     source data.
     """
 
-    project_setup(project_title=PROJECT_TITLE, project_dir=project_dir, 
+    project_setup(project_title=PROJECT_TITLE, project_dir=tmp_path, 
                   source_data=source_data, move_source_data=False,
                   symlink_source_data=True, debug=False)
     
-    assert Path(project_dir / "data_DICOMs").exists() and os.path.islink(project_dir / "data_DICOMs")
+    assert Path(tmp_path / "data_DICOMs").exists() and os.path.islink(tmp_path / "data_DICOMs")
 
 
 @pytest.mark.skip(reason="Feature Not implemented")
-def test_project_setup_move_source(project_dir: Path):
+def test_project_setup_move_source(tmp_path: Path):
     """Note: this is currently NOT IMPLEMENTED in project setup.
     
     Check that clpipe creates a data_DICOMs dir and moves the data from a given
@@ -55,27 +55,27 @@ def test_project_setup_move_source(project_dir: Path):
     pass
 
 
-def test_project_setup_symlink_and_move(project_dir: Path):
+def test_project_setup_symlink_and_move(tmp_path: Path):
     """Ensure exception thrown if users tries to both symlink and move source data."""
 
     with pytest.raises(SourceDataError):
-        project_setup(project_title=PROJECT_TITLE, project_dir=project_dir, 
+        project_setup(project_title=PROJECT_TITLE, project_dir=tmp_path, 
                       move_source_data=True, symlink_source_data=True)
 
 
-def test_project_setup_symlink_no_source(project_dir: Path):
+def test_project_setup_symlink_no_source(tmp_path: Path):
     """Ensure exception thrown if users tries to symlink without a source."""
 
     with pytest.raises(SourceDataError):
-        project_setup(project_title=PROJECT_TITLE, project_dir=project_dir, 
+        project_setup(project_title=PROJECT_TITLE, project_dir=tmp_path, 
                       symlink_source_data=True)
         
 
-def test_project_setup_move_no_source(project_dir: Path):
+def test_project_setup_move_no_source(tmp_path: Path):
     """Ensure exception thrown if users tries to move without a source."""
 
     with pytest.raises(SourceDataError):
-        project_setup(project_title=PROJECT_TITLE, project_dir=project_dir, 
+        project_setup(project_title=PROJECT_TITLE, project_dir=tmp_path, 
                       move_source_data=True)
 
 
