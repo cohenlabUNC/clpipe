@@ -67,7 +67,6 @@ deploy.sh
 
 # vscode
 *.code-workspace
-.vscode
 
 # pytest
 .pytest_cache
