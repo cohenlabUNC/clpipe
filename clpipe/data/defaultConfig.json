@@ -57,7 +57,7 @@
 		"TargetSuffix": "space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz",
 		"OutputDirectory": "",
 		"OutputSuffix": "",
-		"ConfoundSuffix": "desc-confounds_regressors.tsv",
+		"ConfoundSuffix": "desc-confounds_timeseries.tsv",
 		"DropCSV": "",
 		"Regress": true,
 	    "Confounds": [
