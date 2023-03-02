@@ -20,14 +20,14 @@ def test_json_load(config_file):
     assert config.ProjectTitle == "test_project"
     assert config.PostProcessingOptions2.ProcessingStepOptions.TemporalFiltering.FilteringHighPass == 0.008
 
-def test_yaml_load(config_file, project_dir):
+def test_yaml_load(config_file, tmp_path):
     """ Ensure that the config class loads from .yaml as expected. """
     with open(config_file, 'r') as json_file:
         conf_json = json.load(json_file)
         
-    with open(os.path.join(project_dir,'config.yaml'), 'w') as yaml_file:
+    with open(os.path.join(tmp_path,'config.yaml'), 'w') as yaml_file:
         yaml.dump(conf_json, yaml_file, sort_keys=False)
-    config = getConfig(yaml_file=os.path.join(project_dir,'config.yaml'))
+    config = getConfig(yaml_file=os.path.join(tmp_path,'config.yaml'))
     assert config is not None
     assert config.ProjectTitle == "test_project"
     assert config.PostProcessingOptions2.ProcessingStepOptions.TemporalFiltering.FilteringHighPass == 0.008
@@ -44,7 +44,7 @@ def test_default(clpipe_config_default):
     assert config.Authors == clpipe_config_default["Authors/Contributors"]
     assert config.SourceOptions.MemUsage == clpipe_config_default["SourceOptions"]["MemUsage"]
 
-def test_wrong_order(config_file, project_dir):
+def test_wrong_order(config_file, tmp_path):
     """ Ensure that a configuration with fields in an unexpected order will successfully
     load.
     """
@@ -56,10 +56,10 @@ def test_wrong_order(config_file, project_dir):
         newConf = json.load(f)
 
     convertedConfig = convertConfig(oldConf, newConf)
-    with open(os.path.join(project_dir,'convertedConfig.json'), 'w') as f:
+    with open(os.path.join(tmp_path,'convertedConfig.json'), 'w') as f:
         json.dump(convertedConfig, f)
 
-    convertedConfig = getConfig(json_file=os.path.join(project_dir,'convertedConfig.json'))
+    convertedConfig = getConfig(json_file=os.path.join(tmp_path,'convertedConfig.json'))
     correctConfig = getConfig()
     assert correctConfig == convertedConfig
 
