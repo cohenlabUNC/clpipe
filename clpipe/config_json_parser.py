@@ -140,10 +140,8 @@ class ClpipeConfigParser:
                 raise ValueError('BIDS Directory does not exist')
         if workingDir is not None:
             self.config['FMRIPrepOptions']['WorkingDirectory'] = os.path.abspath(workingDir)
-            os.makedirs(self.config['FMRIPrepOptions']['WorkingDirectory'], exist_ok=True)
         if outputDir is not None:
             self.config['FMRIPrepOptions']['OutputDirectory'] = os.path.abspath(outputDir)
-            os.makedirs(self.config['FMRIPrepOptions']['OutputDirectory'], exist_ok=True)
         if log_dir is not None:
             self.config['FMRIPrepOptions']['LogDirectory'] = os.path.abspath(log_dir)
         else:
@@ -160,7 +158,6 @@ class ClpipeConfigParser:
             self.config[target_output]['TargetDirectory'] = os.path.abspath(target_dir)
         if output_dir is not None:
             self.config[target_output]['OutputDirectory'] = os.path.abspath(output_dir)
-            os.makedirs(self.config[target_output]['OutputDirectory'], exist_ok=True)
         if target_suffix is not None:
             self.config[target_output]['TargetSuffix'] = target_suffix
         if output_suffix is not None:
@@ -169,7 +166,6 @@ class ClpipeConfigParser:
             self.config[target_output]['LogDirectory'] = os.path.abspath(log_dir)
         else:
             self.config[target_output]['LogDirectory'] = os.path.join(self.config['ProjectDirectory'], 'logs', log_target)
-        os.makedirs(self.config[target_output]['LogDirectory'], exist_ok=True)
 
     def setup_heudiconv(self, dicom_directory, heuristic_file, output_directory):
         if dicom_directory is not None:
@@ -185,7 +181,6 @@ class ClpipeConfigParser:
             self.config['DICOMToBIDSOptions']['DICOMDirectory'] = os.path.abspath(dicom_directory)
         if output_directory is not None:
             self.config['DICOMToBIDSOptions']['BIDSDirectory'] = os.path.abspath(output_directory)
-            os.makedirs(self.config['DICOMToBIDSOptions']['BIDSDirectory'], exist_ok=True)
         if heuristic_file is not None:
             self.config['DICOMToBIDSOptions']['ConversionConfig'] = os.path.abspath(heuristic_file)
         if dicom_format_string is not None:
@@ -194,23 +189,12 @@ class ClpipeConfigParser:
             self.config['DICOMToBIDSOptions']['LogDirectory'] = os.path.abspath(log_dir)
         else:
             self.config['DICOMToBIDSOptions']['LogDirectory'] = os.path.join(self.config['ProjectDirectory'], 'logs', 'DCM2BIDS_logs')
-        os.makedirs(self.config['DICOMToBIDSOptions']['LogDirectory'], exist_ok=True)
-
-        # Create a default .bidsignore file
-        bids_ignore_path = os.path.join(self.config['DICOMToBIDSOptions']['BIDSDirectory'], ".bidsignore")
-        if not os.path.exists(bids_ignore_path):
-            with open(bids_ignore_path, 'w') as bids_ignore_file:
-                # Ignore dcm2bid's auto-generated directory
-                bids_ignore_file.write("tmp_dcm2bids\n")
-                # Ignore heudiconv's auto-generated scan file
-                bids_ignore_file.write("scans.json\n")
 
     def setup_bids_validation(self, log_dir=None):
         if log_dir is not None:
             self.config['BIDSValidationOptions']['LogDirectory'] = os.path.abspath(log_dir)
         else:
             self.config['BIDSValidationOptions']['LogDirectory'] = os.path.join(self.config['ProjectDirectory'], 'logs', 'bids_validation_logs')
-        os.makedirs(self.config['BIDSValidationOptions']['LogDirectory'], exist_ok=True)
 
     def setup_roiextract(self, target_dir, target_suffix, output_dir, log_dir = None):
         if target_dir is not None:
@@ -219,7 +203,6 @@ class ClpipeConfigParser:
                 raise ValueError('Target Directory does not exist')
         if output_dir is not None:
             self.config['ROIExtractionOptions']['OutputDirectory'] = os.path.abspath(output_dir)
-            os.makedirs(self.config['ROIExtractionOptions']['OutputDirectory'], exist_ok=True)
         if target_suffix is not None:
             self.config['ROIExtractionOptions']['TargetSuffix'] = target_suffix
         if log_dir is not None:
@@ -227,7 +210,6 @@ class ClpipeConfigParser:
         else:
             self.config['ROIExtractionOptions']['LogDirectory'] = os.path.join(self.config['ProjectDirectory'], 'logs',
                                                                              'ROI_extraction_logs')
-        os.makedirs(self.config['ROIExtractionOptions']['LogDirectory'], exist_ok=True)
 
     def setup_susan(self, target_dir, target_suffix, output_dir, output_suffix, log_dir =None):
         if target_dir is not None:
@@ -236,7 +218,6 @@ class ClpipeConfigParser:
                 raise ValueError('Target Directory does not exist')
         if output_dir is not None:
             self.config['SUSANOptions']['OutputDirectory'] = os.path.abspath(output_dir)
-            os.makedirs(self.config['SUSANOptions']['OutputDirectory'], exist_ok=True)
         if target_suffix is not None:
             self.config['SUSANOptions']['TargetSuffix'] = target_suffix
         if output_suffix is not None:
@@ -246,7 +227,6 @@ class ClpipeConfigParser:
         else:
             self.config['SUSANOptions']['LogDirectory'] = os.path.join(self.config['ProjectDirectory'], 'logs',
                                                                                'SUSAN_logs')
-        os.makedirs(self.config['SUSANOptions']['LogDirectory'], exist_ok=True)
 
     def get_processing_stream_names(self):
         try:

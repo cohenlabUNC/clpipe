@@ -46,13 +46,20 @@ def project_setup(project_title=None, project_dir=None,
 
     logger.info(f"Creating new clpipe project in directory: {str(project_dir)}")
     config_parser.setup_project(project_title, str(project_dir), source_data)
+    config = config_parser.config
+
+    setup_dcm2bids_directories(config)
+    setup_bids_validation_directories(config)
+    setup_fmriprep_directories(config)
+    setup_postproc(config)
+    setup_postproc(config, beta_series=True)
+    setup_roiextract_directories(config)
+    setup_susan_directories(config)
 
     add_file_handler(logs_dir)
     # Set permissions to clpipe.log file to allow for group write
     os.chmod(logs_dir / "clpipe.log", 
              stat.S_IREAD | stat.S_IWRITE | stat.S_IRGRP | stat.S_IWGRP)
-
-    config = config_parser.config
 
     bids_dir = config['DICOMToBIDSOptions']['BIDSDirectory']
     conv_config_path = config['DICOMToBIDSOptions']['ConversionConfig']
@@ -91,3 +98,47 @@ def project_setup(project_title=None, project_dir=None,
     logger.debug(f'Created empty scripts directory: {script_dir}')
 
     logger.info('Completed project setup')
+
+def setup_dcm2bids_directories(config):
+    if(config['DICOMToBIDSOptions']['BIDSDirectory'] != ""):
+        os.makedirs(config['DICOMToBIDSOptions']['BIDSDirectory'], exist_ok=True)
+    os.makedirs(config['DICOMToBIDSOptions']['LogDirectory'], exist_ok=True)
+
+    # Create a default .bidsignore file
+    bids_ignore_path = os.path.join(config['DICOMToBIDSOptions']['BIDSDirectory'], ".bidsignore")
+    if not os.path.exists(bids_ignore_path):
+        with open(bids_ignore_path, 'w') as bids_ignore_file:
+            # Ignore dcm2bid's auto-generated directory
+            bids_ignore_file.write("tmp_dcm2bids\n")
+            # Ignore heudiconv's auto-generated scan file
+            bids_ignore_file.write("scans.json\n")
+
+def setup_bids_validation_directories(config):
+    os.makedirs(config['BIDSValidationOptions']['LogDirectory'], exist_ok=True)
+
+def setup_fmriprep_directories(config):
+    if(config['FMRIPrepOptions']['WorkingDirectory'] != ""):
+        os.makedirs(config['FMRIPrepOptions']['WorkingDirectory'], exist_ok=True)
+    if(config['FMRIPrepOptions']['OutputDirectory'] != ""):
+        os.makedirs(config['FMRIPrepOptions']['OutputDirectory'], exist_ok=True)
+
+def setup_postproc(config, beta_series=False):
+    target_output = 'PostProcessingOptions'
+    log_target = 'postproc_logs'
+    if beta_series:
+        target_output = 'BetaSeriesOptions'
+        log_target = 'betaseries_logs'
+
+    if(config[target_output]['OutputDirectory'] != ""):
+        os.makedirs(config[target_output]['OutputDirectory'], exist_ok=True)
+    os.makedirs(config[target_output]['LogDirectory'], exist_ok=True)
+
+def setup_roiextract_directories(config):
+    if(config['ROIExtractionOptions']['OutputDirectory'] != ""):
+        os.makedirs(config['ROIExtractionOptions']['OutputDirectory'], exist_ok=True)
+    os.makedirs(config['ROIExtractionOptions']['LogDirectory'], exist_ok=True)
+
+def setup_susan_directories(config):
+    if(config['SUSANOptions']['OutputDirectory'] != ""):
+        os.makedirs(config['SUSANOptions']['OutputDirectory'], exist_ok=True)
+    os.makedirs(config['SUSANOptions']['LogDirectory'], exist_ok=True)
