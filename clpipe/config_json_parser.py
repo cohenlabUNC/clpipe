@@ -109,35 +109,20 @@ class ClpipeConfigParser:
         glm_config.config['GLMSetupOptions']['TargetDirectory'] = os.path.join(project_path, "data_fmriprep", "fmriprep")
         glm_config.config['GLMSetupOptions']['MaskFolderRoot'] = glm_config.config['GLMSetupOptions']['TargetDirectory']
         glm_config.config['GLMSetupOptions']['PreppedDataDirectory'] =  os.path.join(project_path, "data_GLMPrep")
-        os.mkdir(os.path.join(project_path, "data_GLMPrep"))
-
         glm_config.config['Level1Setups'][0]['TargetDirectory'] = os.path.join(project_path, "data_GLMPrep")
         glm_config.config['Level1Setups'][0]['FSFDir'] = os.path.join(project_path, "l1_fsfs")
         glm_config.config['Level1Setups'][0]['EVDirectory'] = os.path.join(project_path, "data_onsets")
         glm_config.config['Level1Setups'][0]['ConfoundDirectory'] = os.path.join(project_path, "data_GLMPrep")
-        os.mkdir(os.path.join(project_path, "l1_fsfs"))
-        os.mkdir(os.path.join(project_path, "data_onsets"))
         glm_config.config['Level1Setups'][0]['OutputDir'] = os.path.join(project_path, "l1_feat_folders")
-
-        os.mkdir(os.path.join(project_path, "l1_feat_folders"))
         glm_config.config['Level2Setups'][0]['OutputDir'] = os.path.join(project_path, "l2_gfeat_folders")
         glm_config.config['Level2Setups'][0]['OutputDir'] = os.path.join(project_path, "l2_fsfs")
-
-        os.mkdir(os.path.join(project_path, "l2_fsfs"))
-        os.mkdir(os.path.join(project_path, "l2_gfeat_folders"))
-
         glm_config.config['GLMSetupOptions']['LogDirectory'] = os.path.join(project_path, "logs", "glm_setup_logs")
-        os.mkdir(os.path.join(project_path, "logs", "glm_setup_logs"))
-
         glm_config.config_json_dump(project_path, "glm_config.json")
         shutil.copyfile(resource_filename('clpipe', 'data/l2_sublist.csv'), os.path.join(project_path, "l2_sublist.csv"))
-        
 
     def setup_fmriprep_directories(self, bidsDir, workingDir, outputDir, log_dir = None):
         if bidsDir is not None:
             self.config['FMRIPrepOptions']['BIDSDirectory'] = os.path.abspath(bidsDir)
-            if not os.path.isdir(self.config['FMRIPrepOptions']['BIDSDirectory']):
-                raise ValueError('BIDS Directory does not exist')
         if workingDir is not None:
             self.config['FMRIPrepOptions']['WorkingDirectory'] = os.path.abspath(workingDir)
         if outputDir is not None:
@@ -199,8 +184,6 @@ class ClpipeConfigParser:
     def setup_roiextract(self, target_dir, target_suffix, output_dir, log_dir = None):
         if target_dir is not None:
             self.config['ROIExtractionOptions']['TargetDirectory'] = os.path.abspath(target_dir)
-            if not os.path.isdir(self.config['ROIExtractionOptions']['TargetDirectory']):
-                raise ValueError('Target Directory does not exist')
         if output_dir is not None:
             self.config['ROIExtractionOptions']['OutputDirectory'] = os.path.abspath(output_dir)
         if target_suffix is not None:
@@ -214,8 +197,6 @@ class ClpipeConfigParser:
     def setup_susan(self, target_dir, target_suffix, output_dir, output_suffix, log_dir =None):
         if target_dir is not None:
             self.config['SUSANOptions']['TargetDirectory'] = os.path.abspath(target_dir)
-            if not os.path.isdir(self.config['SUSANOptions']['TargetDirectory']):
-                raise ValueError('Target Directory does not exist')
         if output_dir is not None:
             self.config['SUSANOptions']['OutputDirectory'] = os.path.abspath(output_dir)
         if target_suffix is not None:

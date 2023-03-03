@@ -55,6 +55,7 @@ def project_setup(project_title=None, project_dir=None,
     setup_postproc(config, beta_series=True)
     setup_roiextract_directories(config)
     setup_susan_directories(config)
+    setup_glm_directories(config['ProjectDirectory'])
 
     add_file_handler(logs_dir)
     # Set permissions to clpipe.log file to allow for group write
@@ -117,6 +118,9 @@ def setup_bids_validation_directories(config):
     os.makedirs(config['BIDSValidationOptions']['LogDirectory'], exist_ok=True)
 
 def setup_fmriprep_directories(config):
+    if not os.path.isdir(config['FMRIPrepOptions']['BIDSDirectory']):
+        raise ValueError('BIDS Directory does not exist')
+    
     if(config['FMRIPrepOptions']['WorkingDirectory'] != ""):
         os.makedirs(config['FMRIPrepOptions']['WorkingDirectory'], exist_ok=True)
     if(config['FMRIPrepOptions']['OutputDirectory'] != ""):
@@ -134,11 +138,25 @@ def setup_postproc(config, beta_series=False):
     os.makedirs(config[target_output]['LogDirectory'], exist_ok=True)
 
 def setup_roiextract_directories(config):
+    if not os.path.isdir(config['ROIExtractionOptions']['TargetDirectory']):
+        raise ValueError('Target Directory does not exist')
+    
     if(config['ROIExtractionOptions']['OutputDirectory'] != ""):
         os.makedirs(config['ROIExtractionOptions']['OutputDirectory'], exist_ok=True)
     os.makedirs(config['ROIExtractionOptions']['LogDirectory'], exist_ok=True)
 
 def setup_susan_directories(config):
+    if not os.path.isdir(config['SUSANOptions']['TargetDirectory']):
+        raise ValueError('Target Directory does not exist')
     if(config['SUSANOptions']['OutputDirectory'] != ""):
         os.makedirs(config['SUSANOptions']['OutputDirectory'], exist_ok=True)
     os.makedirs(config['SUSANOptions']['LogDirectory'], exist_ok=True)
+
+def setup_glm_directories(project_path):
+    os.mkdir(os.path.join(project_path, "data_GLMPrep"))
+    os.mkdir(os.path.join(project_path, "l1_fsfs"))
+    os.mkdir(os.path.join(project_path, "data_onsets"))
+    os.mkdir(os.path.join(project_path, "l1_feat_folders"))
+    os.mkdir(os.path.join(project_path, "l2_fsfs"))
+    os.mkdir(os.path.join(project_path, "l2_gfeat_folders"))
+    os.makedirs(os.path.join(project_path, "logs", "glm_setup_logs"))
