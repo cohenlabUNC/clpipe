@@ -16,8 +16,6 @@ import utils
 
 PROJECT_TITLE = "test_project"
 
-NUM_FMRIPREP_SUBJECTS = 8
-
 #################
 # Option Config #
 #################
@@ -175,54 +173,19 @@ def clpipe_fmriprep_dir(tmp_path_factory, sample_raw_image, sample_raw_image_mas
     """ Fixture which adds fmriprep subject folders and mock 
     fmriprep output data to data_fmriprep directory of clpipe project.
     """
-
-    tasks = ["rest", "1", "2_run-1", "2_run-2"]
-
-    image_space = "space-MNI152NLin2009cAsym"
-    bold_suffix = "desc-preproc_bold.nii.gz"
-    mask_suffix = "desc-brain_mask.nii.gz"
-    sidecar_suffix = "desc-preproc_bold.json"
-    confounds_suffix = "desc-confounds_timeseries.tsv"
-    melodic_mixing_suffix = "desc-MELODIC_mixing.tsv"
-    aroma_noise_ics_suffix = "AROMAnoiseICs.csv"
-
-    project_dir = tmp_path_factory.mktemp("clpipe_fmriprep_dir")
+    project_dir = tmp_path_factory.mktemp("clpipe_bids_fmriprep_dir")
     project_setup(project_title=PROJECT_TITLE, project_dir=str(project_dir))
 
-    fmriprep_dir = project_dir / "data_fmriprep" / "fmriprep"
-    fmriprep_dir.mkdir(parents=True)
-
-    shutil.copy(sample_fmriprep_dataset_description, fmriprep_dir)
-
-    for sub_num in range(NUM_FMRIPREP_SUBJECTS):
-        subject_folder = fmriprep_dir / f"sub-{sub_num}" / "func"
-        subject_folder.mkdir(parents=True)
-        
-        for task in tasks:
-            task_info = f"task-{task}"
-            
-            shutil.copy(sample_raw_image, subject_folder / f"sub-{sub_num}_{task_info}_{image_space}_{bold_suffix}")
-            shutil.copy(sample_raw_image_mask, subject_folder / f"sub-{sub_num}_{task_info}_{image_space}_{mask_suffix}")
-
-            shutil.copy(sample_confounds_timeseries, subject_folder / f"sub-{sub_num}_{task_info}_{confounds_suffix}")
-            shutil.copy(sample_melodic_mixing, subject_folder / f"sub-{sub_num}_{task_info}_{melodic_mixing_suffix}")
-            shutil.copy(sample_aroma_noise_ics, subject_folder / f"sub-{sub_num}_{task_info}_{aroma_noise_ics_suffix}")
-
-            if task == "rest":
-                tr = .6
-            else:
-                tr = .9
-            sidecar_json = {"RepetitionTime": tr, "TaskName": task}
-            with open(subject_folder / f"sub-{sub_num}_{task_info}_{image_space}_{sidecar_suffix}", "w") as sidecar_file:
-                json.dump(sidecar_json, sidecar_file)
+    utils.populate_with_BIDS(project_dir)
+    utils.populate_with_fmriprep(project_dir, sample_raw_image, sample_raw_image_mask, 
+        sample_confounds_timeseries, sample_melodic_mixing, sample_aroma_noise_ics, 
+        sample_fmriprep_dataset_description)
 
     return project_dir
 
 @pytest.fixture(scope="session")
 def clpipe_dir_old_glm_config(tmp_path_factory):
     """Fixture which provides a temporary clpipe project folder."""
-    
-    # TODO: change how tests work such that clpipe directory populating works as functions not fixtures
 
     PROJECT_TITLE = "old_glm_setup"
     project_dir = tmp_path_factory.mktemp(PROJECT_TITLE)
@@ -317,7 +280,7 @@ def glm_config_file(clpipe_fmriprep_dir: Path) -> Path:
 @pytest.fixture(scope="function")
 def workflow_base(tmp_path):
     """Returns a minimal nypipe workflow. """
-    
+
     wf =  pe.Workflow(name="Test_Workflow", base_dir=tmp_path)
     wf.config['execution']['crashdump_dir'] = "nypipe_crashdumps"
     return wf

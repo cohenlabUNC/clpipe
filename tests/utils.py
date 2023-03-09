@@ -1,11 +1,14 @@
 from pathlib import Path
 import numpy as np
 import nibabel as nib
+import shutil
+import json
 
 from clpipe.config_json_parser import GLMConfigParser
 
 DEFAULT_NUM_BIDS_SUBJECTS = 10
 DEFAULT_NUM_DICOM_SUBJECTS = 5
+DEFAULT_NUM_FMRIPREP_SUBJECTS = 8
 DEFAULT_RANDOM_NII_DIMS = (12, 12, 12, 36)
 DICOM_SESSIONS = ['2000', '2010', '2020']
 
@@ -48,6 +51,46 @@ def populate_with_DICOM(project_dir: Path, num_subjects=DEFAULT_NUM_DICOM_SUBJEC
 
             session_sub_folder_flat = session_sub_flat / Path(session + "_" + str(sub_num))
             session_sub_folder_flat.mkdir(parents=True, exist_ok=True)
+
+def populate_with_fmriprep(project_dir: Path, sample_raw_image, sample_raw_image_mask, 
+    sample_confounds_timeseries, sample_melodic_mixing, sample_aroma_noise_ics, 
+    sample_fmriprep_dataset_description, num_subjects=DEFAULT_NUM_FMRIPREP_SUBJECTS):
+    tasks = ["rest", "1", "2_run-1", "2_run-2"]
+
+    image_space = "space-MNI152NLin2009cAsym"
+    bold_suffix = "desc-preproc_bold.nii.gz"
+    mask_suffix = "desc-brain_mask.nii.gz"
+    sidecar_suffix = "desc-preproc_bold.json"
+    confounds_suffix = "desc-confounds_timeseries.tsv"
+    melodic_mixing_suffix = "desc-MELODIC_mixing.tsv"
+    aroma_noise_ics_suffix = "AROMAnoiseICs.csv"
+
+    fmriprep_dir = project_dir / "data_fmriprep" / "fmriprep"
+    fmriprep_dir.mkdir(parents=True)
+
+    shutil.copy(sample_fmriprep_dataset_description, fmriprep_dir)
+
+    for sub_num in range(num_subjects):
+        subject_folder = fmriprep_dir / f"sub-{sub_num}" / "func"
+        subject_folder.mkdir(parents=True)
+        
+        for task in tasks:
+            task_info = f"task-{task}"
+            
+            shutil.copy(sample_raw_image, subject_folder / f"sub-{sub_num}_{task_info}_{image_space}_{bold_suffix}")
+            shutil.copy(sample_raw_image_mask, subject_folder / f"sub-{sub_num}_{task_info}_{image_space}_{mask_suffix}")
+
+            shutil.copy(sample_confounds_timeseries, subject_folder / f"sub-{sub_num}_{task_info}_{confounds_suffix}")
+            shutil.copy(sample_melodic_mixing, subject_folder / f"sub-{sub_num}_{task_info}_{melodic_mixing_suffix}")
+            shutil.copy(sample_aroma_noise_ics, subject_folder / f"sub-{sub_num}_{task_info}_{aroma_noise_ics_suffix}")
+
+            if task == "rest":
+                tr = .6
+            else:
+                tr = .9
+            sidecar_json = {"RepetitionTime": tr, "TaskName": task}
+            with open(subject_folder / f"sub-{sub_num}_{task_info}_{image_space}_{sidecar_suffix}", "w") as sidecar_file:
+                json.dump(sidecar_json, sidecar_file)
 
 def generate_random_nii(dims: tuple=DEFAULT_RANDOM_NII_DIMS, low: int=0, high: int=1000) -> nib.Nifti1Image:
     """Creates a simple nii image with the given dimensions.
