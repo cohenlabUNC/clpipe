@@ -106,7 +106,6 @@ class ClpipeConfigParser:
         glm_config = GLMConfigParser()
 
         glm_config.config['ParentClpipeConfig'] = os.path.join(project_path, "clpipe_config.json")
-        glm_config.config['TargetDirectory'] = os.path.join(project_path, "data_fmriprep", "fmriprep")
         glm_config.config['LogDirectory'] = os.path.join(project_path, "logs", "glm_setup_logs")
 
         glm_config.config['Level1Setups'][0]['TargetDirectory'] = os.path.join(project_path, "data_postproc2", "default")
