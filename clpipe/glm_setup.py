@@ -19,10 +19,13 @@ import nibabel as nib
 import pandas
 import re
 import numpy as np
+from warnings import warn
 
 
 def glm_setup(subjects = None, config_file=None, glm_config_file = None,
                      submit=False, batch=True, debug = None, drop_tps = None):
+    warn("The glm setup step has been replaced by postproc2 and will be removed completely in clpipe 2.0")
+    
     if not debug:
         sys.excepthook = exception_handler
         logging.basicConfig(level=logging.INFO)
