@@ -20,7 +20,7 @@ import re
 import numpy as np
 
 STEP_NAME = "glm_setup"
-DEPRECATION_MSG = "glm setup's processing functions are now deprecated should be performed with postproc2."
+DEPRECATION_MSG = "DEPRECATION WARNING: glm setup's processing functions are now deprecated should be performed with postproc2."
 
 
 def glm_setup(subjects = None, config_file=None, glm_config_file = None,
