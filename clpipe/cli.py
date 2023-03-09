@@ -126,7 +126,8 @@ def _add_commands():
 
     bids_cli.add_command(bids_validate_cli)
 
-    glm_cli.add_command(glm_setup_cli, help_priority=1)
+    # setup command hidden due to deprecation
+    glm_cli.add_command(glm_setup_cli, help_priority=1, hidden=True)
     glm_cli.add_command(glm_prepare_cli, help_priority=3)
     glm_cli.add_command(glm_launch_cli, help_priority=4)
     glm_cli.add_command(glm_apply_mumford_workaround_cli, help_priority=5)
