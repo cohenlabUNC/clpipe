@@ -15,10 +15,11 @@ from click.testing import CliRunner
 sys.path.append('../clpipe')
 from clpipe.project_setup import project_setup
 from clpipe.config_json_parser import ClpipeConfigParser, GLMConfigParser
+from .utils import populate_with_BIDS
 # from clpipe.data import wrongOrder_defaultConfig.json
 
 PROJECT_TITLE = "test_project"
-NUM_BIDS_SUBJECTS = 10
+
 NUM_DICOM_SUBJECTS = 5
 DICOM_SESSIONS = ['2000', '2010', '2020']
 NUM_FMRIPREP_SUBJECTS = 8
@@ -164,16 +165,6 @@ def clpipe_dicom_dir(tmp_path_factory):
     populate_with_DICOM(project_dir)
 
     return project_dir
-
-def populate_with_BIDS(project_dir):
-    """Populate the given project_dir with BIDS data.
-    
-    project_dir must be existing clpipe project.
-    """
-
-    for sub_num in range(NUM_BIDS_SUBJECTS):
-            subject_folder = project_dir / "data_BIDS" / f"sub-{sub_num}"
-            subject_folder.mkdir()
 
 @pytest.fixture(scope="session")
 def clpipe_bids_dir(tmp_path_factory):
