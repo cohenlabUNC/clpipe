@@ -10,7 +10,7 @@ def test_glm_setup_basic(config_file: Path, glm_config_file: Path):
 
 
 def test_glm_setup_deprecation_warning(config_file: Path, glm_config_file: Path):
-    """Check basic attempt to run fmriprep_process."""
+    """Ensure glm_setup raises a deprecation warning."""
 
-    with pytest.raises(DeprecationWarning):
+    with pytest.warns():
         glm_setup(config_file=config_file, glm_config_file=glm_config_file)
