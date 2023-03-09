@@ -97,18 +97,29 @@ def source_data(tmp_path_factory):
 def clpipe_dir(tmp_path_factory):
     """Fixture which provides a temporary clpipe project folder."""
     
-    project_dir = tmp_path_factory.mktemp(PROJECT_TITLE)
-
+    project_dir = tmp_path_factory.mktemp("clpipe_dir")
     project_setup(project_title=PROJECT_TITLE, project_dir=str(project_dir))
 
     return project_dir
 
 
-@pytest.fixture(scope="module")
-def clpipe_dicom_dir(clpipe_dir):
+@pytest.fixture(scope="session")
+def clpipe_dicom_dir(tmp_path_factory):
     """Fixture which adds different varieties of DICOM folder structures"""
 
-    dicom_dir = clpipe_dir / "data_DICOMs"
+    project_dir = tmp_path_factory.mktemp("clpipe_dicom_dir")
+    project_setup(project_title=PROJECT_TITLE, project_dir=str(project_dir))
+    populate_with_DICOM(project_dir)
+
+    return project_dir
+
+
+def populate_with_DICOM(project_dir: Path):
+    """For the given clpipe project dir, populate the data_DICOMs folder. 
+    
+    project_dir must be an existing clpipe project
+    """
+    dicom_dir = project_dir / "data_DICOMs"
 
     sub = dicom_dir / "sub"
     session_sub = dicom_dir / "session_sub"
@@ -132,10 +143,6 @@ def clpipe_dicom_dir(clpipe_dir):
 
             session_sub_folder_flat = session_sub_flat / Path(session + "_" + str(sub_num))
             session_sub_folder_flat.mkdir(parents=True, exist_ok=True)
-
-            
-
-    return dicom_dir
 
 
 @pytest.fixture(scope="module")
