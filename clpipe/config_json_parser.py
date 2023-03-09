@@ -109,10 +109,10 @@ class ClpipeConfigParser:
         glm_config.config['TargetDirectory'] = os.path.join(project_path, "data_fmriprep", "fmriprep")
         glm_config.config['LogDirectory'] = os.path.join(project_path, "logs", "glm_setup_logs")
 
-        glm_config.config['Level1Setups'][0]['TargetDirectory'] = os.path.join(project_path, "data_GLMPrep")
+        glm_config.config['Level1Setups'][0]['TargetDirectory'] = os.path.join(project_path, "data_postproc2", "default")
         glm_config.config['Level1Setups'][0]['FSFDir'] = os.path.join(project_path, "l1_fsfs")
         glm_config.config['Level1Setups'][0]['EVDirectory'] = os.path.join(project_path, "data_onsets")
-        glm_config.config['Level1Setups'][0]['ConfoundDirectory'] = os.path.join(project_path, "data_GLMPrep")
+        glm_config.config['Level1Setups'][0]['ConfoundDirectory'] = os.path.join(project_path, "data_postproc2", "default")
         glm_config.config['Level1Setups'][0]['OutputDir'] = os.path.join(project_path, "l1_feat_folders")
         glm_config.config['Level2Setups'][0]['OutputDir'] = os.path.join(project_path, "l2_gfeat_folders")
         glm_config.config['Level2Setups'][0]['OutputDir'] = os.path.join(project_path, "l2_fsfs")
