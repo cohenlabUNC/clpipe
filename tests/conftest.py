@@ -14,7 +14,6 @@ sys.path.append('../clpipe')
 from clpipe.project_setup import project_setup
 from clpipe.config_json_parser import ClpipeConfigParser, GLMConfigParser
 from .utils import populate_with_BIDS
-# from clpipe.data import wrongOrder_defaultConfig.json
 
 PROJECT_TITLE = "test_project"
 
