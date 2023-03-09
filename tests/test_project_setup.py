@@ -145,6 +145,7 @@ def project_paths() -> List[Path]:
         logs / "betaseries_logs",
         logs / "bids_validation_logs",
         logs / "DCM2BIDS_logs",
+        logs / "FMRIprep_logs",
         logs / "glm_setup_logs",
         logs / "postproc_logs",
         logs / "ROI_extraction_logs",

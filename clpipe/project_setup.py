@@ -125,6 +125,8 @@ def setup_fmriprep_directories(config):
         os.makedirs(config['FMRIPrepOptions']['WorkingDirectory'], exist_ok=True)
     if(config['FMRIPrepOptions']['OutputDirectory'] != ""):
         os.makedirs(config['FMRIPrepOptions']['OutputDirectory'], exist_ok=True)
+    if(config['FMRIPrepOptions']['LogDirectory'] != ""):
+        os.makedirs(config['FMRIPrepOptions']['LogDirectory'], exist_ok=True)
 
 def setup_postproc(config, beta_series=False):
     target_output = 'PostProcessingOptions'
