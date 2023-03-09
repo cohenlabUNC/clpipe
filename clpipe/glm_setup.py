@@ -28,8 +28,7 @@ def glm_setup(subjects = None, config_file=None, glm_config_file = None,
     config = ClpipeConfigParser()
     config.config_updater(config_file)
 
-    add_file_handler(os.path.join(config.config["ProjectDirectory"], "logs"))
-    logger = get_logger(STEP_NAME, debug=debug)
+    logger = get_logger(STEP_NAME, debug=debug, log_dir=os.path.join(config.config["ProjectDirectory"], "logs"))
 
     glm_config = GLMConfigParser(glm_config_file)
 
