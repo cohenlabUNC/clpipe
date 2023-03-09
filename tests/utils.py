@@ -1,7 +1,10 @@
 from pathlib import Path
+import numpy as np
+import nibabel as nib
 
 DEFAULT_NUM_BIDS_SUBJECTS = 10
 DEFAULT_NUM_DICOM_SUBJECTS = 5
+DEFAULT_RANDOM_NII_DIMS = (12, 12, 12, 36)
 DICOM_SESSIONS = ['2000', '2010', '2020']
 
 def populate_with_BIDS(project_dir, num_subjects=DEFAULT_NUM_BIDS_SUBJECTS):
@@ -43,3 +46,43 @@ def populate_with_DICOM(project_dir: Path, num_subjects=DEFAULT_NUM_DICOM_SUBJEC
 
             session_sub_folder_flat = session_sub_flat / Path(session + "_" + str(sub_num))
             session_sub_folder_flat.mkdir(parents=True, exist_ok=True)
+
+def generate_random_nii(dims: tuple=DEFAULT_RANDOM_NII_DIMS, low: int=0, high: int=1000) -> nib.Nifti1Image:
+    """Creates a simple nii image with the given dimensions.
+
+    Args:
+        dims (tuple): A 3d or 4d tuple representing dimensions of the nii.
+        low (int): The floor generated voxel intensity.
+        high (int): The ceiling generated voxel intensity.
+
+    Returns:
+        nib.Nifti1Image: A random nii image.
+    """
+    size = 1
+    for x in dims:
+        size *= x
+
+    affine = np.diag([1 for x in dims])
+
+    array_data = np.random.randint(low, high=high, size=size, dtype=np.int16).reshape(dims)
+    image = nib.Nifti1Image(array_data, affine)
+
+    return image
+
+def generate_random_nii_mask(dims: tuple=DEFAULT_RANDOM_NII_DIMS) -> nib.Nifti1Image:
+    mask_base = np.ones(dims, dtype=np.int16)
+    
+    # Zero the edges of our mask
+    mask_base[0] = 0
+    mask_base[-1] = 0
+    for x in mask_base:
+        x[0] = 0
+        x[-1] = 0
+        for y in x:
+            y[0] = 0
+            y[-1] = 0
+
+    affine = np.diag([1 for x in dims])
+    image = nib.Nifti1Image(mask_base, affine)
+
+    return image

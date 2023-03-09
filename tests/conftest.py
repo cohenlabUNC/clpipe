@@ -4,7 +4,6 @@ import shutil
 import json
 from pathlib import Path
 
-import numpy as np
 import nibabel as nib
 import nipype.pipeline.engine as pe
 from nilearn import plotting
@@ -13,12 +12,11 @@ from nilearn.image import load_img, index_img
 sys.path.append('../clpipe')
 from clpipe.project_setup import project_setup
 from clpipe.config_json_parser import ClpipeConfigParser, GLMConfigParser
-from utils import populate_with_BIDS, populate_with_DICOM
+import utils
 
 PROJECT_TITLE = "test_project"
 
 NUM_FMRIPREP_SUBJECTS = 8
-DEFAULT_RANDOM_NII_DIMS = (12, 12, 12, 36)
 
 class Helpers:
     @staticmethod
@@ -127,7 +125,7 @@ def clpipe_dicom_dir(tmp_path_factory):
 
     project_dir = tmp_path_factory.mktemp("clpipe_dicom_dir")
     project_setup(project_title=PROJECT_TITLE, project_dir=str(project_dir))
-    populate_with_DICOM(project_dir)
+    utils.populate_with_DICOM(project_dir)
 
     return project_dir
 
@@ -137,7 +135,7 @@ def clpipe_bids_dir(tmp_path_factory):
 
     project_dir = tmp_path_factory.mktemp("clpipe_bids_dir")
     project_setup(project_title=PROJECT_TITLE, project_dir=str(project_dir))
-    populate_with_BIDS(project_dir)
+    utils.populate_with_BIDS(project_dir)
 
     return clpipe_dir
 
@@ -210,51 +208,11 @@ def workflow_base(tmp_path):
     wf.config['execution']['crashdump_dir'] = "nypipe_crashdumps"
     return wf
 
-def generate_random_nii(dims: tuple=DEFAULT_RANDOM_NII_DIMS, low: int=0, high: int=1000) -> nib.Nifti1Image:
-    """Creates a simple nii image with the given dimensions.
-
-    Args:
-        dims (tuple): A 3d or 4d tuple representing dimensions of the nii.
-        low (int): The floor generated voxel intensity.
-        high (int): The ceiling generated voxel intensity.
-
-    Returns:
-        nib.Nifti1Image: A random nii image.
-    """
-    size = 1
-    for x in dims:
-        size *= x
-
-    affine = np.diag([1 for x in dims])
-
-    array_data = np.random.randint(low, high=high, size=size, dtype=np.int16).reshape(dims)
-    image = nib.Nifti1Image(array_data, affine)
-
-    return image
-
-def generate_random_nii_mask(dims: tuple=DEFAULT_RANDOM_NII_DIMS) -> nib.Nifti1Image:
-    mask_base = np.ones(dims, dtype=np.int16)
-    
-    # Zero the edges of our mask
-    mask_base[0] = 0
-    mask_base[-1] = 0
-    for x in mask_base:
-        x[0] = 0
-        x[-1] = 0
-        for y in x:
-            y[0] = 0
-            y[-1] = 0
-
-    affine = np.diag([1 for x in dims])
-    image = nib.Nifti1Image(mask_base, affine)
-
-    return image
-
 @pytest.fixture
 def random_nii(tmp_path) -> Path:
     """Save a random, temporary nii file and provide the path."""
     
-    nii = generate_random_nii()
+    nii = utils.generate_random_nii()
     nii_path = tmp_path / "random.nii"
   
     nib.save(nii, nii_path)
@@ -264,7 +222,7 @@ def random_nii(tmp_path) -> Path:
 def random_nii_mask(tmp_path) -> Path:
     """Save a random, temporary nii mask file and provide the path."""
 
-    nii = generate_random_nii_mask()
+    nii = utils.generate_random_nii_mask()
     nii_path = tmp_path / "random_mask.nii"
 
     nib.save(nii, nii_path)
