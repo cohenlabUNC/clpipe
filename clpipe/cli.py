@@ -522,8 +522,8 @@ def glm_launch_cli(level, model, glm_config_file, test_one, submit, debug):
               help=DEBUG_HELP)
 def glm_l1_launch_cli(glm_config_file, l1_name, test_one, submit, debug):
     """Launch all prepared .fsf files for L1 GLM analysis."""
-    from .glm_launch import glm_launch_controller
-    glm_launch_controller(glm_config_file=glm_config_file, model=l1_name,
+    from .glm_launch import glm_launch
+    glm_launch(glm_config_file=glm_config_file, level="L1", model=l1_name,
                           test_one=test_one, submit=submit, debug=debug)
 
 
@@ -541,8 +541,8 @@ def glm_l1_launch_cli(glm_config_file, l1_name, test_one, submit, debug):
               help=DEBUG_HELP)
 def glm_l2_launch_cli(glm_config_file, l2_name, test_one, submit, debug):
     """Launch all prepared .fsf files for L2 GLM analysis."""
-    from .glm_launch import glm_launch_controller
-    glm_launch_controller(glm_config_file=glm_config_file, level="L2", 
+    from .glm_launch import glm_launch
+    glm_launch(glm_config_file=glm_config_file, level="L2", 
                           model=l2_name, test_one=test_one, submit=submit,
                           debug=debug)
 
