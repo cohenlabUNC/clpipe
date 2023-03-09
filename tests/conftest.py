@@ -87,11 +87,34 @@ def sample_raw_image_mask() -> Path:
     return Path("tests/data/sample_raw_mask.nii.gz").resolve()
 
 @pytest.fixture(scope="session")
+def sample_confounds_timeseries() -> Path:
+    return Path("tests/data/sample_confounds_timeseries.tsv").resolve()
+
+@pytest.fixture(scope="session")
+def sample_postprocessed_confounds() -> Path:
+    return Path("tests/data/postprocessed_confounds.tsv").resolve()
+
+@pytest.fixture(scope="session")
+def sample_melodic_mixing() -> Path:
+    return Path("tests/data/MELODIC_mixing.tsv").resolve()
+
+@pytest.fixture(scope="session")
+def sample_aroma_noise_ics() -> Path:
+    return Path("tests/data/AROMAnoiseICs.csv").resolve()
+
+@pytest.fixture(scope="session")
+def sample_fmriprep_dataset_description() -> Path:
+    return Path("tests/data/dataset_description.json").resolve()
+
+@pytest.fixture(scope="session")
+def sample_reference() -> Path:
+    return Path("tests/artifacts/tpl-MNIPediatricAsym_cohort-2_res-1_T1w.nii.gz").resolve()
+
+@pytest.fixture(scope="session")
 def source_data(tmp_path_factory):
     """Fixture which provides a temporary space for a source data folder."""
     source_path = tmp_path_factory.mktemp("source_data")
     return Path(source_path)
-
 
 @pytest.fixture(scope="session")
 def clpipe_dir(tmp_path_factory):
@@ -101,7 +124,6 @@ def clpipe_dir(tmp_path_factory):
     project_setup(project_title=PROJECT_TITLE, project_dir=str(project_dir))
     
     return project_dir
-
 
 def populate_with_DICOM(project_dir: Path):
     """For the given clpipe project dir, populate the data_DICOMs folder. 
@@ -133,7 +155,6 @@ def populate_with_DICOM(project_dir: Path):
             session_sub_folder_flat = session_sub_flat / Path(session + "_" + str(sub_num))
             session_sub_folder_flat.mkdir(parents=True, exist_ok=True)
 
-
 @pytest.fixture(scope="session")
 def clpipe_dicom_dir(tmp_path_factory):
     """Fixture which provides a clpipe project with different varieties of DICOM folder structures"""
@@ -143,7 +164,6 @@ def clpipe_dicom_dir(tmp_path_factory):
     populate_with_DICOM(project_dir)
 
     return project_dir
-
 
 def populate_with_BIDS(project_dir):
     """Populate the given project_dir with BIDS data.
@@ -155,7 +175,6 @@ def populate_with_BIDS(project_dir):
             subject_folder = project_dir / "data_BIDS" / f"sub-{sub_num}"
             subject_folder.mkdir()
 
-
 @pytest.fixture(scope="session")
 def clpipe_bids_dir(tmp_path_factory):
     """Fixture provides a clpipe project with mock BIDS folders."""
@@ -165,7 +184,6 @@ def clpipe_bids_dir(tmp_path_factory):
     populate_with_BIDS(project_dir)
 
     return clpipe_dir
-
 
 #TODO: seperate AROMA into its own type of fmriprep dir
 @pytest.fixture(scope="session")
@@ -217,7 +235,6 @@ def clpipe_fmriprep_dir(tmp_path_factory, sample_raw_image, sample_raw_image_mas
                 json.dump(sidecar_json, sidecar_file)
 
     return project_dir
-
 
 @pytest.fixture(scope="module")
 def clpipe_config_default() -> dict:
@@ -297,29 +314,7 @@ def random_nii_mask(tmp_path) -> Path:
     nib.save(nii, nii_path)
     return nii_path
 
-@pytest.fixture(scope="session")
-def sample_confounds_timeseries() -> Path:
-    return Path("tests/data/sample_confounds_timeseries.tsv").resolve()
 
-@pytest.fixture(scope="session")
-def sample_postprocessed_confounds() -> Path:
-    return Path("tests/data/postprocessed_confounds.tsv").resolve()
-
-@pytest.fixture(scope="session")
-def sample_melodic_mixing() -> Path:
-    return Path("tests/data/MELODIC_mixing.tsv").resolve()
-
-@pytest.fixture(scope="session")
-def sample_aroma_noise_ics() -> Path:
-    return Path("tests/data/AROMAnoiseICs.csv").resolve()
-
-@pytest.fixture(scope="session")
-def sample_fmriprep_dataset_description() -> Path:
-    return Path("tests/data/dataset_description.json").resolve()
-
-@pytest.fixture(scope="session")
-def sample_reference() -> Path:
-    return Path("tests/artifacts/tpl-MNIPediatricAsym_cohort-2_res-1_T1w.nii.gz").resolve()
 
 @pytest.fixture(scope="session")
 def config_file(clpipe_dir):
