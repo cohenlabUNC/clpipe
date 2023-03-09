@@ -18,7 +18,38 @@ PROJECT_TITLE = "test_project"
 
 NUM_FMRIPREP_SUBJECTS = 8
 
+#################
+# Option Config #
+#################
+
+def pytest_addoption(parser):
+    """Adds addtional options to pytest when running clpipe tests."""
+
+    parser.addoption(
+        "--plot_img", action="store_true", default=False, help="Save plot of image processing results as .png"
+    )
+    parser.addoption(
+        "--write_graph", action="store", default=False, help="Save plot of image processing results as .png"
+    )
+
+@pytest.fixture(scope="package")
+def plot_img(request):
+    """Makes the value of custom flag available as fixture to tests."""
+    return request.config.getoption("--plot_img")
+
+@pytest.fixture(scope="package")
+def write_graph(request):
+    """Makes the value of custom flag available as fixture to tests."""
+    return request.config.getoption("--write_graph")
+
+##########################
+# Helper Function Config #
+##########################
+
 class Helpers:
+    """Functions in this class are made available to all tests as a fixtures via
+    the helpers fixtures. """
+
     @staticmethod
     def plot_4D_img_slice(image_path: Path, png_name: str):
         image = load_img(str(image_path))
@@ -33,29 +64,22 @@ class Helpers:
         test_path.mkdir(parents=True, exist_ok=True)
 
         return test_path
-
-def pytest_addoption(parser):
-    parser.addoption(
-        "--plot_img", action="store_true", default=False, help="Save plot of image processing results as .png"
-    )
-    parser.addoption(
-        "--write_graph", action="store", default=False, help="Save plot of image processing results as .png"
-    )
-
+    
 @pytest.fixture(scope="package")
 def helpers():
+    """Provide the helper class functions as fixture usable by tests."""
     return Helpers
 
-@pytest.fixture(scope="package")
-def plot_img(request):
-    return request.config.getoption("--plot_img")
-
-@pytest.fixture(scope="package")
-def write_graph(request):
-    return request.config.getoption("--write_graph")
+#####################
+# Resource Fixtures #
+#####################
 
 @pytest.fixture(scope="package")
 def artifact_dir():
+    """Provides a path for storing persistent test artifacts.
+    Some tests produce image outputs that may need to be inspected later,
+    thus not being suited for placing in a temporary folder.
+    """
     return Path("tests", "artifacts").resolve()
 
 @pytest.fixture(scope="session")
@@ -109,6 +133,10 @@ def source_data(tmp_path_factory):
     """Fixture which provides a temporary space for a source data folder."""
     source_path = tmp_path_factory.mktemp("source_data")
     return Path(source_path)
+
+########################
+# Project Dir Fixtures #
+########################
 
 @pytest.fixture(scope="session")
 def clpipe_dir(tmp_path_factory):
@@ -190,72 +218,45 @@ def clpipe_fmriprep_dir(tmp_path_factory, sample_raw_image, sample_raw_image_mas
 
     return project_dir
 
-@pytest.fixture(scope="module")
-def clpipe_config_default() -> dict:
-    return ClpipeConfigParser().config
-
-@pytest.fixture(scope="module")
-def glm_config_default():
-    return GLMConfigParser().config
-
-@pytest.fixture(scope="module")
-def postprocessing_config(clpipe_config_default):
-    return clpipe_config_default["PostProcessingOptions2"]
-
-@pytest.fixture(scope="function")
-def workflow_base(tmp_path):
-    wf =  pe.Workflow(name="Test_Workflow", base_dir=tmp_path)
-    wf.config['execution']['crashdump_dir'] = "nypipe_crashdumps"
-    return wf
-
-@pytest.fixture
-def random_nii(tmp_path) -> Path:
-    """Save a random, temporary nii file and provide the path."""
+@pytest.fixture(scope="session")
+def clpipe_dir_old_glm_config(tmp_path_factory):
+    """Fixture which provides a temporary clpipe project folder."""
     
-    nii = utils.generate_random_nii()
-    nii_path = tmp_path / "random.nii"
-  
-    nib.save(nii, nii_path)
-    return nii_path
+    # TODO: change how tests work such that clpipe directory populating works as functions not fixtures
 
-@pytest.fixture
-def random_nii_mask(tmp_path) -> Path:
-    """Save a random, temporary nii mask file and provide the path."""
+    PROJECT_TITLE = "old_glm_setup"
+    project_dir = tmp_path_factory.mktemp(PROJECT_TITLE)
 
-    nii = utils.generate_random_nii_mask()
-    nii_path = tmp_path / "random_mask.nii"
+    # Monkeypatch setup_glm to use the old method
+    ClpipeConfigParser.setup_glm = utils.old_setup_glm
 
-    nib.save(nii, nii_path)
-    return nii_path
+    GLMConfigParser.__init__ = utils.old_GLMConfigParser_init
+
+    project_setup(project_title=PROJECT_TITLE, project_dir=str(project_dir))
+
+    return project_dir
+
+##################################
+# Project Configuration Fixtures #
+##################################
 
 @pytest.fixture(scope="session")
 def config_file(clpipe_dir):
     return clpipe_dir / "clpipe_config.json"
 
 @pytest.fixture(scope="session")
-def config_file_fmriprep(clpipe_fmriprep_dir: Path):
-    """Return config file from the test fmriprep directory."""
-
-    return clpipe_fmriprep_dir / "clpipe_config.json"
-
-@pytest.fixture(scope="session")
-def glm_config_file(clpipe_fmriprep_dir: Path) -> Path:
-    """Provides a reference to a glm_config.json file that
-    has been setup in the context of a mock project.
-
-    Args:
-        clpipe_fmriprep_dir (Path): Path to a mock fmriprep clpipe project
-
-    Returns:
-        Path: Reference to mock glm_config.json file.
-    """
-    return clpipe_fmriprep_dir / "glm_config.json"
-
-@pytest.fixture(scope="session")
 def clpipe_config(config_file) -> dict:
     with open(config_file, 'r') as f:
         config_dict = json.load(f)
         return config_dict
+
+@pytest.fixture(scope="module")
+def clpipe_config_default() -> dict:
+    return ClpipeConfigParser().config
+
+@pytest.fixture(scope="module")
+def postprocessing_config(clpipe_config_default):
+    return clpipe_config_default["PostProcessingOptions2"]
 
 @pytest.fixture(scope="session")
 def config_file_confounds(clpipe_config_default, config_file):
@@ -285,21 +286,62 @@ def config_file_aroma_confounds(clpipe_config_default, config_file):
 
     return config_file
 
+@pytest.fixture(scope="session")
+def config_file_fmriprep(clpipe_fmriprep_dir: Path):
+    """Return config file from the test fmriprep directory."""
+
+    return clpipe_fmriprep_dir / "clpipe_config.json"
+
+@pytest.fixture(scope="module")
+def glm_config_default():
+    """Returns the default glm config file."""
+    return GLMConfigParser().config
 
 @pytest.fixture(scope="session")
-def clpipe_dir_old_glm_config(tmp_path_factory):
-    """Fixture which provides a temporary clpipe project folder."""
+def glm_config_file(clpipe_fmriprep_dir: Path) -> Path:
+    """Provides a reference to a glm_config.json file that
+    has been setup in the context of a mock project.
+
+    Args:
+        clpipe_fmriprep_dir (Path): Path to a mock fmriprep clpipe project
+
+    Returns:
+        Path: Reference to mock glm_config.json file.
+    """
+    return clpipe_fmriprep_dir / "glm_config.json"
+
+#####################
+# Workflow Fixtures #
+#####################
+
+@pytest.fixture(scope="function")
+def workflow_base(tmp_path):
+    """Returns a minimal nypipe workflow. """
     
-    # TODO: change how tests work such that clpipe directory populating works as functions not fixtures
+    wf =  pe.Workflow(name="Test_Workflow", base_dir=tmp_path)
+    wf.config['execution']['crashdump_dir'] = "nypipe_crashdumps"
+    return wf
 
-    PROJECT_TITLE = "old_glm_setup"
-    project_dir = tmp_path_factory.mktemp(PROJECT_TITLE)
+######################
+# Generated Fixtures #
+######################
 
-    # Monkeypatch setup_glm to use the old method
-    ClpipeConfigParser.setup_glm = utils.old_setup_glm
+@pytest.fixture
+def random_nii(tmp_path) -> Path:
+    """Save a random, temporary nii file and provide the path."""
+    
+    nii = utils.generate_random_nii()
+    nii_path = tmp_path / "random.nii"
+  
+    nib.save(nii, nii_path)
+    return nii_path
 
-    GLMConfigParser.__init__ = utils.old_GLMConfigParser_init
+@pytest.fixture
+def random_nii_mask(tmp_path) -> Path:
+    """Save a random, temporary nii mask file and provide the path."""
 
-    project_setup(project_title=PROJECT_TITLE, project_dir=str(project_dir))
+    nii = utils.generate_random_nii_mask()
+    nii_path = tmp_path / "random_mask.nii"
 
-    return project_dir
+    nib.save(nii, nii_path)
+    return nii_path
