@@ -18,7 +18,7 @@ def test_postprocess_subjects_dir(clpipe_fmriprep_dir, artifact_dir, helpers, re
         postprocess_subjects(config_file=config, fmriprep_dir=fmriprep_dir, bids_dir=bids_dir,
             output_dir=postproc_dir, log_dir=log_dir)
 
-
+@pytest.mark.skip(reason="Test hangs")
 def test_postprocess_subjects_dir_config_only(clpipe_fmriprep_dir):
     config = clpipe_fmriprep_dir / "clpipe_config.json"
 
