@@ -69,7 +69,7 @@ def glm_setup(subjects = None, config_file=None, glm_config_file = None,
         else:
             batch_manager.createsubmissionhead()
             batch_manager.compilejobstrings()
-            click.echo(batch_manager.print_jobs())
+            batch_manager.print_jobs()
     else:
         for sub in sublist:
             logging.info('Running Subject ' + sub)
