@@ -27,8 +27,7 @@ def glm_launch(glm_config_file: str=None, level: int=L1,
                           submit: bool=False, debug: bool=False):
     glm_config_parser = GLMConfigParser(glm_config_file)
     glm_config = glm_config_parser.config
-    glm_setup_options = glm_config["GLMSetupOptions"]
-    parent_config = glm_setup_options["ParentClpipeConfig"]
+    parent_config = glm_config["ParentClpipeConfig"]
 
     config = ClpipeConfigParser()
     config.config_updater(parent_config)
