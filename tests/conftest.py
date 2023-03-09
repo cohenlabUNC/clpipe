@@ -13,12 +13,10 @@ from nilearn.image import load_img, index_img
 sys.path.append('../clpipe')
 from clpipe.project_setup import project_setup
 from clpipe.config_json_parser import ClpipeConfigParser, GLMConfigParser
-from .utils import populate_with_BIDS
+from utils import populate_with_BIDS, populate_with_DICOM
 
 PROJECT_TITLE = "test_project"
 
-NUM_DICOM_SUBJECTS = 5
-DICOM_SESSIONS = ['2000', '2010', '2020']
 NUM_FMRIPREP_SUBJECTS = 8
 DEFAULT_RANDOM_NII_DIMS = (12, 12, 12, 36)
 
@@ -122,36 +120,6 @@ def clpipe_dir(tmp_path_factory):
     project_setup(project_title=PROJECT_TITLE, project_dir=str(project_dir))
     
     return project_dir
-
-def populate_with_DICOM(project_dir: Path):
-    """For the given clpipe project dir, populate the data_DICOMs folder. 
-    
-    project_dir must be an existing clpipe project
-    """
-    dicom_dir = project_dir / "data_DICOMs"
-
-    sub = dicom_dir / "sub"
-    session_sub = dicom_dir / "session_sub"
-    session_sub_flat = dicom_dir / "session_sub_flat"
-    sub_session = dicom_dir / "sub_session"
-    sub_session_flat = dicom_dir / "sub_session_flat"
-
-    for sub_num in range(NUM_DICOM_SUBJECTS):
-        sub_folder = sub / str(sub_num)
-        sub_folder.mkdir(parents=True, exist_ok=True)
-
-        for session in DICOM_SESSIONS:
-            sub_session_folder = sub_session / str(sub_num) / session
-            sub_session_folder.mkdir(parents=True, exist_ok=True)
-
-            sub_session_folder_flat = sub_session_flat / Path(str(sub_num) + "_" + session)
-            sub_session_folder_flat.mkdir(parents=True, exist_ok=True)
-
-            session_sub_folder = session_sub / session / str(sub_num)
-            session_sub_folder.mkdir(parents=True, exist_ok=True)
-
-            session_sub_folder_flat = session_sub_flat / Path(session + "_" + str(sub_num))
-            session_sub_folder_flat.mkdir(parents=True, exist_ok=True)
 
 @pytest.fixture(scope="session")
 def clpipe_dicom_dir(tmp_path_factory):
