@@ -44,11 +44,9 @@ def glm_setup(subjects = None, config_file=None, glm_config_file = None,
         sys.exit(1)
     
     if not subjects:
-        subjectstring = "ALL"
         sublist = [o.replace('sub-', '') for o in os.listdir(glm_config.config['GLMSetupOptions']['TargetDirectory'])
                    if os.path.isdir(os.path.join(glm_config.config['GLMSetupOptions']['TargetDirectory'], o)) and 'sub-' in o]
     else:
-        subjectstring = " , ".join(subjects)
         sublist = subjects
 
     submission_string = '''glm_setup -config_file={config} -glm_config_file={glm_config} -single {debug} {sub} '''
