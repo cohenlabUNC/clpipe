@@ -99,13 +99,10 @@ def clpipe_dir(tmp_path_factory):
     
     project_dir = tmp_path_factory.mktemp(PROJECT_TITLE)
 
-    raw_data = Path(project_dir / "data_DICOMs")
-    raw_data.mkdir(parents=True, exist_ok=True)
-
-    project_setup(project_title=PROJECT_TITLE, project_dir=str(project_dir),
-        source_data=str(raw_data))
+    project_setup(project_title=PROJECT_TITLE, project_dir=str(project_dir))
 
     return project_dir
+
 
 @pytest.fixture(scope="module")
 def clpipe_dicom_dir(clpipe_dir):
