@@ -99,18 +99,7 @@ def clpipe_dir(tmp_path_factory):
     
     project_dir = tmp_path_factory.mktemp("clpipe_dir")
     project_setup(project_title=PROJECT_TITLE, project_dir=str(project_dir))
-
-    return project_dir
-
-
-@pytest.fixture(scope="session")
-def clpipe_dicom_dir(tmp_path_factory):
-    """Fixture which adds different varieties of DICOM folder structures"""
-
-    project_dir = tmp_path_factory.mktemp("clpipe_dicom_dir")
-    project_setup(project_title=PROJECT_TITLE, project_dir=str(project_dir))
-    populate_with_DICOM(project_dir)
-
+    
     return project_dir
 
 
@@ -145,23 +134,46 @@ def populate_with_DICOM(project_dir: Path):
             session_sub_folder_flat.mkdir(parents=True, exist_ok=True)
 
 
-@pytest.fixture(scope="module")
-def clpipe_bids_dir(clpipe_dir):
-    """Fixture which adds some subject folders to data_BIDS."""
+@pytest.fixture(scope="session")
+def clpipe_dicom_dir(tmp_path_factory):
+    """Fixture which provides a clpipe project with different varieties of DICOM folder structures"""
+
+    project_dir = tmp_path_factory.mktemp("clpipe_dicom_dir")
+    project_setup(project_title=PROJECT_TITLE, project_dir=str(project_dir))
+    populate_with_DICOM(project_dir)
+
+    return project_dir
+
+
+def populate_with_BIDS(project_dir):
+    """Populate the given project_dir with BIDS data.
+    
+    project_dir must be existing clpipe project.
+    """
 
     for sub_num in range(NUM_BIDS_SUBJECTS):
-            subject_folder = clpipe_dir / "data_BIDS" / f"sub-{sub_num}"
+            subject_folder = project_dir / "data_BIDS" / f"sub-{sub_num}"
             subject_folder.mkdir()
+
+
+@pytest.fixture(scope="session")
+def clpipe_bids_dir(tmp_path_factory):
+    """Fixture provides a clpipe project with mock BIDS folders."""
+
+    project_dir = tmp_path_factory.mktemp("clpipe_bids_dir")
+    project_setup(project_title=PROJECT_TITLE, project_dir=str(project_dir))
+    populate_with_BIDS(project_dir)
 
     return clpipe_dir
 
+
 #TODO: seperate AROMA into its own type of fmriprep dir
-@pytest.fixture(scope="module")
-def clpipe_fmriprep_dir(clpipe_bids_dir, sample_raw_image, sample_raw_image_mask, 
+@pytest.fixture(scope="session")
+def clpipe_fmriprep_dir(tmp_path_factory, sample_raw_image, sample_raw_image_mask, 
     sample_confounds_timeseries, sample_melodic_mixing, sample_aroma_noise_ics, 
     sample_fmriprep_dataset_description) -> Path:
     """ Fixture which adds fmriprep subject folders and mock 
-    fmriprep output data to data_fmriprep directory.
+    fmriprep output data to data_fmriprep directory of clpipe project.
     """
 
     tasks = ["rest", "1", "2_run-1", "2_run-2"]
@@ -174,7 +186,10 @@ def clpipe_fmriprep_dir(clpipe_bids_dir, sample_raw_image, sample_raw_image_mask
     melodic_mixing_suffix = "desc-MELODIC_mixing.tsv"
     aroma_noise_ics_suffix = "AROMAnoiseICs.csv"
 
-    fmriprep_dir = clpipe_bids_dir / "data_fmriprep" / "fmriprep"
+    project_dir = tmp_path_factory.mktemp("clpipe_fmriprep_dir")
+    project_setup(project_title=PROJECT_TITLE, project_dir=str(project_dir))
+
+    fmriprep_dir = project_dir / "data_fmriprep" / "fmriprep"
     fmriprep_dir.mkdir(parents=True)
 
     shutil.copy(sample_fmriprep_dataset_description, fmriprep_dir)
@@ -183,7 +198,6 @@ def clpipe_fmriprep_dir(clpipe_bids_dir, sample_raw_image, sample_raw_image_mask
         subject_folder = fmriprep_dir / f"sub-{sub_num}" / "func"
         subject_folder.mkdir(parents=True)
         
-
         for task in tasks:
             task_info = f"task-{task}"
             
@@ -202,8 +216,8 @@ def clpipe_fmriprep_dir(clpipe_bids_dir, sample_raw_image, sample_raw_image_mask
             with open(subject_folder / f"sub-{sub_num}_{task_info}_{image_space}_{sidecar_suffix}", "w") as sidecar_file:
                 json.dump(sidecar_json, sidecar_file)
 
-    
-    return clpipe_bids_dir
+    return project_dir
+
 
 @pytest.fixture(scope="module")
 def clpipe_config_default() -> dict:
