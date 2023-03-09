@@ -21,11 +21,11 @@ import re
 import numpy as np
 from warnings import warn
 
+DEPRECATION_MSG = "glm setup's processing functions are now deprecated should be performed with postproc2."
+
 
 def glm_setup(subjects = None, config_file=None, glm_config_file = None,
                      submit=False, batch=True, debug = None, drop_tps = None):
-    warn("The glm setup step has been replaced by postproc2 and will be removed completely in clpipe 2.0")
-    
     if not debug:
         sys.excepthook = exception_handler
         logging.basicConfig(level=logging.INFO)
@@ -36,7 +36,17 @@ def glm_setup(subjects = None, config_file=None, glm_config_file = None,
     config.config_updater(config_file)
 
     glm_config = GLMConfigParser(glm_config_file)
-    task = glm_config.config['GLMSetupOptions']['TaskName']
+
+    try:
+        # This working indicates the user has a glm_config file from < v1.7.4
+        # In this case, carry on as normal but warn the user of deprecation
+        task = glm_config.config['GLMSetupOptions']['TaskName']
+        warn(DEPRECATION_MSG)
+    except KeyError:
+        # No 'GLMSetupOptions' means the user has a glm_config file from >= v1.7.4
+        # Exit this step with a deprecation error
+        raise DeprecationWarning(DEPRECATION_MSG)
+    
     if not subjects:
         subjectstring = "ALL"
         sublist = [o.replace('sub-', '') for o in os.listdir(glm_config.config['GLMSetupOptions']['TargetDirectory'])
