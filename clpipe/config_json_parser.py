@@ -105,10 +105,10 @@ class ClpipeConfigParser:
     def setup_glm(self, project_path):
         glm_config = GLMConfigParser()
 
-        glm_config.config['GLMSetupOptions']['ParentClpipeConfig'] = os.path.join(project_path, "clpipe_config.json")
-        glm_config.config['GLMSetupOptions']['TargetDirectory'] = os.path.join(project_path, "data_fmriprep", "fmriprep")
-        glm_config.config['GLMSetupOptions']['MaskFolderRoot'] = glm_config.config['GLMSetupOptions']['TargetDirectory']
-        glm_config.config['GLMSetupOptions']['PreppedDataDirectory'] =  os.path.join(project_path, "data_GLMPrep")
+        glm_config.config['ParentClpipeConfig'] = os.path.join(project_path, "clpipe_config.json")
+        glm_config.config['TargetDirectory'] = os.path.join(project_path, "data_fmriprep", "fmriprep")
+        glm_config.config['LogDirectory'] = os.path.join(project_path, "logs", "glm_setup_logs")
+
         glm_config.config['Level1Setups'][0]['TargetDirectory'] = os.path.join(project_path, "data_GLMPrep")
         glm_config.config['Level1Setups'][0]['FSFDir'] = os.path.join(project_path, "l1_fsfs")
         glm_config.config['Level1Setups'][0]['EVDirectory'] = os.path.join(project_path, "data_onsets")
@@ -116,7 +116,7 @@ class ClpipeConfigParser:
         glm_config.config['Level1Setups'][0]['OutputDir'] = os.path.join(project_path, "l1_feat_folders")
         glm_config.config['Level2Setups'][0]['OutputDir'] = os.path.join(project_path, "l2_gfeat_folders")
         glm_config.config['Level2Setups'][0]['OutputDir'] = os.path.join(project_path, "l2_fsfs")
-        glm_config.config['GLMSetupOptions']['LogDirectory'] = os.path.join(project_path, "logs", "glm_setup_logs")
+
         glm_config.config_json_dump(project_path, "glm_config.json")
         shutil.copyfile(resource_filename('clpipe', 'data/l2_sublist.csv'), os.path.join(project_path, "l2_sublist.csv"))
 
