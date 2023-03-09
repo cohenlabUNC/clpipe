@@ -1,6 +1,5 @@
 import os
 import glob
-import click
 
 from clpipe.utils import add_file_handler, get_logger
 from .batch_manager import BatchManager, Job
@@ -19,7 +18,6 @@ import nibabel as nib
 import pandas
 import re
 import numpy as np
-from warnings import warn
 
 STEP_NAME = "glm_setup"
 DEPRECATION_MSG = "glm setup's processing functions are now deprecated should be performed with postproc2."
@@ -39,11 +37,12 @@ def glm_setup(subjects = None, config_file=None, glm_config_file = None,
         # This working indicates the user has a glm_config file from < v1.7.4
         # In this case, carry on as normal but warn the user of deprecation
         task = glm_config.config['GLMSetupOptions']['TaskName']
-        warn(DEPRECATION_MSG)
+        logger.warn(DEPRECATION_MSG)
     except KeyError:
         # No 'GLMSetupOptions' means the user has a glm_config file from >= v1.7.4
         # Exit this step with a deprecation error
-        raise DeprecationWarning(DEPRECATION_MSG)
+        logger.error(DEPRECATION_MSG)
+        sys.exit(1)
     
     if not subjects:
         subjectstring = "ALL"
