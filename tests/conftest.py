@@ -64,7 +64,7 @@ def write_graph(request):
 def artifact_dir():
     return Path("tests", "artifacts").resolve()
 
-@pytest.fixture(scope="package")
+@pytest.fixture(scope="session")
 def sample_raw_image() -> Path:
     """
     This is image is from the OpenNeuro dataset:
@@ -76,7 +76,7 @@ def sample_raw_image() -> Path:
     
     return Path("tests/data/sample_raw.nii.gz").resolve()
 
-@pytest.fixture(scope="package")
+@pytest.fixture(scope="session")
 def sample_raw_image_mask() -> Path:
     """
     This image is a mask of the sample_raw_image fixture.
@@ -297,41 +297,41 @@ def random_nii_mask(tmp_path) -> Path:
     nib.save(nii, nii_path)
     return nii_path
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="session")
 def sample_confounds_timeseries() -> Path:
     return Path("tests/data/sample_confounds_timeseries.tsv").resolve()
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="session")
 def sample_postprocessed_confounds() -> Path:
     return Path("tests/data/postprocessed_confounds.tsv").resolve()
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="session")
 def sample_melodic_mixing() -> Path:
     return Path("tests/data/MELODIC_mixing.tsv").resolve()
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="session")
 def sample_aroma_noise_ics() -> Path:
     return Path("tests/data/AROMAnoiseICs.csv").resolve()
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="session")
 def sample_fmriprep_dataset_description() -> Path:
     return Path("tests/data/dataset_description.json").resolve()
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="session")
 def sample_reference() -> Path:
     return Path("tests/artifacts/tpl-MNIPediatricAsym_cohort-2_res-1_T1w.nii.gz").resolve()
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="session")
 def config_file(clpipe_dir):
     return clpipe_dir / "clpipe_config.json"
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="session")
 def config_file_fmriprep(clpipe_fmriprep_dir: Path):
     """Return config file from the test fmriprep directory."""
 
     return clpipe_fmriprep_dir / "clpipe_config.json"
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="session")
 def glm_config_file(clpipe_fmriprep_dir: Path) -> Path:
     """Provides a reference to a glm_config.json file that
     has been setup in the context of a mock project.
@@ -344,13 +344,13 @@ def glm_config_file(clpipe_fmriprep_dir: Path) -> Path:
     """
     return clpipe_fmriprep_dir / "glm_config.json"
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="session")
 def clpipe_config(config_file) -> dict:
     with open(config_file, 'r') as f:
         config_dict = json.load(f)
         return config_dict
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="session")
 def config_file_confounds(clpipe_config_default, config_file):
     clpipe_config_default["PostProcessingOptions2"]["ConfoundOptions"]["Include"] = True
 
@@ -359,7 +359,7 @@ def config_file_confounds(clpipe_config_default, config_file):
 
     return config_file
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="session")
 def config_file_aroma(clpipe_config_default, config_file):
     clpipe_config_default["PostProcessingOptions2"]["ProcessingSteps"] = ["AROMARegression", "SpatialSmoothing", "IntensityNormalization"]
 
@@ -368,7 +368,7 @@ def config_file_aroma(clpipe_config_default, config_file):
 
     return config_file
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="session")
 def config_file_aroma_confounds(clpipe_config_default, config_file):
     clpipe_config_default["PostProcessingOptions2"]["ConfoundOptions"]["Include"] = True
     clpipe_config_default["PostProcessingOptions2"]["ProcessingSteps"] = ["AROMARegression", "TemporalFiltering"]
