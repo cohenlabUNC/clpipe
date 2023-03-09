@@ -1,7 +1,7 @@
 import click
 import sys
 import pkg_resources
-
+from .fmri_process_check import fmri_process_check
 from .config import *
 
 DEFAULT_HELP_PRIORITY = 5
@@ -138,6 +138,7 @@ def _add_commands():
     roi_cli.add_command(fmri_roi_extraction_cli, help_priority=2)
 
     reports_cli.add_command(get_fmriprep_reports_cli)
+    reports_cli.add_command(fmri_process_check)
 
     cli.add_command(bids_cli, help_priority=10)
     cli.add_command(dicom_cli, help_priority=5)
