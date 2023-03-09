@@ -2,6 +2,8 @@ from pathlib import Path
 import numpy as np
 import nibabel as nib
 
+from clpipe.config_json_parser import GLMConfigParser
+
 DEFAULT_NUM_BIDS_SUBJECTS = 10
 DEFAULT_NUM_DICOM_SUBJECTS = 5
 DEFAULT_RANDOM_NII_DIMS = (12, 12, 12, 36)
@@ -86,3 +88,39 @@ def generate_random_nii_mask(dims: tuple=DEFAULT_RANDOM_NII_DIMS) -> nib.Nifti1I
     image = nib.Nifti1Image(mask_base, affine)
 
     return image
+
+def old_GLMConfigParser_init(self, glm_config_file=None):
+    """Monkeypatch function for running GLMConfigParser init according to <= v1.7.3"""
+    import json
+    from pkg_resources import resource_stream
+    from clpipe.config_json_parser import config_json_parser
+
+    if glm_config_file is None:
+        with resource_stream(__name__, '/data/old_GLMConfig.json') as def_config:
+            self.config = json.load(def_config)
+    else:
+        self.config = config_json_parser(glm_config_file)
+
+def old_setup_glm(self, project_path):
+    """Monkeypatch function for running glm setup according to <= v1.7.3"""
+    import os
+    
+    glm_config = GLMConfigParser()
+
+    glm_config.config['GLMSetupOptions']['ParentClpipeConfig'] = os.path.join(project_path, "clpipe_config.json")
+    glm_config.config['GLMSetupOptions']['TargetDirectory'] = os.path.join(project_path, "data_fmriprep", "fmriprep")
+    glm_config.config['GLMSetupOptions']['MaskFolderRoot'] = glm_config.config['GLMSetupOptions']['TargetDirectory']
+    glm_config.config['GLMSetupOptions']['PreppedDataDirectory'] =  os.path.join(project_path, "data_GLMPrep")
+
+    glm_config.config['Level1Setups'][0]['TargetDirectory'] = os.path.join(project_path, "data_GLMPrep")
+    glm_config.config['Level1Setups'][0]['FSFDir'] = os.path.join(project_path, "l1_fsfs")
+    glm_config.config['Level1Setups'][0]['EVDirectory'] = os.path.join(project_path, "data_onsets")
+    glm_config.config['Level1Setups'][0]['ConfoundDirectory'] = os.path.join(project_path, "data_GLMPrep")
+    glm_config.config['Level1Setups'][0]['OutputDir'] = os.path.join(project_path, "l1_feat_folders")
+
+    glm_config.config['Level2Setups'][0]['OutputDir'] = os.path.join(project_path, "l2_gfeat_folders")
+    glm_config.config['Level2Setups'][0]['OutputDir'] = os.path.join(project_path, "l2_fsfs")
+
+    glm_config.config['GLMSetupOptions']['LogDirectory'] = os.path.join(project_path, "logs", "glm_setup_logs")
+
+    glm_config.config_json_dump(project_path, "glm_config.json")

@@ -228,8 +228,6 @@ def random_nii_mask(tmp_path) -> Path:
     nib.save(nii, nii_path)
     return nii_path
 
-
-
 @pytest.fixture(scope="session")
 def config_file(clpipe_dir):
     return clpipe_dir / "clpipe_config.json"
@@ -298,47 +296,10 @@ def clpipe_dir_old_glm_config(tmp_path_factory):
     project_dir = tmp_path_factory.mktemp(PROJECT_TITLE)
 
     # Monkeypatch setup_glm to use the old method
-    ClpipeConfigParser.setup_glm = _old_setup_glm
+    ClpipeConfigParser.setup_glm = utils.old_setup_glm
 
-    GLMConfigParser.__init__ = _old_setup_glm_init
+    GLMConfigParser.__init__ = utils.old_GLMConfigParser_init
 
     project_setup(project_title=PROJECT_TITLE, project_dir=str(project_dir))
 
     return project_dir
-
-
-def _old_setup_glm_init(self, glm_config_file=None):
-        import json
-        from pkg_resources import resource_stream
-        from clpipe.config_json_parser import config_json_parser
-
-        if glm_config_file is None:
-            with resource_stream(__name__, '/data/old_GLMConfig.json') as def_config:
-                self.config = json.load(def_config)
-        else:
-            self.config = config_json_parser(glm_config_file)
-
-
-def _old_setup_glm(self, project_path):
-    """Runs glm setup according to <= v1.7.3"""
-    import os
-    
-    glm_config = GLMConfigParser()
-
-    glm_config.config['GLMSetupOptions']['ParentClpipeConfig'] = os.path.join(project_path, "clpipe_config.json")
-    glm_config.config['GLMSetupOptions']['TargetDirectory'] = os.path.join(project_path, "data_fmriprep", "fmriprep")
-    glm_config.config['GLMSetupOptions']['MaskFolderRoot'] = glm_config.config['GLMSetupOptions']['TargetDirectory']
-    glm_config.config['GLMSetupOptions']['PreppedDataDirectory'] =  os.path.join(project_path, "data_GLMPrep")
-
-    glm_config.config['Level1Setups'][0]['TargetDirectory'] = os.path.join(project_path, "data_GLMPrep")
-    glm_config.config['Level1Setups'][0]['FSFDir'] = os.path.join(project_path, "l1_fsfs")
-    glm_config.config['Level1Setups'][0]['EVDirectory'] = os.path.join(project_path, "data_onsets")
-    glm_config.config['Level1Setups'][0]['ConfoundDirectory'] = os.path.join(project_path, "data_GLMPrep")
-    glm_config.config['Level1Setups'][0]['OutputDir'] = os.path.join(project_path, "l1_feat_folders")
-
-    glm_config.config['Level2Setups'][0]['OutputDir'] = os.path.join(project_path, "l2_gfeat_folders")
-    glm_config.config['Level2Setups'][0]['OutputDir'] = os.path.join(project_path, "l2_fsfs")
-
-    glm_config.config['GLMSetupOptions']['LogDirectory'] = os.path.join(project_path, "logs", "glm_setup_logs")
-
-    glm_config.config_json_dump(project_path, "glm_config.json")
