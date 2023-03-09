@@ -10,8 +10,6 @@ import nipype.pipeline.engine as pe
 from nilearn import plotting
 from nilearn.image import load_img, index_img
 
-from click.testing import CliRunner
-
 sys.path.append('../clpipe')
 from clpipe.project_setup import project_setup
 from clpipe.config_json_parser import ClpipeConfigParser, GLMConfigParser
