@@ -107,6 +107,16 @@ def clpipe_dir(tmp_path_factory):
 
     return project_dir
 
+@pytest.fixture(scope="session")
+def clpipe_dir_old_glm_config(tmp_path_factory):
+    """Fixture which provides a temporary clpipe project folder."""
+    
+    project_dir = tmp_path_factory.mktemp(PROJECT_TITLE + "_old_glm_setup")
+
+    project_setup(project_title=PROJECT_TITLE, project_dir=str(project_dir))
+
+    return project_dir
+
 @pytest.fixture(scope="module")
 def clpipe_dicom_dir(clpipe_dir):
     """Fixture which adds different varieties of DICOM folder structures"""
