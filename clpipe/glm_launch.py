@@ -44,14 +44,15 @@ def glm_launch(glm_config_file: str=None, level: int=L1,
         setup = 'Level2Setups'
     else:
         logger.error(f"Level must be {L1} or {L2}")
-        sys.exit(0)
+        sys.exit(1)
 
     logger.info(f"Setting up {level} .fsf launch using model: {model}")
 
     block = [x for x in glm_config[setup] \
             if x['ModelName'] == str(model)]
     if len(block) is not 1:
-        raise ValueError("Model not found, or multiple entries found.")
+        logger.error("Model not found, or multiple entries found.")
+        sys.exit(1)
     model_options = block[0]
 
     try:
@@ -98,13 +99,13 @@ def glm_launch(glm_config_file: str=None, level: int=L1,
    
     num_jobs = len(submission_strings)
 
-    if batch_manager:
-        _populate_batch_manager(batch_manager, submission_strings)
-        if submit:
-            logger.info(f"Running {num_jobs} job(s) in batch mode")
-            batch_manager.submit_jobs()
-        else:
-            batch_manager.print_jobs()
+    _populate_batch_manager(batch_manager, submission_strings)
+    if submit:
+        logger.info(f"Running {num_jobs} job(s) in batch mode")
+        batch_manager.submit_jobs()
+    else:
+        batch_manager.print_jobs()
+    sys.exit(0)
 
 
 def _setup_batch_manager(batch_config_path: str, log_dir: str, 
