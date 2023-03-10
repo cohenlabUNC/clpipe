@@ -73,11 +73,11 @@ class ClpipeConfigParser:
         self.setup_bids_validation(None)
         self.setup_fmriprep_directories(os.path.join(self.config['ProjectDirectory'], 'data_BIDS'),
                                         None, os.path.join(self.config['ProjectDirectory'], 'data_fmriprep'))
-        self.setup_postproc(os.path.join(self.config['FMRIPrepOptions']['OutputDirectory'], 'fmriprep'),
+        self.setup_postproc(self.config['FMRIPrepOptions']['OutputDirectory'],
                             target_suffix= None,
                             output_dir= os.path.join(self.config['ProjectDirectory'], 'data_postproc', 'postproc_default'),
                             output_suffix= 'postproc.nii.gz')
-        self.setup_postproc(os.path.join(self.config['FMRIPrepOptions']['OutputDirectory'], 'fmriprep'),
+        self.setup_postproc(self.config['FMRIPrepOptions']['OutputDirectory'],
                             target_suffix=None,
                             output_dir=os.path.join(self.config['ProjectDirectory'], 'data_postproc', 'betaseries_default'),
                             output_suffix='betaseries.nii.gz', beta_series=True)
