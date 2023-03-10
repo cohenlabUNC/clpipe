@@ -27,8 +27,7 @@ def glm_prepare(glm_config_file: str=None, level: int=L1,
                 model: str=None, debug: bool=False):
     glm_config_parser = GLMConfigParser(glm_config_file)
     glm_config = glm_config_parser.config
-    glm_setup_options = glm_config["GLMSetupOptions"]
-    parent_config = glm_setup_options["ParentClpipeConfig"]
+    parent_config = glm_config["ParentClpipeConfig"]
 
     config = ClpipeConfigParser()
     config.config_updater(parent_config)
@@ -47,7 +46,7 @@ def glm_prepare(glm_config_file: str=None, level: int=L1,
         logger.error(f"Level must be {L1} or {L2}")
         sys.exit(1)
 
-    logger.info(f"Targeting task-{glm_setup_options['TaskName']} {level} model: {model}")
+    logger.info(f"Targeting task-{glm_config['TaskName']} {level} model: {model}")
 
     block = [x for x in glm_config[setup] \
             if x['ModelName'] == str(model)]
@@ -56,16 +55,19 @@ def glm_prepare(glm_config_file: str=None, level: int=L1,
     model_options = block[0]
 
     if level == L1:
-        _glm_l1_propagate(model_options, glm_setup_options, logger)
+        _glm_l1_propagate(model_options, glm_config["TaskName"], 
+                          glm_config['ReferenceImage'], logger)
+        sys.exit(0)
     elif level == L2:
         try:
-            _glm_l2_propagate(model_options, glm_setup_options, logger)
+            _glm_l2_propagate(model_options, glm_config['ReferenceImage'], logger)
+            sys.exit(0)
         except ModelNotFoundError as mnfe:
             logger.error(mnfe)
             sys.exit(1)
 
 
-def _glm_l1_propagate(l1_block, glm_setup_options, logger):
+def _glm_l1_propagate(l1_block, task_name, reference_image, logger):
     with open(l1_block['FSFPrototype']) as f:
         fsf_file_template=f.readlines()
 
@@ -93,7 +95,7 @@ def _glm_l1_propagate(l1_block, glm_setup_options, logger):
                        os.path.basename(file_path) not in l1_block['ImageExcludeList']]
 
     image_files = [file for file in image_files if
-                         "task-" + glm_setup_options["TaskName"] in file]
+                         "task-" + task_name in file]
 
     if not os.path.exists(l1_block['FSFDir']):
         os.mkdir(l1_block['FSFDir'])
@@ -116,8 +118,8 @@ def _glm_l1_propagate(l1_block, glm_setup_options, logger):
             new_fsf[output_ind[0]] = "set fmri(outputdir) \"" + os.path.abspath(out_dir) + "\"\n"
             new_fsf[image_files_ind[0]] = "set feat_files(1) \"" + os.path.abspath(file) + "\"\n"
 
-            if glm_setup_options['ReferenceImage'] is not "":
-                new_fsf[regstandard_ind[0]] = "set fmri(regstandard) \"" + os.path.abspath(glm_setup_options['ReferenceImage']) + "\"\n"
+            if reference_image is not "":
+                new_fsf[regstandard_ind[0]] = "set fmri(regstandard) \"" + os.path.abspath(reference_image['ReferenceImage']) + "\"\n"
             if l1_block['ConfoundSuffix'] is not "":
                 new_fsf[confound_file_ind[0]] = "set confoundev_files(1) \"" + os.path.abspath(ev_conf['Confounds']) + "\"\n"
 
@@ -172,7 +174,7 @@ def _get_ev_confound_mat(file, l1_block, logger):
     return {"EVs": EV_files}
 
 
-def _glm_l2_propagate(l2_block, glm_setup_options, logger):
+def _glm_l2_propagate(l2_block, reference_image, logger):
     subject_file = l2_block['SubjectFile']
     prototype_file = l2_block['FSFPrototype']
     
@@ -227,8 +229,8 @@ def _glm_l2_propagate(l2_block, glm_setup_options, logger):
             out_fsf = os.path.join(l2_block['FSFDir'],
                                    fsf + ".fsf")
 
-            if glm_setup_options['ReferenceImage'] is not "":
-                new_fsf[regstandard_ind[0]] = "set fmri(regstandard) \"" + os.path.abspath(glm_setup_options['ReferenceImage']) + "\"\n"
+            if reference_image is not "":
+                new_fsf[regstandard_ind[0]] = "set fmri(regstandard) \"" + os.path.abspath(reference_image) + "\"\n"
 
             with open(out_fsf, "w") as fsf_file:
                 fsf_file.writelines(new_fsf)
