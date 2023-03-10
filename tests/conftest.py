@@ -269,14 +269,13 @@ def glm_config_default():
 def glm_config_file(clpipe_fmriprep_dir: Path) -> Path:
     """Provides a reference to a glm_config.json file that
     has been setup in the context of a mock project.
-
-    Args:
-        clpipe_fmriprep_dir (Path): Path to a mock fmriprep clpipe project
-
-    Returns:
-        Path: Reference to mock glm_config.json file.
     """
     return clpipe_fmriprep_dir / "glm_config.json"
+
+@pytest.fixture(scope="session")
+def old_glm_config_file(clpipe_dir_old_glm_config: Path) -> Path:
+    """Returns a reference to an old-style glm config populated with project setup."""
+    return clpipe_dir_old_glm_config / "glm_config.json"
 
 #####################
 # Workflow Fixtures #
