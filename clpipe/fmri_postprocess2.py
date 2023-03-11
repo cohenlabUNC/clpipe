@@ -6,7 +6,6 @@ of subjects, distributing the workload across a cluster if requested.
 
 import sys
 import os
-import logging
 import warnings
 import json
 import click
@@ -22,17 +21,17 @@ import pydantic
 # This hides a pybids future warning
 with warnings.catch_warnings():
     warnings.filterwarnings("ignore", category=FutureWarning)
-    from bids import BIDSLayout, BIDSLayoutIndexer, config as bids_config
+    from bids import BIDSLayout
     from bids.layout import BIDSFile
 
 from .config_json_parser import ClpipeConfigParser
 from .config import *
 from .batch_manager import BatchManager, Job
-import nipype.pipeline.engine as pe
 from .postprocutils.workflows import build_image_postprocessing_workflow, \
     build_postprocessing_workflow
 from .postprocutils.confounds_workflows import \
     build_confounds_processing_workflow
+from .postprocutils.utils import draw_graph
 from .utils import add_file_handler, get_logger, resolve_fmriprep_dir
 from .errors import *
 
@@ -419,17 +418,12 @@ def postprocess_image(
         base_dir=subject_working_dir, crashdump_dir=log_dir)
     
     if postprocessing_config["WriteProcessGraph"]:
-        _draw_graph(postproc_wf, "processing_graph", stream_output_dir, logger=logger)
+        draw_graph(postproc_wf, "processing_graph", stream_output_dir, logger=logger)
 
     postproc_wf.inputs.inputnode.in_file = image_path
     postproc_wf.inputs.inputnode.confounds_file = confounds_path
 
     postproc_wf.run()
-
-    # Disabled until this plotting works with .nii.gz
-    # if not confounds_only:
-    #     _plot_image_sample(image_export_path, title=pipeline_name)
-   
     sys.exit(0)
 
 
@@ -496,46 +490,6 @@ def _setup_confounds_wf(postprocessing_config, pipeline_name, tr, export_file,
         base_dir=working_dir, crashdump_dir=log_dir)
 
     return confounds_wf
-
-
-def _draw_graph(wf: pe.Workflow, graph_name: str, out_dir: Path, 
-    graph_style: str=DEFAULT_GRAPH_STYLE, logger: logging.Logger=None):
-
-    graph_image_path = out_dir / f"{graph_name}.dot"
-    if logger:
-        logger.info(f"Drawing confounds workflow graph: {graph_image_path}")
-    
-        wf.write_graph(dotfilename=graph_image_path, graph2use=graph_style)
-    
-
-def _plot_image_sample(image_path: os.PathLike, 
-    title: str= "image_sample.png", display_mode: str="mosaic"):
-    """Plots a sample volume from the midpoint of the given 4D image 
-    to allow quick
-    visual inspection of the fidelity of processing results.
-
-    Args:
-        image_path (os.PathLike): Path to the 4D image to plot.
-        title (str, optional): The title for the plot. 
-              Defaults to "image_sample.png".
-        display_mode (str, optional): Method for displaying the plot. 
-              Defaults to "mosaic".
-    """
-
-    pass
-    # main_image = load_img(image_path)
-
-    # # Grab a slice from the midpoint
-    # image_slice = index_img(
-    #   main_image, int(main_image.shape[IMAGE_TIME_DIMENSION_INDEX] / 2))
-
-    # # Create a save path in the same directory as the image_path
-    # output_path = Path(image_path).parent / title
-
-    # plotting.plot_epi(
-    #   image_slice, title=title, output_file=output_path, 
-    #   display_mode=display_mode)
-
 
 def _fetch_postprocessing_stream_config(
     config: dict, stream_output_dir: os.PathLike, 
