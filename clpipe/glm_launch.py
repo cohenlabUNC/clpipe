@@ -43,8 +43,7 @@ def glm_launch(glm_config_file: str=None, level: int=L1,
     config.config_updater(parent_config)
 
     project_dir = config.config["ProjectDirectory"]
-    add_file_handler(os.path.join(project_dir, "logs"))
-    logger = get_logger(STEP_NAME, debug=debug)
+    logger = get_logger(STEP_NAME, debug=debug, log_dir=os.path.join(project_dir, "logs"))
 
     if warn_deprecated:
         logger.warn(DEPRECATION_MSG)
