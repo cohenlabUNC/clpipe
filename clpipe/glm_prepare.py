@@ -22,12 +22,25 @@ from .config import *
 from .errors import *
 
 STEP_NAME = "prepare"
+DEPRECATION_MSG = "Using deprecated GLM setup file."
 
 def glm_prepare(glm_config_file: str=None, level: int=L1,
                 model: str=None, debug: bool=False):
     glm_config_parser = GLMConfigParser(glm_config_file)
     glm_config = glm_config_parser.config
-    parent_config = glm_config["ParentClpipeConfig"]
+
+    warn_deprecated = False
+    try:
+        # These working indicates the user has a glm_config file from < v1.7.4
+        # In this case, use the GLMSetupOptions block as root dict
+        task_name = glm_config['GLMSetupOptions']['TaskName']
+        reference_image = glm_config['GLMSetupOptions']['ReferenceImage']
+        parent_config = glm_config['GLMSetupOptions']['ParentClpipeConfig']
+        warn_deprecated = True
+    except KeyError:
+        task_name = glm_config['TaskName']
+        parent_config = glm_config["ParentClpipeConfig"]
+        reference_image = glm_config['ReferenceImage']
 
     config = ClpipeConfigParser()
     config.config_updater(parent_config)
@@ -35,6 +48,9 @@ def glm_prepare(glm_config_file: str=None, level: int=L1,
     project_dir = config.config["ProjectDirectory"]
     add_file_handler(os.path.join(project_dir, "logs"))
     logger = get_logger(STEP_NAME, debug=debug)
+
+    if warn_deprecated:
+        logger.warn(DEPRECATION_MSG)
 
     if level in VALID_L1:
         level = L1
@@ -46,7 +62,7 @@ def glm_prepare(glm_config_file: str=None, level: int=L1,
         logger.error(f"Level must be {L1} or {L2}")
         sys.exit(1)
 
-    logger.info(f"Targeting task-{glm_config['TaskName']} {level} model: {model}")
+    logger.info(f"Targeting task-{task_name} {level} model: {model}")
 
     block = [x for x in glm_config[setup] \
             if x['ModelName'] == str(model)]
@@ -55,12 +71,11 @@ def glm_prepare(glm_config_file: str=None, level: int=L1,
     model_options = block[0]
 
     if level == L1:
-        _glm_l1_propagate(model_options, glm_config["TaskName"], 
-                          glm_config['ReferenceImage'], logger)
+        _glm_l1_propagate(model_options, task_name, reference_image, logger)
         sys.exit(0)
     elif level == L2:
         try:
-            _glm_l2_propagate(model_options, glm_config['ReferenceImage'], logger)
+            _glm_l2_propagate(model_options, reference_image, logger)
             sys.exit(0)
         except ModelNotFoundError as mnfe:
             logger.error(mnfe)
