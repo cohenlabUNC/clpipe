@@ -33,6 +33,7 @@ def glm_prepare(glm_config_file: str=None, level: int=L1,
     try:
         # These working indicates the user has a glm_config file from < v1.7.4
         # In this case, use the GLMSetupOptions block as root dict
+        # TODO: when we get centralized config classes, this can be handled there
         task_name = glm_config['GLMSetupOptions']['TaskName']
         reference_image = glm_config['GLMSetupOptions']['ReferenceImage']
         parent_config = glm_config['GLMSetupOptions']['ParentClpipeConfig']
@@ -46,8 +47,7 @@ def glm_prepare(glm_config_file: str=None, level: int=L1,
     config.config_updater(parent_config)
 
     project_dir = config.config["ProjectDirectory"]
-    add_file_handler(os.path.join(project_dir, "logs"))
-    logger = get_logger(STEP_NAME, debug=debug)
+    logger = get_logger(STEP_NAME, debug=debug, log_dir=os.path.join(project_dir, "logs"))
 
     if warn_deprecated:
         logger.warn(DEPRECATION_MSG)
