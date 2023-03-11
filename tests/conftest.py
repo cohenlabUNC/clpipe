@@ -278,6 +278,12 @@ def config_file_fmriprep(clpipe_fmriprep_dir: Path):
 
     return clpipe_fmriprep_dir / "clpipe_config.json"
 
+@pytest.fixture(scope="session")
+def config_file_legacy_fmriprep(clpipe_legacy_fmriprep_dir: Path):
+    """Return config file from the test <= v20 fmriprep directory."""
+
+    return clpipe_legacy_fmriprep_dir / "clpipe_config.json"
+
 @pytest.fixture(scope="module")
 def glm_config_default():
     """Returns the default glm config file."""
