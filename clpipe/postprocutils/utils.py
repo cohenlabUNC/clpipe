@@ -1,7 +1,10 @@
 import numpy
 from scipy.signal import butter, sosfilt, iirnotch, filtfilt
 import logging
+from pathlib import Path
+import nipype.pipeline.engine as pe
 
+DEFAULT_GRAPH_STYLE = "colored"
 
 def find_sub_list(sl, l):
     results = []
@@ -127,5 +130,11 @@ def notch_filter(motion_params, band, tr):
     filt_fd = numpy.pad(filt_fd, (1,0), mode='constant', constant_values=[numpy.nan])
     return filt_fd
 
+def draw_graph(wf: pe.Workflow, graph_name: str, out_dir: Path, 
+    graph_style: str=DEFAULT_GRAPH_STYLE, logger: logging.Logger=None):
 
-
+    graph_image_path = out_dir / f"{graph_name}.dot"
+    if logger:
+        logger.info(f"Drawing confounds workflow graph: {graph_image_path}")
+    
+        wf.write_graph(dotfilename=graph_image_path, graph2use=graph_style)
