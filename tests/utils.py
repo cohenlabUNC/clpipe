@@ -54,7 +54,7 @@ def populate_with_DICOM(project_dir: Path, num_subjects=DEFAULT_NUM_DICOM_SUBJEC
 
 def populate_with_fmriprep(project_dir: Path, sample_raw_image, sample_raw_image_mask, 
     sample_confounds_timeseries, sample_melodic_mixing, sample_aroma_noise_ics, 
-    sample_fmriprep_dataset_description, num_subjects=DEFAULT_NUM_FMRIPREP_SUBJECTS):
+    sample_fmriprep_dataset_description, num_subjects=DEFAULT_NUM_FMRIPREP_SUBJECTS, legacy = False):
     tasks = ["rest", "1", "2_run-1", "2_run-2"]
 
     image_space = "space-MNI152NLin2009cAsym"
@@ -65,8 +65,11 @@ def populate_with_fmriprep(project_dir: Path, sample_raw_image, sample_raw_image
     melodic_mixing_suffix = "desc-MELODIC_mixing.tsv"
     aroma_noise_ics_suffix = "AROMAnoiseICs.csv"
 
-    fmriprep_dir = project_dir / "data_fmriprep" / "fmriprep"
-    fmriprep_dir.mkdir(parents=True)
+    if(legacy):
+        fmriprep_dir = project_dir / "data_fmriprep" / "fmriprep"
+    else:
+        fmriprep_dir = project_dir / "data_fmriprep"
+    fmriprep_dir.mkdir(parents=True, exist_ok=True)
 
     shutil.copy(sample_fmriprep_dataset_description, fmriprep_dir)
 

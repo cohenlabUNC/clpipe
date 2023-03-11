@@ -179,7 +179,25 @@ def clpipe_fmriprep_dir(tmp_path_factory, sample_raw_image, sample_raw_image_mas
     utils.populate_with_BIDS(project_dir)
     utils.populate_with_fmriprep(project_dir, sample_raw_image, sample_raw_image_mask, 
         sample_confounds_timeseries, sample_melodic_mixing, sample_aroma_noise_ics, 
-        sample_fmriprep_dataset_description)
+        sample_fmriprep_dataset_description, legacy = False)
+
+    return project_dir
+
+#TODO: seperate AROMA into its own type of fmriprep dir
+@pytest.fixture(scope="session")
+def clpipe_legacy_fmriprep_dir(tmp_path_factory, sample_raw_image, sample_raw_image_mask, 
+    sample_confounds_timeseries, sample_melodic_mixing, sample_aroma_noise_ics, 
+    sample_fmriprep_dataset_description) -> Path:
+    """ Fixture which adds fmriprep subject folders and mock 
+    fmriprep output data to data_fmriprep directory of clpipe project.
+    """
+    project_dir = tmp_path_factory.mktemp("clpipe_bids_legacy_fmriprep_dir")
+    project_setup(project_title=PROJECT_TITLE, project_dir=str(project_dir))
+
+    utils.populate_with_BIDS(project_dir)
+    utils.populate_with_fmriprep(project_dir, sample_raw_image, sample_raw_image_mask, 
+        sample_confounds_timeseries, sample_melodic_mixing, sample_aroma_noise_ics, 
+        sample_fmriprep_dataset_description, legacy = True)
 
     return project_dir
 

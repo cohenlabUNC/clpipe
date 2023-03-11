@@ -39,7 +39,17 @@ def append_suffix(original_path, suffix_to_add):
 
     return out_file
 
-
+def resolve_fmriprep_dir_new(fmriprep_dir):
+    fmriprep_root = fmriprep_dir
+    if os.path.exists(fmriprep_root) and not os.path.exists(os.path.join(fmriprep_root,'fmriprep')):
+        return fmriprep_root
+    elif os.path.exists(fmriprep_root) and os.path.exists(os.path.join(fmriprep_root,'fmriprep')):
+        fmriprep_root = os.path.join(fmriprep_root,'fmriprep')
+        return fmriprep_root
+    else:
+        fmriprep_root = os.path.join(fmriprep_root,'/..')
+        return fmriprep_root
+    
 def resolve_fmriprep_dir(fmriprep_dir):
     """Support fMRIPrep the folder structure in version < 21 or version > 21.
     
