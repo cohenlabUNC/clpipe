@@ -386,6 +386,13 @@ def fmri_postprocess2_cli(subjects, config_file, fmriprep_dir, output_dir,
 def glm_setup_cli(subjects, config_file, glm_config_file, submit, batch, debug, 
                   drop_tps):
     """
+    Additional preprocessing for GLM analysis.
+
+    Providing no SUBJECTS will default to all subjects.
+    List subject IDs in SUBJECTS to process specific subjects: 
+
+    > clpipe glm setup 123 124 125 ...
+
     ******************************************
 
     WARNING: This command has been deprecated, as its functionality has been
@@ -395,13 +402,6 @@ def glm_setup_cli(subjects, config_file, glm_config_file, submit, batch, debug,
     You may still run this command with a valid GLMSetupOptions block.
 
     ******************************************
-
-    Additional preprocessing for GLM analysis.
-
-    Providing no SUBJECTS will default to all subjects.
-    List subject IDs in SUBJECTS to process specific subjects: 
-
-    > clpipe glm setup 123 124 125 ...
     """
     from .glm_setup import glm_setup
     glm_setup(
