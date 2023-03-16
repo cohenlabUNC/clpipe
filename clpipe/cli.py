@@ -117,9 +117,12 @@ def reports_cli():
 
 def _add_commands():
     cli.add_command(project_setup_cli, help_priority=0)
+    cli.add_command(convert2bids_cli, help_priority=10)
+    cli.add_command(bids_validate_cli, help_priority=15)
     cli.add_command(fmriprep_process_cli, help_priority=20)
     cli.add_command(fmri_postprocess_cli, help_priority=30)
     cli.add_command(fmri_postprocess2_cli, help_priority=35)
+    cli.add_command(flywheel_sync_cli, help_priority=55)
 
     dicom_cli.add_command(flywheel_sync_cli)
     dicom_cli.add_command(convert2bids_cli)
@@ -140,8 +143,8 @@ def _add_commands():
     reports_cli.add_command(get_fmriprep_reports_cli)
     reports_cli.add_command(fmri_process_check)
 
-    cli.add_command(bids_cli, help_priority=10)
-    cli.add_command(dicom_cli, help_priority=5)
+    cli.add_command(bids_cli, help_priority=11, hidden=True)
+    cli.add_command(dicom_cli, help_priority=5, hidden=True)
     cli.add_command(glm_cli, help_priority=40)
     cli.add_command(roi_cli, help_priority=50)
     cli.add_command(reports_cli, help_priority=60)

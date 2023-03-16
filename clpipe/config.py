@@ -80,7 +80,7 @@ MODE_HELP = (
 )
 
 # BIDS Validation Help
-VALIDATOR_COMMAND_NAME = "validate"
+VALIDATOR_COMMAND_NAME = "bids_validate"
 VERBOSE_HELP = (
     "Creates verbose validator output. Use if you want to see ALL files "
     "with errors/warnings."
