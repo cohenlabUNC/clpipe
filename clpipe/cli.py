@@ -385,8 +385,19 @@ def fmri_postprocess2_cli(subjects, config_file, fmriprep_dir, output_dir,
               help='Print detailed processing information and traceback for errors.')
 def glm_setup_cli(subjects, config_file, glm_config_file, submit, batch, debug, 
                   drop_tps):
-    """Additional preprocessing for GLM analysis.
-    
+    """
+    ******************************************
+
+    WARNING: This command has been deprecated, as its functionality has been
+    replicated and expanded on by the postprocess2 command.
+    If you ran setup with clpipe 1.8+, you will not be able to run this command
+    due to the removal of GLMSetupOptions from the default glm configuration file.
+    You may still run this command with a valid GLMSetupOptions block.
+
+    ******************************************
+
+    Additional preprocessing for GLM analysis.
+
     Providing no SUBJECTS will default to all subjects.
     List subject IDs in SUBJECTS to process specific subjects: 
 
