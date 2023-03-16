@@ -57,21 +57,21 @@ def get_study_outliers(confounds_dir, output_file, confounds_suffix='confounds.t
     logger = logging.getLogger('ConfoundsDir')
     logger.level = logging.INFO
     
-    confounds_files = []
+    to_process = []
     match_pattern = f"sub-*/**/*{confounds_suffix}"
 
     confounds_files = list(Path(confounds_dir).glob(match_pattern))
     if len(confounds_files) == 0:
         raise ValueError(f"No confounds files found matching pattern: {match_pattern}. Try setting the --confounds_suffix option to match your confounds file name.")
 
-    for confounds_file in Path(confounds_dir).glob(match_pattern):
+    for confounds_file in confounds_files:
         logger.debug(f"Found confounds file: {confounds_file}")
-        confounds_files.append((confounds_file))
+        to_process.append(confounds_file)
 
     logger.info(f"Calculating outlier counts for {len(confounds_files)} images")
 
     with Pool(processes=20) as pool:
-        result = pd.concat(pool.map(get_image_confounds, confounds_files))
+        result = pd.concat(pool.map(get_image_confounds, to_process))
         result.set_index('confound_file', inplace=True)
         print(result)
         result.to_csv(output_file, sep='\t')
