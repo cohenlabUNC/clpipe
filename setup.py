@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 PACKAGE_NAME = 'clpipe'
-VERSION = '1.7.4'
+VERSION = '1.8.0'
 
 DESCRIPTION = 'clpipe: MRI processing pipeline for high performance clusters'
 REPO_URL = 'https://github.com/cohenlabUNC/clpipe'
