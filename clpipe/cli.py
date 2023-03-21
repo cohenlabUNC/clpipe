@@ -165,7 +165,7 @@ def _add_commands():
 def project_setup_cli(project_title=None, project_dir=None, source_data=None, 
                       move_source_data=None, symlink_source_data=None,
                       debug=False):
-    """Set up a clpipe project."""
+    """Initialize a clpipe project."""
     from .project_setup import project_setup
     project_setup(
         project_title=project_title, 
