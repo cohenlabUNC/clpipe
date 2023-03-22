@@ -211,7 +211,7 @@ def convert2bids_cli(dicom_dir, dicom_dir_format, bids_dir,
     Providing no SUBJECTS will default to all subjects.
     List subject IDs in SUBJECTS to process specific subjects: 
 
-    > clpipe bids convert 123 124 125 ...
+    > clpipe convert2bids 123 124 125 ...
 
     Available subject IDs are determined by the dicom_dir_format string.
     """
