@@ -41,5 +41,5 @@ This command will create the necessary directory structures, as well as create a
     |-- scripts
 
 .. click:: clpipe.cli:project_setup_cli
-	:prog: project_setup
+	:prog: clpipe project_setup
 	:nested: full
