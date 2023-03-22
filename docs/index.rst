@@ -16,6 +16,7 @@ clpipe was developed to streamline the processing of MRI data using the high per
    :caption: Documentation
 
    install
+   overview
    project_setup
    configfiles
    bids_convert
@@ -24,7 +25,6 @@ clpipe was developed to streamline the processing of MRI data using the high per
    postprocessing
    glm
    roi_extraction
-   cli
    dicom_sync
    changelog
 
