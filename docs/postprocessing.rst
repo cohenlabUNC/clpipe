@@ -9,8 +9,7 @@ clpipe implements these steps in Python, and a fMRIprep preprocessed dataset can
 be postprocessed using the following command:
 
 .. click:: clpipe.cli:fmri_postprocess_cli
-	:prog: fmri_postprocess
-	:nested: full
+	:prog: clpipe postprocess
 
 
 
@@ -32,8 +31,7 @@ please see the following documentation:
 4. Spectral Interpolation
 
 .. click:: clpipe.fmri_process_check:fmri_process_check
-	:prog: fmri_process_check
-	:nested: full
+	:prog: clpipe reports fmri-process-check
 
 
 SUSAN Spatial Smoothing
@@ -47,7 +45,6 @@ see config file for more details.
 
 .. click:: clpipe.susan_smoothing:susan_smoothing
 	:prog: susan_smoothing
-	:nested: full
 
 
 fmri_postprocess2
@@ -81,8 +78,7 @@ Available processing steps:
 .. image:: resources/example_pipeline.png
 
 .. click:: clpipe.fmri_postprocess2:fmri_postprocess2_cli
-	:prog: fmri_postprocess2
-	:nested: full
+	:prog: clpipe postprocess2
 
 Configuration Setup
 ===================
