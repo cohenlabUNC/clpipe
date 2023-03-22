@@ -74,6 +74,8 @@ which can be accessed like this: ``clpipe <command> <sub-command>``
 These commands contain their own help dialogue as well:
 
 .. code-block:: console
+    
+    > clpipe glm launch -help 
 
     Usage: clpipe glm launch [OPTIONS] LEVEL MODEL
 
