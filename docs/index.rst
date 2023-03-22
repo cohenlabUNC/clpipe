@@ -21,7 +21,7 @@ clpipe was developed to streamline the processing of MRI data using the high per
    configfiles
    bids_convert
    bids_validation
-   fmriprep
+   preprocessing
    postprocessing
    glm
    roi_extraction
