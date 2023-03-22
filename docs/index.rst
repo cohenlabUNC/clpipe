@@ -25,7 +25,7 @@ clpipe was developed to streamline the processing of MRI data using the high per
    postprocessing
    glm
    roi_extraction
-   dicom_sync
+   flywheel_sync
    changelog
 
 .. toctree::

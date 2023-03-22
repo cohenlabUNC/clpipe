@@ -3,7 +3,7 @@ Flywheel Sync
 ===========================
 
 clpipe now provides an avenue for syncing DICOM data with a remote source through
-the `clpipe dicom flywheel_sync` command.
+the ``clpipe flywheel_sync`` command.
 
 -------------------------------
 Setup
@@ -16,10 +16,10 @@ Flywheel web app.
 
 You will also need to login to Flywheel via the Flywheel CLI to use this command.
 Navigate to the Flywheel web app. In the upper right, click on your profile drop down menu, select 'profile'.
-Scroll down and copy the command under 'Getting Started With the CLI.' It should look like: 'login <FLYWHEEL URL>::<TOKEN>'. 
+Scroll down and copy the command under 'Getting Started With the CLI.' It should look like: ``login <FLYWHEEL URL>::<TOKEN>``. 
 Run this command to login.
 
-Finally, `flywheel_sync` requires the insertion of a new option block into your clpipe_config.json
+Finally, ``flywheel_sync`` requires the insertion of a new option block into your clpipe_config.json
 file, specifying the Flywheel path you wish to sync from, where these files should go,
 and your batch configuration:
 
@@ -29,7 +29,7 @@ and your batch configuration:
 		"SourceURL": "fw://<LAB>/<STUDY>/",
 		"DropoffDirectory": "/path/to/your/dicom_folder",
 		"TempDirectory": "/path/to/a/temp_folder",
-		"CommandLineOpts": "",
+		"CommandLineOpts": "-y",
 		"TimeUsage": "1:0:0",
 		"MemUsage": "10000",
 		"CoreUsage": "1"
@@ -48,7 +48,7 @@ flywheel_sync Options
 
 
 .. click:: clpipe.cli:flywheel_sync_cli
-	:prog: clpipe dicom flywheel_sync
+	:prog: clpipe flywheel_sync
 	:nested: full
 
 -------------------------------
@@ -58,7 +58,7 @@ Using with convert2bids
 Flywheel creates a DICOM folder structure that is too deep for the
 default depth setting of dcm2niix, which both dcm2bids and heudiconv use to discover
 DICOM files in your source directory. However, dcm2niix can be configured to search
-deeper with the `-d` option:
+deeper with the ``-d`` option:
 
  
 dcm2bids (clpipe default)
@@ -88,7 +88,7 @@ dcm2bids provides a method of passing options through to dcm2niix by adding a
 You must include all options shown, because this argument overwrites the dcm2niixOptions,
 as opposed to just appending to them.
 
-The options above add the `-d 9` option, setting dcm2niix's search depth to the maximum
+The options above add the ``-d 9`` option, setting dcm2niix's search depth to the maximum
 value.
 
 heudiconv
@@ -103,7 +103,7 @@ use this converter.
 Additional Notes
 -------------------------------
 
-This command creates its own log folder at `<project>/logs/sync_logs`
+This command creates its own log folder at ``<project>/logs/sync_logs``
 
 One quirk of Flywheel's sync command is that it creates a strangely named temporary directory at
 the currently working directory, which is empty after the sync is finished. clpipe
