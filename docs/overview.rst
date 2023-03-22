@@ -50,7 +50,7 @@ To see the documentation for a particular command, include the ``-help`` option:
     Initialize a clpipe project.
 
     Options:
-        -project_title TEXT     [required]
+        -project_title TEXT     Choose a title for your project.  [required]
         -project_dir DIRECTORY  Where the project will be located.  [required]
         -source_data DIRECTORY  Where the raw data (usually DICOMs) are located.
         -move_source_data       Move source data into project/data_DICOMs folder.

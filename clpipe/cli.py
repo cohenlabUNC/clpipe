@@ -152,7 +152,7 @@ def _add_commands():
 
 
 @click.command(SETUP_COMMAND_NAME, no_args_is_help=True)
-@click.option('-project_title', required=True, default=None)
+@click.option('-project_title', required=True, default=None, help=PROJECT_TITLE_HELP)
 @click.option('-project_dir', required=True ,type=CLICK_DIR_TYPE_NOT_EXIST,
               default=None, help=PROJECT_DIR_HELP)
 @click.option('-source_data', type=CLICK_DIR_TYPE_EXISTS,

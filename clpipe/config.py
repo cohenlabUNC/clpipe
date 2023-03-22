@@ -41,6 +41,7 @@ GLM_CONFIG_HELP = 'The path to your GLM configuration file.'
 
 # Project setup help
 SETUP_COMMAND_NAME = "project_setup"
+PROJECT_TITLE_HELP = "Choose a title for your project."
 PROJECT_DIR_HELP = "Where the project will be located."
 SOURCE_DATA_HELP = \
     "Where the raw data (usually DICOMs) are located."
