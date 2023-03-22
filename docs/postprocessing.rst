@@ -32,9 +32,6 @@ Available processing steps:
 
 .. image:: resources/example_pipeline.png
 
-.. click:: clpipe.fmri_postprocess2:fmri_postprocess2_cli
-	:prog: clpipe postprocess2
-
 Configuration Setup
 ===================
 
@@ -178,6 +175,12 @@ own set of processing steps. The second stream does the same thing, but
 specifies a filtering high pass by overriding the default value of -1 with
 .009. 
 
+Command
+===================
+
+.. click:: clpipe.cli:fmri_postprocess2_cli
+	:prog: clpipe postprocess2
+
 .. code-block:: json
 
 	...
@@ -232,7 +235,7 @@ Legacy postprocess Command
 ------------------
 
 Not all features of the legacy postprocess command have been implemented yet in
-postprocess2, namely those support functional connectivity, 
+postprocess2, namely some which support functional connectivity, 
 so the command remains available for this use.
 
 When performing functional connectivity analysis, there are several additional 
