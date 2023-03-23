@@ -1,7 +1,6 @@
 import click
 import sys
 import pkg_resources
-from .fmri_process_check import fmri_process_check
 from .config import *
 
 DEFAULT_HELP_PRIORITY = 5
@@ -138,7 +137,7 @@ def _add_commands():
     roi_cli.add_command(fmri_roi_extraction_cli, help_priority=2)
 
     reports_cli.add_command(get_fmriprep_reports_cli)
-    reports_cli.add_command(fmri_process_check)
+    reports_cli.add_command(get_fmri_process_check_cli)
 
     cli.add_command(bids_cli, help_priority=10)
     cli.add_command(dicom_cli, help_priority=5)
@@ -293,6 +292,20 @@ def get_fmriprep_reports_cli(config_file, output_name, clear_temp, debug):
     """
     from .get_reports import get_reports
     get_reports(config_file, output_name, debug, clear_temp=clear_temp)
+
+
+@click.command("fmri-process-check", no_args_is_help=True)
+@click.option('-config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True), required=True,
+              help='The configuration file for the current data processing setup.')
+@click.option('-output_file',
+              help='Path and name of the output archive. Defaults to current working directory and "Report_Archive.zip"')
+@click.option('-debug', is_flag=True, help='Print traceback and detailed processing messages.')
+def get_fmri_process_check_cli(config_file, output_file=None, debug=False):
+    """This command checks a BIDS dataset, an fMRIprep'ed dataset and a postprocessed 
+    dataset, and creates a CSV file that lists all scans across all three datasets. 
+    Use to find which subjects/scans failed processing."""
+    from .fmri_process_check import fmri_process_check
+    fmri_process_check(config_file, output_file, debug)
 
 
 @click.command(POSTPROCESS_COMMAND_NAME, no_args_is_help=True)
