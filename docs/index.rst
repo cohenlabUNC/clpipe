@@ -17,6 +17,7 @@ clpipe was developed to streamline the processing of MRI data using the high per
 
    install
    project_setup
+   overview
    configfiles
    bids_convert
    bids_validation
