@@ -1,9 +1,9 @@
 import click
 import sys
-import pkg_resources
 from .fmri_process_check import fmri_process_check
 from .config.cli import *
 from .config.postprocessing2 import DEFAULT_PROCESSING_STREAM
+from .config.package import VERSION
 
 DEFAULT_HELP_PRIORITY = 5
 
@@ -78,8 +78,7 @@ def cli(ctx, version):
 
     if ctx.invoked_subcommand is None:
         if version:
-            clpipe_version = pkg_resources.get_distribution("clpipe").version
-            print(f"clpipe v{clpipe_version}")
+            print(f"clpipe v{VERSION}")
             sys.exit(0)
         else:
             ctx = click.get_current_context()
