@@ -91,15 +91,6 @@ class ClpipeConfigParser:
                             output_dir=os.path.join(self.config['ProjectDirectory'], 'data_postproc',
                                                     'postproc_default'),
                             output_suffix='postproc_default.nii.gz')
-        # processing_streams = self.get_processing_stream_names()
-        # if processing_streams:
-        #     for stream in processing_streams:
-        #         self.update_processing_stream(stream,
-        #                                       output_dir= os.path.join(self.config['ProjectDirectory'], 'data_postproc', 'postproc_'+stream),
-        #                                       output_suffix='postproc_'+stream+".nii.gz")
-        #         self.update_processing_stream(stream,
-        #                                       output_dir= os.path.join(self.config['ProjectDirectory'], 'data_postproc', 'betaseries_'+stream),
-        #                                       output_suffix='betaseries_'+stream+".nii.gz", beta_series=True)
         self.setup_glm(self.config['ProjectDirectory'])
 
     def setup_glm(self, project_path):
