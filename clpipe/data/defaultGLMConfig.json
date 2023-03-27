@@ -3,7 +3,7 @@
   "Authors": "Me, myself, and I",
   "DateCreated": "",
   "ParentClpipeConfig":"",
-  "TaskName": "gng_example",
+  "TaskName": "SET TASK NAME",
   "ReferenceImage": "SET REFERENCE",
   "Level1Onsets": {
     "EventFileSuffix": "events.tsv",
