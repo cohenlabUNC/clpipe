@@ -2,7 +2,7 @@ import click
 import sys
 import pkg_resources
 from .fmri_process_check import fmri_process_check
-from .config import *
+from .config.cli import *
 
 DEFAULT_HELP_PRIORITY = 5
 
