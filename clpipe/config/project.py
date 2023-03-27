@@ -1,8 +1,7 @@
 from dataclasses import dataclass
 import marshmallow_dataclass
 import json, yaml, os
-import shutil
-from pkg_resources import resource_stream, resource_filename
+from pkg_resources import resource_stream
 from .bids import DICOM_to_BIDS, BIDSValidator
 from .fmri_prep import FMRIPrep
 from .beta_series import BetaSeries
@@ -15,7 +14,7 @@ from .reho import ReHoExtraction
 from .t2star import T2StarExtraction
 
 @dataclass
-class Config:
+class ProjectConfig:
     #Add variable names exactly same as json file
     ProjectTitle: str
     @property
@@ -201,9 +200,9 @@ class Config:
 class Meta:
     ordered = True
     
-def getConfig(json_file = None, yaml_file = None):
+def getProjectConfig(json_file = None, yaml_file = None):
     #Generate schema from given dataclasses
-    ConfigSchema = marshmallow_dataclass.class_schema(Config)
+    ConfigSchema = marshmallow_dataclass.class_schema(ProjectConfig)
 
     if(json_file == None and yaml_file == None):
         # Load default config
@@ -223,13 +222,13 @@ def getConfig(json_file = None, yaml_file = None):
     configDict = dict(zip(newNames, list(configDict.values())))
     return ConfigSchema().load(configDict)
 
-def dumpConfig(config, outputdir, filepath, yaml_file = False):
+def dumpProjectConfig(config, outputdir, filepath, yaml_file = False):
     if filepath is None:
             filepath = "defaultConfig.json"
     outpath = os.path.join(os.path.abspath(outputdir), filepath)
 
     #Generate schema from given dataclasses
-    ConfigSchema = marshmallow_dataclass.class_schema(Config)
+    ConfigSchema = marshmallow_dataclass.class_schema(ProjectConfig)
     configDict = ConfigSchema().dump(config)
     
     with open(outpath, 'w') as fp:
