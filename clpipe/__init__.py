@@ -1,6 +1,6 @@
 import logging
 
-from .config.meta import APPLICATION_NAME
+from .config.package import APPLICATION_NAME
 
 # Initialize logging config - this must be present for logging messages to work
 logging.basicConfig(level=logging.WARNING, 
