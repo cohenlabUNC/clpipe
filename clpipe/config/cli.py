@@ -1,3 +1,5 @@
+APPLICATION_NAME = "clpipe"
+
 # Global use help messages
 CONFIG_HELP = "The path to your clpipe configuration file."
 LOG_DIR_HELP = "Where to put your HPC output files (such as SLURM output files)."
