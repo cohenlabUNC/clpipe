@@ -160,4 +160,5 @@ def setup_glm_directories(project_path):
     os.mkdir(os.path.join(project_path, "l1_feat_folders"))
     os.mkdir(os.path.join(project_path, "l2_fsfs"))
     os.mkdir(os.path.join(project_path, "l2_gfeat_folders"))
-    os.makedirs(os.path.join(project_path, "logs", "glm_setup_logs"))
+    os.makedirs(os.path.join(project_path, "logs", "glm_logs", "L1_launch"))
+    os.mkdir(os.path.join(project_path, "logs", "glm_logs", "L2_launch"))
