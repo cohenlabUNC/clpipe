@@ -58,7 +58,6 @@ class ClpipeConfigParser:
         pass
 
     def validate_config(self):
-       # validate(self.config, self.configSchema)
         return 1
 
     def setup_project(self, project_title, project_dir, source_data):
