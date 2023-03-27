@@ -155,7 +155,6 @@ def setup_susan_directories(config):
     os.makedirs(config['SUSANOptions']['LogDirectory'], exist_ok=True)
 
 def setup_glm_directories(project_path):
-    os.mkdir(os.path.join(project_path, "data_GLMPrep"))
     os.mkdir(os.path.join(project_path, "l1_fsfs"))
     os.mkdir(os.path.join(project_path, "data_onsets"))
     os.mkdir(os.path.join(project_path, "l1_feat_folders"))

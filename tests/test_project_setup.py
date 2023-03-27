@@ -130,7 +130,6 @@ def project_paths() -> List[Path]:
         data_BIDS / 'CHANGES',
         data_BIDS / '.bidsignore',
         Path("data_fmriprep"),
-        Path("data_GLMPrep"),
         Path("data_onsets"),
         data_postproc,
         data_postproc / "betaseries_default",
