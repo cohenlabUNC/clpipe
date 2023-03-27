@@ -197,7 +197,7 @@ def clpipe_legacy_fmriprep_dir(tmp_path_factory, sample_raw_image, sample_raw_im
     utils.populate_with_BIDS(project_dir)
     utils.populate_with_fmriprep(project_dir, sample_raw_image, sample_raw_image_mask, 
         sample_confounds_timeseries, sample_melodic_mixing, sample_aroma_noise_ics, 
-        sample_fmriprep_dataset_description, legacy = True)
+        sample_fmriprep_dataset_description, legacy=True)
 
     return project_dir
 
@@ -218,7 +218,7 @@ def clpipe_dir_old_glm_config(tmp_path_factory, sample_raw_image, sample_raw_ima
     utils.populate_with_BIDS(project_dir)
     utils.populate_with_fmriprep(project_dir, sample_raw_image, sample_raw_image_mask, 
         sample_confounds_timeseries, sample_melodic_mixing, sample_aroma_noise_ics, 
-        sample_fmriprep_dataset_description)
+        sample_fmriprep_dataset_description, legacy=True)
 
     return project_dir
 
