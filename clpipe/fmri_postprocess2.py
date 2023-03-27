@@ -35,7 +35,6 @@ from .postprocutils.utils import draw_graph
 from .utils import add_file_handler, get_logger, resolve_fmriprep_dir
 from .errors import *
 
-DEFAULT_GRAPH_STYLE = "colored"
 PROCESSING_DESCRIPTION_FILE_NAME = "processing_description.json"
 IMAGE_TIME_DIMENSION_INDEX = 3
 IMAGE_SUBMISSION_STRING_TEMPLATE = (
