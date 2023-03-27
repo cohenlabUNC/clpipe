@@ -2,7 +2,7 @@ import os
 import sys
 from pathlib import Path
 
-from .config import *
+from .config.glm import *
 from .config_json_parser import GLMConfigParser, ClpipeConfigParser
 from .batch_manager import BatchManager, Job, DEFAULT_BATCH_CONFIG_PATH
 from .utils import get_logger

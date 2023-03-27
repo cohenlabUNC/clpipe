@@ -16,9 +16,9 @@ import pandas as pd
 import shutil
 from pathlib import Path
 
+from .config.glm import *
 from .config_json_parser import GLMConfigParser, ClpipeConfigParser
-from .utils import add_file_handler, get_logger
-from .config import *
+from .utils import get_logger
 from .errors import *
 
 STEP_NAME = "prepare"

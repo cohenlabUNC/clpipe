@@ -1,7 +1,7 @@
 import os
 import glob
 
-from clpipe.utils import add_file_handler, get_logger
+from clpipe.utils import get_logger
 from .batch_manager import BatchManager, Job
 from .postprocutils.utils import scrub_setup
 from .config_json_parser import ClpipeConfigParser, GLMConfigParser
