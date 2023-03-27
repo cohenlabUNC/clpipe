@@ -134,7 +134,7 @@ def _glm_l1_propagate(l1_block, task_name, reference_image, logger):
             new_fsf[image_files_ind[0]] = "set feat_files(1) \"" + os.path.abspath(file) + "\"\n"
 
             if reference_image is not "":
-                new_fsf[regstandard_ind[0]] = "set fmri(regstandard) \"" + os.path.abspath(reference_image['ReferenceImage']) + "\"\n"
+                new_fsf[regstandard_ind[0]] = "set fmri(regstandard) \"" + os.path.abspath(reference_image) + "\"\n"
             if l1_block['ConfoundSuffix'] is not "":
                 new_fsf[confound_file_ind[0]] = "set confoundev_files(1) \"" + os.path.abspath(ev_conf['Confounds']) + "\"\n"
 
