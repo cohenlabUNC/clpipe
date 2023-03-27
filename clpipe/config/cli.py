@@ -94,7 +94,7 @@ PROCESSING_STREAM_HELP = \
 INDEX_HELP = 'Give the path to an existing pybids index database.'
 REFRESH_INDEX_HELP = \
     'Refresh the pybids index database to reflect new fmriprep artifacts.'
-DEFAULT_PROCESSING_STREAM = "default"
+
 
 # GLM Help
 GLM_SETUP_COMMAND_NAME = "setup"

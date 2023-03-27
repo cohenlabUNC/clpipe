@@ -25,7 +25,6 @@ with warnings.catch_warnings():
     from bids.layout import BIDSFile
 
 from .config_json_parser import ClpipeConfigParser
-from .config import *
 from .batch_manager import BatchManager, Job
 from .postprocutils.workflows import build_image_postprocessing_workflow, \
     build_postprocessing_workflow
@@ -35,6 +34,7 @@ from .postprocutils.utils import draw_graph
 from .utils import add_file_handler, get_logger, resolve_fmriprep_dir
 from .errors import *
 
+STEP_NAME = "postprocess2"
 PROCESSING_DESCRIPTION_FILE_NAME = "processing_description.json"
 IMAGE_TIME_DIMENSION_INDEX = 3
 IMAGE_SUBMISSION_STRING_TEMPLATE = (
@@ -48,6 +48,7 @@ SUBJECT_SUBMISSION_STRING_TEMPLATE = (
     "{processing_stream} {config_file} {index_dir} {log_dir} {batch} {submit} "
     "{debug}"
 )
+DEFAULT_PROCESSING_STREAM = "default"
 
 
 def postprocess_subjects(
@@ -68,7 +69,7 @@ def postprocess_subjects(
 
     # Setup Logging
     clpipe_logs = project_dir / "logs"
-    logger = get_logger(POSTPROCESS2_COMMAND_NAME, debug=debug)
+    logger = get_logger(STEP_NAME, debug=debug)
     add_file_handler(clpipe_logs)
     
     if not fmriprep_dir:
