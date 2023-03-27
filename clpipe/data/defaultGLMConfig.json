@@ -17,7 +17,7 @@
     { 
       "ModelName": "example",
       "TargetDirectory": "./data_BIDS",
-      "TargetSuffix": "resampled.nii.gz",
+      "TargetSuffix": "desc-postproc_bold.nii.gz",
       "FSFPrototype": "SET PROTOTYPE PATH",
       "ImageIncludeList": "",
       "ImageExcludeList": "",
