@@ -1,8 +1,8 @@
 {
 	"ProjectTitle": "A Neuroimaging Project",
-	"Authors/Contributors": "",
+	"Authors/Contributors": "SET AUTHOR",
 	"ProjectDirectory": "",
-	"EmailAddress": "",
+	"EmailAddress": "SET EMAIL ADDRESS",
 	"TempDirectory": "",
 	"SourceOptions": {
 		"SourceURL": "fw://",
