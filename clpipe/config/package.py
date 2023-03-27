@@ -10,8 +10,12 @@ AUTHORS = (
 AUTHOR_EMAIL = 'ycp6wm@virginia.edu'
 LICENSE = 'MIT'
 
+# Python version tested against
 PYTHON_VERSION = '3.7'
+# Allows versions greater than the test baseline
 PYTHON_REQUIRES = f'>={PYTHON_VERSION}'
+
+# List of all dependency packages, to be automatically installed alongside clpipe
 INSTALL_REQUIRES = [
       'jsonschema',
       'click',
@@ -38,6 +42,9 @@ INSTALL_REQUIRES = [
 
 PACKAGE_DATA = {'clpipe': ['R_scripts/*.R']}
 
+# These entries register bash aliases to click commands. The aliases are available for
+#   use upon package installation, and are implemented by auto-generated scripts in
+#   <python env>/bin
 ENTRY_POINTS = '''
       [console_scripts]
       clpipe=clpipe.cli:cli

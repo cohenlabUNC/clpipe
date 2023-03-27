@@ -1,6 +1,12 @@
 from setuptools import setup, find_packages
 from clpipe.config.package import *
 
+""" Configuration for building the clpipe package. Run build_clpipe.sh to build. 
+
+Metadata constants are kept in clpipe's source data, in config/package.py
+"""
+
+
 if __name__ == "__main__":
       setup(
             name=PACKAGE_NAME,
