@@ -22,7 +22,7 @@ from .config import *
 from .errors import *
 
 STEP_NAME = "prepare"
-DEPRECATION_MSG = "Using deprecated GLM setup file."
+DEPRECATION_MSG = "WARNING: Using deprecated GLM setup file."
 
 def glm_prepare(glm_config_file: str=None, level: int=L1,
                 model: str=None, debug: bool=False):
@@ -62,7 +62,8 @@ def glm_prepare(glm_config_file: str=None, level: int=L1,
         logger.error(f"Level must be {L1} or {L2}")
         sys.exit(1)
 
-    logger.info(f"Targeting task-{task_name} {level} model: {model}")
+    logger.info(f"Preparing .fsfs for {level} model: {model}")
+    logger.info(f"Targeting task: {task_name}")
 
     block = [x for x in glm_config[setup] \
             if x['ModelName'] == str(model)]
@@ -115,38 +116,43 @@ def _glm_l1_propagate(l1_block, task_name, reference_image, logger):
     if not os.path.exists(l1_block['FSFDir']):
         os.mkdir(l1_block['FSFDir'])
 
-    logger.info("Propogating fsf files...")
-    for file in image_files:
-        try:
-            file_name = os.path.basename(file)
+    if len(image_files) < 1:
+        logger.info("No image files found. Check your model's TargetDirectory, TargetSuffix, ImageIncludeList, and ImageExludeList settings.")
+    else:
+        logger.info("Propogating fsf files...")
+        for file in image_files:
+            try:
+                file_name = os.path.basename(file)
 
-            logger.debug("Creating FSF File for image:" + file_name)
-            img_data = nib.load(file)
-            total_tps = img_data.shape[3]
-            ev_conf = _get_ev_confound_mat(file, l1_block, logger)
-            out_dir = os.path.join(l1_block['OutputDir'],file_name.replace("_" + l1_block["TargetSuffix"], ".feat"))
-            out_fsf = os.path.join(l1_block['FSFDir'],
-                                   file_name.replace("_" + l1_block["TargetSuffix"], ".fsf"))
-            new_fsf = fsf_file_template
+                logger.info("Creating FSF File for image: " + file_name)
+                img_data = nib.load(file)
+                total_tps = img_data.shape[3]
+                ev_conf = _get_ev_confound_mat(file, l1_block, logger)
+                out_dir = os.path.join(l1_block['OutputDir'],file_name.replace("_" + l1_block["TargetSuffix"], ".feat"))
+                out_fsf = os.path.join(l1_block['FSFDir'],
+                                    file_name.replace("_" + l1_block["TargetSuffix"], ".fsf"))
+                new_fsf = fsf_file_template
 
-            new_fsf[tps_inds[0]] = "set fmri(npts) " + str(total_tps) + "\n"
-            new_fsf[output_ind[0]] = "set fmri(outputdir) \"" + os.path.abspath(out_dir) + "\"\n"
-            new_fsf[image_files_ind[0]] = "set feat_files(1) \"" + os.path.abspath(file) + "\"\n"
+                new_fsf[tps_inds[0]] = "set fmri(npts) " + str(total_tps) + "\n"
+                new_fsf[output_ind[0]] = "set fmri(outputdir) \"" + os.path.abspath(out_dir) + "\"\n"
+                new_fsf[image_files_ind[0]] = "set feat_files(1) \"" + os.path.abspath(file) + "\"\n"
 
-            if reference_image is not "":
-                new_fsf[regstandard_ind[0]] = "set fmri(regstandard) \"" + os.path.abspath(reference_image) + "\"\n"
-            if l1_block['ConfoundSuffix'] is not "":
-                new_fsf[confound_file_ind[0]] = "set confoundev_files(1) \"" + os.path.abspath(ev_conf['Confounds']) + "\"\n"
+                if reference_image is not "":
+                    new_fsf[regstandard_ind[0]] = "set fmri(regstandard) \"" + os.path.abspath(reference_image) + "\"\n"
+                if l1_block['ConfoundSuffix'] is not "":
+                    new_fsf[confound_file_ind[0]] = "set confoundev_files(1) \"" + os.path.abspath(ev_conf['Confounds']) + "\"\n"
 
-            for i, e in enumerate(ev_conf['EVs']):
-                new_fsf[ev_file_inds[i]] = "set fmri(custom" + str(i +1) + ") \"" + os.path.abspath(e) + "\"\n"
+                for i, e in enumerate(ev_conf['EVs']):
+                    new_fsf[ev_file_inds[i]] = "set fmri(custom" + str(i +1) + ") \"" + os.path.abspath(e) + "\"\n"
 
-            with open(out_fsf, "w") as fsf_file:
-                fsf_file.writelines(new_fsf)
+                with open(out_fsf, "w") as fsf_file:
+                    fsf_file.writelines(new_fsf)
 
-        except (EVFileNotFoundError, ConfoundsNotFoundError) as nfe:
-            logger.warn(nfe)
+            except (EVFileNotFoundError, ConfoundsNotFoundError) as nfe:
+                logger.warn(nfe)
 
+        logger.info("Propogation completed.")
+    
 
 def _get_ev_confound_mat(file, l1_block, logger):
 
