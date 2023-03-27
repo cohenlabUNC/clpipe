@@ -4,8 +4,8 @@ from pathlib import Path
 
 from .config import *
 from .config_json_parser import GLMConfigParser, ClpipeConfigParser
-from .batch_manager import BatchManager, Job
-from .utils import add_file_handler, get_logger
+from .batch_manager import BatchManager, Job, DEFAULT_BATCH_CONFIG_PATH
+from .utils import get_logger
 
 DEFAULT_L1_MEMORY_USAGE = "10G"
 DEFAULT_L1_TIME_USAGE = "10:00:00"

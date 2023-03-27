@@ -2,15 +2,16 @@ import os, stat
 from .config_json_parser import ClpipeConfigParser
 from pkg_resources import resource_stream
 import json
-import sys
 from pathlib import Path
 
-from .config import DEFAULT_CONFIG_PATH, DEFAULT_CONFIG_FILE_NAME
 from .utils import get_logger, add_file_handler
 
 STEP_NAME = "project-setup"
 DEFAULT_DICOM_DIR = 'data_DICOMs'
 DCM2BIDS_SCAFFOLD_TEMPLATE = 'dcm2bids_scaffold -o {}'
+
+DEFAULT_CONFIG_PATH = "data/defaultConvConfig.json"
+DEFAULT_CONFIG_FILE_NAME = 'clpipe_config.json'
 
 class SourceDataError(ValueError):
     pass
