@@ -122,7 +122,7 @@ def setup_fmriprep_directories(config):
     if not os.path.isdir(config['FMRIPrepOptions']['BIDSDirectory']):
         raise ValueError('BIDS Directory does not exist')
     
-    if(config['FMRIPrepOptions']['WorkingDirectory'] != ""):
+    if(config['FMRIPrepOptions']['WorkingDirectory'] != "SET WORKING DIRECTORY"):
         os.makedirs(config['FMRIPrepOptions']['WorkingDirectory'], exist_ok=True)
     if(config['FMRIPrepOptions']['OutputDirectory'] != ""):
         os.makedirs(config['FMRIPrepOptions']['OutputDirectory'], exist_ok=True)
