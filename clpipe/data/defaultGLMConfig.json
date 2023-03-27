@@ -5,7 +5,6 @@
   "ParentClpipeConfig":"",
   "TaskName": "gng_example",
   "ReferenceImage": "SET REFERENCE",
-  "LogDirectory": "",
   "Level1Onsets": {
     "EventFileSuffix": "events.tsv",
     "TrialTypeVariable": "trial_type",
