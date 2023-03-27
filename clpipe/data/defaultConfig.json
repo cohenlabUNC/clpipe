@@ -3,7 +3,6 @@
 	"Authors/Contributors": "SET AUTHOR",
 	"ProjectDirectory": "",
 	"EmailAddress": "SET EMAIL ADDRESS",
-	"TempDirectory": "",
 	"SourceOptions": {
 		"SourceURL": "fw://",
 		"DropoffDirectory": "",
