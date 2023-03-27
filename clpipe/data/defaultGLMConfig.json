@@ -1,7 +1,7 @@
 {
   "GLMName": "A GLM Analysis",
-  "Authors": "Me, myself, and I",
-  "DateCreated": "",
+  "Authors": "SET AUTHOR",
+  "DateCreated": "SET DATE CREATED",
   "ParentClpipeConfig":"",
   "TaskName": "SET TASK NAME",
   "ReferenceImage": "SET REFERENCE",
@@ -18,7 +18,7 @@
       "ModelName": "example",
       "TargetDirectory": "./data_BIDS",
       "TargetSuffix": "resampled.nii.gz",
-      "FSFPrototype": "",
+      "FSFPrototype": "SET PROTOTYPE PATH",
       "ImageIncludeList": "",
       "ImageExcludeList": "",
       "FSFDir": "./fsf_test",
@@ -45,7 +45,7 @@
   "Level2Setups": [
     { 
       "ModelName": "example",
-      "FSFPrototype": "",
+      "FSFPrototype": "SET PROTOTYPE PATH",
       "SubjectFile": "l2_sublist.csv",
       "FSFDir": "",
       "OutputDir": "",
