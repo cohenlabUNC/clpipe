@@ -38,8 +38,6 @@ class ClpipeConfigParser:
             self.setup_default_config()
         else:
             self.config = config_json_parser(config_file)
-        #with resource_stream(__name__, 'data/configSchema.json') as def_schema:
-         #   self.configSchema = json.load(def_schema)
 
     def config_updater(self, new_config):
         if new_config is None:
