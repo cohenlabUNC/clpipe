@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 
+DEFAULT_PROCESSING_STREAM = "default"
+
 @dataclass
 class TemporalFiltering:
     Implementation: str

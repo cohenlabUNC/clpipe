@@ -9,7 +9,7 @@ from .post_processing import PostProcessing
 from .roi import ROIOptions
 from .susan import SusanOptions
 from .source_options import SourceOptions
-from .post_processing2 import PostProcessing2
+from .postprocessing2 import PostProcessing2
 from .reho import ReHoExtraction
 from .t2star import T2StarExtraction
 

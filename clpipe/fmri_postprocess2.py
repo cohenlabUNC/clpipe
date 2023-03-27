@@ -8,7 +8,6 @@ import sys
 import os
 import warnings
 import json
-import click
 import time
 from pathlib import Path
 
@@ -25,6 +24,7 @@ with warnings.catch_warnings():
     from bids.layout import BIDSFile
 
 from .config_json_parser import ClpipeConfigParser
+from .config.postprocessing2 import DEFAULT_PROCESSING_STREAM
 from .batch_manager import BatchManager, Job
 from .postprocutils.workflows import build_image_postprocessing_workflow, \
     build_postprocessing_workflow
@@ -48,7 +48,6 @@ SUBJECT_SUBMISSION_STRING_TEMPLATE = (
     "{processing_stream} {config_file} {index_dir} {log_dir} {batch} {submit} "
     "{debug}"
 )
-DEFAULT_PROCESSING_STREAM = "default"
 
 
 def postprocess_subjects(

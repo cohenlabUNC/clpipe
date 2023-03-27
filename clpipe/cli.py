@@ -3,6 +3,7 @@ import sys
 import pkg_resources
 from .fmri_process_check import fmri_process_check
 from .config.cli import *
+from .config.postprocessing2 import DEFAULT_PROCESSING_STREAM
 
 DEFAULT_HELP_PRIORITY = 5
 
