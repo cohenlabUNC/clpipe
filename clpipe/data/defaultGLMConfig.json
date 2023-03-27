@@ -15,7 +15,7 @@
   },
   "Level1Setups": [
     { 
-      "ModelName": "example_L1",
+      "ModelName": "example",
       "TargetDirectory": "./data_BIDS",
       "TargetSuffix": "resampled.nii.gz",
       "FSFPrototype": "",
@@ -44,7 +44,7 @@
   ],
   "Level2Setups": [
     { 
-      "ModelName": "tworun_gngreg",
+      "ModelName": "example",
       "FSFPrototype": "",
       "SubjectFile": "l2_sublist.csv",
       "FSFDir": "",
