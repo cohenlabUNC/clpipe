@@ -131,10 +131,8 @@ def setup_fmriprep_directories(config):
 
 def setup_postproc(config, beta_series=False):
     target_output = 'PostProcessingOptions'
-    log_target = 'postproc_logs'
     if beta_series:
         target_output = 'BetaSeriesOptions'
-        log_target = 'betaseries_logs'
 
     if(config[target_output]['OutputDirectory'] != ""):
         os.makedirs(config[target_output]['OutputDirectory'], exist_ok=True)
