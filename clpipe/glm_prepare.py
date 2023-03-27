@@ -72,6 +72,10 @@ def glm_prepare(glm_config_file: str=None, level: int=L1,
     model_options = block[0]
 
     if level == L1:
+        if not Path(model_options["EVDirectory"]).exists():
+            logger.error(f"EV Directory: {model_options['EVDirectory']} does not exist.")
+            sys.exit(1)
+
         _glm_l1_propagate(model_options, task_name, reference_image, logger)
         sys.exit(0)
     elif level == L2:
