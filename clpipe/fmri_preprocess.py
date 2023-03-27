@@ -67,6 +67,10 @@ def fmriprep_process(bids_dir=None, working_dir=None, output_dir=None,
     add_file_handler(os.path.join(project_dir, "logs"))
     logger = get_logger(STEP_NAME, debug=debug)
 
+    if working_dir == "SET WORKING DIRECTORY":
+        logger.error("A working directory for this step must be provided in your config file.")
+        sys.exit(1)
+
     if not any([bids_dir, output_dir, working_dir, log_dir]):
         logger.error(
             'Please make sure the BIDS, working and output directories are '

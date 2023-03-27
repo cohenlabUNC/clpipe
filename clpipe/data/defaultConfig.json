@@ -29,7 +29,7 @@
 	},
 	"FMRIPrepOptions": {
 		"BIDSDirectory": "",
-		"WorkingDirectory": "",
+		"WorkingDirectory": "SET WORKING DIRECTORY",
 		"OutputDirectory": "",
 		"FMRIPrepPath": "/proj/hng/singularity_imgs/fmriprep_22.1.1.sif",
 		"FreesurferLicensePath": "/proj/hng/singularity_imgs/license.txt",
