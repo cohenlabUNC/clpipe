@@ -1,16 +1,3 @@
-APPLICATION_NAME = "clpipe"
-
-# GLM Levels
-VALID_L1 = ["1", "L1", "l1", "level1"]
-VALID_L2 = ["2", "L2", "l2", "level2"]
-L1 = VALID_L1[1]
-L2 = VALID_L2[1]
-
-# Default paths
-DEFAULT_BATCH_CONFIG_PATH = "slurmUNCConfig.json"
-DEFAULT_CONFIG_PATH = "data/defaultConvConfig.json"
-DEFAULT_CONFIG_FILE_NAME = 'clpipe_config.json'
-
 # Global use help messages
 CONFIG_HELP = "The path to your clpipe configuration file."
 LOG_DIR_HELP = "Where to put your HPC output files (such as SLURM output files)."
