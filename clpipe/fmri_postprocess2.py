@@ -178,30 +178,6 @@ def postprocess_subjects(
 
     sys.exit()
 
-
-@click.command()
-@click.argument('subject_id')
-@click.argument('bids_dir', type=click.Path(dir_okay=True, file_okay=False))
-@click.argument('fmriprep_dir', type=CLICK_DIR_TYPE)
-@click.argument('output_dir', type=click.Path(dir_okay=True, file_okay=False))
-@click.argument('processing_stream', default=DEFAULT_PROCESSING_STREAM)
-@click.argument('config_file', type=click.Path(dir_okay=False, file_okay=True))
-@click.argument('index_dir', type=click.Path(dir_okay=True, file_okay=False))
-@click.argument('log_dir', type=click.Path(dir_okay=True, file_okay=False))
-@click.option('-batch/-no-batch', is_flag = True, default=True, 
-              help=BATCH_HELP)
-@click.option('-submit', is_flag = True, default=False, help=SUBMIT_HELP)
-@click.option('-debug', is_flag = True, default=False, help=DEBUG_HELP)
-def postprocess_subject_cli(subject_id, bids_dir, fmriprep_dir, output_dir, 
-                            processing_stream, config_file, index_dir, 
-                            batch, submit, log_dir, debug):
-    
-    postprocess_subject(
-        subject_id, bids_dir, fmriprep_dir, output_dir, config_file, index_dir, 
-        batch, submit, log_dir, processing_stream=processing_stream,
-        debug=debug)
-
-
 def postprocess_subject(
     subject_id, bids_dir, fmriprep_dir, output_dir, config_file, index_dir, 
     batch, submit, log_dir, processing_stream=DEFAULT_PROCESSING_STREAM,
@@ -290,29 +266,6 @@ def postprocess_subject(
         sys.exit()
     
     sys.exit()
-
-
-@click.command()
-@click.argument('config_file', type=click.Path(dir_okay=False, file_okay=True))
-@click.argument('image_path', type=click.Path(dir_okay=False, file_okay=True))
-@click.argument('bids_dir', type=click.Path(dir_okay=True, file_okay=False))
-@click.argument('fmriprep_dir', type=CLICK_DIR_TYPE)
-@click.argument('index_dir', type=click.Path(dir_okay=True, file_okay=False))
-@click.argument('out_dir', type=click.Path(dir_okay=True, file_okay=False))
-@click.argument('subject_out_dir', type=CLICK_DIR_TYPE)
-@click.argument('processing_stream', default=DEFAULT_PROCESSING_STREAM)
-@click.argument('subject_working_dir', type=CLICK_DIR_TYPE)
-@click.argument('log_dir', type=click.Path(dir_okay=True, file_okay=False))
-@click.option('-debug', is_flag = True, default=False, help=DEBUG_HELP)
-def postprocess_image_cli(config_file, image_path, bids_dir, fmriprep_dir, 
-                          index_dir, out_dir, subject_out_dir, debug,
-                          processing_stream, subject_working_dir, log_dir):
-    
-    postprocess_image(
-        config_file, image_path, bids_dir, fmriprep_dir, index_dir, out_dir, 
-        subject_out_dir, subject_working_dir, log_dir, 
-        processing_stream=processing_stream, debug=debug)
-
 
 def postprocess_image(
     config_file, image_path, bids_dir, fmriprep_dir, pybids_db_path, out_dir,

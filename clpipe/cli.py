@@ -8,6 +8,15 @@ DEFAULT_HELP_PRIORITY = 5
 
 CONTEXT_SETTINGS = dict(help_option_names=['-help'])
 
+# Click path validation types
+CLICK_FILE_TYPE = click.Path(dir_okay=False, file_okay=True)
+CLICK_FILE_TYPE_EXISTS = click.Path(
+    exists=True, dir_okay=False, file_okay=True)
+CLICK_DIR_TYPE = click.Path(dir_okay=True, file_okay=False)
+CLICK_DIR_TYPE_EXISTS = click.Path(exists=True, dir_okay=True, file_okay=False)
+CLICK_DIR_TYPE_NOT_EXIST = click.Path(
+    exists=False, dir_okay=True, file_okay=False)
+
 
 class OrderedHelpGroup(click.Group):
     """
@@ -371,6 +380,51 @@ def fmri_postprocess2_cli(subjects, config_file, fmriprep_dir, output_dir,
         output_dir=output_dir, processing_stream=processing_stream,
         batch=batch, submit=submit, log_dir=log_dir, pybids_db_path=index_dir,
         refresh_index=refresh_index, debug=debug, cache=cache)
+    
+
+@click.command()
+@click.argument('subject_id')
+@click.argument('bids_dir', type=click.Path(dir_okay=True, file_okay=False))
+@click.argument('fmriprep_dir', type=CLICK_DIR_TYPE)
+@click.argument('output_dir', type=click.Path(dir_okay=True, file_okay=False))
+@click.argument('processing_stream', default=DEFAULT_PROCESSING_STREAM)
+@click.argument('config_file', type=click.Path(dir_okay=False, file_okay=True))
+@click.argument('index_dir', type=click.Path(dir_okay=True, file_okay=False))
+@click.argument('log_dir', type=click.Path(dir_okay=True, file_okay=False))
+@click.option('-batch/-no-batch', is_flag = True, default=True, 
+              help=BATCH_HELP)
+@click.option('-submit', is_flag = True, default=False, help=SUBMIT_HELP)
+@click.option('-debug', is_flag = True, default=False, help=DEBUG_HELP)
+def postprocess_subject_cli(subject_id, bids_dir, fmriprep_dir, output_dir, 
+                            processing_stream, config_file, index_dir, 
+                            batch, submit, log_dir, debug):
+    from .fmri_postprocess2 import postprocess_subject
+    postprocess_subject(
+        subject_id, bids_dir, fmriprep_dir, output_dir, config_file, index_dir, 
+        batch, submit, log_dir, processing_stream=processing_stream,
+        debug=debug)
+
+
+@click.command()
+@click.argument('config_file', type=click.Path(dir_okay=False, file_okay=True))
+@click.argument('image_path', type=click.Path(dir_okay=False, file_okay=True))
+@click.argument('bids_dir', type=click.Path(dir_okay=True, file_okay=False))
+@click.argument('fmriprep_dir', type=CLICK_DIR_TYPE)
+@click.argument('index_dir', type=click.Path(dir_okay=True, file_okay=False))
+@click.argument('out_dir', type=click.Path(dir_okay=True, file_okay=False))
+@click.argument('subject_out_dir', type=CLICK_DIR_TYPE)
+@click.argument('processing_stream', default=DEFAULT_PROCESSING_STREAM)
+@click.argument('subject_working_dir', type=CLICK_DIR_TYPE)
+@click.argument('log_dir', type=click.Path(dir_okay=True, file_okay=False))
+@click.option('-debug', is_flag = True, default=False, help=DEBUG_HELP)
+def postprocess_image_cli(config_file, image_path, bids_dir, fmriprep_dir, 
+                          index_dir, out_dir, subject_out_dir, debug,
+                          processing_stream, subject_working_dir, log_dir):
+    from .fmri_postprocess2 import postprocess_image
+    postprocess_image(
+        config_file, image_path, bids_dir, fmriprep_dir, index_dir, out_dir, 
+        subject_out_dir, subject_working_dir, log_dir, 
+        processing_stream=processing_stream, debug=debug)
 
 
 @click.command(GLM_SETUP_COMMAND_NAME, no_args_is_help=True)

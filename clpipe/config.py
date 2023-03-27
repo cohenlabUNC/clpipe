@@ -1,15 +1,4 @@
-import click
-
 APPLICATION_NAME = "clpipe"
-
-# Click path validation types
-CLICK_FILE_TYPE = click.Path(dir_okay=False, file_okay=True)
-CLICK_FILE_TYPE_EXISTS = click.Path(
-    exists=True, dir_okay=False, file_okay=True)
-CLICK_DIR_TYPE = click.Path(dir_okay=True, file_okay=False)
-CLICK_DIR_TYPE_EXISTS = click.Path(exists=True, dir_okay=True, file_okay=False)
-CLICK_DIR_TYPE_NOT_EXIST = click.Path(
-    exists=False, dir_okay=True, file_okay=False)
 
 # GLM Levels
 VALID_L1 = ["1", "L1", "l1", "level1"]
