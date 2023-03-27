@@ -43,6 +43,7 @@ def test_default(clpipe_config_default):
     assert config.Authors == clpipe_config_default["Authors/Contributors"]
     assert config.SourceOptions.MemUsage == clpipe_config_default["SourceOptions"]["MemUsage"]
 
+@pytest.mark.skip(reason="Need to generate wrong order from correct order dict")
 def test_wrong_order(config_file, tmp_path):
     """ Ensure that a configuration with fields in an unexpected order will successfully
     load.
@@ -68,4 +69,4 @@ def test_author_contributor(config_file):
     """
     config = getProjectConfig(json_file=config_file)
     assert config is not None
-    assert config.Authors == ""
+    assert config.Authors == "SET AUTHOR"

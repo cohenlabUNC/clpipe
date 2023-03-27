@@ -1,8 +1,8 @@
 {
     "ProjectDirectory": "",
-    "Authors/Contributors": "",
+    "Authors/Contributors": "SET AUTHOR",
     "TempDirectory": "",
-    "EmailAddress": "",
+    "EmailAddress": "SET EMAIL ADDRESS",
     "RunLog": [],
     "StatusCache": "",
     "BIDSValidationOptions": {
@@ -115,7 +115,7 @@
         "OutputDirectory": "",
         "TemplateFlowToggle": true,
         "CommandLineOpts": "",
-        "TemplateFlowPath": "",
+        "TemplateFlowPath": "/proj/hng/singularity_imgs/template_flow",
         "FMRIPrepPath": "/proj/hng/singularity_imgs/fmriprep_22.1.1.sif",
         "FreesurferLicensePath": "/proj/hng/singularity_imgs/license.txt",
         "UseAROMA": false,
@@ -132,7 +132,7 @@
         "BIDSDirectory": "",
         "DockerToggle": false,
         "DockerFMRIPrepVersion": "",
-        "WorkingDirectory": "",
+        "WorkingDirectory": "SET WORKING DIRECTORY",
         "NThreads": "12",
         "LogDirectory": ""
     },
