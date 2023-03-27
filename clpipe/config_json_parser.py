@@ -115,7 +115,7 @@ class ClpipeConfigParser:
         glm_config.config['Level1Setups'][0]['LogDir'] = os.path.join(project_path, "logs", "glm_logs", "L1_launch")
 
         glm_config.config['Level2Setups'][0]['OutputDir'] = os.path.join(project_path, "l2_gfeat_folders")
-        glm_config.config['Level2Setups'][0]['OutputDir'] = os.path.join(project_path, "l2_fsfs")
+        glm_config.config['Level2Setups'][0]['FSFDir'] = os.path.join(project_path, "l2_fsfs")
         glm_config.config['Level2Setups'][0]['LogDir'] = os.path.join(project_path, "logs", "glm_logs", "L2_launch")
 
         glm_config.config_json_dump(project_path, "glm_config.json")
