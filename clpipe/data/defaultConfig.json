@@ -36,7 +36,7 @@
 		"UseAROMA": false,
 		"CommandLineOpts": "",
 		"TemplateFlowToggle": true,
-		"TemplateFlowPath": "",
+		"TemplateFlowPath": "/proj/hng/singularity_imgs/template_flow",
 		"TemplateFlowTemplates": [
 			"MNI152NLin2009cAsym", 
 			"MNI152NLin6Asym", 
