@@ -1,8 +1,6 @@
 import pytest
-import traceback
 
 from pathlib import Path
-from click.testing import CliRunner
 
 from clpipe.cli import *
 
