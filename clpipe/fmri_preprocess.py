@@ -86,8 +86,12 @@ def fmriprep_process(bids_dir=None, working_dir=None, output_dir=None,
 
     template_1 = ""
     template_2 = ""
-    if config['FMRIPrepOptions']['TemplateFlowToggle'] != "":
+    if config['FMRIPrepOptions']['TemplateFlowToggle']:
         logger.debug("Template Flow toggle: ON")
+
+        if template_flow_path == "":
+            logger.error("Template flow toggle on but no template flow path given.")
+            sys.exit(1)
         logger.debug(f"Template Flow path: {template_flow_path}")
 
         # Templateflow requires a caching directory that it for some reason
