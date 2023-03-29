@@ -116,6 +116,7 @@ def populate_with_postproc2(project_dir: Path, sample_raw_image, sample_confound
             shutil.copy(sample_raw_image, subject_folder / f"sub-{sub_num}_{task_info}_{image_space}_{bold_suffix}")
             shutil.copy(sample_confounds_timeseries, subject_folder / f"sub-{sub_num}_{task_info}_{confounds_suffix}")
 
+
 def generate_random_nii(dims: tuple=DEFAULT_RANDOM_NII_DIMS, low: int=0, high: int=1000) -> nib.Nifti1Image:
     """Creates a simple nii image with the given dimensions.
 
