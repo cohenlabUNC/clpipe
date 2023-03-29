@@ -165,6 +165,24 @@ def clpipe_bids_dir(tmp_path_factory):
 
     return clpipe_dir
 
+@pytest.fixture(scope="session")
+def clpipe_postproc2_dir(tmp_path_factory, sample_raw_image, sample_raw_image_mask, 
+    sample_confounds_timeseries, sample_melodic_mixing, sample_aroma_noise_ics, 
+    sample_fmriprep_dataset_description) -> Path:
+    """ Fixture which adds postproc2 subject folders and mock 
+    postproc2 output data to data_postproc2 directory of clpipe project.
+    """
+    project_dir = tmp_path_factory.mktemp("clpipe_bids_fmriprep_postproc2_dir")
+    project_setup(project_title=PROJECT_TITLE, project_dir=str(project_dir))
+    
+    utils.populate_with_BIDS(project_dir)
+    utils.populate_with_fmriprep(project_dir, sample_raw_image, sample_raw_image_mask, 
+        sample_confounds_timeseries, sample_melodic_mixing, sample_aroma_noise_ics, 
+        sample_fmriprep_dataset_description, legacy = False)
+    utils.populate_with_postproc2(project_dir, sample_raw_image,  sample_confounds_timeseries)
+
+    return project_dir
+
 #TODO: seperate AROMA into its own type of fmriprep dir
 @pytest.fixture(scope="session")
 def clpipe_fmriprep_dir(tmp_path_factory, sample_raw_image, sample_raw_image_mask, 

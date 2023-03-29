@@ -8,14 +8,16 @@ from .newConfig import clpipe_config
 
 STEP_NAME = "fmri-process-check"
 
-@click.command()
-@click.option('-config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True), required=True,
-              help='The configuration file for the current data processing setup.')
-@click.option('-output_file',
-              help='Path and name of the output archive. Defaults to current working directory and "Report_Archive.zip"')
-@click.option('-debug', is_flag=True, help='Print traceback and detailed processing messages.')
+# @click.command()
+# @click.option('-config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True), required=True,
+#               help='The configuration file for the current data processing setup.')
+# @click.option('-output_file',
+#               help='Path and name of the output archive. Defaults to current working directory and "Report_Archive.zip"')
+# @click.option('-debug', is_flag=True, help='Print traceback and detailed processing messages.')
 def fmri_process_check(config_file, output_file=None, debug=False):
-    """This command checks a BIDS dataset, an fMRIprep'ed dataset and a postprocessed dataset, and creates a CSV file that lists all scans across all three datasets. Use to find which subjects/scans failed processing."""
+    """This command checks a BIDS dataset, an fMRIprep'ed dataset and a postprocessed 
+    dataset, and creates a CSV file that lists all scans across all three datasets. 
+    Use to find which subjects/scans failed processing."""
 
     # New Config
     config = clpipe_config.getConfig(config_file)
