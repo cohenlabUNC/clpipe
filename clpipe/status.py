@@ -6,10 +6,6 @@ import datetime
 import click
 
 from .config_json_parser import ClpipeConfigParser
-from .config import CONFIG_HELP
-
-CLICK_FILE_TYPE_EXISTS = click.Path(
-    exists=True, dir_okay=False, file_okay=True)
 
 STATUS_HEADER = [
     "subject", "session", "step", "event", "timestamp", "source", "note"

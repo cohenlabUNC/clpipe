@@ -1,4 +1,4 @@
-# Change Log - NEW
+# Change Log
 
 ## 1.7.3 (Feb 22, 2023)
 

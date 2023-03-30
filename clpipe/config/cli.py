@@ -1,26 +1,4 @@
-import click
-
 APPLICATION_NAME = "clpipe"
-
-# Click path validation types
-CLICK_FILE_TYPE = click.Path(dir_okay=False, file_okay=True)
-CLICK_FILE_TYPE_EXISTS = click.Path(
-    exists=True, dir_okay=False, file_okay=True)
-CLICK_DIR_TYPE = click.Path(dir_okay=True, file_okay=False)
-CLICK_DIR_TYPE_EXISTS = click.Path(exists=True, dir_okay=True, file_okay=False)
-CLICK_DIR_TYPE_NOT_EXIST = click.Path(
-    exists=False, dir_okay=True, file_okay=False)
-
-# GLM Levels
-VALID_L1 = ["1", "L1", "l1", "level1"]
-VALID_L2 = ["2", "L2", "l2", "level2"]
-L1 = VALID_L1[1]
-L2 = VALID_L2[1]
-
-# Default paths
-DEFAULT_BATCH_CONFIG_PATH = "slurmUNCConfig.json"
-DEFAULT_CONFIG_PATH = "data/defaultConvConfig.json"
-DEFAULT_CONFIG_FILE_NAME = 'clpipe_config.json'
 
 # Global use help messages
 CONFIG_HELP = "The path to your clpipe configuration file."
@@ -40,7 +18,8 @@ WORKING_DIR_HELP = (
 GLM_CONFIG_HELP = 'The path to your GLM configuration file.'
 
 # Project setup help
-SETUP_COMMAND_NAME = "setup"
+SETUP_COMMAND_NAME = "project_setup"
+PROJECT_TITLE_HELP = "Choose a title for your project."
 PROJECT_DIR_HELP = "Where the project will be located."
 SOURCE_DATA_HELP = \
     "Where the raw data (usually DICOMs) are located."
@@ -80,7 +59,7 @@ MODE_HELP = (
 )
 
 # BIDS Validation Help
-VALIDATOR_COMMAND_NAME = "validate"
+VALIDATOR_COMMAND_NAME = "bids_validate"
 VERBOSE_HELP = (
     "Creates verbose validator output. Use if you want to see ALL files "
     "with errors/warnings."
@@ -117,7 +96,7 @@ PROCESSING_STREAM_HELP = \
 INDEX_HELP = 'Give the path to an existing pybids index database.'
 REFRESH_INDEX_HELP = \
     'Refresh the pybids index database to reflect new fmriprep artifacts.'
-DEFAULT_PROCESSING_STREAM = "default"
+
 
 # GLM Help
 GLM_SETUP_COMMAND_NAME = "setup"

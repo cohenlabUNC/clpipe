@@ -1,10 +1,9 @@
 import click
-from .config_json_parser import ClpipeConfigParser
 import pandas as pd
 import os
 import glob
 from .utils import get_logger, add_file_handler, resolve_fmriprep_dir_new
-from .newConfig import clpipe_config
+from .config.project import getProjectConfig
 
 STEP_NAME = "fmri-process-check"
 
@@ -13,13 +12,7 @@ def fmri_process_check(config_file, output_file=None, debug=False):
     dataset, and creates a CSV file that lists all scans across all three datasets. 
     Use to find which subjects/scans failed processing."""
 
-    # New Config
-    config = clpipe_config.getConfig(config_file)
-
-    # Old Config
-    # config = ClpipeConfigParser()
-    # config.config_updater(config_file)
-    # config.validate_config()
+    config = getProjectConfig(config_file)
 
     add_file_handler(os.path.join(config.ProjectDirectory, "logs"))
     logger = get_logger(STEP_NAME, debug=debug)

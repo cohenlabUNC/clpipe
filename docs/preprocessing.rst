@@ -2,10 +2,11 @@
 Preprocessing with fMRIprep
 ===========================
 
-clpipe uses `fMRIprep <https://fmriprep.readthedocs.io/en/stable/>`_ to perform minimal
+clpipe uses `fMRIprep <https://fmriprep.readthedocs.io/en/stable/>`_ via
+the ``clpipe preprocess`` command to perform minimal
 preprocessing on functional MRI data. 
 
-``fmriprep_process`` creates one batch job per subject. 
+``clpipe preprocess`` creates one batch job per subject. 
 If you find that you are running out of memory, 
 increase the `[FMRIPrepOptions][FMRIPrepMemoryUsage]` option in the configuration file.
 
@@ -13,10 +14,7 @@ To submit your dataset for preprocessing,
 use the following command:
 
 .. click:: clpipe.cli:fmriprep_process_cli
-   :prog: fmriprep_process
-   :nested: full
-
-
+   :prog: clpipe preprocess
 
 
 Getting Quality Control Reports
@@ -40,6 +38,5 @@ images to, then creates a zip archive containing them. This command is not a bat
 Once the archive is created, it can be downloaded and unzipped to a personal computer. 
 The reports should correctly load images once opened.
 
-.. click:: clpipe.get_reports:get_reports
-   :prog: get_reports
-   :nested: full
+.. click:: clpipe.cli:get_fmriprep_reports_cli
+   :prog: clpipe reports fmriprep

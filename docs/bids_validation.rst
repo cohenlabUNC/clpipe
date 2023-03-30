@@ -10,5 +10,5 @@ The output of this command will appear in your `logs/bids_validation_logs` folde
 by default.
 
 .. click:: clpipe.cli:bids_validate_cli
-   :prog: bids_validate
+   :prog: clpipe bids_validate
    :nested: full

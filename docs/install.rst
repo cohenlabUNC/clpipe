@@ -2,13 +2,14 @@
 Installation
 ============
 
+    Please note - if you're a UNC-CH user, clpipe is already installed and accessible 
+    with the module system - please see the section below, "For UNC-CH Users"
+
 -----------------------
 Python Environment Setup
 -----------------------
 
-clpipe requires Python v3.7
-
-If you have priviledges to add python packages to a system, 
+clpipe requires Python v3.7. If you have the priviledges to add python packages to your system, 
 you can install the most recent version of clpipe with:
 
 .. code-block:: console
@@ -65,10 +66,10 @@ by the clpipe module):
 - R >= v4.0.0
 
 -----------------------
-A Note for UNC-CH Users
+For UNC-CH Users
 -----------------------
 
-If you are a Longleaf user and a member of the hng posix group,
+If you are a Longleaf user and a member of the rc_hng_psx group,
 clpipe has already been installed for you via the module system. 
 Add the following line to your ``~/.bashrc`` file to include clpipe's modules:
 

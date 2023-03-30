@@ -1,9 +1,8 @@
 {
 	"ProjectTitle": "A Neuroimaging Project",
-	"Authors/Contributors": "",
+	"Authors/Contributors": "SET AUTHOR",
 	"ProjectDirectory": "",
-	"EmailAddress": "",
-	"TempDirectory": "",
+	"EmailAddress": "SET EMAIL ADDRESS",
 	"SourceOptions": {
 		"SourceURL": "fw://",
 		"DropoffDirectory": "",
@@ -29,14 +28,14 @@
 	},
 	"FMRIPrepOptions": {
 		"BIDSDirectory": "",
-		"WorkingDirectory": "",
+		"WorkingDirectory": "SET WORKING DIRECTORY",
 		"OutputDirectory": "",
 		"FMRIPrepPath": "/proj/hng/singularity_imgs/fmriprep_22.1.1.sif",
 		"FreesurferLicensePath": "/proj/hng/singularity_imgs/license.txt",
 		"UseAROMA": false,
 		"CommandLineOpts": "",
 		"TemplateFlowToggle": true,
-		"TemplateFlowPath": "",
+		"TemplateFlowPath": "/proj/hng/singularity_imgs/template_flow",
 		"TemplateFlowTemplates": [
 			"MNI152NLin2009cAsym", 
 			"MNI152NLin6Asym", 

@@ -215,7 +215,7 @@ def clpipe_legacy_fmriprep_dir(tmp_path_factory, sample_raw_image, sample_raw_im
     utils.populate_with_BIDS(project_dir, sample_raw_image)
     utils.populate_with_fmriprep(project_dir, sample_raw_image, sample_raw_image_mask, 
         sample_confounds_timeseries, sample_melodic_mixing, sample_aroma_noise_ics, 
-        sample_fmriprep_dataset_description, legacy = True)
+        sample_fmriprep_dataset_description, legacy=True)
 
     return project_dir
 
@@ -236,7 +236,7 @@ def clpipe_dir_old_glm_config(tmp_path_factory, sample_raw_image, sample_raw_ima
     utils.populate_with_BIDS(project_dir)
     utils.populate_with_fmriprep(project_dir, sample_raw_image, sample_raw_image_mask, 
         sample_confounds_timeseries, sample_melodic_mixing, sample_aroma_noise_ics, 
-        sample_fmriprep_dataset_description)
+        sample_fmriprep_dataset_description, legacy=True)
 
     return project_dir
 
@@ -296,6 +296,12 @@ def config_file_fmriprep(clpipe_fmriprep_dir: Path):
 
     return clpipe_fmriprep_dir / "clpipe_config.json"
 
+@pytest.fixture(scope="session")
+def config_file_legacy_fmriprep(clpipe_legacy_fmriprep_dir: Path):
+    """Return config file from the test <= v20 fmriprep directory."""
+
+    return clpipe_legacy_fmriprep_dir / "clpipe_config.json"
+
 @pytest.fixture(scope="module")
 def glm_config_default():
     """Returns the default glm config file."""
@@ -305,14 +311,13 @@ def glm_config_default():
 def glm_config_file(clpipe_fmriprep_dir: Path) -> Path:
     """Provides a reference to a glm_config.json file that
     has been setup in the context of a mock project.
-
-    Args:
-        clpipe_fmriprep_dir (Path): Path to a mock fmriprep clpipe project
-
-    Returns:
-        Path: Reference to mock glm_config.json file.
     """
     return clpipe_fmriprep_dir / "glm_config.json"
+
+@pytest.fixture(scope="session")
+def old_glm_config_file(clpipe_dir_old_glm_config: Path) -> Path:
+    """Returns a reference to an old-style glm config populated with project setup."""
+    return clpipe_dir_old_glm_config / "glm_config.json"
 
 #####################
 # Workflow Fixtures #

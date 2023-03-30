@@ -1,11 +1,22 @@
 import click
 import sys
-import pkg_resources
-from .config import *
+from .fmri_process_check import fmri_process_check
+from .config.cli import *
+from .config.postprocessing2 import DEFAULT_PROCESSING_STREAM
+from .config.package import VERSION
 
 DEFAULT_HELP_PRIORITY = 5
 
-CONTEXT_SETTINGS = dict(help_option_names=['-h', '-help', '--help'])
+CONTEXT_SETTINGS = dict(help_option_names=['-help'])
+
+# Click path validation types
+CLICK_FILE_TYPE = click.Path(dir_okay=False, file_okay=True)
+CLICK_FILE_TYPE_EXISTS = click.Path(
+    exists=True, dir_okay=False, file_okay=True)
+CLICK_DIR_TYPE = click.Path(dir_okay=True, file_okay=False)
+CLICK_DIR_TYPE_EXISTS = click.Path(exists=True, dir_okay=True, file_okay=False)
+CLICK_DIR_TYPE_NOT_EXIST = click.Path(
+    exists=False, dir_okay=True, file_okay=False)
 
 
 class OrderedHelpGroup(click.Group):
@@ -54,7 +65,7 @@ class OrderedHelpGroup(click.Group):
 @click.group(cls=OrderedHelpGroup, context_settings=CONTEXT_SETTINGS,
     invoke_without_command=True)
 @click.pass_context
-@click.option("-v", "--version", is_flag=True, default=False, 
+@click.option("-version", "-v", is_flag=True, default=False, 
         help=VERSION_HELP)
 def cli(ctx, version):
     """Welcome to clpipe.
@@ -67,8 +78,7 @@ def cli(ctx, version):
 
     if ctx.invoked_subcommand is None:
         if version:
-            clpipe_version = pkg_resources.get_distribution("clpipe").version
-            print(f"clpipe v{clpipe_version}")
+            print(f"clpipe v{VERSION}")
             sys.exit(0)
         else:
             ctx = click.get_current_context()
@@ -116,9 +126,12 @@ def reports_cli():
 
 def _add_commands():
     cli.add_command(project_setup_cli, help_priority=0)
+    cli.add_command(convert2bids_cli, help_priority=10)
+    cli.add_command(bids_validate_cli, help_priority=15)
     cli.add_command(fmriprep_process_cli, help_priority=20)
     cli.add_command(fmri_postprocess_cli, help_priority=30)
     cli.add_command(fmri_postprocess2_cli, help_priority=35)
+    cli.add_command(flywheel_sync_cli, help_priority=55)
 
     dicom_cli.add_command(flywheel_sync_cli)
     dicom_cli.add_command(convert2bids_cli)
@@ -139,8 +152,8 @@ def _add_commands():
     reports_cli.add_command(get_fmriprep_reports_cli)
     reports_cli.add_command(get_fmri_process_check_cli)
 
-    cli.add_command(bids_cli, help_priority=10)
-    cli.add_command(dicom_cli, help_priority=5)
+    cli.add_command(bids_cli, help_priority=11, hidden=True)
+    cli.add_command(dicom_cli, help_priority=5, hidden=True)
     cli.add_command(glm_cli, help_priority=40)
     cli.add_command(roi_cli, help_priority=50)
     cli.add_command(reports_cli, help_priority=60)
@@ -148,7 +161,7 @@ def _add_commands():
 
 
 @click.command(SETUP_COMMAND_NAME, no_args_is_help=True)
-@click.option('-project_title', required=True, default=None)
+@click.option('-project_title', required=True, default=None, help=PROJECT_TITLE_HELP)
 @click.option('-project_dir', required=True ,type=CLICK_DIR_TYPE_NOT_EXIST,
               default=None, help=PROJECT_DIR_HELP)
 @click.option('-source_data', type=CLICK_DIR_TYPE_EXISTS,
@@ -161,7 +174,7 @@ def _add_commands():
 def project_setup_cli(project_title=None, project_dir=None, source_data=None, 
                       move_source_data=None, symlink_source_data=None,
                       debug=False):
-    """Set up a clpipe project."""
+    """Initialize a clpipe project."""
     from .project_setup import project_setup
     project_setup(
         project_title=project_title, 
@@ -207,7 +220,7 @@ def convert2bids_cli(dicom_dir, dicom_dir_format, bids_dir,
     Providing no SUBJECTS will default to all subjects.
     List subject IDs in SUBJECTS to process specific subjects: 
 
-    > clpipe bids convert 123 124 125 ...
+    > clpipe convert2bids 123 124 125 ...
 
     Available subject IDs are determined by the dicom_dir_format string.
     """
@@ -381,6 +394,51 @@ def fmri_postprocess2_cli(subjects, config_file, fmriprep_dir, output_dir,
         output_dir=output_dir, processing_stream=processing_stream,
         batch=batch, submit=submit, log_dir=log_dir, pybids_db_path=index_dir,
         refresh_index=refresh_index, debug=debug, cache=cache)
+    
+
+@click.command()
+@click.argument('subject_id')
+@click.argument('bids_dir', type=click.Path(dir_okay=True, file_okay=False))
+@click.argument('fmriprep_dir', type=CLICK_DIR_TYPE)
+@click.argument('output_dir', type=click.Path(dir_okay=True, file_okay=False))
+@click.argument('processing_stream', default=DEFAULT_PROCESSING_STREAM)
+@click.argument('config_file', type=click.Path(dir_okay=False, file_okay=True))
+@click.argument('index_dir', type=click.Path(dir_okay=True, file_okay=False))
+@click.argument('log_dir', type=click.Path(dir_okay=True, file_okay=False))
+@click.option('-batch/-no-batch', is_flag = True, default=True, 
+              help=BATCH_HELP)
+@click.option('-submit', is_flag = True, default=False, help=SUBMIT_HELP)
+@click.option('-debug', is_flag = True, default=False, help=DEBUG_HELP)
+def postprocess_subject_cli(subject_id, bids_dir, fmriprep_dir, output_dir, 
+                            processing_stream, config_file, index_dir, 
+                            batch, submit, log_dir, debug):
+    from .fmri_postprocess2 import postprocess_subject
+    postprocess_subject(
+        subject_id, bids_dir, fmriprep_dir, output_dir, config_file, index_dir, 
+        batch, submit, log_dir, processing_stream=processing_stream,
+        debug=debug)
+
+
+@click.command()
+@click.argument('config_file', type=click.Path(dir_okay=False, file_okay=True))
+@click.argument('image_path', type=click.Path(dir_okay=False, file_okay=True))
+@click.argument('bids_dir', type=click.Path(dir_okay=True, file_okay=False))
+@click.argument('fmriprep_dir', type=CLICK_DIR_TYPE)
+@click.argument('index_dir', type=click.Path(dir_okay=True, file_okay=False))
+@click.argument('out_dir', type=click.Path(dir_okay=True, file_okay=False))
+@click.argument('subject_out_dir', type=CLICK_DIR_TYPE)
+@click.argument('processing_stream', default=DEFAULT_PROCESSING_STREAM)
+@click.argument('subject_working_dir', type=CLICK_DIR_TYPE)
+@click.argument('log_dir', type=click.Path(dir_okay=True, file_okay=False))
+@click.option('-debug', is_flag = True, default=False, help=DEBUG_HELP)
+def postprocess_image_cli(config_file, image_path, bids_dir, fmriprep_dir, 
+                          index_dir, out_dir, subject_out_dir, debug,
+                          processing_stream, subject_working_dir, log_dir):
+    from .fmri_postprocess2 import postprocess_image
+    postprocess_image(
+        config_file, image_path, bids_dir, fmriprep_dir, index_dir, out_dir, 
+        subject_out_dir, subject_working_dir, log_dir, 
+        processing_stream=processing_stream, debug=debug)
 
 
 @click.command(GLM_SETUP_COMMAND_NAME, no_args_is_help=True)
@@ -398,12 +456,23 @@ def fmri_postprocess2_cli(subjects, config_file, fmriprep_dir, output_dir,
               help='Print detailed processing information and traceback for errors.')
 def glm_setup_cli(subjects, config_file, glm_config_file, submit, batch, debug, 
                   drop_tps):
-    """Additional preprocessing for GLM analysis.
-    
+    """
+    Additional preprocessing for GLM analysis.
+
     Providing no SUBJECTS will default to all subjects.
     List subject IDs in SUBJECTS to process specific subjects: 
 
     > clpipe glm setup 123 124 125 ...
+
+    ******************************************
+
+    WARNING: This command has been deprecated, as its functionality has been
+    replicated and expanded on by the postprocess2 command.
+    If you ran setup with clpipe 1.8+, you will not be able to run this command
+    due to the removal of GLMSetupOptions from the default glm configuration file.
+    You may still run this command with a valid GLMSetupOptions block.
+
+    ******************************************
     """
     from .glm_setup import glm_setup
     glm_setup(
@@ -536,8 +605,8 @@ def glm_launch_cli(level, model, glm_config_file, test_one, submit, debug):
               help=DEBUG_HELP)
 def glm_l1_launch_cli(glm_config_file, l1_name, test_one, submit, debug):
     """Launch all prepared .fsf files for L1 GLM analysis."""
-    from .glm_launch import glm_launch_controller
-    glm_launch_controller(glm_config_file=glm_config_file, model=l1_name,
+    from .glm_launch import glm_launch
+    glm_launch(glm_config_file=glm_config_file, level="L1", model=l1_name,
                           test_one=test_one, submit=submit, debug=debug)
 
 
@@ -555,8 +624,8 @@ def glm_l1_launch_cli(glm_config_file, l1_name, test_one, submit, debug):
               help=DEBUG_HELP)
 def glm_l2_launch_cli(glm_config_file, l2_name, test_one, submit, debug):
     """Launch all prepared .fsf files for L2 GLM analysis."""
-    from .glm_launch import glm_launch_controller
-    glm_launch_controller(glm_config_file=glm_config_file, level="L2", 
+    from .glm_launch import glm_launch
+    glm_launch(glm_config_file=glm_config_file, level="L2", 
                           model=l2_name, test_one=test_one, submit=submit,
                           debug=debug)
 

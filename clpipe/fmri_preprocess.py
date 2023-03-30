@@ -1,5 +1,6 @@
 import os
 import sys
+from pathlib import Path
 
 from .batch_manager import BatchManager, Job
 from .config_json_parser import ClpipeConfigParser
@@ -26,6 +27,7 @@ TEMPLATE_2 = \
     "${{TEMPLATEFLOW_HOME:-$HOME/.cache/templateflow}}:{templateflowpath},"
 USE_AROMA_FLAG = "--use-aroma"
 N_THREADS_FLAG = "--nthreads"
+TEMPLATE_FLOW_CACHE_PATH = ".cache/templateflow"
 
 
 def fmriprep_process(bids_dir=None, working_dir=None, output_dir=None, 
@@ -36,7 +38,7 @@ def fmriprep_process(bids_dir=None, working_dir=None, output_dir=None,
     Specify subject IDs to run specific subjects. If left blank,
     runs all subjects.
     """
-
+    
     config = ClpipeConfigParser()
     config.config_updater(config_file)
     config.setup_fmriprep_directories(
@@ -45,10 +47,10 @@ def fmriprep_process(bids_dir=None, working_dir=None, output_dir=None,
 
     config = config.config
     project_dir = config["ProjectDirectory"]
-    bids_dir = config['FMRIPrepOptions']['BIDSDirectory']
-    working_dir = config['FMRIPrepOptions']['WorkingDirectory']
-    output_dir = config['FMRIPrepOptions']['OutputDirectory']
-    log_dir = config['FMRIPrepOptions']['LogDirectory']
+    bids_dir = bids_dir if bids_dir else config['FMRIPrepOptions']['BIDSDirectory']
+    working_dir = working_dir if working_dir else config['FMRIPrepOptions']['WorkingDirectory']
+    output_dir = output_dir if output_dir else config['FMRIPrepOptions']['OutputDirectory']
+    log_dir = log_dir if log_dir else config['FMRIPrepOptions']['LogDirectory']
     template_flow_path = config["FMRIPrepOptions"]["TemplateFlowPath"]
     batch_config = config['BatchConfig']
     mem_usage = config['FMRIPrepOptions']['FMRIPrepMemoryUsage']
@@ -67,6 +69,10 @@ def fmriprep_process(bids_dir=None, working_dir=None, output_dir=None,
     add_file_handler(os.path.join(project_dir, "logs"))
     logger = get_logger(STEP_NAME, debug=debug)
 
+    if working_dir == "SET WORKING DIRECTORY":
+        logger.error("A working directory for this step must be provided in your config file.")
+        sys.exit(1)
+
     if not any([bids_dir, output_dir, working_dir, log_dir]):
         logger.error(
             'Please make sure the BIDS, working and output directories are '
@@ -80,9 +86,20 @@ def fmriprep_process(bids_dir=None, working_dir=None, output_dir=None,
 
     template_1 = ""
     template_2 = ""
-    if config['FMRIPrepOptions']['TemplateFlowToggle'] != "":
+    if config['FMRIPrepOptions']['TemplateFlowToggle']:
         logger.debug("Template Flow toggle: ON")
+
+        if template_flow_path == "":
+            logger.error("Template flow toggle on but no template flow path given.")
+            sys.exit(1)
         logger.debug(f"Template Flow path: {template_flow_path}")
+
+        # Templateflow requires a caching directory that it for some reason
+        #   does not make itself, so it is created here.
+        user_templateflow_path = Path.home() / TEMPLATE_FLOW_CACHE_PATH
+        if not user_templateflow_path.exists():
+            user_templateflow_path.mkdir(parents=True)
+
         template_1 = TEMPLATE_1.format(
             templateflowpath = template_flow_path
         )
@@ -178,3 +195,4 @@ def fmriprep_process(bids_dir=None, working_dir=None, output_dir=None,
                 write_record(sub, cache_path=status_cache, step=STEP_NAME)
     else:
         batch_manager.print_jobs()
+    sys.exit(0)

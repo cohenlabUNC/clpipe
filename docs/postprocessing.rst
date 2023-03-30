@@ -2,65 +2,17 @@
 Postprocessing
 ===================
 
-
-When performing functional connectivity analysis, there are several additional 
-processing steps that need to be taken after the minimal preprocessing of fMRIPrep. 
-clpipe implements these steps in Python, and a fMRIprep preprocessed dataset can 
-be postprocessed using the following command:
-
-.. click:: clpipe.cli:fmri_postprocess_cli
-	:prog: fmri_postprocess
-	:nested: full
-
-
-
-Processing Checker
+postprocess2
 ------------------
 
-clpipe has a convenient function for determining which scans successfully made it 
-through both preprocessing using fMRIprep and postprocessing.
-
-This command will create a csv file listing all scans found in the BIDS dataset, 
-and corresponding scans in the fMRIprep dataset and the postprocessed dataset.
-
-For a description of the various postprocessing steps, along with references,
-please see the following documentation:
-
-1. Nuisance Regression
-2. Frequency Filtering
-3. Scrubbing
-4. Spectral Interpolation
-
-.. click:: clpipe.fmri_process_check:fmri_process_check
-	:prog: fmri_process_check
-	:nested: full
-
-
-SUSAN Spatial Smoothing
-------------------
-
-
-clpipe uses FSL's `SUSAN smoothing <https://fsl.fmrib.ox.ac.uk/fsl/fslwiki/SUSAN>`_ 
-to perform spatial smoothing. This step is usually done after postprocessing. 
-Options for this are configurable on a processing stream basis, 
-see config file for more details.
-
-.. click:: clpipe.susan_smoothing:susan_smoothing
-	:prog: susan_smoothing
-	:nested: full
-
-
-fmri_postprocess2
-------------------
-
-New to clpipe v1.5, the command fmri_postprocess2 combines the functionality
-of fmri_postprocess and glm_setup into a unified postprocessing stream.
+The ``clpipe postprocess2`` command combines the functionality of the legacy
+``fmri_postprocess`` and ``glm_setup`` commands into a unified postprocessing stream.
 
 This command allows for flexible creation of processing streams. The order of
 processing steps and their specific implementations can be modified in the
 configuration file. Any temporally-relevant processing steps can also be
 applied to each image's corresponding confounds file.
-fmri_postprocess2 caches its processing intermediaries
+``postprocess2`` caches its processing intermediaries
 in a working directory, which allows quick re-runs of pipelines with 
 new parameters.
 
@@ -79,10 +31,6 @@ Available processing steps:
 	- Trim Timepoints
 
 .. image:: resources/example_pipeline.png
-
-.. click:: clpipe.fmri_postprocess2:fmri_postprocess2_cli
-	:prog: fmri_postprocess2
-	:nested: full
 
 Configuration Setup
 ===================
@@ -152,6 +100,9 @@ Otherwise, this block will be included when running "project setup."
 			"NThreads": "1"
     	}	
 	}
+
+Configuration Definitions
+===================
 
 * ``PostProcessingOptions:`` Options for configuring post-fmriprep processing steps.
 
@@ -224,6 +175,12 @@ own set of processing steps. The second stream does the same thing, but
 specifies a filtering high pass by overriding the default value of -1 with
 .009. 
 
+Command
+===================
+
+.. click:: clpipe.cli:fmri_postprocess2_cli
+	:prog: clpipe postprocess2
+
 .. code-block:: json
 
 	...
@@ -266,9 +223,62 @@ specifies a filtering high pass by overriding the default value of -1 with
 		},
 	...
 
-To run a specific stream, give the -processing_stream stream option
-of fmri_postprocess2 the name of the stream:
+To run a specific stream, give the ``-processing_stream`` stream option
+of ``clpipe postprocess2`` the name of the stream:
 
 .. code-block:: console
 
-	fmri_postprocess2 -config_file clpipe_config.json -processing_stream smooth_aroma-regress_filter-butterworth_normalize -submit
+	clpipe postprocess2 -config_file clpipe_config.json -processing_stream smooth_aroma-regress_filter-butterworth_normalize -submit
+
+
+Legacy postprocess Command
+------------------
+
+Not all features of the legacy postprocess command have been implemented yet in
+postprocess2, namely some which support functional connectivity, 
+so the command remains available for this use.
+
+When performing functional connectivity analysis, there are several additional 
+processing steps that need to be taken after the minimal preprocessing of fMRIPrep. 
+clpipe implements these steps in Python, and a fMRIprep preprocessed dataset can 
+be postprocessed using the following command:
+
+.. click:: clpipe.cli:fmri_postprocess_cli
+	:prog: clpipe postprocess
+
+
+
+Processing Checker
+------------------
+
+clpipe has a convenient function for determining which scans successfully made it 
+through both preprocessing using fMRIprep and postprocessing.
+
+This command will create a csv file listing all scans found in the BIDS dataset, 
+and corresponding scans in the fMRIprep dataset and the postprocessed dataset.
+
+For a description of the various postprocessing steps, along with references,
+please see the following documentation:
+
+1. Nuisance Regression
+2. Frequency Filtering
+3. Scrubbing
+4. Spectral Interpolation
+
+.. click:: clpipe.fmri_process_check:fmri_process_check
+	:prog: clpipe reports fmri-process-check
+
+
+SUSAN Spatial Smoothing
+------------------
+
+
+clpipe uses FSL's `SUSAN smoothing <https://fsl.fmrib.ox.ac.uk/fsl/fslwiki/SUSAN>`_ 
+to perform spatial smoothing. This step is usually done after postprocessing. 
+Options for this are configurable on a processing stream basis, 
+see config file for more details.
+
+.. click:: clpipe.susan_smoothing:susan_smoothing
+	:prog: susan_smoothing
+
+

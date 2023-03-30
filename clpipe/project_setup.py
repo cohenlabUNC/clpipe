@@ -2,15 +2,16 @@ import os, stat
 from .config_json_parser import ClpipeConfigParser
 from pkg_resources import resource_stream
 import json
-import sys
 from pathlib import Path
 
-from .config import DEFAULT_CONFIG_PATH, DEFAULT_CONFIG_FILE_NAME
 from .utils import get_logger, add_file_handler
 
 STEP_NAME = "project-setup"
 DEFAULT_DICOM_DIR = 'data_DICOMs'
 DCM2BIDS_SCAFFOLD_TEMPLATE = 'dcm2bids_scaffold -o {}'
+
+DEFAULT_CONFIG_PATH = "data/defaultConvConfig.json"
+DEFAULT_CONFIG_FILE_NAME = 'clpipe_config.json'
 
 class SourceDataError(ValueError):
     pass
@@ -121,7 +122,7 @@ def setup_fmriprep_directories(config):
     if not os.path.isdir(config['FMRIPrepOptions']['BIDSDirectory']):
         raise ValueError('BIDS Directory does not exist')
     
-    if(config['FMRIPrepOptions']['WorkingDirectory'] != ""):
+    if(config['FMRIPrepOptions']['WorkingDirectory'] != "SET WORKING DIRECTORY"):
         os.makedirs(config['FMRIPrepOptions']['WorkingDirectory'], exist_ok=True)
     if(config['FMRIPrepOptions']['OutputDirectory'] != ""):
         os.makedirs(config['FMRIPrepOptions']['OutputDirectory'], exist_ok=True)
@@ -130,10 +131,8 @@ def setup_fmriprep_directories(config):
 
 def setup_postproc(config, beta_series=False):
     target_output = 'PostProcessingOptions'
-    log_target = 'postproc_logs'
     if beta_series:
         target_output = 'BetaSeriesOptions'
-        log_target = 'betaseries_logs'
 
     if(config[target_output]['OutputDirectory'] != ""):
         os.makedirs(config[target_output]['OutputDirectory'], exist_ok=True)
@@ -155,10 +154,10 @@ def setup_susan_directories(config):
     os.makedirs(config['SUSANOptions']['LogDirectory'], exist_ok=True)
 
 def setup_glm_directories(project_path):
-    os.mkdir(os.path.join(project_path, "data_GLMPrep"))
     os.mkdir(os.path.join(project_path, "l1_fsfs"))
     os.mkdir(os.path.join(project_path, "data_onsets"))
     os.mkdir(os.path.join(project_path, "l1_feat_folders"))
     os.mkdir(os.path.join(project_path, "l2_fsfs"))
     os.mkdir(os.path.join(project_path, "l2_gfeat_folders"))
-    os.makedirs(os.path.join(project_path, "logs", "glm_setup_logs"))
+    os.makedirs(os.path.join(project_path, "logs", "glm_logs", "L1_launch"))
+    os.mkdir(os.path.join(project_path, "logs", "glm_logs", "L2_launch"))

@@ -38,8 +38,6 @@ class ClpipeConfigParser:
             self.setup_default_config()
         else:
             self.config = config_json_parser(config_file)
-        #with resource_stream(__name__, 'data/configSchema.json') as def_schema:
-         #   self.configSchema = json.load(def_schema)
 
     def config_updater(self, new_config):
         if new_config is None:
@@ -60,7 +58,6 @@ class ClpipeConfigParser:
         pass
 
     def validate_config(self):
-       # validate(self.config, self.configSchema)
         return 1
 
     def setup_project(self, project_title, project_dir, source_data):
@@ -73,11 +70,11 @@ class ClpipeConfigParser:
         self.setup_bids_validation(None)
         self.setup_fmriprep_directories(os.path.join(self.config['ProjectDirectory'], 'data_BIDS'),
                                         None, os.path.join(self.config['ProjectDirectory'], 'data_fmriprep'))
-        self.setup_postproc(os.path.join(self.config['FMRIPrepOptions']['OutputDirectory'], 'fmriprep'),
+        self.setup_postproc(self.config['FMRIPrepOptions']['OutputDirectory'],
                             target_suffix= None,
                             output_dir= os.path.join(self.config['ProjectDirectory'], 'data_postproc', 'postproc_default'),
                             output_suffix= 'postproc.nii.gz')
-        self.setup_postproc(os.path.join(self.config['FMRIPrepOptions']['OutputDirectory'], 'fmriprep'),
+        self.setup_postproc(self.config['FMRIPrepOptions']['OutputDirectory'],
                             target_suffix=None,
                             output_dir=os.path.join(self.config['ProjectDirectory'], 'data_postproc', 'betaseries_default'),
                             output_suffix='betaseries.nii.gz', beta_series=True)
@@ -91,30 +88,23 @@ class ClpipeConfigParser:
                             output_dir=os.path.join(self.config['ProjectDirectory'], 'data_postproc',
                                                     'postproc_default'),
                             output_suffix='postproc_default.nii.gz')
-        # processing_streams = self.get_processing_stream_names()
-        # if processing_streams:
-        #     for stream in processing_streams:
-        #         self.update_processing_stream(stream,
-        #                                       output_dir= os.path.join(self.config['ProjectDirectory'], 'data_postproc', 'postproc_'+stream),
-        #                                       output_suffix='postproc_'+stream+".nii.gz")
-        #         self.update_processing_stream(stream,
-        #                                       output_dir= os.path.join(self.config['ProjectDirectory'], 'data_postproc', 'betaseries_'+stream),
-        #                                       output_suffix='betaseries_'+stream+".nii.gz", beta_series=True)
         self.setup_glm(self.config['ProjectDirectory'])
 
     def setup_glm(self, project_path):
         glm_config = GLMConfigParser()
 
         glm_config.config['ParentClpipeConfig'] = os.path.join(project_path, "clpipe_config.json")
-        glm_config.config['LogDirectory'] = os.path.join(project_path, "logs", "glm_setup_logs")
 
         glm_config.config['Level1Setups'][0]['TargetDirectory'] = os.path.join(project_path, "data_postproc2", "default")
         glm_config.config['Level1Setups'][0]['FSFDir'] = os.path.join(project_path, "l1_fsfs")
         glm_config.config['Level1Setups'][0]['EVDirectory'] = os.path.join(project_path, "data_onsets")
         glm_config.config['Level1Setups'][0]['ConfoundDirectory'] = os.path.join(project_path, "data_postproc2", "default")
         glm_config.config['Level1Setups'][0]['OutputDir'] = os.path.join(project_path, "l1_feat_folders")
+        glm_config.config['Level1Setups'][0]['LogDir'] = os.path.join(project_path, "logs", "glm_logs", "L1_launch")
+
         glm_config.config['Level2Setups'][0]['OutputDir'] = os.path.join(project_path, "l2_gfeat_folders")
-        glm_config.config['Level2Setups'][0]['OutputDir'] = os.path.join(project_path, "l2_fsfs")
+        glm_config.config['Level2Setups'][0]['FSFDir'] = os.path.join(project_path, "l2_fsfs")
+        glm_config.config['Level2Setups'][0]['LogDir'] = os.path.join(project_path, "logs", "glm_logs", "L2_launch")
 
         glm_config.config_json_dump(project_path, "glm_config.json")
         shutil.copyfile(resource_filename('clpipe', 'data/l2_sublist.csv'), os.path.join(project_path, "l2_sublist.csv"))

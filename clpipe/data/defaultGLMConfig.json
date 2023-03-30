@@ -1,11 +1,10 @@
 {
   "GLMName": "A GLM Analysis",
-  "Authors": "Me, myself, and I",
-  "DateCreated": "",
+  "Authors": "SET AUTHOR",
+  "DateCreated": "SET DATE CREATED",
   "ParentClpipeConfig":"",
-  "TaskName": "gng_example",
+  "TaskName": "SET TASK NAME",
   "ReferenceImage": "SET REFERENCE",
-  "LogDirectory": "",
   "Level1Onsets": {
     "EventFileSuffix": "events.tsv",
     "TrialTypeVariable": "trial_type",
@@ -16,10 +15,10 @@
   },
   "Level1Setups": [
     { 
-      "ModelName": "example_L1",
+      "ModelName": "example",
       "TargetDirectory": "./data_BIDS",
-      "TargetSuffix": "resampled.nii.gz",
-      "FSFPrototype": "",
+      "TargetSuffix": "desc-postproc_bold.nii.gz",
+      "FSFPrototype": "SET PROTOTYPE PATH",
       "ImageIncludeList": "",
       "ImageExcludeList": "",
       "FSFDir": "./fsf_test",
@@ -45,8 +44,8 @@
   ],
   "Level2Setups": [
     { 
-      "ModelName": "tworun_gngreg",
-      "FSFPrototype": "",
+      "ModelName": "example",
+      "FSFPrototype": "SET PROTOTYPE PATH",
       "SubjectFile": "l2_sublist.csv",
       "FSFDir": "",
       "OutputDir": "",
