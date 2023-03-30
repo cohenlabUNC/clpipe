@@ -175,7 +175,7 @@ def clpipe_postproc2_dir(tmp_path_factory, sample_raw_image, sample_raw_image_ma
     project_dir = tmp_path_factory.mktemp("clpipe_bids_fmriprep_postproc2_dir")
     project_setup(project_title=PROJECT_TITLE, project_dir=str(project_dir))
     
-    utils.populate_with_BIDS(project_dir)
+    utils.populate_with_BIDS(project_dir, sample_raw_image)
     utils.populate_with_fmriprep(project_dir, sample_raw_image, sample_raw_image_mask, 
         sample_confounds_timeseries, sample_melodic_mixing, sample_aroma_noise_ics, 
         sample_fmriprep_dataset_description, legacy = False)
@@ -194,7 +194,7 @@ def clpipe_fmriprep_dir(tmp_path_factory, sample_raw_image, sample_raw_image_mas
     project_dir = tmp_path_factory.mktemp("clpipe_bids_fmriprep_dir")
     project_setup(project_title=PROJECT_TITLE, project_dir=str(project_dir))
 
-    utils.populate_with_BIDS(project_dir)
+    utils.populate_with_BIDS(project_dir, sample_raw_image)
     utils.populate_with_fmriprep(project_dir, sample_raw_image, sample_raw_image_mask, 
         sample_confounds_timeseries, sample_melodic_mixing, sample_aroma_noise_ics, 
         sample_fmriprep_dataset_description, legacy = False)
@@ -212,7 +212,7 @@ def clpipe_legacy_fmriprep_dir(tmp_path_factory, sample_raw_image, sample_raw_im
     project_dir = tmp_path_factory.mktemp("clpipe_bids_legacy_fmriprep_dir")
     project_setup(project_title=PROJECT_TITLE, project_dir=str(project_dir))
 
-    utils.populate_with_BIDS(project_dir)
+    utils.populate_with_BIDS(project_dir, sample_raw_image)
     utils.populate_with_fmriprep(project_dir, sample_raw_image, sample_raw_image_mask, 
         sample_confounds_timeseries, sample_melodic_mixing, sample_aroma_noise_ics, 
         sample_fmriprep_dataset_description, legacy = True)

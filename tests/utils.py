@@ -12,15 +12,20 @@ DEFAULT_NUM_FMRIPREP_SUBJECTS = 8
 DEFAULT_RANDOM_NII_DIMS = (12, 12, 12, 36)
 DICOM_SESSIONS = ['2000', '2010', '2020']
 
-def populate_with_BIDS(project_dir, num_subjects=DEFAULT_NUM_BIDS_SUBJECTS):
+def populate_with_BIDS(project_dir, sample_raw_image, num_subjects=DEFAULT_NUM_BIDS_SUBJECTS):
     """Populate the given project_dir with BIDS data.
     
     project_dir must be existing clpipe project.
     """
+    bold_suffix = "bold.nii.gz"
 
     for sub_num in range(num_subjects):
-            subject_folder = project_dir / "data_BIDS" / f"sub-{sub_num}"
-            subject_folder.mkdir()
+        subject_folder = project_dir / "data_BIDS" / f"sub-{sub_num}"
+        subject_folder.mkdir()
+        subject_folder = project_dir / "data_BIDS" / f"sub-{sub_num}" / "func"
+        subject_folder.mkdir()
+        task_info = f"task-rest"
+        shutil.copy(sample_raw_image, subject_folder / f"sub-{sub_num}_{task_info}_{bold_suffix}")
 
 def populate_with_DICOM(project_dir: Path, num_subjects=DEFAULT_NUM_DICOM_SUBJECTS):
     """For the given clpipe project dir, populate the data_DICOMs folder. 
