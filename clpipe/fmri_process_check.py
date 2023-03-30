@@ -25,9 +25,12 @@ def fmri_process_check(config_file, output_file=None, debug=False):
     logger = get_logger(STEP_NAME, debug=debug)
     logger.info("Test Printing")
 
+    print(config.PostProcessingOptions.TargetDirectory)
+    print(resolve_fmriprep_dir_new(config.PostProcessingOptions.TargetDirectory))
     sublist = [o for o in os.listdir(resolve_fmriprep_dir_new(config.PostProcessingOptions.TargetDirectory))
                if os.path.isdir(
             os.path.join(resolve_fmriprep_dir_new(config.PostProcessingOptions.TargetDirectory), o)) and 'sub-' in o]
+    
     file_list = []
     for sub in sublist:
         logger.debug("Inspecting " + sub)

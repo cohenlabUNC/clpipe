@@ -47,7 +47,7 @@ def resolve_fmriprep_dir_new(fmriprep_dir):
         fmriprep_root = os.path.join(fmriprep_root,'fmriprep')
         return fmriprep_root
     else:
-        fmriprep_root = os.path.join(fmriprep_root,'/..')
+        fmriprep_root = os.path.join(fmriprep_dir,'..')
         return fmriprep_root
     
 def resolve_fmriprep_dir(fmriprep_dir):
