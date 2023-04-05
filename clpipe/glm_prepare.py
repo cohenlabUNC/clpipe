@@ -238,7 +238,7 @@ def _glm_l2_propagate(l2_block, reference_image, logger):
             new_fsf = fsf_file_template
             target_dirs = sub_tab.loc[sub_tab["fsf_name"] == fsf].feat_folders
             counter = 1
-            logger.info("Creating L2 FEAT directory for: " + fsf)
+            logger.info("Creating L2 fsf file: " + fsf)
             for feat in target_dirs:
                 if not os.path.exists(feat):
                     error_count += 1
