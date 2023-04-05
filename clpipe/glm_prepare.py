@@ -22,6 +22,7 @@ from .utils import get_logger
 from .errors import *
 
 STEP_NAME = "prepare"
+APPLY_MUMFORD_STEP_NAME = "apply_mumford"
 DEPRECATION_MSG = "WARNING: Using deprecated GLM setup file."
 
 def glm_prepare(glm_config_file: str=None, level: int=L1,
@@ -275,7 +276,7 @@ def glm_apply_mumford_workaround(glm_config_file=None,
                                  remove_reg_standard=False,
                                  debug=False):
 
-    logger = get_logger(APPLY_MUMFORD_COMMAND_NAME, debug=debug)
+    logger = get_logger(APPLY_MUMFORD_STEP_NAME, debug=debug)
     if glm_config_file:
         glm_config = GLMConfigParser(glm_config_file).config
         l1_feat_folders_path = glm_config["Level1Setups"]["OutputDir"]
