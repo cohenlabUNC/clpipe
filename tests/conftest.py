@@ -108,7 +108,7 @@ def sample_confounds_timeseries() -> Path:
 
 @pytest.fixture(scope="session")
 def sample_postprocessed_confounds() -> Path:
-    return Path("tests/data/postprocessed_confounds.tsv").resolve()
+    return Path("tests/data/sample_postprocessed_confounds.tsv").resolve()
 
 @pytest.fixture(scope="session")
 def sample_melodic_mixing() -> Path:
