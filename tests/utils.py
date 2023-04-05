@@ -12,15 +12,20 @@ DEFAULT_NUM_FMRIPREP_SUBJECTS = 8
 DEFAULT_RANDOM_NII_DIMS = (12, 12, 12, 36)
 DICOM_SESSIONS = ['2000', '2010', '2020']
 
-def populate_with_BIDS(project_dir, num_subjects=DEFAULT_NUM_BIDS_SUBJECTS):
+def populate_with_BIDS(project_dir, sample_raw_image, num_subjects=DEFAULT_NUM_BIDS_SUBJECTS):
     """Populate the given project_dir with BIDS data.
     
     project_dir must be existing clpipe project.
     """
+    bold_suffix = "bold.nii.gz"
 
     for sub_num in range(num_subjects):
-            subject_folder = project_dir / "data_BIDS" / f"sub-{sub_num}"
-            subject_folder.mkdir()
+        subject_folder = project_dir / "data_BIDS" / f"sub-{sub_num}"
+        subject_folder.mkdir()
+        subject_folder = project_dir / "data_BIDS" / f"sub-{sub_num}" / "func"
+        subject_folder.mkdir()
+        task_info = f"task-rest"
+        shutil.copy(sample_raw_image, subject_folder / f"sub-{sub_num}_{task_info}_{bold_suffix}")
 
 def populate_with_DICOM(project_dir: Path, num_subjects=DEFAULT_NUM_DICOM_SUBJECTS):
     """For the given clpipe project dir, populate the data_DICOMs folder. 
@@ -94,6 +99,28 @@ def populate_with_fmriprep(project_dir: Path, sample_raw_image, sample_raw_image
             sidecar_json = {"RepetitionTime": tr, "TaskName": task}
             with open(subject_folder / f"sub-{sub_num}_{task_info}_{image_space}_{sidecar_suffix}", "w") as sidecar_file:
                 json.dump(sidecar_json, sidecar_file)
+
+def populate_with_postproc2(project_dir: Path, sample_raw_image, sample_confounds_timeseries,
+                            num_subjects=DEFAULT_NUM_FMRIPREP_SUBJECTS):
+    tasks = ["run-1", "run-2", "run-3", "run-4"]
+
+    image_space = "space-MNI152NLin2009cAsym"
+    bold_suffix = "desc-postproc_bold.nii.gz"
+    confounds_suffix = "desc-confounds_timeseries.tsv"
+
+    postproc2_dir = project_dir / "data_postproc2" / "default"
+    postproc2_dir.mkdir(parents=True, exist_ok=True)
+
+    for sub_num in range(num_subjects):
+        subject_folder = postproc2_dir / f"sub-{sub_num}" / "func"
+        subject_folder.mkdir(parents=True)
+
+        for task in tasks:
+            task_info = f"task-ridl_{task}"
+
+            shutil.copy(sample_raw_image, subject_folder / f"sub-{sub_num}_{task_info}_{image_space}_{bold_suffix}")
+            shutil.copy(sample_confounds_timeseries, subject_folder / f"sub-{sub_num}_{task_info}_{confounds_suffix}")
+
 
 def generate_random_nii(dims: tuple=DEFAULT_RANDOM_NII_DIMS, low: int=0, high: int=1000) -> nib.Nifti1Image:
     """Creates a simple nii image with the given dimensions.
