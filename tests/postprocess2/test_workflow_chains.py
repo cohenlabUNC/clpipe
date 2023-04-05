@@ -73,7 +73,7 @@ def test_postprocess2_wf_1_step(artifact_dir, postprocessing_config, request, sa
 
 # This test won't work until properly processed confound file provided
 def test_postprocess2_wf_confound_regression_last(artifact_dir, postprocessing_config, request, sample_raw_image, sample_raw_image_mask, 
-    sample_confounds_timeseries, plot_img, write_graph, helpers):
+    sample_postprocessed_confounds, plot_img, write_graph, helpers):
 
     postprocessing_config["ProcessingSteps"] = ["TemporalFiltering", "ConfoundRegression"]
 
@@ -81,7 +81,7 @@ def test_postprocess2_wf_confound_regression_last(artifact_dir, postprocessing_c
     out_path = test_path / "postProcessed.nii.gz"
     
     wf = build_image_postprocessing_workflow(postprocessing_config, in_file=sample_raw_image, export_path=out_path, tr=2, mask_file=sample_raw_image_mask,
-        confounds_file=sample_confounds_timeseries,
+        confounds_file=sample_postprocessed_confounds,
         base_dir=test_path, crashdump_dir=test_path)
     
     wf.run()
@@ -96,7 +96,7 @@ def test_postprocess2_wf_confound_regression_last(artifact_dir, postprocessing_c
 
 
 def test_postprocess2_wf_confound_regression_first(artifact_dir, postprocessing_config, request, sample_raw_image, sample_raw_image_mask, 
-    sample_confounds_timeseries, plot_img, write_graph, helpers):
+    sample_postprocessed_confounds, plot_img, write_graph, helpers):
 
     postprocessing_config["ProcessingSteps"] = ["ConfoundRegression", "SpatialSmoothing"]
 
@@ -104,7 +104,7 @@ def test_postprocess2_wf_confound_regression_first(artifact_dir, postprocessing_
     out_path = test_path / "postProcessed.nii.gz"
     
     wf = build_image_postprocessing_workflow(postprocessing_config, in_file=sample_raw_image, export_path=out_path, tr=2, mask_file=sample_raw_image_mask,
-        confounds_file=sample_confounds_timeseries,
+        confounds_file=sample_postprocessed_confounds,
         base_dir=test_path, crashdump_dir=test_path)
     
     wf.run()
