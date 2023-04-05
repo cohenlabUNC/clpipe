@@ -37,7 +37,8 @@ INSTALL_REQUIRES = [
       "matplotlib",
       "heudiconv>=0.10.0",
       "tqdm",
-      "marshmallow-dataclass"
+      "marshmallow-dataclass",
+      "pyyaml"
 ],
 
 PACKAGE_DATA = {'clpipe': ['R_scripts/*.R']}
