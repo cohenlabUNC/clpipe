@@ -1,4 +1,36 @@
-# Change Log - NEW
+# Change Log
+
+## 1.8.0 (Apr 05, 2023)
+
+### GLM Setup Command Deprecation
+- `glm setup`: command deprecated, to be replaced by postprocess2
+- `glm setup`: config file no longer contains GLMSetupOptions. TaskName, ReferenceImage, and ParentClpipeConfig options  previously in GLMSetupOptions have been moved to the top level of the configuration file, as they are still used by Level 1 & 2 setups.
+- `glm setup`: Will still run "classic" glm setup pipeline when using a clpipe < 1.8 style glm config file, but prints a warning. Will print deprecation error and exit if using new-style glm setup config file
+- `project_setup`: The default TargetDirectory and ConfoundDirectory of the default glm config file now point to `postproc2/default`
+- `project_setup`: The default folder `data_GLMPrep` is no longer created
+- `project_setup`: Log folders `logs/glm_logs/L1_launch` and `logs/glm_logs/L2_launch` are created instead of `glm_setup_logs`, and these path are auto-populated in the LogDir fields of the default glm config file
+
+### Enhancements
+- `preprocess`: `/work` added to the list of UNC bind paths, as `/pine` is being deprecated by Longleaf
+- `preprocess`: when templateflow toggle is on, this step now automatically creates a .cache/templateflow folder for you in your home directory if it doesn't already exist
+- `glm prepare`: Changed some message exclusive to the `-debug` flag to be viewable without the flag to improve verbosity of the command. Command also now gives a message when completed, won't run if no images are found, and won't run if the EV target folder doesn't exist
+- `clpipe`: The `bids_validate` command was moved out of the `bids` sub-command and moved to the top level to make it easier to find/use and more closely resemble the original clpipe command. The `bids` sub-command is still useable, but has been hidden, and will be removed in a future update
+- `clpipe`: Similar to above, the `dicom` command has been hidden, and its sub-commands `convert2bids` and `flywheel_sync` have been moved to the top level of the clpipe menu. The dicom command is still accessible, but hidden.
+- `clpipe`: The `setup` command has been renamed `project_setup` for consistency with the original command, and to avoid a conflict where a general setup command for clpipe might be necessary (as opposed to setting up a project)
+- `clpipe`: The double-dash form `--help` and `--version` options have been removed for consistency with the other commands. The short hand of help, `-h`, is removed for simplicity. The forms `-help` and `-version, -v` remain.
+- `project_setup`: Several fields of config and glm_config files that need to be set by user, but appear blank in the starter config files, are now populated like "SET THIS FIELD" to make it clearer that they must be set
+- `clpipe`: New documentation page "Overview" added to house top-level cli command info and future location for clpipe overview diagrams
+
+### Bug Fixes
+- `clpipe`: Fixed issue where username for clpipe.log file was not obtainable from a desktop node, raising an exception
+- `glm report_outliers`: Fixed issue where outputs were doubled
+- `project_setup`: Fixed bug where the L2 fsfs dir was not auto-populated in the default glm_config file
+
+### Development
+- `setup`: Decoupled creation of files at project_setup from the path setup of user's config file, paving the way to update the configuration system and making it easier to control when directory setup occurs.
+- `tests`: Added fixture to allow testing for backwards compatibility with fmriprep < v21 style directory structure
+- `CI/CD`: Added a modulefile generation script to support deploying modules automatically
+- `CI/CD`: Updated build and deploy scripts to support automatic deployment of modules
 
 ## 1.7.3 (Feb 22, 2023)
 

@@ -38,8 +38,6 @@ class ClpipeConfigParser:
             self.setup_default_config()
         else:
             self.config = config_json_parser(config_file)
-        #with resource_stream(__name__, 'data/configSchema.json') as def_schema:
-         #   self.configSchema = json.load(def_schema)
 
     def config_updater(self, new_config):
         if new_config is None:
@@ -60,7 +58,6 @@ class ClpipeConfigParser:
         pass
 
     def validate_config(self):
-       # validate(self.config, self.configSchema)
         return 1
 
     def setup_project(self, project_title, project_dir, source_data):
@@ -73,11 +70,11 @@ class ClpipeConfigParser:
         self.setup_bids_validation(None)
         self.setup_fmriprep_directories(os.path.join(self.config['ProjectDirectory'], 'data_BIDS'),
                                         None, os.path.join(self.config['ProjectDirectory'], 'data_fmriprep'))
-        self.setup_postproc(os.path.join(self.config['FMRIPrepOptions']['OutputDirectory'], 'fmriprep'),
+        self.setup_postproc(self.config['FMRIPrepOptions']['OutputDirectory'],
                             target_suffix= None,
                             output_dir= os.path.join(self.config['ProjectDirectory'], 'data_postproc', 'postproc_default'),
                             output_suffix= 'postproc.nii.gz')
-        self.setup_postproc(os.path.join(self.config['FMRIPrepOptions']['OutputDirectory'], 'fmriprep'),
+        self.setup_postproc(self.config['FMRIPrepOptions']['OutputDirectory'],
                             target_suffix=None,
                             output_dir=os.path.join(self.config['ProjectDirectory'], 'data_postproc', 'betaseries_default'),
                             output_suffix='betaseries.nii.gz', beta_series=True)
@@ -91,59 +88,34 @@ class ClpipeConfigParser:
                             output_dir=os.path.join(self.config['ProjectDirectory'], 'data_postproc',
                                                     'postproc_default'),
                             output_suffix='postproc_default.nii.gz')
-        # processing_streams = self.get_processing_stream_names()
-        # if processing_streams:
-        #     for stream in processing_streams:
-        #         self.update_processing_stream(stream,
-        #                                       output_dir= os.path.join(self.config['ProjectDirectory'], 'data_postproc', 'postproc_'+stream),
-        #                                       output_suffix='postproc_'+stream+".nii.gz")
-        #         self.update_processing_stream(stream,
-        #                                       output_dir= os.path.join(self.config['ProjectDirectory'], 'data_postproc', 'betaseries_'+stream),
-        #                                       output_suffix='betaseries_'+stream+".nii.gz", beta_series=True)
         self.setup_glm(self.config['ProjectDirectory'])
 
     def setup_glm(self, project_path):
         glm_config = GLMConfigParser()
 
-        glm_config.config['GLMSetupOptions']['ParentClpipeConfig'] = os.path.join(project_path, "clpipe_config.json")
-        glm_config.config['GLMSetupOptions']['TargetDirectory'] = os.path.join(project_path, "data_fmriprep", "fmriprep")
-        glm_config.config['GLMSetupOptions']['MaskFolderRoot'] = glm_config.config['GLMSetupOptions']['TargetDirectory']
-        glm_config.config['GLMSetupOptions']['PreppedDataDirectory'] =  os.path.join(project_path, "data_GLMPrep")
-        os.mkdir(os.path.join(project_path, "data_GLMPrep"))
+        glm_config.config['ParentClpipeConfig'] = os.path.join(project_path, "clpipe_config.json")
 
-        glm_config.config['Level1Setups'][0]['TargetDirectory'] = os.path.join(project_path, "data_GLMPrep")
+        glm_config.config['Level1Setups'][0]['TargetDirectory'] = os.path.join(project_path, "data_postproc2", "default")
         glm_config.config['Level1Setups'][0]['FSFDir'] = os.path.join(project_path, "l1_fsfs")
         glm_config.config['Level1Setups'][0]['EVDirectory'] = os.path.join(project_path, "data_onsets")
-        glm_config.config['Level1Setups'][0]['ConfoundDirectory'] = os.path.join(project_path, "data_GLMPrep")
-        os.mkdir(os.path.join(project_path, "l1_fsfs"))
-        os.mkdir(os.path.join(project_path, "data_onsets"))
+        glm_config.config['Level1Setups'][0]['ConfoundDirectory'] = os.path.join(project_path, "data_postproc2", "default")
         glm_config.config['Level1Setups'][0]['OutputDir'] = os.path.join(project_path, "l1_feat_folders")
+        glm_config.config['Level1Setups'][0]['LogDir'] = os.path.join(project_path, "logs", "glm_logs", "L1_launch")
 
-        os.mkdir(os.path.join(project_path, "l1_feat_folders"))
         glm_config.config['Level2Setups'][0]['OutputDir'] = os.path.join(project_path, "l2_gfeat_folders")
-        glm_config.config['Level2Setups'][0]['OutputDir'] = os.path.join(project_path, "l2_fsfs")
-
-        os.mkdir(os.path.join(project_path, "l2_fsfs"))
-        os.mkdir(os.path.join(project_path, "l2_gfeat_folders"))
-
-        glm_config.config['GLMSetupOptions']['LogDirectory'] = os.path.join(project_path, "logs", "glm_setup_logs")
-        os.mkdir(os.path.join(project_path, "logs", "glm_setup_logs"))
+        glm_config.config['Level2Setups'][0]['FSFDir'] = os.path.join(project_path, "l2_fsfs")
+        glm_config.config['Level2Setups'][0]['LogDir'] = os.path.join(project_path, "logs", "glm_logs", "L2_launch")
 
         glm_config.config_json_dump(project_path, "glm_config.json")
         shutil.copyfile(resource_filename('clpipe', 'data/l2_sublist.csv'), os.path.join(project_path, "l2_sublist.csv"))
-        
 
     def setup_fmriprep_directories(self, bidsDir, workingDir, outputDir, log_dir = None):
         if bidsDir is not None:
             self.config['FMRIPrepOptions']['BIDSDirectory'] = os.path.abspath(bidsDir)
-            if not os.path.isdir(self.config['FMRIPrepOptions']['BIDSDirectory']):
-                raise ValueError('BIDS Directory does not exist')
         if workingDir is not None:
             self.config['FMRIPrepOptions']['WorkingDirectory'] = os.path.abspath(workingDir)
-            os.makedirs(self.config['FMRIPrepOptions']['WorkingDirectory'], exist_ok=True)
         if outputDir is not None:
             self.config['FMRIPrepOptions']['OutputDirectory'] = os.path.abspath(outputDir)
-            os.makedirs(self.config['FMRIPrepOptions']['OutputDirectory'], exist_ok=True)
         if log_dir is not None:
             self.config['FMRIPrepOptions']['LogDirectory'] = os.path.abspath(log_dir)
         else:
@@ -160,7 +132,6 @@ class ClpipeConfigParser:
             self.config[target_output]['TargetDirectory'] = os.path.abspath(target_dir)
         if output_dir is not None:
             self.config[target_output]['OutputDirectory'] = os.path.abspath(output_dir)
-            os.makedirs(self.config[target_output]['OutputDirectory'], exist_ok=True)
         if target_suffix is not None:
             self.config[target_output]['TargetSuffix'] = target_suffix
         if output_suffix is not None:
@@ -169,7 +140,6 @@ class ClpipeConfigParser:
             self.config[target_output]['LogDirectory'] = os.path.abspath(log_dir)
         else:
             self.config[target_output]['LogDirectory'] = os.path.join(self.config['ProjectDirectory'], 'logs', log_target)
-        os.makedirs(self.config[target_output]['LogDirectory'], exist_ok=True)
 
     def setup_heudiconv(self, dicom_directory, heuristic_file, output_directory):
         if dicom_directory is not None:
@@ -185,7 +155,6 @@ class ClpipeConfigParser:
             self.config['DICOMToBIDSOptions']['DICOMDirectory'] = os.path.abspath(dicom_directory)
         if output_directory is not None:
             self.config['DICOMToBIDSOptions']['BIDSDirectory'] = os.path.abspath(output_directory)
-            os.makedirs(self.config['DICOMToBIDSOptions']['BIDSDirectory'], exist_ok=True)
         if heuristic_file is not None:
             self.config['DICOMToBIDSOptions']['ConversionConfig'] = os.path.abspath(heuristic_file)
         if dicom_format_string is not None:
@@ -194,32 +163,18 @@ class ClpipeConfigParser:
             self.config['DICOMToBIDSOptions']['LogDirectory'] = os.path.abspath(log_dir)
         else:
             self.config['DICOMToBIDSOptions']['LogDirectory'] = os.path.join(self.config['ProjectDirectory'], 'logs', 'DCM2BIDS_logs')
-        os.makedirs(self.config['DICOMToBIDSOptions']['LogDirectory'], exist_ok=True)
-
-        # Create a default .bidsignore file
-        bids_ignore_path = os.path.join(self.config['DICOMToBIDSOptions']['BIDSDirectory'], ".bidsignore")
-        if not os.path.exists(bids_ignore_path):
-            with open(bids_ignore_path, 'w') as bids_ignore_file:
-                # Ignore dcm2bid's auto-generated directory
-                bids_ignore_file.write("tmp_dcm2bids\n")
-                # Ignore heudiconv's auto-generated scan file
-                bids_ignore_file.write("scans.json\n")
 
     def setup_bids_validation(self, log_dir=None):
         if log_dir is not None:
             self.config['BIDSValidationOptions']['LogDirectory'] = os.path.abspath(log_dir)
         else:
             self.config['BIDSValidationOptions']['LogDirectory'] = os.path.join(self.config['ProjectDirectory'], 'logs', 'bids_validation_logs')
-        os.makedirs(self.config['BIDSValidationOptions']['LogDirectory'], exist_ok=True)
 
     def setup_roiextract(self, target_dir, target_suffix, output_dir, log_dir = None):
         if target_dir is not None:
             self.config['ROIExtractionOptions']['TargetDirectory'] = os.path.abspath(target_dir)
-            if not os.path.isdir(self.config['ROIExtractionOptions']['TargetDirectory']):
-                raise ValueError('Target Directory does not exist')
         if output_dir is not None:
             self.config['ROIExtractionOptions']['OutputDirectory'] = os.path.abspath(output_dir)
-            os.makedirs(self.config['ROIExtractionOptions']['OutputDirectory'], exist_ok=True)
         if target_suffix is not None:
             self.config['ROIExtractionOptions']['TargetSuffix'] = target_suffix
         if log_dir is not None:
@@ -227,16 +182,12 @@ class ClpipeConfigParser:
         else:
             self.config['ROIExtractionOptions']['LogDirectory'] = os.path.join(self.config['ProjectDirectory'], 'logs',
                                                                              'ROI_extraction_logs')
-        os.makedirs(self.config['ROIExtractionOptions']['LogDirectory'], exist_ok=True)
 
     def setup_susan(self, target_dir, target_suffix, output_dir, output_suffix, log_dir =None):
         if target_dir is not None:
             self.config['SUSANOptions']['TargetDirectory'] = os.path.abspath(target_dir)
-            if not os.path.isdir(self.config['SUSANOptions']['TargetDirectory']):
-                raise ValueError('Target Directory does not exist')
         if output_dir is not None:
             self.config['SUSANOptions']['OutputDirectory'] = os.path.abspath(output_dir)
-            os.makedirs(self.config['SUSANOptions']['OutputDirectory'], exist_ok=True)
         if target_suffix is not None:
             self.config['SUSANOptions']['TargetSuffix'] = target_suffix
         if output_suffix is not None:
@@ -246,7 +197,6 @@ class ClpipeConfigParser:
         else:
             self.config['SUSANOptions']['LogDirectory'] = os.path.join(self.config['ProjectDirectory'], 'logs',
                                                                                'SUSAN_logs')
-        os.makedirs(self.config['SUSANOptions']['LogDirectory'], exist_ok=True)
 
     def get_processing_stream_names(self):
         try:

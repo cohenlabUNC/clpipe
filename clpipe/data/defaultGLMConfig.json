@@ -1,48 +1,10 @@
 {
   "GLMName": "A GLM Analysis",
-  "Authors": "Me, myself, and I",
-  "DateCreated": "",
-  "GLMSetupOptions": {
-    "ParentClpipeConfig":"",
-    "TargetDirectory": "",
-    "TargetSuffix": "space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz",
-    "WorkingDirectory": "FILL THIS IN",
-    "TaskName": "gng_example",
-    "ReferenceImage": "SET REFERENCE",
-    "DummyScans": 0,
-    "ApplyFMRIPREPMask": true,
-    "MaskFolderRoot": "",
-    "MaskSuffix": "space-MNI152NLin2009cAsym_desc-brain_mask.nii.gz",
-    "SUSANSmoothing": false,
-    "SUSANOptions": {
-      "BrightnessThreshold": 0,
-      "FWHM": 0
-    },
-    "OutputDirectory": "",
-    "OutputSuffix": "resampled.nii.gz",
-    "PrepareConfounds": true,
-    "ConfoundSuffix": "desc-confounds_regressors.tsv",
-    "Confounds": [
-      "trans_x", "trans_y", "trans_z", 
-      "rot_x", "rot_y", "rot_z"
-    ],
-    "ConfoundsDerive": [
-      "trans_x", "trans_y", "trans_z",
-      "rot_x", "rot_y", "rot_z"
-    ],
-    "ConfoundsQuad": [],
-    "ConfoundsQuadDerive": [],
-    "MotionOutliers": true,
-    "ScrubVar": "framewise_displacement",
-    "Threshold": 0.9,
-    "ScrubAhead": 0,
-    "ScrubBehind": 0,
-    "ScrubContiguous": 0,
-    "MemoryUsage": "5000",
-    "TimeUsage": "1:0:0",
-    "NThreads": "1",
-    "LogDirectory": ""
-  },
+  "Authors": "SET AUTHOR",
+  "DateCreated": "SET DATE CREATED",
+  "ParentClpipeConfig":"",
+  "TaskName": "SET TASK NAME",
+  "ReferenceImage": "SET REFERENCE",
   "Level1Onsets": {
     "EventFileSuffix": "events.tsv",
     "TrialTypeVariable": "trial_type",
@@ -53,10 +15,10 @@
   },
   "Level1Setups": [
     { 
-      "ModelName": "example_L1",
+      "ModelName": "example",
       "TargetDirectory": "./data_BIDS",
-      "TargetSuffix": "resampled.nii.gz",
-      "FSFPrototype": "",
+      "TargetSuffix": "desc-postproc_bold.nii.gz",
+      "FSFPrototype": "SET PROTOTYPE PATH",
       "ImageIncludeList": "",
       "ImageExcludeList": "",
       "FSFDir": "./fsf_test",
@@ -82,8 +44,8 @@
   ],
   "Level2Setups": [
     { 
-      "ModelName": "tworun_gngreg",
-      "FSFPrototype": "",
+      "ModelName": "example",
+      "FSFPrototype": "SET PROTOTYPE PATH",
       "SubjectFile": "l2_sublist.csv",
       "FSFDir": "",
       "OutputDir": "",

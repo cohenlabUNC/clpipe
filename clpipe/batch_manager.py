@@ -12,7 +12,7 @@ LOGGER_NAME = "batch-manager"
 OUTPUT_FORMAT_STR = 'Output-{jobid}-jobid-%j.out'
 JOB_ID_FORMAT_STR = '{jobid}'
 MAX_JOB_DISPLAY = 5
-
+DEFAULT_BATCH_CONFIG_PATH = "slurmUNCConfig.json"
 
 class BatchManager:
     """

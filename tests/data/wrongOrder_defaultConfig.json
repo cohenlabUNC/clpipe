@@ -1,0 +1,319 @@
+{
+    "ProjectDirectory": "",
+    "Authors/Contributors": "SET AUTHOR",
+    "TempDirectory": "",
+    "EmailAddress": "SET EMAIL ADDRESS",
+    "RunLog": [],
+    "StatusCache": "",
+    "BIDSValidationOptions": {
+        "LogDirectory": "",
+        "BIDSValidatorImage": "/proj/hng/singularity_imgs/validator.simg"
+    },
+    "DICOMToBIDSOptions": {
+        "DICOMDirectory": "",
+        "ConversionConfig": "",
+        "DICOMFormatString": "",
+        "BIDSDirectory": "",
+        "TimeUsage": "1:0:0",
+        "LogDirectory": "",
+        "MemUsage": "5000",
+        "CoreUsage": "2"
+    },
+    "SourceOptions": {
+        "DropoffDirectory": "",
+        "CommandLineOpts": "-y",
+        "TempDirectory": "",
+        "MemUsage": "10000",
+        "TimeUsage": "1:0:0",
+        "SourceURL": "fw://",
+        "CoreUsage": "1"
+    },
+    "PostProcessingOptions": {
+        "ConfoundsQuadDerive": [
+            "trans_x",
+            "trans_y",
+            "trans_z",
+            "rot_x",
+            "rot_y",
+            "rot_z",
+            "csf",
+            "white_matter",
+            "global_signal"
+        ],
+        "TargetSuffix": "space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz",
+        "TargetDirectory": "",
+        "ConfoundSuffix": "desc-confounds_regressors.tsv",
+        "Confounds": [
+            "trans_x",
+            "trans_y",
+            "trans_z",
+            "rot_x",
+            "rot_y",
+            "rot_z",
+            "csf",
+            "white_matter",
+            "global_signal",
+            "a_comp_cor.*"
+        ],
+        "OutputDirectory": "",
+        "OutputSuffix": "",
+        "ConfoundsQuad": [
+            "trans_x",
+            "trans_y",
+            "trans_z",
+            "rot_x",
+            "rot_y",
+            "rot_z",
+            "csf",
+            "white_matter",
+            "global_signal"
+        ],
+        "ConfoundsDerive": [
+            "trans_x",
+            "trans_y",
+            "trans_z",
+            "rot_x",
+            "rot_y",
+            "rot_z",
+            "csf",
+            "white_matter",
+            "global_signal"
+        ],
+        "DropCSV": "",
+        "Regress": true,
+        "FilteringHighPass": 0.008,
+        "FilteringLowPass": -1,
+        "OversamplingFreq": 4,
+        "PercentFreqSample": 1,
+        "FilteringOrder": 2,
+        "Scrubbing": true,
+        "RespNotchFilter": true,
+        "ScrubAhead": 1,
+        "ScrubBehind": 1,
+        "ScrubContig": 2,
+        "ScrubVar": "framewise_displacement",
+        "ScrubFDThreshold": 0.3,
+        "MotionVars": [
+            "trans_x",
+            "trans_y",
+            "trans_z",
+            "rot_x",
+            "rot_y",
+            "rot_z"
+        ],
+        "RespNotchFilterBand": [
+            0.31,
+            0.43
+        ],
+        "PostProcessingTimeUsage": "8:0:0",
+        "NThreads": "1",
+        "PostProcessingMemoryUsage": "20000",
+        "LogDirectory": "",
+        "SpectralInterpolationBinSize": 5000
+    },
+    "FMRIPrepOptions": {
+        "OutputDirectory": "",
+        "TemplateFlowToggle": true,
+        "CommandLineOpts": "",
+        "TemplateFlowPath": "/proj/hng/singularity_imgs/template_flow",
+        "FMRIPrepPath": "/proj/hng/singularity_imgs/fmriprep_22.1.1.sif",
+        "FreesurferLicensePath": "/proj/hng/singularity_imgs/license.txt",
+        "UseAROMA": false,
+        "TemplateFlowTemplates": [
+            "MNI152NLin2009cAsym",
+            "MNI152NLin6Asym",
+            "OASIS30ANTs",
+            "MNIPediatricAsym",
+            "MNIInfant"
+        ],
+        "FMapCleanupROIs": 3,
+        "FMRIPrepMemoryUsage": "50000",
+        "FMRIPrepTimeUsage": "16:0:0",
+        "BIDSDirectory": "",
+        "DockerToggle": false,
+        "DockerFMRIPrepVersion": "",
+        "WorkingDirectory": "SET WORKING DIRECTORY",
+        "NThreads": "12",
+        "LogDirectory": ""
+    },
+    "PostProcessingOptions2": {
+        "WorkingDirectory": "",
+        "TargetTasks": [],
+        "TargetDirectory": "",
+        "TargetImageSpace": "MNI152NLin2009cAsym",
+        "TargetAcquisitions": [],
+        "OutputDirectory": "",
+        "ProcessingSteps": [
+            "SpatialSmoothing",
+            "TemporalFiltering",
+            "IntensityNormalization",
+            "ApplyMask"
+        ],
+        "WriteProcessGraph": true,
+        "ProcessingStepOptions": {
+            "TemporalFiltering": {
+                "Implementation": "fslmaths",
+                "FilteringHighPass": 0.008,
+                "FilteringLowPass": -1,
+                "FilteringOrder": 2
+            },
+            "IntensityNormalization": {
+                "Implementation": "10000_GlobalMedian"
+            },
+            "AROMARegression": {
+                "Implementation": "fsl_regfilt_R"
+            },
+            "SpatialSmoothing": {
+                "Implementation": "SUSAN",
+                "FWHM": 6
+            },
+            "TrimTimepoints": {
+                "FromEnd": 0,
+                "FromBeginning": 0
+            },
+            "Resample": {
+                "ReferenceImage": "SET REFERENCE IMAGE"
+            },
+            "ConfoundRegression": {
+                "Implementation": "afni_3dTproject"
+            }
+        },
+        "BatchOptions": {
+            "TimeUsage": "2:0:0",
+            "MemoryUsage": "20000",
+            "NThreads": "1"
+        },
+        "ConfoundOptions": {
+            "Columns": [
+                "csf",
+                "csf_derivative1",
+                "white_matter",
+                "white_matter_derivative1"
+            ],
+            "MotionOutliers": {
+                "Include": true,
+                "ScrubAhead": 0,
+                "ScrubVar": "framewise_displacement",
+                "Threshold": 0.9,
+                "ScrubBehind": 0,
+                "ScrubContiguous": 0
+            }
+        }
+    },
+    "BetaSeriesOptions": {
+        "TargetDirectory": "",
+        "OutputSuffix": "betaseries.nii.gz",
+        "ConfoundSuffix": "desc-confounds_regressors.tsv",
+        "TargetSuffix": "preproc_bold.nii.gz",
+        "Regress": true,
+        "WhiteMatter": true,
+        "CSF": true,
+        "NuisanceRegression": "QuadLagged",
+        "LogDirectory": "",
+        "GlobalSignalRegression": true,
+        "FilteringHighPass": 0.008,
+        "FilteringLowPass": -1,
+        "OutputDirectory": "",
+        "FilteringOrder": 2,
+        "TaskSpecificOptions": [
+            {
+                "Task": "",
+                "ExcludeTrialTypes": [
+                    "block"
+                ],
+                "ExcludeColumnInfo": "trial_type"
+            }
+        ]
+    },
+    "ProcessingStreams": [
+        {
+            "ProcessingStream": "smooth_aroma-regress_filter_normalize",
+            "PostProcessingOptions": {
+                "ProcessingSteps": [
+                    "SpatialSmoothing",
+                    "AROMARegression",
+                    "TemporalFiltering",
+                    "IntensityNormalization"
+                ]
+            }
+        },
+        {
+            "ProcessingStream": "filter_confound-regress",
+            "PostProcessingOptions": {
+                "ProcessingSteps": [
+                    "TemporalFiltering",
+                    "ConfoundRegression"
+                ]
+            }
+        },
+        {
+            "ProcessingStream": "smooth_aroma-regress_filter_normalize_fwhm-8",
+            "PostProcessingOptions": {
+                "ProcessingSteps": [
+                    "SpatialSmoothing",
+                    "AROMARegression",
+                    "TemporalFiltering",
+                    "IntensityNormalization"
+                ],
+                "ProcessingStepOptions": {
+                    "SpatialSmoothing": {
+                        "FWHM": 8
+                    }
+                }
+            }
+        }
+    ],
+    "ROIExtractionOptions": {
+        "OutputDirectory": "",
+        "Atlases": [
+            "power"
+        ],
+        "TargetDirectory": "",
+        "TargetSuffix": "",
+        "RequireMask": true,
+        "TimeUsage": "2:0:0",
+        "NThreads": "1",
+        "PropVoxels": 0.5,
+        "MemoryUsage": "3000",
+        "LogDirectory": ""
+    },
+    "SUSANOptions": {
+        "TargetDirectory": "",
+        "OutputSuffix": "preproc_susan.nii.gz",
+        "BrightnessThreshold": 500,
+        "FWHM": 0,
+        "TargetSuffix": "preproc_bold.nii.gz",
+        "OutputDirectory": "",
+        "LogDirectory": "",
+        "NThreads": "4",
+        "MemoryUsage": "5000",
+        "TimeUsage": "2:0:0"
+    },
+    "ReHoExtraction": {
+        "TargetDirectory": "",
+        "TargetSuffix": "",
+        "WorkingDirectory": "",
+        "MaskDirectory": "",
+        "ExclusionFile": "",
+        "Neighborhood": "vertices",
+        "MaskSuffix": "space-MNI152NLin2009cAsym_desc-brain_mask.nii.gz",
+        "OutputSuffix": "",
+        "MaskFileOverride": "",
+        "OutputDirectory": "",
+        "LogDirectory": ""
+    },
+    "T2StarExtraction": {
+        "TargetDirectory": "",
+        "TargetSuffix": "",
+        "ExclusionFile": "",
+        "MaskSuffix": "space-MNI152NLin2009cAsym_desc-brain_mask.nii.gz",
+        "WorkingDirectory": "",
+        "MaskDirectory": "",
+        "OutputSuffix": "",
+        "LogDirectory": "",
+        "MaskFileOverride": "",
+        "OutputDirectory": ""
+    },
+    "BatchConfig": "slurmUNCConfig.json",
+    "ProjectTitle": "A Neuroimaging Project"
+}

@@ -17,15 +17,15 @@ clpipe was developed to streamline the processing of MRI data using the high per
 
    install
    project_setup
+   overview
    configfiles
    bids_convert
    bids_validation
-   fmriprep
+   preprocessing
    postprocessing
    glm
    roi_extraction
-   cli
-   dicom_sync
+   flywheel_sync
    changelog
 
 .. toctree::

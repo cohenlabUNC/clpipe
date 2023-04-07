@@ -2,10 +2,10 @@ import os
 import sys
 from pathlib import Path
 
-from .config import *
+from .config.glm import *
 from .config_json_parser import GLMConfigParser, ClpipeConfigParser
-from .batch_manager import BatchManager, Job
-from .utils import add_file_handler, get_logger
+from .batch_manager import BatchManager, Job, DEFAULT_BATCH_CONFIG_PATH
+from .utils import get_logger
 
 DEFAULT_L1_MEMORY_USAGE = "10G"
 DEFAULT_L1_TIME_USAGE = "10:00:00"
@@ -20,6 +20,7 @@ STEP_NAME = "glm-launch"
 # Unset PYTHONPATH to ensure FSL uses its own internal python
 #   libraries
 SUBMISSION_STRING_TEMPLATE = ("unset PYTHONPATH; feat {fsf_file}")
+DEPRECATION_MSG = "Using deprecated GLM setup file."
 
 
 def glm_launch(glm_config_file: str=None, level: int=L1,
@@ -27,15 +28,25 @@ def glm_launch(glm_config_file: str=None, level: int=L1,
                           submit: bool=False, debug: bool=False):
     glm_config_parser = GLMConfigParser(glm_config_file)
     glm_config = glm_config_parser.config
-    glm_setup_options = glm_config["GLMSetupOptions"]
-    parent_config = glm_setup_options["ParentClpipeConfig"]
+
+    warn_deprecated = False
+    try:
+        # These working indicates the user has a glm_config file from < v1.7.4
+        # In this case, use the GLMSetupOptions block as root dict
+        # TODO: when we get centralized config classes, this can be handled there
+        parent_config = glm_config['GLMSetupOptions']['ParentClpipeConfig']
+        warn_deprecated = True
+    except KeyError:
+        parent_config = glm_config["ParentClpipeConfig"]
 
     config = ClpipeConfigParser()
     config.config_updater(parent_config)
 
     project_dir = config.config["ProjectDirectory"]
-    add_file_handler(os.path.join(project_dir, "logs"))
-    logger = get_logger(STEP_NAME, debug=debug)
+    logger = get_logger(STEP_NAME, debug=debug, log_dir=os.path.join(project_dir, "logs"))
+
+    if warn_deprecated:
+        logger.warn(DEPRECATION_MSG)
 
     if level in VALID_L1:
         level = "L1"
@@ -45,14 +56,15 @@ def glm_launch(glm_config_file: str=None, level: int=L1,
         setup = 'Level2Setups'
     else:
         logger.error(f"Level must be {L1} or {L2}")
-        sys.exit(0)
+        sys.exit(1)
 
     logger.info(f"Setting up {level} .fsf launch using model: {model}")
 
     block = [x for x in glm_config[setup] \
             if x['ModelName'] == str(model)]
     if len(block) is not 1:
-        raise ValueError("Model not found, or multiple entries found.")
+        logger.error("Model not found, or multiple entries found.")
+        sys.exit(1)
     model_options = block[0]
 
     try:
@@ -99,13 +111,13 @@ def glm_launch(glm_config_file: str=None, level: int=L1,
    
     num_jobs = len(submission_strings)
 
-    if batch_manager:
-        _populate_batch_manager(batch_manager, submission_strings)
-        if submit:
-            logger.info(f"Running {num_jobs} job(s) in batch mode")
-            batch_manager.submit_jobs()
-        else:
-            batch_manager.print_jobs()
+    _populate_batch_manager(batch_manager, submission_strings)
+    if submit:
+        logger.info(f"Running {num_jobs} job(s) in batch mode")
+        batch_manager.submit_jobs()
+    else:
+        batch_manager.print_jobs()
+    sys.exit(0)
 
 
 def _setup_batch_manager(batch_config_path: str, log_dir: str, 
