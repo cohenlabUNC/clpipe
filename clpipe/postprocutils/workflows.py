@@ -557,6 +557,8 @@ def build_confound_regression_afni_3dTproject(in_file: os.PathLike=None, out_fil
 
     input_node = pe.Node(IdentityInterface(fields=['in_file', 'out_file', 'confounds_file', 'mask_file'], mandatory_inputs=False), name="inputnode")
     output_node = pe.Node(IdentityInterface(fields=['out_file'], mandatory_inputs=True), name="outputnode")
+    mean_image_node = pe.Node(MeanImage(), name="mean_image")
+    add_node = pe.Node(BinaryMaths(operation='add'), name="add_mean")
 
     # Set WF inputs and outputs
     if in_file:
@@ -569,9 +571,12 @@ def build_confound_regression_afni_3dTproject(in_file: os.PathLike=None, out_fil
     regressor_node = pe.Node(TProject(polort=0, outputtype="NIFTI_GZ"), name="3dTproject")
 
     workflow.connect(input_node, "in_file", regressor_node, "in_file")
-    workflow.connect(input_node, "out_file", regressor_node, "out_file")
+    workflow.connect(input_node, "in_file", mean_image_node, "in_file")
+    workflow.connect(input_node, "out_file", add_node, "out_file")
     workflow.connect(input_node, "confounds_file", regressor_node, "ort")
-    workflow.connect(regressor_node, "out_file", output_node, "out_file")
+    workflow.connect(regressor_node, "out_file", add_node, "in_file")
+    workflow.connect(mean_image_node, "out_file", add_node, "operand_file")
+    workflow.connect(add_node, "out_file", output_node, "out_file")
 
     if mask_file:
         input_node.inputs.mask_file = mask_file
