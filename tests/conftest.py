@@ -156,12 +156,12 @@ def clpipe_dicom_dir(tmp_path_factory):
     return project_dir
 
 @pytest.fixture(scope="session")
-def clpipe_bids_dir(tmp_path_factory):
+def clpipe_bids_dir(tmp_path_factory, sample_raw_image):
     """Fixture provides a clpipe project with mock BIDS folders."""
 
     project_dir = tmp_path_factory.mktemp("clpipe_bids_dir")
     project_setup(project_title=PROJECT_TITLE, project_dir=str(project_dir))
-    utils.populate_with_BIDS(project_dir)
+    utils.populate_with_BIDS(project_dir, sample_raw_image)
 
     return clpipe_dir
 
@@ -233,7 +233,7 @@ def clpipe_dir_old_glm_config(tmp_path_factory, sample_raw_image, sample_raw_ima
     GLMConfigParser.__init__ = utils.old_GLMConfigParser_init
 
     project_setup(project_title=PROJECT_TITLE, project_dir=project_dir)
-    utils.populate_with_BIDS(project_dir)
+    utils.populate_with_BIDS(project_dir, sample_raw_image)
     utils.populate_with_fmriprep(project_dir, sample_raw_image, sample_raw_image_mask, 
         sample_confounds_timeseries, sample_melodic_mixing, sample_aroma_noise_ics, 
         sample_fmriprep_dataset_description, legacy=True)
