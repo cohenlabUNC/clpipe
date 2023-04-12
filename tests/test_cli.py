@@ -4,6 +4,15 @@ from pathlib import Path
 
 from clpipe.cli import *
 
+def test_cli():
+    """Simple test to ensure the main clpipe commmand runs without error."""
+
+    with pytest.raises(SystemExit) as e:
+        cli([])
+
+    assert e.value.code == 0
+
+
 def test_glm_l1_launch_cli(glm_config_file: Path):
     """Test that 'classic' style glm_l1_launch_cli launch command works"""
 

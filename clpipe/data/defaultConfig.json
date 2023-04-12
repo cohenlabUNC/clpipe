@@ -131,7 +131,7 @@
       			"FWHM": 6
 			},
 			"AROMARegression":{
-				"Implementation": "fsl_regfilt_R"
+				"Implementation": "fsl_regfilt"
 			},
 			"Resample":{
 				"ReferenceImage": "SET REFERENCE IMAGE"

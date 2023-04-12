@@ -1,6 +1,8 @@
+# Note: these imports must remain light to ensure the CLI runs quickly.
+# Do not import any sub-command dependencies here directly! Lazy-load them by
+#   importing within their respective CLI commands.
 import click
 import sys
-from .fmri_process_check import fmri_process_check
 from .config.cli import *
 from .config.postprocessing2 import DEFAULT_PROCESSING_STREAM
 from .config.package import VERSION
