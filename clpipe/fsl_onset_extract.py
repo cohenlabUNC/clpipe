@@ -28,7 +28,7 @@ def fsl_onset_extract(config_file=None, glm_config_file=None, debug=False):
         task_name = glm_config.config["GLMSetupOptions"]['TaskName']
         warn_deprecated = True
     except KeyError:
-        task_name = glm_config['TaskName']
+        task_name = glm_config.config['TaskName']
 
     if warn_deprecated:
         logger.warn(DEPRECATION_MSG)
