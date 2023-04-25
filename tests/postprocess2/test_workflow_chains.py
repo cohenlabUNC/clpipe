@@ -190,7 +190,7 @@ def test_postprocess2_wf_fslmaths_temporal_filter(artifact_dir, postprocessing_c
     sample_confounds_timeseries, plot_img, write_graph, helpers):
 
     postprocessing_config["ProcessingSteps"] = ["SpatialSmoothing", "IntensityNormalization", "TemporalFiltering"]
-    postprocessing_config["ProcessingStepOptions"]["TemporalFiltering"]["Algorithm"] = "fslmaths"
+    postprocessing_config["ProcessingStepOptions"]["TemporalFiltering"]["Implementation"] = "fslmaths"
 
     test_path = helpers.create_test_dir(artifact_dir, request.node.name)
     out_path = test_path / "postProcessed.nii.gz"

@@ -48,7 +48,7 @@ def build_confounds_processing_workflow(postprocessing_config: dict, confounds_f
     # Force use of the R variant of fsl_regfilt for confounds
     if "AROMARegression" in processing_steps:
         postprocessing_config = copy.deepcopy(postprocessing_config)
-        postprocessing_config["ProcessingStepOptions"]["AROMARegression"]["Algorithm"] = "fsl_regfilt_R"
+        postprocessing_config["ProcessingStepOptions"]["AROMARegression"]["Implementation"] = "fsl_regfilt_R"
 
     motion_outliers = False
     try:
