@@ -18,6 +18,7 @@ import shutil
 from .errors import MaskFileNotFoundError
 
 from .utils import get_logger, resolve_fmriprep_dir
+from pathlib import Path
 
 STEP_NAME = "roi_extraction"
 
@@ -50,7 +51,7 @@ def fmri_roi_extraction(subjects=None,config_file=None, target_dir=None, target_
         log_output_dir = os.path.join(config.config['ROIExtractionOptions']['OutputDirectory'], "BatchOutput")
         os.makedirs(log_output_dir, exist_ok=True)
 
-    logger = get_logger(STEP_NAME, debug=debug, log_dir=config.config["ProjectDirectory"])
+    logger = get_logger(STEP_NAME, debug=debug, log_dir=Path(config.config["ProjectDirectory"]) / "logs")
 
     if not single:
         config_string = config.config_json_dump(config.config['ROIExtractionOptions']['OutputDirectory'],
