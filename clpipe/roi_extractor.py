@@ -173,9 +173,10 @@ def _fmri_roi_extract_subject(subject, task, atlas_name, atlas_filename, atlas_l
                      "*" + config.config['ROIExtractionOptions']['TargetSuffix']))
     logger.debug(search_string)
     subject_files = glob.glob(search_string, recursive=True)
-    logger.debug(subject_files)
     if task is not None:
+        logger.info(f"Checking for task {task} for subjects: {subject_files}")
         subject_files = [x for x in subject_files if 'task-'+task in x]
+    logger.info(f"Processing subjects: {subject_files}")
 
     os.makedirs(os.path.join(config.config['ROIExtractionOptions']['OutputDirectory'], atlas_name),exist_ok=True)
     shutil.copy2(atlas_labelpath,config.config['ROIExtractionOptions']['OutputDirectory'])

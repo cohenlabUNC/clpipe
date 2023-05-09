@@ -78,8 +78,8 @@ class ClpipeConfigParser:
                             target_suffix=None,
                             output_dir=os.path.join(self.config['ProjectDirectory'], 'data_postproc', 'betaseries_default'),
                             output_suffix='betaseries.nii.gz', beta_series=True)
-        self.setup_roiextract(target_dir = os.path.join(self.config['ProjectDirectory'], 'data_postproc', 'postproc_default'),
-                              target_suffix= 'postproc.nii.gz',
+        self.setup_roiextract(target_dir = os.path.join(self.config['ProjectDirectory'], 'data_postproc2', 'default'),
+                              target_suffix= 'postproc_bold.nii.gz',
                               output_dir= os.path.join(self.config['ProjectDirectory'],
                                            'data_ROI_ts', 'postproc_default'),
                               )
