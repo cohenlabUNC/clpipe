@@ -85,14 +85,14 @@ def fmri_roi_extraction(subjects=None,config_file=None, target_dir=None, target_
     batch_manager.update_email(config.config["EmailAddress"])
     batch_manager.createsubmissionhead()
     for subject in sublist:
+        logger.info(f"Starting ROI extraction for suject: {subject}")
         for cur_atlas in atlas_list:
             custom_flag = False
             sphere_flag = False
             if type(cur_atlas) is dict:
-                logger.debug("Custom Dict Atlas")
                 custom_flag = True
                 atlas_name = cur_atlas['atlas_name']
-                logger.debug(atlas_name)
+                logger.info(f"Using Custom Dict Atlas: {atlas_name}")
                 custom_atlas = cur_atlas['atlas_file']
                 logger.debug(custom_atlas)
                 custom_label = cur_atlas['atlas_labels']
@@ -100,6 +100,7 @@ def fmri_roi_extraction(subjects=None,config_file=None, target_dir=None, target_
                 custom_type = cur_atlas['atlas_type']
                 logger.debug(custom_type)
                 if 'sphere' in custom_type:
+                    logger.debug("Sphere flag: ON")
                     sphere_flag = True
                     custom_radius = cur_atlas['radius']
                     logger.debug(custom_radius)
