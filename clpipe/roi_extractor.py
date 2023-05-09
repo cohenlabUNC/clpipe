@@ -7,6 +7,7 @@ with warnings.catch_warnings():
     from nilearn.input_data import NiftiMapsMasker
     from nilearn.image import concat_imgs
 import os
+
 import click
 from .batch_manager import BatchManager, Job
 from .config_json_parser import ClpipeConfigParser, file_folder_generator
@@ -15,7 +16,7 @@ from pkg_resources import resource_stream, resource_filename
 import glob
 import shutil
 
-from .utils import get_logger, add_file_handler
+from .utils import get_logger
 
 STEP_NAME = "roi_extraction"
 
@@ -182,7 +183,7 @@ def _fmri_roi_extract_subject(subject, task, atlas_name, atlas_filename, atlas_l
 
     for file in subject_files:
        logger.info("Extracting the " + atlas_name + " atlas for " + file)
-       mask_file = _mask_finder(file, config)
+       mask_file = _mask_finder(file, config, logger)
        if os.path.exists(mask_file):
            logger.info("Found brain mask "+mask_file + ". Using to mask ROI extraction.")
            file_outname = os.path.splitext(os.path.basename(file))[0]
@@ -259,11 +260,13 @@ def get_available_atlases():
         print('Atlas Citation: ' + atlas['atlas_citation'])
         print('')
 
-def _mask_finder(data, config):
+def _mask_finder(data, config, logger):
 
     file_struct = file_folder_generator(os.path.basename(data), "func", target_suffix=config.config['ROIExtractionOptions']['TargetSuffix'])
+    logger.debug(f"File structure: {file_struct}")
     target_mask = os.path.join(config.config['FMRIPrepOptions']['OutputDirectory'], 'fmriprep', os.path.join(file_struct[-1])+'_desc-brain_mask.nii.gz')
     if not os.path.exists(target_mask):
         target_mask =os.path.join(config.config['FMRIPrepOptions']['OutputDirectory'], 'fmriprep', os.path.join(file_struct[-1])+'_desc-brain_mask.nii')
+    logger.debug(f"Target mask: {target_mask}")
     return(target_mask)
 
