@@ -60,7 +60,7 @@ def populate_with_DICOM(project_dir: Path, num_subjects=DEFAULT_NUM_DICOM_SUBJEC
 def populate_with_fmriprep(project_dir: Path, sample_raw_image, sample_raw_image_mask, 
     sample_confounds_timeseries, sample_melodic_mixing, sample_aroma_noise_ics, 
     sample_fmriprep_dataset_description, num_subjects=DEFAULT_NUM_FMRIPREP_SUBJECTS, legacy = False):
-    tasks = ["rest", "1", "2_run-1", "2_run-2"]
+    tasks = ["rest", "gonogo", "nback_run-1", "nback_run-2"]
 
     image_space = "space-MNI152NLin2009cAsym"
     bold_suffix = "desc-preproc_bold.nii.gz"
@@ -102,7 +102,7 @@ def populate_with_fmriprep(project_dir: Path, sample_raw_image, sample_raw_image
 
 def populate_with_postproc2(project_dir: Path, sample_raw_image, sample_confounds_timeseries,
                             num_subjects=DEFAULT_NUM_FMRIPREP_SUBJECTS):
-    tasks = ["run-1", "run-2", "run-3", "run-4"]
+    tasks = ["rest", "gonogo", "nback_run-1", "nback_run-2"]
 
     image_space = "space-MNI152NLin2009cAsym"
     bold_suffix = "desc-postproc_bold.nii.gz"
@@ -116,7 +116,7 @@ def populate_with_postproc2(project_dir: Path, sample_raw_image, sample_confound
         subject_folder.mkdir(parents=True)
 
         for task in tasks:
-            task_info = f"task-ridl_{task}"
+            task_info = f"task-{task}"
 
             shutil.copy(sample_raw_image, subject_folder / f"sub-{sub_num}_{task_info}_{image_space}_{bold_suffix}")
             shutil.copy(sample_confounds_timeseries, subject_folder / f"sub-{sub_num}_{task_info}_{confounds_suffix}")

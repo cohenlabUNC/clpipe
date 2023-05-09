@@ -249,6 +249,16 @@ class GLMConfigParser:
 
 
 def file_folder_generator(basename, modality, target_suffix = None):
+    """Function parses out a BIDS file name to find its sub-components.
+
+        TODO: this addresses a need that many other modules of clpipe use
+        as well, but in slightly different ways (see the GLM prepare functions).
+        This function is rather specific / hard-coded and
+            could use better generalization.
+        We should look to provide a utility function to replace where 
+        this logic is used in roi_extract, and others.
+    """
+    
     if target_suffix is not None:
         basename = basename.replace(target_suffix, "")
 
@@ -257,7 +267,11 @@ def file_folder_generator(basename, modality, target_suffix = None):
         comps = comps[0:-1]
     sub = comps[0]
     ses = comps[1]
-    front_matter = '_'.join(comps[0:-2])
+    try:
+        # Try to grab 'space' if present
+        front_matter = '_'.join(comps[0:-1])
+    except IndexError:
+        front_matter = '_'.join(comps[0:-2])
     type = comps[-1]
     if 'ses-' in ses:
         path = os.path.join(sub, ses, modality, front_matter)
