@@ -16,7 +16,7 @@ from pkg_resources import resource_stream, resource_filename
 import glob
 import shutil
 
-from .utils import get_logger
+from .utils import get_logger, resolve_fmriprep_dir
 
 STEP_NAME = "roi_extraction"
 
@@ -265,9 +265,13 @@ def _mask_finder(data, config, logger):
 
     file_struct = file_folder_generator(os.path.basename(data), "func", target_suffix=config.config['ROIExtractionOptions']['TargetSuffix'])
     logger.debug(f"File structure: {file_struct}")
-    target_mask = os.path.join(config.config['FMRIPrepOptions']['OutputDirectory'], 'fmriprep', os.path.join(file_struct[-1])+'_desc-brain_mask.nii.gz')
+
+    fmriprep_dir = resolve_fmriprep_dir(config.config['FMRIPrepOptions']['OutputDirectory'])
+    logger.debug(f"Searching for masks in: {fmriprep_dir}")
+
+    target_mask = os.path.join(fmriprep_dir, os.path.join(file_struct[-1])+'_desc-brain_mask.nii.gz')
     if not os.path.exists(target_mask):
-        target_mask =os.path.join(config.config['FMRIPrepOptions']['OutputDirectory'], 'fmriprep', os.path.join(file_struct[-1])+'_desc-brain_mask.nii')
+        target_mask =os.path.join(fmriprep_dir, os.path.join(file_struct[-1])+'_desc-brain_mask.nii')
     logger.debug(f"Target mask: {target_mask}")
     return(target_mask)
 
