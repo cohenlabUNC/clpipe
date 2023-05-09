@@ -26,6 +26,8 @@ class ConfoundsNotFoundError(FileNotFoundError):
 class EVFileNotFoundError(FileNotFoundError):
     pass
 
+class MaskFileNotFoundError(FileNotFoundError):
+    pass
 
 class MixingFileNotFoundError(FileNotFoundError):
     pass

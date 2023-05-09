@@ -15,6 +15,7 @@ import json
 from pkg_resources import resource_stream, resource_filename
 import glob
 import shutil
+from .errors import MaskFileNotFoundError
 
 from .utils import get_logger, resolve_fmriprep_dir
 
@@ -196,10 +197,17 @@ def _fmri_roi_extract_subject(subject, task, atlas_name, atlas_filename, atlas_l
            else:
                try:
                   ROI_ts = _fmri_roi_extract_image(file, atlas_path, atlas_type, radius, overlap_ok, logger, mask = mask_file)
-               except ValueError as err:
-                   logger.warning(err)
+               except MaskFileNotFoundError as mfnfe:
+                   logger.warning(mfnfe)
                    logger.warning("Extracting ROIs without using brain mask.")
                    ROI_ts = _fmri_roi_extract_image(file, atlas_path, atlas_type, radius, overlap_ok, logger)
+               except ValueError as ve:
+                   # Follows original logic catching the empty spheres error given
+                   #    when a mask file is included, for unknown reasons.
+                   logger.warning(ve + ". Extracting ROIs without using brain mask.")
+                   logger.warning()
+                   ROI_ts = _fmri_roi_extract_image(file, atlas_path, atlas_type, radius, overlap_ok, logger)
+                   
                temp_mask = concat_imgs([mask_file,mask_file])
                mask_ROIs = _fmri_roi_extract_image(temp_mask, atlas_path, atlas_type, radius, overlap_ok, logger)
                mask_ROIs = np.nan_to_num(mask_ROIs)
@@ -262,16 +270,21 @@ def get_available_atlases():
         print('')
 
 def _mask_finder(data, config, logger):
+    """Search for a mask in the fmriprep output directory matching
+    the name of the image targeted for roi_extraction"""
 
     file_struct = file_folder_generator(os.path.basename(data), "func", target_suffix=config.config['ROIExtractionOptions']['TargetSuffix'])
-    logger.debug(f"File structure: {file_struct}")
+    logger.debug(f"Mask file structure: {file_struct}")
 
     fmriprep_dir = resolve_fmriprep_dir(config.config['FMRIPrepOptions']['OutputDirectory'])
     logger.debug(f"Searching for masks in: {fmriprep_dir}")
 
     target_mask = os.path.join(fmriprep_dir, os.path.join(file_struct[-1])+'_desc-brain_mask.nii.gz')
     if not os.path.exists(target_mask):
-        target_mask =os.path.join(fmriprep_dir, os.path.join(file_struct[-1])+'_desc-brain_mask.nii')
-    logger.debug(f"Target mask: {target_mask}")
+        logger.warn(f"No .nii.gz mask file found, searching for unzipped variant...")
+        target_mask_unzipped =os.path.join(fmriprep_dir, os.path.join(file_struct[-1])+'_desc-brain_mask.nii')
+        if not os.path.exists(target_mask_unzipped):
+            raise MaskFileNotFoundError(f"No mask found on path: {target_mask}")
+    logger.debug(f"Found matching mask: {target_mask}")
     return(target_mask)
 
