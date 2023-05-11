@@ -183,6 +183,25 @@ def clpipe_postproc2_dir(tmp_path_factory, sample_raw_image, sample_raw_image_ma
 
     return project_dir
 
+@pytest.fixture(scope="session")
+def clpipe_postproc2_legacy_fmriprep_dir(tmp_path_factory, sample_raw_image, sample_raw_image_mask, 
+    sample_confounds_timeseries, sample_melodic_mixing, sample_aroma_noise_ics, 
+    sample_fmriprep_dataset_description) -> Path:
+    """ Same as clpipe_postproc2_dir but uses legacy fmriprep.
+        Ideally that function would be parameterized with legacy=True/False,
+            but have not figured out how to do this with fixtures yet #TODO
+    """
+    project_dir = tmp_path_factory.mktemp("clpipe_bids_fmriprep_postproc2_dir")
+    project_setup(project_title=PROJECT_TITLE, project_dir=str(project_dir))
+    
+    utils.populate_with_BIDS(project_dir, sample_raw_image)
+    utils.populate_with_fmriprep(project_dir, sample_raw_image, sample_raw_image_mask, 
+        sample_confounds_timeseries, sample_melodic_mixing, sample_aroma_noise_ics, 
+        sample_fmriprep_dataset_description, legacy = True)
+    utils.populate_with_postproc2(project_dir, sample_raw_image,  sample_confounds_timeseries)
+
+    return project_dir
+
 #TODO: seperate AROMA into its own type of fmriprep dir
 @pytest.fixture(scope="session")
 def clpipe_fmriprep_dir(tmp_path_factory, sample_raw_image, sample_raw_image_mask, 
@@ -295,6 +314,19 @@ def config_file_fmriprep(clpipe_fmriprep_dir: Path):
     """Return config file from the test fmriprep directory."""
 
     return clpipe_fmriprep_dir / "clpipe_config.json"
+
+@pytest.fixture(scope="module")
+def config_file_postproc2(clpipe_postproc2_dir: Path):
+    """Return config file from the test postproc2 directory."""
+
+    return clpipe_postproc2_dir / "clpipe_config.json"
+
+    
+@pytest.fixture(scope="module")
+def config_file_postproc2_legacy_fmriprep(clpipe_postproc2_legacy_fmriprep_dir: Path):
+    """Same as config_file_postproc2 but with legacy fmriprep dir."""
+
+    return clpipe_postproc2_legacy_fmriprep_dir / "clpipe_config.json"
 
 @pytest.fixture(scope="session")
 def config_file_legacy_fmriprep(clpipe_legacy_fmriprep_dir: Path):

@@ -139,9 +139,6 @@ def setup_postproc(config, beta_series=False):
     os.makedirs(config[target_output]['LogDirectory'], exist_ok=True)
 
 def setup_roiextract_directories(config):
-    if not os.path.isdir(config['ROIExtractionOptions']['TargetDirectory']):
-        raise ValueError('Target Directory does not exist')
-    
     if(config['ROIExtractionOptions']['OutputDirectory'] != ""):
         os.makedirs(config['ROIExtractionOptions']['OutputDirectory'], exist_ok=True)
     os.makedirs(config['ROIExtractionOptions']['LogDirectory'], exist_ok=True)
