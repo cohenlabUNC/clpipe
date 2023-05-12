@@ -198,18 +198,6 @@ def _fmri_roi_extract_subject(subject, task, atlas_name, atlas_filename, atlas_l
             mask_file = _mask_finder(file, config, logger)
             ROI_ts = _fmri_roi_extract_image(file, atlas_path, atlas_type, radius, overlap_ok, logger, mask = mask_file)
 
-            temp_mask = concat_imgs([mask_file,mask_file])
-            mask_ROIs = _fmri_roi_extract_image(temp_mask, atlas_path, atlas_type, radius, overlap_ok, logger)
-            mask_ROIs = np.nan_to_num(mask_ROIs)
-            logger.debug(mask_ROIs[0])
-            to_remove = [ind for ind,prop in np.ndenumerate(mask_ROIs[0]) if prop < config.config['ROIExtractionOptions']['PropVoxels']]
-            logger.debug(to_remove)
-            ROI_ts[:, to_remove] = np.nan
-
-            np.savetxt(
-            os.path.join(os.path.join(config.config['ROIExtractionOptions']['OutputDirectory'], atlas_name),
-                        file_outname + "_atlas-" + atlas_name + '_voxel_prop.csv'), mask_ROIs[0], delimiter=',')
-
         except MaskFileNotFoundError as mfnfe:
             logger.warning(mfnfe)
             logger.warning("Extracting ROIs without using brain mask.")
@@ -224,6 +212,18 @@ def _fmri_roi_extract_subject(subject, task, atlas_name, atlas_filename, atlas_l
             #    when a mask file is included, for unknown reasons.
             logger.warning(ve.__str__() + ". Extracting ROIs without using brain mask.")
             ROI_ts = _fmri_roi_extract_image(file, atlas_path, atlas_type, radius, overlap_ok, logger)
+
+        temp_mask = concat_imgs([mask_file,mask_file])
+        mask_ROIs = _fmri_roi_extract_image(temp_mask, atlas_path, atlas_type, radius, overlap_ok, logger)
+        mask_ROIs = np.nan_to_num(mask_ROIs)
+        logger.debug(mask_ROIs[0])
+        to_remove = [ind for ind,prop in np.ndenumerate(mask_ROIs[0]) if prop < config.config['ROIExtractionOptions']['PropVoxels']]
+        logger.debug(to_remove)
+        ROI_ts[:, to_remove] = np.nan
+
+        np.savetxt(
+        os.path.join(os.path.join(config.config['ROIExtractionOptions']['OutputDirectory'], atlas_name),
+                    file_outname + "_atlas-" + atlas_name + '_voxel_prop.csv'), mask_ROIs[0], delimiter=',')
             
         np.savetxt(os.path.join(os.path.join(config.config['ROIExtractionOptions']['OutputDirectory'], atlas_name),
             file_outname + "_atlas-" + atlas_name + '.csv'), ROI_ts, delimiter=',')
