@@ -163,11 +163,27 @@ def test_fslmath_temporal_filter_wf(
 
     assert True
 
-def test_3dtproject_temporal_filter_wf():
-    test_path = ""
-    filtered_path = ""
-    wf = build_3dtproject_temporal_filter()
+def test_3dtproject_temporal_filter_wf(artifact_dir, sample_raw_image, request, helpers, plot_img, 
+                                    write_graph):
+    test_path = helpers.create_test_dir(artifact_dir, request.node.name)
+    filtered_path = test_path / "sample_raw_filtered.nii.gz"
+
+    # TODO: Add Nuisance File
+    #         - File directory structure
+    #         - File contents structure
+    wf = build_3dtproject_temporal_filter(bpHigh= 2.5, bpLow= 0.5, tr=2, 
+                                          in_file=sample_raw_image, out_file=filtered_path,
+                                          base_dir=test_path, crashdump_dir=test_path, nuisance_file=None)
     wf.run()
+
+    helpers.plot_timeseries(filtered_path, sample_raw_image)
+
+    if write_graph:
+        wf.write_graph(dotfilename = test_path / "filteredflow", graph2use=write_graph)
+
+    if plot_img:
+        helpers.plot_4D_img_slice(filtered_path, "filtered.png")
+
     assert True
     
 def test_confound_regression_fsl_glm_wf(artifact_dir, sample_raw_image, sample_postprocessed_confounds, sample_raw_image_mask, plot_img, write_graph, request, helpers):
