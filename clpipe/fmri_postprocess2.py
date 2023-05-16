@@ -448,8 +448,10 @@ def postprocess_image(
         confounds_wf=confounds_wf,
         name=f"{pipeline_name}_Postprocessing_Pipeline",
         postprocessing_config=postprocessing_config,
-        base_dir=subject_working_dir, crashdump_dir=log_dir)
-    
+        base_dir=subject_working_dir,
+        crashdump_dir=log_dir,
+    )
+
     if postprocessing_config["WriteProcessGraph"]:
         draw_graph(postproc_wf, "processing_graph", stream_output_dir, logger=logger)
 
