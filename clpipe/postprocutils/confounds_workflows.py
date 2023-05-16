@@ -166,8 +166,10 @@ def build_confounds_processing_workflow(
             crashdump_dir=crashdump_dir,
         )
         confounds_wf.connect(
-            confounds_prep_wf, "outputnode.scrub_targets", current_wf, 
-            "inputnode.scrub_targets"
+            confounds_prep_wf,
+            "outputnode.scrub_targets",
+            current_wf,
+            "inputnode.scrub_targets",
         )
         confounds_wf.connect(
             prev_wf, "outputnode.out_file", current_wf, "inputnode.in_file"

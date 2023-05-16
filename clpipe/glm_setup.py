@@ -3,7 +3,7 @@ import glob
 
 from clpipe.utils import get_logger
 from .batch_manager import BatchManager, Job
-from .postprocutils.utils import get_scrub_targets
+from .postprocutils.utils import get_scrub_vector
 from .config_json_parser import ClpipeConfigParser, GLMConfigParser
 import sys
 import site
@@ -217,7 +217,7 @@ def _glm_prep(glm_config, subject, task, drop_tps, logger):
                     logger.info("Contiguous: " + str(glm_config.config["GLMSetupOptions"]['ScrubContiguous']))
                     fdts = confounds[glm_config.config["GLMSetupOptions"]['ScrubVar']]
                     logger.debug(str(fdts))
-                    scrub_targets = get_scrub_targets(fdts, glm_config.config["GLMSetupOptions"]['Threshold'], glm_config.config["GLMSetupOptions"]['ScrubBehind'], glm_config.config["GLMSetupOptions"]['ScrubAhead'], glm_config.config["GLMSetupOptions"]['ScrubContiguous'])
+                    scrub_targets = get_scrub_vector(fdts, glm_config.config["GLMSetupOptions"]['Threshold'], glm_config.config["GLMSetupOptions"]['ScrubBehind'], glm_config.config["GLMSetupOptions"]['ScrubAhead'], glm_config.config["GLMSetupOptions"]['ScrubContiguous'])
                     logger.debug(str(scrub_targets))
             if drop_tps is not None:
                 img_data = nib.load(image)
@@ -233,7 +233,7 @@ def _glm_prep(glm_config, subject, task, drop_tps, logger):
                     if confounds is not None:
                         confounds_mat = confounds_mat.head(total_tps)
                         fdts = fdts.iloc[:(fdts.shape[0]-(tps_drop))]
-                    scrub_targets = get_scrub_targets(fdts,
+                    scrub_targets = get_scrub_vector(fdts,
                                                 glm_config.config["GLMSetupOptions"]['Threshold'],
                                                 glm_config.config["GLMSetupOptions"]['ScrubBehind'],
                                                 glm_config.config["GLMSetupOptions"]['ScrubAhead'],

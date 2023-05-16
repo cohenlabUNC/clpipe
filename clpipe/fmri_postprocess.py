@@ -12,7 +12,7 @@ import re
 from pkg_resources import resource_filename
 
 from .postprocutils.utils import (
-    get_scrub_targets, calc_filter, apply_filter, regress, scrub_image, notch_filter
+    get_scrub_vector, calc_filter, apply_filter, regress, scrub_image, notch_filter
 )
 from .postprocutils.spec_interpolate import spec_inter
 from .batch_manager import BatchManager, Job
@@ -225,7 +225,7 @@ def _fmri_postprocess_image(config, file, logger, task = None, tr=None, beta_ser
             if config.config['PostProcessingOptions']['RespNotchFilter']:
                 fdts = _notch_filter_fd(config,  confound_regressors, tr, drop_tps)
 
-            scrubTargets = get_scrub_targets(fdts, fd_thres, scrub_behind, scrub_ahead, scrub_contig)
+            scrubTargets = get_scrub_vector(fdts, fd_thres, scrub_behind, scrub_ahead, scrub_contig)
 
         hp = float(config.config['PostProcessingOptions']['FilteringHighPass'])
         lp = float(config.config['PostProcessingOptions']['FilteringLowPass'])
