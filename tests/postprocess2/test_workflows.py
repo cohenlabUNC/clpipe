@@ -226,6 +226,8 @@ def test_confound_regression_afni_3dTproject_wf(
     )
     wf.run()
 
+    helpers.plot_timeseries(regressed_path, sample_raw_image)
+
     if write_graph:
         wf.write_graph(dotfilename=test_path / "regressedFlow", graph2use=write_graph)
 

@@ -68,6 +68,41 @@ class Helpers:
         plotting.plot_img(image_slice, output_file=plot_path)
 
     @staticmethod
+    def plot_timeseries(image_path: Path, base_image_path: Path):
+        import nibabel as nib
+        import numpy as np
+        import matplotlib.pyplot as plt
+        image = nib.load(str(image_path))
+        base_image = nib.load(str(base_image_path))
+
+        data = image.get_fdata()
+        n_timepoints, n_voxels = data.shape[-1], np.prod(data.shape[:-1])
+
+        base_data = base_image.get_fdata()
+        n_timepoints, n_voxels = base_data.shape[-1], np.prod(base_data.shape[:-1])
+        
+        # Place all voxels on one axis
+        data_2d = np.reshape(data, (n_voxels, n_timepoints))
+        base_data_2d = np.reshape(base_data, (n_voxels, n_timepoints))
+
+        fig, axs = plt.subplots(nrows=2, ncols=2, figsize=(8, 8))
+        axes_to_show = [95806, 84147, 77717, 86717]
+        fig.supxlabel('Time')
+        fig.supylabel('Signal intensity')
+
+        for i, ax in enumerate(axs.flatten()):
+            # Select a random voxel to plot
+            # Plot the time-series data
+            processed_plot, = ax.plot(data_2d[axes_to_show[i]], label="processed")
+            raw_plot, = ax.plot(base_data_2d[axes_to_show[i]], label="raw")
+            ax.set_title(f'voxel: {axes_to_show[i]}')
+
+        fig.legend(handles=[raw_plot, processed_plot])
+
+        save_path = image_path.parent / "timeseries.png"
+        plt.savefig(save_path)
+
+    @staticmethod
     def create_test_dir(artifact_dir: Path, name: str):
         test_path = artifact_dir / name
         test_path.mkdir(parents=True, exist_ok=True)
