@@ -1,12 +1,12 @@
-## Contribution Guide
+# Contribution Guide
 
-### Dev Environment Setup
+## Dev Environment Setup
 
-#### Docker Container
+### Docker Container
 
-### Committing & Branching
+## Committing & Branching
 
-#### Checking Out
+### Checking Out
 
 Once your environment is setup, contributing to clpipe starts with checking out the
 `develop` branch. This branch contains all of the progress of the next version of clpipe.
@@ -14,7 +14,7 @@ Its version will, naturally, be higher than that of the `main` branch.
 
 `git checkout develop`
 
-#### Creating a Feature Branch
+### Creating a Feature Branch
 
 Generally, however, you should not commit directly against this branch.
 It's easier to pick and choose the right moment to include a particular change in develop
@@ -29,7 +29,7 @@ particular command works.
 
 `git checkout -b my-feature`
 
-#### Committing
+### Committing
 
 Commits, like feature branches, should also encapsulate a single idea. Commits do not have
 to be limited to a single file, as long as the changes can all be logically grouped together.
@@ -67,14 +67,14 @@ Next, open a new pull request, with `my-feature` merging into `develop`. Once th
 PR is accepted, it will be merged into `develop`.
 
 
-### Release Strategy
+## Release Strategy
 
-#### Versioning Scheme
+### Versioning Scheme
 
 clpipe follows the `x.y.z` versioning scheme, where x is a breaking update, y introduces
 major features, and z indicates minor updates. Example: `1.7.2`
 
-#### Release Branch
+### Release Branch
 
 When enough changes to the `develop` branch have been made, they can be merged together into
 the main branch as a **release**. In order to allow futher development on the `develop`
@@ -88,17 +88,17 @@ repository. The tag name should follow the scheme `v<x.y.z>`, which in our examp
 would be `v1.7.3`
 
 
-#### Incrementing Develop
+### Incrementing Develop
 
 As soon as a release branch is created, the `develop` branch should have its version
 updated in `setup.py`, usually by the minor value. For example, from `1.7.2` to `1.7.3`. If a major feature or breaking change
 is included in subsequent development, the version should be updated to reflect this before release.
 
-#### Release Branch PR to Main
+### Release Branch PR to Main
 
-#### Release Tagging, Documentation, and Artifact Distribution
+### Release Tagging, Documentation, and Artifact Distribution
 
-#### Hotfixes
+### Hotfixes
 
 In general, releases are final and should not be updated. However, 
 in the event that a bug is found in a release that cannot wait until the next release
