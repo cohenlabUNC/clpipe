@@ -9,6 +9,7 @@ import os
 from math import sqrt, log
 from pathlib import Path
 import pkg_resources
+import pandas as pd
 
 # TODO: import these without specifying, to help with code readability
 from nipype.interfaces.fsl.maths import (
@@ -1033,13 +1034,12 @@ def build_trim_timepoints_workflow(
 
 
 def build_get_scrub_targets_workflow(
+    target_variable: str,
+    threshold: float,
+    scrub_ahead: int,
+    scrub_behind: int,
+    scrub_contiguous: int,
     in_file: os.PathLike = None,
-    counfounds_file: os.PathLike = None,
-    target_variable: str = None,
-    threshold: float = None,
-    scrub_ahead: int = None,
-    scrub_behind: int = None,
-    scrub_contiguous: int = None,
     out_file: os.PathLike = None,
     base_dir: os.PathLike = None,
     crashdump_dir: os.PathLike = None,
@@ -1056,6 +1056,12 @@ def build_get_scrub_targets_workflow(
     # Convert image to timeseries (not necessary to convert back)
     # Pull target var out of confound timeseries
 
+    # Write node for grabbing a file
+    confounds_df = pd.read_csv(in_file, sep="\t")
+
+    # Get the column to be used for thresholding
+    target_timeseries = confounds_df[target_variable]
+
     scrub_target_node = pe.Node(
         Function(
             input_names=["fdts", "fd_thres", "fd_behind", "fd_ahead", "fd_contig"],
@@ -1067,16 +1073,17 @@ def build_get_scrub_targets_workflow(
 
     # Set WF inputs and outputs
     if in_file:
-        input_node.inputs.in_file = counfounds_file
-        input_node.inputs.target_variable = target_variable
-        input_node.inputs.threshold = threshold
-        input_node.inputs.scrub_ahead = scrub_ahead
-        input_node.inputs.scrub_behind = scrub_behind
-        input_node.inputs.scrub_contiguous = scrub_contiguous
+        input_node.inputs.timeseries = target_timeseries
     if out_file:
         input_node.inputs.out_file = out_file
 
-    workflow.connect(input_node, "in_file", scrub_target_node, "fdts")
+    input_node.inputs.target_variable = target_variable
+    input_node.inputs.threshold = threshold
+    input_node.inputs.scrub_ahead = scrub_ahead
+    input_node.inputs.scrub_behind = scrub_behind
+    input_node.inputs.scrub_contiguous = scrub_contiguous
+
+    workflow.connect(input_node, "timeseries", scrub_target_node, "fdts")
     workflow.connect(input_node, "threshold", scrub_target_node, "fd_thres")
     workflow.connect(input_node, "scrub_behind", scrub_target_node, "fd_behind")
     workflow.connect(input_node, "scrub_ahead", scrub_target_node, "fd_ahead")
