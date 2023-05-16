@@ -12,6 +12,7 @@ from nipype.interfaces.utility import Function, IdentityInterface
 from nipype.interfaces.io import ExportFile
 import nipype.pipeline.engine as pe
 
+from .utils import get_scrub_targets
 from .workflows import build_image_postprocessing_workflow
 
 # A list of the temporal-based processing steps applicable to confounds
@@ -174,6 +175,11 @@ def build_confounds_processing_workflow(
 
 def build_confounds_prep_workflow(
     column_names: List,
+    scrub_target_variable: str,
+    scrub_threshold: float,
+    scrub_ahead: int,
+    scrub_behind: int,
+    scrub_contiguous: int,
     in_file: os.PathLike = None,
     out_file: os.PathLike = None,
     base_dir: os.PathLike = None,
@@ -201,9 +207,25 @@ def build_confounds_prep_workflow(
         name="inputnode",
     )
     output_node = pe.Node(
-        IdentityInterface(fields=["out_file"], mandatory_inputs=True), name="outputnode"
+        IdentityInterface(fields=["out_file", "scrub_targets"], mandatory_inputs=True),
+        name="outputnode",
     )
 
+    scrub_target_node = pe.Node(
+        Function(
+            input_names=[
+                "confounds_file",
+                "scrub_target_variable",
+                "scrub_threshold",
+                "scrub_behind",
+                "scrub_ahead",
+                "scrub_contiguous",
+            ],
+            output_names=["scrub_targets"],
+            function=_get_scrub_targets,
+        ),
+        name="get_scrub_targets_node",
+    )
     tsv_select_node = pe.Node(
         Function(
             input_names=["tsv_file", "column_names"],
@@ -228,7 +250,15 @@ def build_confounds_prep_workflow(
 
     input_node.inputs.column_names = column_names
 
+    # Setup scrub inputs
+    scrub_target_node.inputs.scrub_target_variable = scrub_target_variable
+    scrub_target_node.inputs.scrub_threshold = scrub_threshold
+    scrub_target_node.inputs.scrub_behind = scrub_behind
+    scrub_target_node.inputs.scrub_ahead = scrub_ahead
+    scrub_target_node.inputs.scrub_contiguous = scrub_contiguous
+
     # Setup input connections
+    workflow.connect(input_node, "in_file", scrub_target_node, "confounds_file")
     workflow.connect(input_node, "in_file", tsv_select_node, "tsv_file")
     workflow.connect(input_node, "column_names", tsv_select_node, "column_names")
 
@@ -237,7 +267,9 @@ def build_confounds_prep_workflow(
         tsv_select_node, "tsv_subset_file", tsv_replace_nas_node, "tsv_file"
     )
 
+    # Set outputs
     workflow.connect(tsv_replace_nas_node, "tsv_no_na", output_node, "out_file")
+    workflow.connect(scrub_target_node, "scrub_targets", output_node, "scrub_targets")
 
     return workflow
 
@@ -415,6 +447,27 @@ def build_confounds_add_motion_outliers_workflow(
     workflow.connect(combine_confounds_node, "out_file", output_node, "out_file")
 
     return workflow
+
+
+def _get_scrub_targets(
+    confounds_file: os.PathLike,
+    scrub_target_variable: str,
+    scrub_threshold: float,
+    scrub_ahead: int,
+    scrub_behind: int,
+    scrub_contiguous: int,
+):
+    """Wrapper for call to utils.get_scrub_targets, but includes extracting column"""
+    import pandas as pd
+
+    # Get the column to be used for thresholding
+    confounds_df = pd.read_csv(confounds_file, sep="\t")
+    target_timeseries = confounds_df[scrub_target_variable]
+
+    scrub_targets = get_scrub_targets(
+        target_timeseries, scrub_threshold, scrub_behind, scrub_ahead, scrub_contiguous
+    )
+    return scrub_targets
 
 
 def _construct_motion_outliers(scrub_targets: list):
