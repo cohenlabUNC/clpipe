@@ -47,9 +47,7 @@ def test_build_confounds_processing_workflow_aroma_regression(
 ):
     """Check that confounds processing works with IN and TF."""
 
-    postprocessing_config["ProcessingSteps"] = [
-        "AROMARegression"
-    ]
+    postprocessing_config["ProcessingSteps"] = ["AROMARegression"]
 
     test_path = helpers.create_test_dir(artifact_dir, request.node.name)
     out_path = test_path / "postprocessed.tsv"

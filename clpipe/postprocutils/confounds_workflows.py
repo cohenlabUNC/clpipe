@@ -18,11 +18,20 @@ from .workflows import build_image_postprocessing_workflow
 CONFOUND_STEPS = {"TemporalFiltering", "AROMARegression", "TrimTimepoints"}
 
 
-def build_confounds_processing_workflow(postprocessing_config: dict, confounds_file: os.PathLike=None, 
-    export_file: os.PathLike=None, mixing_file: os.PathLike=None, noise_file: os.PathLike=None, tr: float = None,
-    name:str = "Confounds_Processing_Pipeline", processing_steps: list=None, column_names: list=None,
-    base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None):
-    """ Builds a processing workflow specifically for a given confounds file. If any temporal postprocessing
+def build_confounds_processing_workflow(
+    postprocessing_config: dict,
+    confounds_file: os.PathLike = None,
+    export_file: os.PathLike = None,
+    mixing_file: os.PathLike = None,
+    noise_file: os.PathLike = None,
+    tr: float = None,
+    name: str = "Confounds_Processing_Pipeline",
+    processing_steps: list = None,
+    column_names: list = None,
+    base_dir: os.PathLike = None,
+    crashdump_dir: os.PathLike = None,
+):
+    """Builds a processing workflow specifically for a given confounds file. If any temporal postprocessing
     steps are included, those steps will be run on the confounds file as well.
 
     Args:
@@ -39,7 +48,7 @@ def build_confounds_processing_workflow(postprocessing_config: dict, confounds_f
     Returns:
         pe.Workflow: A confound processing workflow.
     """
-    
+
     if processing_steps is None:
         processing_steps = postprocessing_config["ProcessingSteps"]
     if column_names is None:
@@ -48,20 +57,40 @@ def build_confounds_processing_workflow(postprocessing_config: dict, confounds_f
     # Force use of the R variant of fsl_regfilt for confounds
     if "AROMARegression" in processing_steps:
         postprocessing_config = copy.deepcopy(postprocessing_config)
-        postprocessing_config["ProcessingStepOptions"]["AROMARegression"]["Implementation"] = "fsl_regfilt_R"
+        postprocessing_config["ProcessingStepOptions"]["AROMARegression"][
+            "Implementation"
+        ] = "fsl_regfilt_R"
 
     motion_outliers = False
     try:
-        motion_outliers = postprocessing_config["ConfoundOptions"]["MotionOutliers"]["Include"]
+        motion_outliers = postprocessing_config["ConfoundOptions"]["MotionOutliers"][
+            "Include"
+        ]
     except KeyError:
         motion_outliers = False
 
     confounds_wf = pe.Workflow(name=name, base_dir=base_dir)
     if crashdump_dir is not None:
-        confounds_wf.config['execution']['crashdump_dir'] = crashdump_dir
-       
-    input_node = pe.Node(IdentityInterface(fields=['in_file', 'out_file', 'export_file', 'columns', 'mixing_file', 'noise_file', 'mask_file'], mandatory_inputs=False), name="inputnode")
-    output_node = pe.Node(IdentityInterface(fields=['out_file'], mandatory_inputs=True), name="outputnode")
+        confounds_wf.config["execution"]["crashdump_dir"] = crashdump_dir
+
+    input_node = pe.Node(
+        IdentityInterface(
+            fields=[
+                "in_file",
+                "out_file",
+                "export_file",
+                "columns",
+                "mixing_file",
+                "noise_file",
+                "mask_file",
+            ],
+            mandatory_inputs=False,
+        ),
+        name="inputnode",
+    )
+    output_node = pe.Node(
+        IdentityInterface(fields=["out_file"], mandatory_inputs=True), name="outputnode"
+    )
 
     # Set WF inputs and outputs
     if confounds_file:
@@ -76,42 +105,81 @@ def build_confounds_processing_workflow(postprocessing_config: dict, confounds_f
             confounds_processing_steps.append(step)
 
     # Setup the confounds file prep workflow
-    current_wf = build_confounds_prep_workflow(column_names, base_dir=base_dir, crashdump_dir=crashdump_dir)
+    current_wf = build_confounds_prep_workflow(
+        column_names, base_dir=base_dir, crashdump_dir=crashdump_dir
+    )
     confounds_wf.connect(input_node, "in_file", current_wf, "inputnode.in_file")
 
     # Setup postprocessing workflow if any relevant postprocessing steps are included
     if confounds_processing_steps:
         prev_wf = current_wf
-        current_wf = build_confounds_postprocessing_workflow(postprocessing_config, confounds_processing_steps, mixing_file, tr,
-            noise_file, base_dir=base_dir, crashdump_dir=crashdump_dir)
-        confounds_wf.connect(prev_wf, "outputnode.out_file", current_wf, "inputnode.in_file")
+        current_wf = build_confounds_postprocessing_workflow(
+            postprocessing_config,
+            confounds_processing_steps,
+            mixing_file,
+            tr,
+            noise_file,
+            base_dir=base_dir,
+            crashdump_dir=crashdump_dir,
+        )
+        confounds_wf.connect(
+            prev_wf, "outputnode.out_file", current_wf, "inputnode.in_file"
+        )
 
     # Provide motion outlier columns if requested
     if motion_outliers:
-        threshold = postprocessing_config["ConfoundOptions"]["MotionOutliers"]["Threshold"]
-        scrub_var = postprocessing_config["ConfoundOptions"]["MotionOutliers"]["ScrubVar"]
-        scrub_ahead = postprocessing_config["ConfoundOptions"]["MotionOutliers"]["ScrubAhead"]
-        scrub_behind = postprocessing_config["ConfoundOptions"]["MotionOutliers"]["ScrubBehind"]
-        scrub_contiguous = postprocessing_config["ConfoundOptions"]["MotionOutliers"]["ScrubContiguous"]
+        threshold = postprocessing_config["ConfoundOptions"]["MotionOutliers"][
+            "Threshold"
+        ]
+        scrub_var = postprocessing_config["ConfoundOptions"]["MotionOutliers"][
+            "ScrubVar"
+        ]
+        scrub_ahead = postprocessing_config["ConfoundOptions"]["MotionOutliers"][
+            "ScrubAhead"
+        ]
+        scrub_behind = postprocessing_config["ConfoundOptions"]["MotionOutliers"][
+            "ScrubBehind"
+        ]
+        scrub_contiguous = postprocessing_config["ConfoundOptions"]["MotionOutliers"][
+            "ScrubContiguous"
+        ]
 
         prev_wf = current_wf
-        current_wf = build_confounds_add_motion_outliers_workflow(threshold, scrub_var, scrub_ahead, scrub_behind, scrub_contiguous, base_dir=base_dir, 
-            crashdump_dir=crashdump_dir)
-        confounds_wf.connect(input_node, "in_file", current_wf, "inputnode.raw_confounds_file")
-        confounds_wf.connect(prev_wf, "outputnode.out_file", current_wf, "inputnode.in_file")
+        current_wf = build_confounds_add_motion_outliers_workflow(
+            threshold,
+            scrub_var,
+            scrub_ahead,
+            scrub_behind,
+            scrub_contiguous,
+            base_dir=base_dir,
+            crashdump_dir=crashdump_dir,
+        )
+        confounds_wf.connect(
+            input_node, "in_file", current_wf, "inputnode.raw_confounds_file"
+        )
+        confounds_wf.connect(
+            prev_wf, "outputnode.out_file", current_wf, "inputnode.in_file"
+        )
 
     confounds_wf.connect(current_wf, "outputnode.out_file", output_node, "out_file")
 
     if export_file:
-        export_node = pe.Node(ExportFile(out_file=export_file, clobber=True), name="export")
+        export_node = pe.Node(
+            ExportFile(out_file=export_file, clobber=True), name="export"
+        )
         confounds_wf.connect(current_wf, "outputnode.out_file", export_node, "in_file")
-    
+
     return confounds_wf
 
 
-def build_confounds_prep_workflow(column_names: List, in_file: os.PathLike=None, out_file: os.PathLike=None, 
-    base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None):
-    """ Prepares a confound file for processing by selecting a subset of columns and replacing NAs with 
+def build_confounds_prep_workflow(
+    column_names: List,
+    in_file: os.PathLike = None,
+    out_file: os.PathLike = None,
+    base_dir: os.PathLike = None,
+    crashdump_dir: os.PathLike = None,
+):
+    """Prepares a confound file for processing by selecting a subset of columns and replacing NAs with
     the column mean.
 
     Args:
@@ -124,14 +192,35 @@ def build_confounds_prep_workflow(column_names: List, in_file: os.PathLike=None,
     """
     workflow = pe.Workflow(name="Confounds_Prep", base_dir=base_dir)
     if crashdump_dir is not None:
-        workflow.config['execution']['crashdump_dir'] = crashdump_dir
+        workflow.config["execution"]["crashdump_dir"] = crashdump_dir
 
-    input_node = pe.Node(IdentityInterface(fields=['in_file', 'out_file', 'columns'], mandatory_inputs=False), name="inputnode")
-    output_node = pe.Node(IdentityInterface(fields=['out_file'], mandatory_inputs=True), name="outputnode")
+    input_node = pe.Node(
+        IdentityInterface(
+            fields=["in_file", "out_file", "columns"], mandatory_inputs=False
+        ),
+        name="inputnode",
+    )
+    output_node = pe.Node(
+        IdentityInterface(fields=["out_file"], mandatory_inputs=True), name="outputnode"
+    )
 
-    tsv_select_node = pe.Node(Function(input_names=["tsv_file", "column_names"], output_names=["tsv_subset_file"], function=_tsv_select_columns), name="tsv_select_columns")
-    tsv_replace_nas_node = pe.Node(Function(input_names=["tsv_file"], output_names=["tsv_no_na"], function=_tsv_replace_nas_with_column_mean), name="tsv_replace_nas") 
-    
+    tsv_select_node = pe.Node(
+        Function(
+            input_names=["tsv_file", "column_names"],
+            output_names=["tsv_subset_file"],
+            function=_tsv_select_columns,
+        ),
+        name="tsv_select_columns",
+    )
+    tsv_replace_nas_node = pe.Node(
+        Function(
+            input_names=["tsv_file"],
+            output_names=["tsv_no_na"],
+            function=_tsv_replace_nas_with_column_mean,
+        ),
+        name="tsv_replace_nas",
+    )
+
     if in_file:
         input_node.inputs.in_file = in_file
     if out_file:
@@ -144,16 +233,27 @@ def build_confounds_prep_workflow(column_names: List, in_file: os.PathLike=None,
     workflow.connect(input_node, "column_names", tsv_select_node, "column_names")
 
     # Select desired columns from input tsv, replace n/a values with column mean, and convert it to a .nii file
-    workflow.connect(tsv_select_node, "tsv_subset_file", tsv_replace_nas_node, "tsv_file")
-    
+    workflow.connect(
+        tsv_select_node, "tsv_subset_file", tsv_replace_nas_node, "tsv_file"
+    )
+
     workflow.connect(tsv_replace_nas_node, "tsv_no_na", output_node, "out_file")
 
     return workflow
 
 
-def build_confounds_postprocessing_workflow(postprocessing_config: dict, confounds_processing_steps: List, mixing_file: os.PathLike, tr: float,
-    noise_file: os.PathLike, in_file: os.PathLike=None, out_file: os.PathLike=None, base_dir=None, crashdump_dir=None):
-    """ Wraps the postprocessing workflow builder. Converts the confounds file into a .nii file to run in the postprocessing workflow,
+def build_confounds_postprocessing_workflow(
+    postprocessing_config: dict,
+    confounds_processing_steps: List,
+    mixing_file: os.PathLike,
+    tr: float,
+    noise_file: os.PathLike,
+    in_file: os.PathLike = None,
+    out_file: os.PathLike = None,
+    base_dir=None,
+    crashdump_dir=None,
+):
+    """Wraps the postprocessing workflow builder. Converts the confounds file into a .nii file to run in the postprocessing workflow,
         then converts the processed image back into a .tsv.
 
     Args:
@@ -171,23 +271,56 @@ def build_confounds_postprocessing_workflow(postprocessing_config: dict, confoun
 
     workflow = pe.Workflow(name="Confounds_Postprocessing", base_dir=base_dir)
     if crashdump_dir is not None:
-        workflow.config['execution']['crashdump_dir'] = crashdump_dir
+        workflow.config["execution"]["crashdump_dir"] = crashdump_dir
 
-    input_node = pe.Node(IdentityInterface(fields=['in_file', 'out_file', 'mixing_file', 'noise_file'], mandatory_inputs=False), name="inputnode")
-    output_node = pe.Node(IdentityInterface(fields=['out_file'], mandatory_inputs=True), name="outputnode")
+    input_node = pe.Node(
+        IdentityInterface(
+            fields=["in_file", "out_file", "mixing_file", "noise_file"],
+            mandatory_inputs=False,
+        ),
+        name="inputnode",
+    )
+    output_node = pe.Node(
+        IdentityInterface(fields=["out_file"], mandatory_inputs=True), name="outputnode"
+    )
 
     if in_file:
         input_node.inputs.in_file = in_file
     if out_file:
         input_node.inputs.out_file = out_file
-    
-    tsv_to_nii_node = pe.Node(Function(input_names=["tsv_file"], output_names=["nii_file"], function=_tsv_to_nii), name="tsv_to_nii")
-    nii_to_tsv_node = pe.Node(Function(input_names=["nii_file", "tsv_file", "headers"], output_names=["tsv_file"], function=_nii_to_tsv), name="nii_to_tsv")
-    select_headers_node = pe.Node(Function(input_names=["tsv_file"], output_names=["headers"], function=_tsv_select_headers), name="tsv_select_headers")
+
+    tsv_to_nii_node = pe.Node(
+        Function(
+            input_names=["tsv_file"], output_names=["nii_file"], function=_tsv_to_nii
+        ),
+        name="tsv_to_nii",
+    )
+    nii_to_tsv_node = pe.Node(
+        Function(
+            input_names=["nii_file", "tsv_file", "headers"],
+            output_names=["tsv_file"],
+            function=_nii_to_tsv,
+        ),
+        name="nii_to_tsv",
+    )
+    select_headers_node = pe.Node(
+        Function(
+            input_names=["tsv_file"],
+            output_names=["headers"],
+            function=_tsv_select_headers,
+        ),
+        name="tsv_select_headers",
+    )
 
     # Build the inner postprocessing workflow
-    postproc_wf = build_image_postprocessing_workflow(postprocessing_config, processing_steps=confounds_processing_steps, name="Confounds_Apply_Postprocessing", 
-        mixing_file=mixing_file, noise_file=noise_file, tr=tr)
+    postproc_wf = build_image_postprocessing_workflow(
+        postprocessing_config,
+        processing_steps=confounds_processing_steps,
+        name="Confounds_Apply_Postprocessing",
+        mixing_file=mixing_file,
+        noise_file=noise_file,
+        tr=tr,
+    )
 
     workflow.connect(input_node, "in_file", tsv_to_nii_node, "tsv_file")
 
@@ -201,15 +334,25 @@ def build_confounds_postprocessing_workflow(postprocessing_config: dict, confoun
     workflow.connect(postproc_wf, "outputnode.out_file", nii_to_tsv_node, "nii_file")
     # Include the headers in the new tsv file
     workflow.connect(select_headers_node, "headers", nii_to_tsv_node, "headers")
-    
+
     workflow.connect(input_node, "out_file", nii_to_tsv_node, "tsv_file")
     workflow.connect(nii_to_tsv_node, "tsv_file", output_node, "out_file")
 
     return workflow
 
 
-def build_confounds_add_motion_outliers_workflow(threshold: float, scrub_var: str, scrub_ahead: int, scrub_behind: int, scrub_contiguous: int, 
-    confounds_file: os.PathLike=None, raw_confounds_file: os.PathLike=None, out_file: os.PathLike=None, base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None):
+def build_confounds_add_motion_outliers_workflow(
+    threshold: float,
+    scrub_var: str,
+    scrub_ahead: int,
+    scrub_behind: int,
+    scrub_contiguous: int,
+    confounds_file: os.PathLike = None,
+    raw_confounds_file: os.PathLike = None,
+    out_file: os.PathLike = None,
+    base_dir: os.PathLike = None,
+    crashdump_dir: os.PathLike = None,
+):
     """Builds a confounds workflow which calculates motion outliers and appends them as spike regressor columns to the given confounds.
 
     Args:
@@ -228,10 +371,18 @@ def build_confounds_add_motion_outliers_workflow(threshold: float, scrub_var: st
 
     workflow = pe.Workflow(name="Confounds_Add_Motion_Outliers", base_dir=base_dir)
     if crashdump_dir is not None:
-        workflow.config['execution']['crashdump_dir'] = crashdump_dir
+        workflow.config["execution"]["crashdump_dir"] = crashdump_dir
 
-    input_node = pe.Node(IdentityInterface(fields=['in_file', 'out_file', 'raw_confounds_file'], mandatory_inputs=False), name="inputnode")
-    output_node = pe.Node(IdentityInterface(fields=['out_file', 'headers'], mandatory_inputs=True), name="outputnode")
+    input_node = pe.Node(
+        IdentityInterface(
+            fields=["in_file", "out_file", "raw_confounds_file"], mandatory_inputs=False
+        ),
+        name="inputnode",
+    )
+    output_node = pe.Node(
+        IdentityInterface(fields=["out_file", "headers"], mandatory_inputs=True),
+        name="outputnode",
+    )
 
     if confounds_file:
         input_node.inputs.in_file = confounds_file
@@ -240,30 +391,65 @@ def build_confounds_add_motion_outliers_workflow(threshold: float, scrub_var: st
     if out_file:
         input_node.inputs.out_file = out_file
 
-    add_motion_outliers_node = pe.Node(Function(input_names=["confounds_file", "scrub_var", "threshold", "scrub_ahead", "scrub_behind", "scrub_contiguous"], 
-            output_names=["out_file"], function=_get_motion_outliers), name="get_motion_outliers")
+    add_motion_outliers_node = pe.Node(
+        Function(
+            input_names=[
+                "confounds_file",
+                "scrub_var",
+                "threshold",
+                "scrub_ahead",
+                "scrub_behind",
+                "scrub_contiguous",
+            ],
+            output_names=["out_file"],
+            function=_get_motion_outliers,
+        ),
+        name="get_motion_outliers",
+    )
     add_motion_outliers_node.inputs.threshold = threshold
     add_motion_outliers_node.inputs.scrub_var = scrub_var
     add_motion_outliers_node.inputs.scrub_ahead = scrub_ahead
     add_motion_outliers_node.inputs.scrub_behind = scrub_behind
     add_motion_outliers_node.inputs.scrub_contiguous = scrub_contiguous
 
-    combine_confounds_node = pe.Node(Function(input_names=["base_confounds_file", "append_confounds_file"], 
-        output_names=["out_file"], function=_combine_confounds_files), name="combine_confounds")            
+    combine_confounds_node = pe.Node(
+        Function(
+            input_names=["base_confounds_file", "append_confounds_file"],
+            output_names=["out_file"],
+            function=_combine_confounds_files,
+        ),
+        name="combine_confounds",
+    )
 
     # Use the raw confounds file to obtain motion outliers, because it will contain an unmodified scrub var
-    workflow.connect(input_node, "raw_confounds_file", add_motion_outliers_node, "confounds_file")
+    workflow.connect(
+        input_node, "raw_confounds_file", add_motion_outliers_node, "confounds_file"
+    )
     # Connect the workflow confounds file for combination with the motion outliers
-    workflow.connect(input_node, "in_file", combine_confounds_node, "base_confounds_file")
+    workflow.connect(
+        input_node, "in_file", combine_confounds_node, "base_confounds_file"
+    )
     # Connect the motion outliers with the workflow confounds file
-    workflow.connect(add_motion_outliers_node, "out_file", combine_confounds_node, "append_confounds_file")
+    workflow.connect(
+        add_motion_outliers_node,
+        "out_file",
+        combine_confounds_node,
+        "append_confounds_file",
+    )
 
     workflow.connect(combine_confounds_node, "out_file", output_node, "out_file")
 
     return workflow
 
 
-def _get_motion_outliers(confounds_file, scrub_var: str, threshold: float, scrub_ahead: int, scrub_behind: int, scrub_contiguous: int):
+def _get_motion_outliers(
+    confounds_file,
+    scrub_var: str,
+    threshold: float,
+    scrub_ahead: int,
+    scrub_behind: int,
+    scrub_contiguous: int,
+):
     from pathlib import Path
     import pandas as pd
     from clpipe.postprocutils.utils import scrub_setup
@@ -275,11 +461,15 @@ def _get_motion_outliers(confounds_file, scrub_var: str, threshold: float, scrub
     timepoints = confounds_df[scrub_var]
 
     # Gather the scrub indexes
-    scrub_targets = scrub_setup(timepoints, threshold, scrub_behind, scrub_ahead, scrub_contiguous)
+    scrub_targets = scrub_setup(
+        timepoints, threshold, scrub_behind, scrub_ahead, scrub_contiguous
+    )
     # Create outlier columns
     mot_outliers = _construct_motion_outliers(scrub_targets)
     # Give the outlier columns names
-    mot_outliers.columns=[f"motion_outlier_{i}" for i in range(1, len(mot_outliers.columns) + 1)]
+    mot_outliers.columns = [
+        f"motion_outlier_{i}" for i in range(1, len(mot_outliers.columns) + 1)
+    ]
     # Cast to int
     mot_outliers = mot_outliers.astype(int)
 
@@ -304,8 +494,10 @@ def _combine_confounds_files(base_confounds_file, append_confounds_file):
         append_confounds_df = pd.read_csv(append_confounds_file, sep="\t")
 
         # Concat append df with base df
-        combined_confounds_df = pd.concat([base_confounds_df, append_confounds_df],axis=1)
-    
+        combined_confounds_df = pd.concat(
+            [base_confounds_df, append_confounds_df], axis=1
+        )
+
         combined_confounds_df.to_csv(out_file, sep="\t", index=False)
     except pd.errors.EmptyDataError:
         # If the append file contains no data, just save and return the base file
@@ -358,7 +550,7 @@ def _tsv_select_headers(tsv_file):
     import pandas as pd
 
     df = pd.read_csv(tsv_file, sep="\t")
-    
+
     return list(df.columns)
 
 
@@ -420,5 +612,5 @@ def _nii_to_tsv(nii_file, tsv_file=None, headers=None):
 
     transposed_df = pd.DataFrame(transposed_matrix, columns=headers)
     transposed_df.to_csv(tsv_file, sep="\t", index=False)
-    
+
     return tsv_file

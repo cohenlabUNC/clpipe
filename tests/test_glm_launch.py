@@ -2,6 +2,7 @@ import pytest
 from pathlib import Path
 from clpipe.glm_launch import glm_launch
 
+
 def test_glm_launch_controller_L1(glm_config_file: Path):
     """Check running glm_launch controller."""
 
@@ -9,6 +10,7 @@ def test_glm_launch_controller_L1(glm_config_file: Path):
         glm_launch(glm_config_file=glm_config_file, level="L1", model="example")
 
     assert e.value.code == 0
+
 
 def test_glm_launch_controller_L1_old_config(old_glm_config_file):
     """Check running glm_launch controller with a legacy glm config file."""
@@ -32,7 +34,9 @@ def test_glm_launch_controller_L2_old_config(old_glm_config_file):
     """Check running glm_launch controller with a legacy glm config file."""
 
     with pytest.raises(SystemExit) as e:
-        glm_launch(glm_config_file=old_glm_config_file, level="L2", model="tworun_gngreg")
+        glm_launch(
+            glm_config_file=old_glm_config_file, level="L2", model="tworun_gngreg"
+        )
 
     assert e.value.code == 0
 
