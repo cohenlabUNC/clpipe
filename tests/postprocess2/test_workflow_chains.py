@@ -436,8 +436,6 @@ def test_prepare_confounds(
 
     cf_workflow.run()
 
-    assert True
-
 
 def test_prepare_confounds_aroma(
     sample_confounds_timeseries,
