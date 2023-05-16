@@ -73,3 +73,5 @@ python .lmod/build_module_file.py
 # Deploy the module file
 echo "Deploying module file"
 cp "dist/${version}.lua" ${MODULE_ROOT}
+# Open group execute on lua file
+chmod 750 "${MODULE_ROOT}/${version}.lua"
