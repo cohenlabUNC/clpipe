@@ -1,5 +1,3 @@
-import numpy
-from scipy.signal import butter, sosfilt, iirnotch, filtfilt
 import logging
 import nipype.pipeline.engine as pe
 from pathlib import Path
@@ -32,6 +30,7 @@ def get_scrub_targets(fdts, fd_thres=0.3, fd_behind=1, fd_ahead=1, fd_contig=3):
     Returns:
         _type_: the fully prepared scrub target vector
     """
+    import numpy
 
     # index all timepoints that exceed the threshold as the base scrub targets
     scrubTargets = [i for i, e in enumerate(fdts) if e > fd_thres]
@@ -72,12 +71,16 @@ def get_scrub_targets(fdts, fd_thres=0.3, fd_behind=1, fd_ahead=1, fd_contig=3):
 
 
 def scrub_image(data, fdts):
+    import numpy
+
     scrubTargets = [i for i, e in enumerate(fdts) if e == 1]
     data[scrubTargets, :] = numpy.nan
     return data
 
 
 def calc_filter(hp, lp, tr, order):
+    from scipy.signal import butter
+
     nyq = 1 / (tr * 2)
     l = lp / nyq
     h = hp / nyq
@@ -94,6 +97,8 @@ def calc_filter(hp, lp, tr, order):
 
 
 def apply_filter(sos, arr):
+    from scipy.signal import sosfilt
+
     if sos is "none":
         return arr
     else:
@@ -102,6 +107,8 @@ def apply_filter(sos, arr):
 
 
 def regress(pred, target):
+    import numpy
+
     A = numpy.linalg.pinv(pred)
     logging.info(str(A.shape))
     beta = numpy.matmul(A, target)
@@ -111,6 +118,9 @@ def regress(pred, target):
 
 
 def notch_filter(motion_params, band, tr):
+    from scipy.signal import iirnotch, filtfilt
+    import numpy
+
     logging.basicConfig(level=logging.INFO)
     logging.info("Using Respiratory Notch Filter at " + str(band) + " frequencies.")
     fs = 1 / tr
