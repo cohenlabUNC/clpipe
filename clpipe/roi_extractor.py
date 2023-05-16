@@ -153,7 +153,6 @@ def fmri_roi_extraction(subjects=None,config_file=None, target_dir=None, target_
             sub_string_temp = sub_string_temp + ' ' + subject
             batch_manager.addjob(Job('ROI_extract_' + subject +'_'+atlas_name, sub_string_temp))
             if single:
-                logger.info('Running Subject '+ subject + ' Atlas: '+ atlas_name + ' Atlas Type: ' + atlas_type)
                 _fmri_roi_extract_subject(subject, task, atlas_name, atlas_filename, atlas_labels, atlas_type, custom_radius, custom_flag, config, overlap_ok, overwrite, logger)
     if not single:
         if submit:
@@ -164,12 +163,15 @@ def fmri_roi_extraction(subjects=None,config_file=None, target_dir=None, target_
             click.echo(batch_manager.print_jobs())
 
 def _fmri_roi_extract_subject(subject, task, atlas_name, atlas_filename, atlas_label, atlas_type,radius, custom_flag, config, overlap_ok, overwrite, logger):
+    logger.info('Running Subject '+ subject + ' Atlas: '+ atlas_name + ' Atlas Type: ' + atlas_type)
+    
     if not custom_flag:
         atlas_path = resource_filename(__name__, atlas_filename)
         atlas_labelpath = resource_filename(__name__, atlas_label)
     else:
         atlas_path = os.path.abspath(atlas_filename)
         atlas_labelpath = os.path.abspath(atlas_label)
+    logger.debug(f"Using atlas path: {atlas_path}")
 
     search_string = os.path.abspath(
         os.path.join(config.config['ROIExtractionOptions']['TargetDirectory'], "sub-" + subject, "**",
@@ -185,31 +187,34 @@ def _fmri_roi_extract_subject(subject, task, atlas_name, atlas_filename, atlas_l
     shutil.copy2(atlas_labelpath,config.config['ROIExtractionOptions']['OutputDirectory'])
 
     for file in subject_files:
-        logger.info("Extracting the " + atlas_name + " atlas for " + file)
-       
+        logger.info(f"Processing image: {Path(file).stem}")
         file_outname = os.path.splitext(os.path.basename(file))[0]
         if '.nii' in file_outname:
             file_outname = os.path.splitext(file_outname)[0]
-        if os.path.exists(os.path.join(config.config['ROIExtractionOptions']['OutputDirectory'],
-                                        atlas_name + '/' + file_outname + "_atlas-" + atlas_name + '.csv')) and not overwrite:
-            logger.info("File Exists! Skipping")
+
+        if os.path.exists(os.path.join(
+            config.config['ROIExtractionOptions']['OutputDirectory'],
+            atlas_name + '/' + file_outname + "_atlas-" + atlas_name + '.csv'
+        )) and not overwrite:
+            logger.info("File Exists! Skipping. Use -overwrite to reprocess.")
             continue
+
         try:
             mask_file = _mask_finder(file, config, logger)
-            ROI_ts = _fmri_roi_extract_image(file, atlas_path, atlas_type, radius, overlap_ok, logger, mask = mask_file)
-
-        except MaskFileNotFoundError as mfnfe:
-            logger.warning(mfnfe)
-            logger.warning("Extracting ROIs without using brain mask.")
+        except MaskFileNotFoundError:
             if config.config['ROIExtractionOptions']['RequireMask']:
                 logger.warning("Skipping this scan due to missing brain mask.")
                 continue
+            else:
+                logger.warning(
+                    "Unable to find a mask for this image. Extracting ROIs without using brain mask."
+                )
 
-            ROI_ts = _fmri_roi_extract_image(file, atlas_path, atlas_type, radius, overlap_ok, logger)
-
+        try:
+            logger.info("Starting ROI extraction...")
+            ROI_ts = _fmri_roi_extract_image(file, atlas_path, atlas_type, radius, overlap_ok, mask = mask_file)
         except ValueError as ve:
-            # Follows original logic catching the empty spheres error given
-            #    when a mask file is included, for unknown reasons.
+            # Fallback for if any ROIs are outside of the mask region
             logger.warning(ve.__str__() + ". Extracting ROIs without using brain mask.")
             ROI_ts = _fmri_roi_extract_image(file, atlas_path, atlas_type, radius, overlap_ok, logger)
 
