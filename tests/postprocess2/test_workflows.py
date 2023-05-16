@@ -292,6 +292,23 @@ def test_resample_wf(
         helpers.plot_4D_img_slice(resampled_path, "resample.png")
 
 
+def test_build_get_scrub_targets_workflow(
+    artifact_dir, sample_confounds_timeseries, request, helpers
+):
+    """Test getting scrub targets from confounds given an FD threshold."""
+
+    test_path = helpers.create_test_dir(artifact_dir, request.node.name)
+    scrubbed_path = test_path / "scrubbed_confounds.tsv"
+
+    wf = build_scrubbing_workflow(
+        in_file=sample_confounds_timeseries,
+        out_file=scrubbed_path,
+        base_dir=test_path,
+        crashdump_dir=test_path,
+    )
+    wf.run()
+
+
 def test_scrubbing_wf(
     artifact_dir, sample_raw_image, plot_img, write_graph, request, helpers
 ):
@@ -335,7 +352,7 @@ def test_scrubbing_wf_confounds(
     wf.run()
 
 
-def test_scrubbing_wf_confounds(artifact_dir, sample_melodic_mixing, request, helpers):
+def test_scrubbing_wf_aroma(artifact_dir, sample_melodic_mixing, request, helpers):
     """Test that a list of arbitrary timepoints can be scrubbed from an
     AROMA mixing file."""
 

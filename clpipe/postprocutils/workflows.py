@@ -1040,7 +1040,6 @@ def build_get_scrub_targets_workflow(
     scrub_behind: int,
     scrub_contiguous: int,
     in_file: os.PathLike = None,
-    out_file: os.PathLike = None,
     base_dir: os.PathLike = None,
     crashdump_dir: os.PathLike = None,
 ):
@@ -1074,8 +1073,6 @@ def build_get_scrub_targets_workflow(
     # Set WF inputs and outputs
     if in_file:
         input_node.inputs.timeseries = target_timeseries
-    if out_file:
-        input_node.inputs.out_file = out_file
 
     input_node.inputs.target_variable = target_variable
     input_node.inputs.threshold = threshold
@@ -1093,7 +1090,7 @@ def build_get_scrub_targets_workflow(
     return workflow
 
 
-def build_scrub_workflow(
+def build_scrubbing_workflow(
     in_file: os.PathLike = None,
     scrub_targets=None,
     out_file: os.PathLike = None,
