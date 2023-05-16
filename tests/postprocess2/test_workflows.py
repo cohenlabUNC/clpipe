@@ -105,6 +105,8 @@ def test_calculate_10000_global_median_wf(
     )
     wf.run()
 
+    helpers.plot_timeseries(out_path, sample_raw_image)
+
     if write_graph:
         wf.write_graph(
             dotfilename=test_path / "calc10000globalMedianFlow", graph2use=write_graph
