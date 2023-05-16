@@ -168,6 +168,12 @@ def sample_postprocessed_confounds() -> Path:
 
 
 @pytest.fixture(scope="session")
+def sample_nuisance_file() -> Path:
+    with open('tests/data/sample_nuisance_file.txt', 'w') as f:
+        f.write("3,7")
+    return Path("tests/data/sample_nuisance_file.txt").resolve()
+
+@pytest.fixture(scope="session")
 def sample_melodic_mixing() -> Path:
     return Path("tests/data/MELODIC_mixing.tsv").resolve()
 
