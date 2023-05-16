@@ -100,6 +100,14 @@ class Helpers:
             (raw_plot,) = ax.plot(base_data_2d[axes_to_show[i]], label="raw")
             ax.set_title(f"voxel: {axes_to_show[i]}")
 
+
+            # Set the x-axis ticks to display all integers
+            axis_len = len(data_2d[axes_to_show[i]])
+            axis_range = range(1, axis_len  + 1)
+            ax.set_xticks(axis_range)
+            ax.set_xticklabels(axis_range)
+            ax.set_xlim(1, axis_len)
+
         fig.legend(handles=[raw_plot, processed_plot])
 
         save_path = image_path.parent / "timeseries.png"
