@@ -1,5 +1,6 @@
 from clpipe.postprocutils.utils import nii_to_matrix, matrix_to_nii
 import nibabel as nib
+import numpy as np
 
 
 def test_nii_to_matrix(sample_raw_image):
@@ -23,4 +24,4 @@ def test_matrix_to_nii(sample_raw_image):
     nii = matrix_to_nii(test_df, orig_shape, affine)
 
     assert nii.shape == orig_shape
-    assert nii.affine == orig_affine
+    assert np.array_equal(nii.affine, orig_affine)
