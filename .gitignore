@@ -62,6 +62,7 @@ staticfiles
 .env
 TestFiles/
 tests/temp
+tests/data/sample_nuisance_file.txt
 tests/artifacts
 deploy.sh
 
