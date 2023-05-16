@@ -452,7 +452,7 @@ def _get_motion_outliers(
 ):
     from pathlib import Path
     import pandas as pd
-    from clpipe.postprocutils.utils import scrub_setup
+    from clpipe.postprocutils.utils import get_scrub_targets
     from clpipe.glm_setup import _construct_motion_outliers
 
     confounds_df = pd.read_csv(confounds_file, sep="\t")
@@ -461,7 +461,7 @@ def _get_motion_outliers(
     timepoints = confounds_df[scrub_var]
 
     # Gather the scrub indexes
-    scrub_targets = scrub_setup(
+    scrub_targets = get_scrub_targets(
         timepoints, threshold, scrub_behind, scrub_ahead, scrub_contiguous
     )
     # Create outlier columns

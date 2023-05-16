@@ -18,7 +18,7 @@ def find_sub_list(sl, l):
     return results
 
 
-def scrub_setup(fdts, fd_thres=0.3, fd_behind=1, fd_ahead=1, fd_contig=3):
+def get_scrub_targets(fdts, fd_thres=0.3, fd_behind=1, fd_ahead=1, fd_contig=3):
     """Given a vector of timepoints for scrubbing, create a list of indexes representing
     scrub targets based given behind, ahead, and contigous selections.
 
