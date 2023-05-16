@@ -290,3 +290,24 @@ def test_resample_wf(
 
     if plot_img:
         helpers.plot_4D_img_slice(resampled_path, "resample.png")
+
+
+def test_scrubbing_wf(
+    artifact_dir, sample_raw_image, plot_img, write_graph, request, helpers
+):
+    test_path = helpers.create_test_dir(artifact_dir, request.node.name)
+    scrubbed_path = test_path / "scrubbed.nii.gz"
+
+    wf = build_scrub_workflow(
+        in_file=sample_raw_image,
+        out_file=scrubbed_path,
+        base_dir=test_path,
+        crashdump_dir=test_path,
+    )
+    wf.run()
+
+    if write_graph:
+        wf.write_graph(dotfilename=test_path / "scrubbed_flow", graph2use=write_graph)
+
+    if plot_img:
+        helpers.plot_4D_img_slice(scrubbed_path, "scrubbed.png")

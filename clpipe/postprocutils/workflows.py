@@ -59,6 +59,8 @@ STEP_APPLY_MASK = "ApplyMask"
 STEP_TRIM_TIMEPOINTS = "TrimTimepoints"
 STEP_RESAMPLE = "Resample"
 
+STEP_SCRUB_TIMEPOINTS = "ScrubTimepoints"
+
 
 def build_postprocessing_workflow(
     image_wf: pe.Workflow = None,
@@ -1024,6 +1026,35 @@ def build_trim_timepoints_workflow(
     workflow.connect(input_node, "in_file", slicer_node, "in_file")
     workflow.connect(input_node, "out_file", slicer_node, "out_file")
     workflow.connect(slicer_node, "out_file", output_node, "out_file")
+
+    return workflow
+
+
+def build_scrubbing_workflow(
+    in_file: os.PathLike = None,
+    out_file: os.PathLike = None,
+    base_dir: os.PathLike = None,
+    crashdump_dir: os.PathLike = None,
+):
+    workflow = pe.Workflow(name=STEP_SCRUB_TIMEPOINTS, base_dir=base_dir)
+    if crashdump_dir is not None:
+        workflow.config["execution"]["crashdump_dir"] = crashdump_dir
+
+    # Setup identity (pass through) input/output nodes
+    input_node = build_input_node()
+    output_node = build_output_node()
+
+    scrubbing_node = pe.Node(name="slicer_node")
+
+    # Set WF inputs and outputs
+    if in_file:
+        input_node.inputs.in_file = in_file
+    if out_file:
+        input_node.inputs.out_file = out_file
+
+    workflow.connect(input_node, "in_file", scrubbing_node, "in_file")
+    workflow.connect(input_node, "out_file", scrubbing_node, "out_file")
+    workflow.connect(scrubbing_node, "out_file", output_node, "out_file")
 
     return workflow
 
