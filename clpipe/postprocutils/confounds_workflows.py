@@ -402,7 +402,7 @@ def build_confounds_add_motion_outliers_workflow(
                 "scrub_contiguous",
             ],
             output_names=["out_file"],
-            function=_get_motion_outliers,
+            function=get_motion_outliers,
         ),
         name="get_motion_outliers",
     )
@@ -442,7 +442,7 @@ def build_confounds_add_motion_outliers_workflow(
     return workflow
 
 
-def _get_motion_outliers(
+def get_motion_outliers(
     confounds_file,
     scrub_var: str,
     threshold: float,
