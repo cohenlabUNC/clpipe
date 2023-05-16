@@ -130,8 +130,8 @@ def build_confounds_processing_workflow(
     # Setup the confounds file prep workflow
     current_wf = build_confounds_prep_workflow(
         column_names,
-        threshold=threshold,
-        scrub_var=scrub_var,
+        scrub_threshold=threshold,
+        scrub_target_variable=scrub_var,
         scrub_ahead=scrub_ahead,
         scrub_behind=scrub_behind,
         scrub_contiguous=scrub_contiguous,
@@ -491,7 +491,7 @@ def build_confounds_add_motion_outliers_workflow(
 
 
 def _get_scrub_targets(
-    confounds_file: os.PathLike,
+    confounds_file,
     scrub_target_variable: str,
     scrub_threshold: float,
     scrub_ahead: int,
@@ -500,6 +500,7 @@ def _get_scrub_targets(
 ):
     """Wrapper for call to utils.get_scrub_targets, but includes extracting column"""
     import pandas as pd
+    from clpipe.postprocutils.utils import get_scrub_targets
 
     # Get the column to be used for thresholding
     confounds_df = pd.read_csv(confounds_file, sep="\t")
