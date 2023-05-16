@@ -1056,12 +1056,9 @@ def build_get_scrub_targets_workflow(
     # Convert image to timeseries (not necessary to convert back)
     # Pull target var out of confound timeseries
 
-    # Change behavior of this function (new) to return index list instead of 1s and 0s vector
-    # Eventually create function that translates index list to 1s and 0s vector
-    #   This leads into better outliers reporting
     scrub_target_node = pe.Node(
         Function(
-            input_names=["timeseries"],
+            input_names=["fdts", "fd_thres", "fd_behind", "fd_ahead", "fd_contig"],
             output_names=["scrub_targets"],
             function=get_scrub_targets,
         ),
@@ -1070,13 +1067,21 @@ def build_get_scrub_targets_workflow(
 
     # Set WF inputs and outputs
     if in_file:
-        input_node.inputs.in_file = in_file
+        input_node.inputs.in_file = counfounds_file
+        input_node.inputs.target_variable = target_variable
+        input_node.inputs.threshold = threshold
+        input_node.inputs.scrub_ahead = scrub_ahead
+        input_node.inputs.scrub_behind = scrub_behind
+        input_node.inputs.scrub_contiguous = scrub_contiguous
     if out_file:
         input_node.inputs.out_file = out_file
 
-    # workflow.connect(input_node, "in_file", scrubbing_node, "in_file")
-    # workflow.connect(input_node, "out_file", scrubbing_node, "out_file")
-    # workflow.connect(scrubbing_node, "out_file", output_node, "out_file")
+    workflow.connect(input_node, "in_file", scrub_target_node, "fdts")
+    workflow.connect(input_node, "threshold", scrub_target_node, "fd_thres")
+    workflow.connect(input_node, "scrub_behind", scrub_target_node, "fd_behind")
+    workflow.connect(input_node, "scrub_ahead", scrub_target_node, "fd_ahead")
+    workflow.connect(input_node, "scrub_contiguous", scrub_target_node, "fd_contig")
+    workflow.connect(scrub_target_node, "scrub_targets", output_node, "out_file")
 
     return workflow
 
