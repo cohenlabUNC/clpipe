@@ -82,12 +82,18 @@ def get_scrub_targets(scrubVect: list):
     return scrub_targets
 
 
-def scrub_image(data, fdts):
+def scrub_data(data, fdts):
     import numpy
 
     scrubTargets = [i for i, e in enumerate(fdts) if e == 1]
     data[scrubTargets, :] = numpy.nan
     return data
+
+
+def scrub_image(image_path, scrub_targets, insert_na=True):
+    """Scrub the targets from the given image."""
+
+    pass
 
 
 def calc_filter(hp, lp, tr, order):

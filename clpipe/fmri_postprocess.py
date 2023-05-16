@@ -12,7 +12,7 @@ import re
 from pkg_resources import resource_filename
 
 from .postprocutils.utils import (
-    get_scrub_vector, calc_filter, apply_filter, regress, scrub_image, notch_filter
+    get_scrub_vector, calc_filter, apply_filter, regress, scrub_data, notch_filter
 )
 from .postprocutils.spec_interpolate import spec_inter
 from .batch_manager import BatchManager, Job
@@ -260,7 +260,7 @@ def _fmri_postprocess_image(config, file, logger, task = None, tr=None, beta_ser
             data = regress(confounds, data)
         if scrub_toggle:
             logger.info('Scrubbing data Now')
-            data = scrub_image(data, scrubTargets)
+            data = scrub_data(data, scrubTargets)
 
         data = (data + row_means)
 
