@@ -91,7 +91,7 @@ would be `v1.7.3`
 ### Incrementing Develop
 
 As soon as a release branch is created, the `develop` branch should have its version
-updated in `setup.py`, usually by the minor value. For example, from `1.7.2` to `1.7.3`. If a major feature or breaking change
+updated in `clpipe/config/package.py`, usually by the minor value. For example, from `1.7.2` to `1.7.3`. If a major feature or breaking change
 is included in subsequent development, the version should be updated to reflect this before release.
 
 ### Release Branch PR to Main
