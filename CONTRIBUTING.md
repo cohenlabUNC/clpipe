@@ -6,6 +6,67 @@
 
 ### Committing & Branching
 
+#### Checking Out
+
+Once your environment is setup, contributing to clpipe starts with checking out the
+`develop` branch. This branch contains all of the progress of the next version of clpipe.
+Its version will, naturally, be higher than that of the `main` branch.
+
+`git checkout develop`
+
+#### Creating a Feature Branch
+
+Generally, however, you should not commit directly against this branch.
+It's easier to pick and choose the right moment to include a particular change in develop
+when these changes are isolated to their own branches - it also helps to avoid conflict
+with other changes until it is necessary, and makes reverting during development simple.
+Exceptions to this rule include updating the version, and other small, one-off changes.
+
+Instead, you should checkout a new branch against `develop`, which is sometimes called
+a **feature branch**, although it does not have to be a feature per se. Your branch should,
+however, enscapsulate some single idea, such as fixing a bug, or updating how a
+particular command works.
+
+`git checkout -b my-feature`
+
+#### Committing
+
+Commits, like feature branches, should also encapsulate a single idea. Commits do not have
+to be limited to a single file, as long as the changes can all be logically grouped together.
+For example, if you update a utility function, and therefore must update all of the files
+where the utility is called, those changed should all be committed together.
+
+Commit messages should be descriptive enough to be helpful to another programmer reading
+over them. However, they do not need to include file location information or other
+details that are implied by the commit itself.
+
+By Git convention, commit messages should also be in present tense, as if giving a
+command - commit messages should describe how the codebase gets from one state to another.
+
+`git commit -m "Modify function name to make its purpose more intuitive."`
+
+#### Integrating Changes from the Develop Branch
+
+If the `develop` branch is updated while working on your feature branch, and you would
+like to include those changes in your branch, you should rebase your branch on `develop`.
+This will keep your feature up-to-date in a cleaner fashion than merging.
+
+`git rebase develop`
+
+### Merging your Feature into Develop
+
+Unless you are a core clpipe contributor, merging into `develop` from your feature 
+should be done via a pull request on GitHub. This will allow core contributors to review
+your changes before integration into develop.
+
+You should first push your branch to Github:
+
+`git push origin my-feature`
+
+Next, open a new pull request, with `my-feature` merging into `develop`. Once the
+PR is accepted, it will be merged into `develop`.
+
+
 ### Release Strategy
 
 #### Versioning Scheme
