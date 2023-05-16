@@ -34,7 +34,7 @@ from .nodes import (
     RegressAromaR,
     ImageSlice,
 )
-from .utils import get_scrub_targets, scrub_image
+from .utils import scrub_image
 from ..errors import ImplementationNotFoundError
 
 # TODO: Set these values up as hierarchical, maybe with enums
@@ -1035,7 +1035,7 @@ def build_trim_timepoints_workflow(
 
 def build_scrubbing_workflow(
     in_file: os.PathLike = None,
-    scrub_targets=None,
+    scrub_vector=None,
     out_file: os.PathLike = None,
     base_dir: os.PathLike = None,
     crashdump_dir: os.PathLike = None,
@@ -1066,8 +1066,8 @@ def build_scrubbing_workflow(
 
     scrub_node = pe.Node(
         Function(
-            input_names=["data", "fdts"],
-            output_names=["scrubbed_image"],
+            input_names=["input", "scrub_vector"],
+            output_names=["output"],
             function=scrub_image,
         ),
         name="scrub_node",

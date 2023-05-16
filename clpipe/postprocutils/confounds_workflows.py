@@ -12,7 +12,6 @@ from nipype.interfaces.utility import Function, IdentityInterface
 from nipype.interfaces.io import ExportFile
 import nipype.pipeline.engine as pe
 
-from .utils import get_scrub_targets
 from .workflows import build_image_postprocessing_workflow
 
 # A list of the temporal-based processing steps applicable to confounds
@@ -167,9 +166,9 @@ def build_confounds_processing_workflow(
         )
         confounds_wf.connect(
             confounds_prep_wf,
-            "outputnode.scrub_targets",
+            "outputnode.scrub_vector",
             current_wf,
-            "inputnode.scrub_targets",
+            "inputnode.scrub_vector",
         )
         confounds_wf.connect(
             prev_wf, "outputnode.out_file", current_wf, "inputnode.in_file"
@@ -220,7 +219,7 @@ def build_confounds_prep_workflow(
         name="inputnode",
     )
     output_node = pe.Node(
-        IdentityInterface(fields=["out_file", "scrub_targets"], mandatory_inputs=True),
+        IdentityInterface(fields=["out_file", "scrub_vector"], mandatory_inputs=True),
         name="outputnode",
     )
 
@@ -259,10 +258,10 @@ def build_confounds_prep_workflow(
                     "scrub_ahead",
                     "scrub_contiguous",
                 ],
-                output_names=["scrub_targets"],
-                function=_get_scrub_targets,
+                output_names=["scrub_vector"],
+                function=_get_scrub_vector,
             ),
-            name="get_scrub_targets_node",
+            name="get_scrub_vector_node",
         )
         # Setup scrub inputs
         scrub_target_node.inputs.scrub_target_variable = scrub_target_variable
@@ -272,9 +271,7 @@ def build_confounds_prep_workflow(
         scrub_target_node.inputs.scrub_contiguous = scrub_contiguous
 
         workflow.connect(input_node, "in_file", scrub_target_node, "confounds_file")
-        workflow.connect(
-            scrub_target_node, "scrub_targets", output_node, "scrub_targets"
-        )
+        workflow.connect(scrub_target_node, "scrub_vector", output_node, "scrub_vector")
 
     # Setup input connections
     workflow.connect(input_node, "in_file", tsv_select_node, "tsv_file")
@@ -396,7 +393,7 @@ def build_confounds_postprocessing_workflow(
 
 def build_confounds_add_motion_outliers_workflow(
     confounds_file: os.PathLike = None,
-    scrub_targets: list = None,
+    scrub_vector: list = None,
     out_file: os.PathLike = None,
     base_dir: os.PathLike = None,
     crashdump_dir: os.PathLike = None,
@@ -419,7 +416,7 @@ def build_confounds_add_motion_outliers_workflow(
 
     input_node = pe.Node(
         IdentityInterface(
-            fields=["in_file", "out_file", "scrub_targets"], mandatory_inputs=False
+            fields=["in_file", "out_file", "scrub_vector"], mandatory_inputs=False
         ),
         name="inputnode",
     )
@@ -428,7 +425,7 @@ def build_confounds_add_motion_outliers_workflow(
         name="outputnode",
     )
 
-    input_node.inputs.scrub_targets = scrub_targets
+    input_node.inputs.scrub_vector = scrub_vector
     if confounds_file:
         input_node.inputs.in_file = confounds_file
     if out_file:
@@ -436,7 +433,7 @@ def build_confounds_add_motion_outliers_workflow(
 
     construct_motion_outliers_node = pe.Node(
         Function(
-            input_names=["scrub_targets"],
+            input_names=["scrub_vector"],
             output_names=["out_file"],
             function=_construct_motion_outliers,
         ),
@@ -454,7 +451,7 @@ def build_confounds_add_motion_outliers_workflow(
 
     # Send the scrub targets to be contrusted into motion outlier columns
     workflow.connect(
-        input_node, "scrub_targets", construct_motion_outliers_node, "scrub_targets"
+        input_node, "scrub_vector", construct_motion_outliers_node, "scrub_vector"
     )
     # Concat the motion outliers and scrub targets
     workflow.connect(
@@ -472,7 +469,7 @@ def build_confounds_add_motion_outliers_workflow(
     return workflow
 
 
-def _get_scrub_targets(
+def _get_scrub_vector(
     confounds_file,
     scrub_target_variable: str,
     scrub_threshold: float,
@@ -480,26 +477,26 @@ def _get_scrub_targets(
     scrub_behind: int,
     scrub_contiguous: int,
 ):
-    """Wrapper for call to utils.get_scrub_targets, but includes extracting column"""
+    """Wrapper for call to utils.get_scrub_vector, but includes extracting column"""
     import pandas as pd
-    from clpipe.postprocutils.utils import get_scrub_targets
+    from clpipe.postprocutils.utils import get_scrub_vector
 
     # Get the column to be used for thresholding
     confounds_df = pd.read_csv(confounds_file, sep="\t")
     target_timeseries = confounds_df[scrub_target_variable]
 
-    scrub_targets = get_scrub_targets(
+    scrub_vector = get_scrub_vector(
         target_timeseries, scrub_threshold, scrub_behind, scrub_ahead, scrub_contiguous
     )
-    return scrub_targets
+    return scrub_vector
 
 
-def _construct_motion_outliers(scrub_targets: list):
+def _construct_motion_outliers(scrub_vector: list):
     from pathlib import Path
     from clpipe.glm_setup import _construct_motion_outliers
 
     # Create outlier columns
-    mot_outliers = _construct_motion_outliers(scrub_targets)
+    mot_outliers = _construct_motion_outliers(scrub_vector)
     # Give the outlier columns names
     mot_outliers.columns = [
         f"motion_outlier_{i}" for i in range(1, len(mot_outliers.columns) + 1)
