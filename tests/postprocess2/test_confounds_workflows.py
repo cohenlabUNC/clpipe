@@ -8,7 +8,6 @@ def test_postprocess2_wf_2_steps(
     artifact_dir,
     postprocessing_config,
     sample_confounds_timeseries,
-    write_graph,
     helpers,
     request,
 ):
@@ -29,7 +28,7 @@ def test_postprocess2_wf_2_steps(
         crashdump_dir=test_path,
     )
 
-    wf.write_graph(dotfilename=test_path / "confounds_flow", graph2use=write_graph)
+    wf.write_graph(dotfilename=test_path / "confounds_flow", graph2use="colored")
 
     wf.run()
 
@@ -50,6 +49,33 @@ def test_build_confounds_prep_workflow(
         scrub_ahead=0,
         scrub_behind=0,
         scrub_contiguous=0,
+        in_file=sample_confounds_timeseries,
+        out_file=out_path,
+        base_dir=test_path,
+        crashdump_dir=test_path,
+    )
+
+    wf.write_graph(dotfilename=test_path / "confounds_flow", graph2use="colored")
+
+    wf.run()
+
+
+def test_build_confounds_prep_workflow_no_scrubs(
+    artifact_dir,
+    sample_confounds_timeseries,
+    helpers,
+    request,
+):
+    test_path = helpers.create_test_dir(artifact_dir, request.node.name)
+    out_path = test_path / "prepped_confounds.csv"
+
+    wf = build_confounds_prep_workflow(
+        ["csf", "csf_derivative1", "white_matter", "white_matter_derivative1"],
+        scrub_threshold=None,
+        scrub_target_variable=None,
+        scrub_ahead=None,
+        scrub_behind=None,
+        scrub_contiguous=None,
         in_file=sample_confounds_timeseries,
         out_file=out_path,
         base_dir=test_path,
