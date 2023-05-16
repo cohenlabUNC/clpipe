@@ -18,3 +18,6 @@ def test_build_get_scrub_targets_workflow(
         crashdump_dir=test_path,
     )
     wf.run()
+
+def test_build_confounds_add_motion_outliers_workflow():
+    pass
