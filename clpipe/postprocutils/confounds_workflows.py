@@ -38,14 +38,18 @@ def build_confounds_processing_workflow(
 
     Args:
         postprocessing_config (dict): The instructions for postprocessing.
-        confound_file (os.PathLike, optional): The input confounds file. Defaults to None.
-        out_file (os.PathLike, optional): The processed confounds file. Defaults to None.
+        confound_file (os.PathLike, optional): The input confounds file.
+            Defaults to None.
+        out_file (os.PathLike, optional): The processed confounds file.
+            Defaults to None.
         mixing_file (os.PathLike, optional): The AROMA mixing file. Defaults to None.
         noise_file (os.PathLike, optional): The AROMA noise file. Defaults to None.
         tr (int, optional): The repetition time. Defaults to None.
-        name (str, optional): Name of the workflow. Defaults to "Confounds_Processing_Pipeline".
+        name (str, optional): Name of the workflow. Defaults to
+            "Confounds_Processing_Pipeline".
         processing_steps (list, optional): List of processing steps. Defaults to None.
-        column_names (list, optional): List of confounds column names to keep. Defaults to None.
+        column_names (list, optional): List of confounds column names to keep.
+            Defaults to None.
 
     Returns:
         pe.Workflow: A confound processing workflow.
@@ -210,8 +214,8 @@ def build_confounds_prep_workflow(
     base_dir: os.PathLike = None,
     crashdump_dir: os.PathLike = None,
 ):
-    """Prepares a confound file for processing by selecting a subset of columns and replacing NAs with
-    the column mean.
+    """Prepares a confound file for processing by selecting a subset of columns and
+    replacing NAs with the column mean.
 
     Args:
         column_names List: A list of columns from the input confounds file to keep
@@ -292,7 +296,8 @@ def build_confounds_prep_workflow(
     workflow.connect(input_node, "in_file", tsv_select_node, "tsv_file")
     workflow.connect(input_node, "column_names", tsv_select_node, "column_names")
 
-    # Select desired columns from input tsv, replace n/a values with column mean, and convert it to a .nii file
+    # Select desired columns from input tsv, replace n/a values with column mean,
+    #   and convert it to a .nii file
     workflow.connect(
         tsv_select_node, "tsv_subset_file", tsv_replace_nas_node, "tsv_file"
     )
@@ -314,17 +319,20 @@ def build_confounds_postprocessing_workflow(
     base_dir=None,
     crashdump_dir=None,
 ):
-    """Wraps the postprocessing workflow builder. Converts the confounds file into a .nii file to run in the postprocessing workflow,
+    """Wraps the postprocessing workflow builder. Converts the confounds file
+        into a .nii file to run in the postprocessing workflow,
         then converts the processed image back into a .tsv.
 
     Args:
         postprocessing_config (dict): The instructions for postprocessing.
-        confounds_processing_steps (List): The confound-specific postprocessing steps to run.
+        confounds_processing_steps (List): The confound-specific postprocessing
+            steps to run.
         tr (float): Repetition time.
         mixing_file (os.PathLike): The AROMA mixing file. Defaults to None.
         noise_file (os.PathLike): The AROMA noise file. Defaults to None.
         in_file (os.PathLike, optional): The confounds file. Defaults to None.
-        out_file (os.PathLike, optional): The postprocessed confounds file. Defaults to None.
+        out_file (os.PathLike, optional): The postprocessed confounds file.
+            Defaults to None.
 
     Returns:
         pe.Workflow: A confounds postprocessing workflow.
@@ -409,11 +417,15 @@ def build_confounds_add_motion_outliers_workflow(
     base_dir: os.PathLike = None,
     crashdump_dir: os.PathLike = None,
 ):
-    """Builds a confounds workflow which calculates motion outliers and appends them as spike regressor columns to the given confounds.
+    """Builds a confounds workflow which calculates motion outliers and appends
+        them as spike regressor columns to the given confounds.
 
-        confounds_file (os.PathLike, optional): The confounds file flowing through the confounds pipeline. Defaults to None.
-        raw_confounds_file (os.PathLike, optional): The unprocessed, original confounds file to reference the original scrub var column.
-        out_file (os.PathLike, optional): The confounds file with outlier spike regressors appended. Defaults to None.
+        confounds_file (os.PathLike, optional): The confounds file
+            flowing through the confounds pipeline. Defaults to None.
+        raw_confounds_file (os.PathLike, optional): The unprocessed, original
+            confounds file to reference the original scrub var column.
+        out_file (os.PathLike, optional): The confounds file with outlier
+            spike regressors appended. Defaults to None.
 
     Returns:
         pe.Workflow: A workflow which attaches spike regressors to a confounds file.
