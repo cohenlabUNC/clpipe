@@ -16,6 +16,7 @@ if [ $# -eq 0 ]
 fi
 
 version=$1
+default=$2
 
 # Ensure dev env is loaded
 source $DEV_PYTHON_PATH
@@ -71,7 +72,15 @@ source $DEV_PYTHON_PATH
 python .lmod/build_module_file.py
 
 # Deploy the module file
-echo "Deploying module file"
+echo "Deploying module file as ${MODULE_ROOT}/${version}.lua"
 cp "dist/${version}.lua" ${MODULE_ROOT}
+
 # Open group execute on lua file
 chmod 750 "${MODULE_ROOT}/${version}.lua"
+
+# Set this module file as default via symlink
+if [ $default = "default" ];
+  then
+    echo "Setting module file as clpipe default"
+    (cd ${MODULE_ROOT}; ln -sf "${version}.lua" default)
+fi;
