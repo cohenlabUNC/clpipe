@@ -726,6 +726,7 @@ def build_fslmath_temporal_filter(
 
     workflow.connect(input_node, "in_file", mean_image_node, "in_file")
     workflow.connect(input_node, "in_file", temporal_filter_node, "in_file")
+    workflow.connect(input_node, "out_file", add_node, "out_file")
     workflow.connect(mean_image_node, "out_file", add_node, "operand_file")
     workflow.connect(temporal_filter_node, "out_file", add_node, "in_file")
     workflow.connect(add_node, "out_file", output_node, "out_file")

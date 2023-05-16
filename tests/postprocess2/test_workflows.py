@@ -149,7 +149,7 @@ def test_fslmath_temporal_filter_wf(
 ):
     test_path = helpers.create_test_dir(artifact_dir, request.node.name)
 
-    filtered_path = test_path / "sample_raw_filtered.nii"
+    filtered_path = test_path / "sample_raw_filtered.nii.gz"
 
     wf = build_fslmath_temporal_filter(
         hp=0.008,
@@ -161,6 +161,8 @@ def test_fslmath_temporal_filter_wf(
         crashdump_dir=test_path,
     )
     wf.run()
+
+    helpers.plot_timeseries(filtered_path, sample_raw_image)
 
     if write_graph:
         wf.write_graph(dotfilename=test_path / "filteredflow", graph2use=write_graph)
