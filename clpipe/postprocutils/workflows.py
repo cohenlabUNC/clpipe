@@ -34,7 +34,7 @@ from .nodes import (
     RegressAromaR,
     ImageSlice,
 )
-from .utils import scrub_image
+from .utils import scrub_image, get_scrub_vector_node
 from ..errors import ImplementationNotFoundError
 
 # TODO: Set these values up as hierarchical, maybe with enums
@@ -69,7 +69,8 @@ def build_postprocessing_workflow(
     image_wf: pe.Workflow = None,
     confounds_wf: pe.Workflow = None,
     name: str = "Postprocessing_Pipeline",
-    confound_regression: bool = False,
+    postprocessing_config: dict = None,
+    confounds_file: os.PathLike = None,
     base_dir: os.PathLike = None,
     crashdump_dir: os.PathLike = None,
 ):
@@ -108,6 +109,9 @@ def build_postprocessing_workflow(
     if crashdump_dir is not None:
         postproc_wf.config["execution"]["crashdump_dir"] = crashdump_dir
 
+    if confounds_file:
+        input_node.confounds_file = confounds_file
+
     # Setup inputs
     postproc_wf.connect(input_node, "in_file", image_wf, "inputnode.in_file")
     postproc_wf.connect(input_node, "confounds_file", confounds_wf, "inputnode.in_file")
@@ -120,9 +124,57 @@ def build_postprocessing_workflow(
         confounds_wf, "outputnode.out_file", output_node, "processed_confounds_file"
     )
 
-    if confound_regression:
+    processing_steps = postprocessing_config["ProcessingSteps"]
+
+    # Connect postprocessed confound file to image_wf if needed
+    if STEP_CONFOUND_REGRESSION in processing_steps:
         postproc_wf.connect(
             confounds_wf, "outputnode.out_file", image_wf, "inputnode.confounds_file"
+        )
+
+    # Setup scrub target if needed
+    if STEP_SCRUB_TIMEPOINTS in processing_steps:
+        scrub_target_node = pe.Node(
+            Function(
+                input_names=[
+                    "confounds_file",
+                    "scrub_target_variable",
+                    "scrub_threshold",
+                    "scrub_behind",
+                    "scrub_ahead",
+                    "scrub_contiguous",
+                ],
+                output_names=["scrub_vector"],
+                function=get_scrub_vector_node,
+            ),
+            name="get_scrub_vector_node",
+        )
+
+        # Setup scrub inputs
+        scrub_target_node.inputs.scrub_target_variable = postprocessing_config[
+            "ProcessingStepOptions"
+        ]["ScrubTimepoints"]["TargetVariable"]
+        scrub_target_node.inputs.scrub_threshold = postprocessing_config[
+            "ProcessingStepOptions"
+        ]["ScrubTimepoints"]["Threshold"]
+        scrub_target_node.inputs.scrub_behind = postprocessing_config[
+            "ProcessingStepOptions"
+        ]["ScrubTimepoints"]["ScrubBehind"]
+        scrub_target_node.inputs.scrub_ahead = postprocessing_config[
+            "ProcessingStepOptions"
+        ]["ScrubTimepoints"]["ScrubAhead"]
+        scrub_target_node.inputs.scrub_contiguous = postprocessing_config[
+            "ProcessingStepOptions"
+        ]["ScrubTimepoints"]["ScrubContiguous"]
+
+        postproc_wf.connect(
+            input_node, "confounds_file", scrub_target_node, "confounds_file"
+        )
+        postproc_wf.connect(
+            scrub_target_node, "scrub_vector", image_wf, "inputnode.scrub_vector"
+        )
+        postproc_wf.connect(
+            scrub_target_node, "scrub_vector", confounds_wf, "inputnode.scrub_vector"
         )
 
     return postproc_wf
@@ -139,6 +191,7 @@ def build_image_postprocessing_workflow(
     noise_file: os.PathLike = None,
     confounds_file: os.PathLike = None,
     tr: float = None,
+    scrub_vector: list = None,
     base_dir: os.PathLike = None,
     crashdump_dir: os.PathLike = None,
 ):
@@ -162,6 +215,7 @@ def build_image_postprocessing_workflow(
                 "in_file",
                 "export_path",
                 "confounds_file",
+                "scrub_vector",
                 "mask_file",
                 "mixing_file",
                 "noise_file",
@@ -182,6 +236,8 @@ def build_image_postprocessing_workflow(
         input_node.inputs.export_file = export_path
     if confounds_file:
         input_node.inputs.confounds_file = confounds_file
+    if scrub_vector:
+        input_node.inputs.scrub_vector = scrub_vector
     if mask_file:
         input_node.inputs.mask_file = mask_file
     if mixing_file:
@@ -190,14 +246,6 @@ def build_image_postprocessing_workflow(
         input_node.inputs.noise_file = noise_file
     if tr:
         input_node.inputs.tr = tr
-
-    """
-    threshold = postprocessing_config["ProcessingStepOptions"][step]["TargetVariable"]
-    scrub_var = postprocessing_config["ProcessingStepOptions"][step]["Threshold"]
-    scrub_ahead = postprocessing_config["ProcessingStepOptions"][step]["ScrubAhead"]
-    scrub_behind = postprocessing_config["ProcessingStepOptions"][step]["ScrubBehind"]
-    scrub_contiguous = postprocessing_config["ProcessingStepOptions"][step]["ScrubContiguous"]
-    """
 
     current_wf = None
     prev_wf = None
@@ -350,7 +398,9 @@ def build_image_postprocessing_workflow(
                 base_dir=postproc_wf.base_dir,
                 crashdump_dir=crashdump_dir,
             )
-            # postproc_wf.connect(image_prep_wf, "outputnode.out_file", current_wf, "inputnode.scrub_targets")
+            postproc_wf.connect(
+                input_node, "scrub_vector", current_wf, "inputnode.scrub_vector"
+            )
 
         # Send input of postproc workflow to first workflow
         if index == 0:
@@ -1066,7 +1116,13 @@ def build_scrubbing_workflow(
         workflow.config["execution"]["crashdump_dir"] = crashdump_dir
 
     # Setup identity (pass through) input/output nodes
-    input_node = build_input_node()
+    input_node = pe.Node(
+        IdentityInterface(
+            fields=["in_file", "out_file", "scrub_vector", "insert_na"],
+            mandatory_inputs=False,
+        ),
+        name="inputnode",
+    )
     output_node = build_output_node()
 
     scrub_node = pe.Node(

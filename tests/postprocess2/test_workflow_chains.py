@@ -43,8 +43,6 @@ def test_postprocess2_wf_2_steps(
     if plot_img:
         helpers.plot_4D_img_slice(out_path, "postProcessed.png")
 
-    assert True
-
 
 def test_postprocess2_wf_3_steps(
     artifact_dir,
@@ -87,8 +85,6 @@ def test_postprocess2_wf_3_steps(
     if plot_img:
         helpers.plot_4D_img_slice(out_path, "postProcessed.png")
 
-    assert True
-
 
 def test_postprocess2_wf_1_step(
     artifact_dir,
@@ -126,8 +122,6 @@ def test_postprocess2_wf_1_step(
 
     if plot_img:
         helpers.plot_4D_img_slice(out_path, "postProcessed.png")
-
-    assert True
 
 
 # This test won't work until properly processed confound file provided
@@ -169,8 +163,6 @@ def test_postprocess2_wf_confound_regression_last(
 
     if plot_img:
         helpers.plot_4D_img_slice(out_path, "postProcessed.png")
-
-    assert True
 
 
 def test_postprocess2_wf_confound_regression_first(
@@ -381,8 +373,6 @@ def test_postprocess2_wf_fslmaths_temporal_filter(
     if plot_img:
         helpers.plot_4D_img_slice(out_path, "postProcessed.png")
 
-    assert True
-
 
 def test_postprocess2_wf_resample(
     artifact_dir,
@@ -427,8 +417,6 @@ def test_postprocess2_wf_resample(
 
     if plot_img:
         helpers.plot_4D_img_slice(out_path, "postProcessed.png")
-
-    assert True
 
 
 def test_prepare_confounds(
@@ -482,4 +470,45 @@ def test_prepare_confounds_aroma(
 
     cf_workflow.run()
 
-    assert True
+
+def test_postprocess2_wf_scrubbing(
+    artifact_dir,
+    postprocessing_config,
+    request,
+    sample_raw_image,
+    sample_raw_image_mask,
+    sample_postprocessed_confounds,
+    plot_img,
+    helpers,
+):
+    postprocessing_config["ProcessingSteps"] = ["TemporalFiltering", "ScrubTimepoints"]
+    postprocessing_config["ConfoundOptions"]["Columns"] = [
+        "framewise_displacement",
+        "csf",
+        "csf_derivative1",
+        "white_matter",
+        "white_matter_derivative1",
+    ]
+
+    test_path = helpers.create_test_dir(artifact_dir, request.node.name)
+    out_path = test_path / "postProcessed.nii.gz"
+
+    wf = build_image_postprocessing_workflow(
+        postprocessing_config,
+        in_file=sample_raw_image,
+        export_path=out_path,
+        tr=2,
+        mask_file=sample_raw_image_mask,
+        confounds_file=sample_postprocessed_confounds,
+        base_dir=test_path,
+        crashdump_dir=test_path,
+    )
+
+    wf.write_graph(
+        dotfilename=test_path / "postProcessSubjectFlow", graph2use="colored"
+    )
+
+    wf.run()
+
+    if plot_img:
+        helpers.plot_4D_img_slice(out_path, "postProcessed.png")

@@ -70,6 +70,28 @@ def get_scrub_vector(fdts, fd_thres=0.3, fd_behind=1, fd_ahead=1, fd_contig=3):
     return scrubVect
 
 
+def get_scrub_vector_node(
+    confounds_file,
+    scrub_target_variable: str,
+    scrub_threshold: float,
+    scrub_ahead: int,
+    scrub_behind: int,
+    scrub_contiguous: int,
+):
+    """Wrapper for call to get_scrub_vector, but includes extracting column"""
+    import pandas as pd
+    from clpipe.postprocutils.utils import get_scrub_vector
+
+    # Get the column to be used for thresholding
+    confounds_df = pd.read_csv(confounds_file, sep="\t")
+    target_timeseries = confounds_df[scrub_target_variable]
+
+    scrub_vector = get_scrub_vector(
+        target_timeseries, scrub_threshold, scrub_behind, scrub_ahead, scrub_contiguous
+    )
+    return scrub_vector
+
+
 def get_scrub_targets(scrub_vector: list):
     """Given a scrubbing vector of 1s and 0s, convert this into a list of indexes."""
 
@@ -123,7 +145,7 @@ def scrub_image(nii_file, scrub_vector, insert_na=True, export_path=None):
 
     if export_path is None:
         # Crude way to figure out .nii vs .nii.gz
-        path_stem = nii_file.stem
+        path_stem = Path(nii_file).stem
         if path_stem[-4:] == ".nii":
             path_stem = Path(path_stem).stem
             out_path = Path(path_stem + "_scrubbed.nii.gz")

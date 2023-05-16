@@ -78,7 +78,13 @@ def test_build_confounds_prep_workflow(
     out_path = test_path / "prepped_confounds.tsv"
 
     wf = build_confounds_prep_workflow(
-        ["csf", "csf_derivative1", "white_matter", "white_matter_derivative1"],
+        [
+            "framewise_displacement",
+            "csf",
+            "csf_derivative1",
+            "white_matter",
+            "white_matter_derivative1",
+        ],
         scrub_threshold=0.9,
         scrub_target_variable="framewise_displacement",
         scrub_ahead=0,

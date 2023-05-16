@@ -443,19 +443,13 @@ def postprocess_image(
             noise_file=noise_file,
         )
 
-    confound_regression = (
-        "ConfoundRegression" in postprocessing_config["ProcessingSteps"]
-    )
-
     postproc_wf = build_postprocessing_workflow(
         image_wf=image_wf,
         confounds_wf=confounds_wf,
         name=f"{pipeline_name}_Postprocessing_Pipeline",
-        confound_regression=confound_regression,
-        base_dir=subject_working_dir,
-        crashdump_dir=log_dir,
-    )
-
+        postprocessing_config=postprocessing_config,
+        base_dir=subject_working_dir, crashdump_dir=log_dir)
+    
     if postprocessing_config["WriteProcessGraph"]:
         draw_graph(postproc_wf, "processing_graph", stream_output_dir, logger=logger)
 

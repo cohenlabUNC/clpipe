@@ -13,14 +13,21 @@ from nipype.interfaces.io import ExportFile
 import nipype.pipeline.engine as pe
 
 from .workflows import build_image_postprocessing_workflow
+from .utils import get_scrub_vector_node
 
 # A list of the temporal-based processing steps applicable to confounds
-CONFOUND_STEPS = {"TemporalFiltering", "AROMARegression", "TrimTimepoints"}
+CONFOUND_STEPS = {
+    "TemporalFiltering",
+    "AROMARegression",
+    "TrimTimepoints",
+    "ScrubTimepoints",
+}
 
 
 def build_confounds_processing_workflow(
     postprocessing_config: dict,
     confounds_file: os.PathLike = None,
+    scrub_vector: list = None,
     export_file: os.PathLike = None,
     mixing_file: os.PathLike = None,
     noise_file: os.PathLike = None,
@@ -100,6 +107,7 @@ def build_confounds_processing_workflow(
             fields=[
                 "in_file",
                 "out_file",
+                "scrub_vector",
                 "export_file",
                 "columns",
                 "mixing_file",
@@ -154,6 +162,9 @@ def build_confounds_processing_workflow(
         )
         confounds_wf.connect(
             prev_wf, "outputnode.out_file", current_wf, "inputnode.in_file"
+        )
+        confounds_wf.connect(
+            input_node, "scrub_vector", current_wf, "inputnode.scrub_vector"
         )
 
     # Provide motion outlier columns if requested
@@ -259,7 +270,7 @@ def build_confounds_prep_workflow(
                     "scrub_contiguous",
                 ],
                 output_names=["scrub_vector"],
-                function=_get_scrub_vector,
+                function=get_scrub_vector_node,
             ),
             name="get_scrub_vector_node",
         )
@@ -325,7 +336,7 @@ def build_confounds_postprocessing_workflow(
 
     input_node = pe.Node(
         IdentityInterface(
-            fields=["in_file", "out_file", "mixing_file", "noise_file"],
+            fields=["in_file", "out_file", "scrub_vector", "mixing_file", "noise_file"],
             mandatory_inputs=False,
         ),
         name="inputnode",
@@ -379,6 +390,9 @@ def build_confounds_postprocessing_workflow(
 
     # Input the .nii file into the postprocessing workflow
     workflow.connect(tsv_to_nii_node, "nii_file", postproc_wf, "inputnode.in_file")
+
+    # Add any scrub points to be removed
+    workflow.connect(input_node, "scrub_vector", postproc_wf, "inputnode.scrub_vector")
 
     # Convert the output of the postprocessing workflow back to .tsv format
     workflow.connect(postproc_wf, "outputnode.out_file", nii_to_tsv_node, "nii_file")
@@ -467,28 +481,6 @@ def build_confounds_add_motion_outliers_workflow(
     workflow.connect(combine_confounds_node, "out_file", output_node, "out_file")
 
     return workflow
-
-
-def _get_scrub_vector(
-    confounds_file,
-    scrub_target_variable: str,
-    scrub_threshold: float,
-    scrub_ahead: int,
-    scrub_behind: int,
-    scrub_contiguous: int,
-):
-    """Wrapper for call to utils.get_scrub_vector, but includes extracting column"""
-    import pandas as pd
-    from clpipe.postprocutils.utils import get_scrub_vector
-
-    # Get the column to be used for thresholding
-    confounds_df = pd.read_csv(confounds_file, sep="\t")
-    target_timeseries = confounds_df[scrub_target_variable]
-
-    scrub_vector = get_scrub_vector(
-        target_timeseries, scrub_threshold, scrub_behind, scrub_ahead, scrub_contiguous
-    )
-    return scrub_vector
 
 
 def _construct_motion_outliers(scrub_vector: list):
