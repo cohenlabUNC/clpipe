@@ -225,8 +225,6 @@ def test_postprocess2_wf_aroma(
     sample_raw_image_mask,
     sample_melodic_mixing,
     sample_aroma_noise_ics,
-    plot_img,
-    write_graph,
     helpers,
 ):
     postprocessing_config["ProcessingSteps"] = [
@@ -257,9 +255,7 @@ def test_postprocess2_wf_aroma(
     wf.run()
 
     helpers.plot_timeseries(out_path, sample_raw_image)
-
-    if plot_img:
-        helpers.plot_4D_img_slice(out_path, "postProcessed.png")
+    helpers.plot_4D_img_slice(out_path, "postProcessed.png")
 
 
 def test_postprocess2_wf_aroma_last(
@@ -270,8 +266,6 @@ def test_postprocess2_wf_aroma_last(
     sample_raw_image_mask,
     sample_melodic_mixing,
     sample_aroma_noise_ics,
-    plot_img,
-    write_graph,
     helpers,
 ):
     postprocessing_config["ProcessingSteps"] = [
@@ -302,9 +296,7 @@ def test_postprocess2_wf_aroma_last(
     wf.run()
 
     helpers.plot_timeseries(out_path, sample_raw_image)
-
-    if plot_img:
-        helpers.plot_4D_img_slice(out_path, "postProcessed.png")
+    helpers.plot_4D_img_slice(out_path, "postProcessed.png")
 
 
 def test_postprocess2_wf_no_mask(
