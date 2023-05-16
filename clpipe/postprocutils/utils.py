@@ -317,12 +317,13 @@ def matrix_to_nii(matrix, orig_shape, affine):
     return out_image
 
 
-def vector_to_txt(vector, out_file):
+def vector_to_txt(vector, out_file: str):
+
     """Convert an input vector to a txt file."""
     import numpy as np
     from pathlib import Path
 
-    np_vector = np.array(vector)
+    np_vector = np.array(vector, dtype=np.int8)
     
     out_file = Path(out_file).resolve()
     np.savetxt(out_file, np_vector)
