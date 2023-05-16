@@ -188,37 +188,47 @@ def plot_image_sample(
     )
 
 
-def nii_to_df(nii_file, save_df=False):
-    """Transform a .nii file to a 2D, time by (x, y, z) dataframe."""
+def nii_to_matrix(nii_file, save_df=False):
+    """Transform a .nii file to a 2D, time by (x, y, z) matrix."""
     import numpy as np
     import nibabel as nib
     from pathlib import Path
-    import pandas as pd
 
     nii_img = nib.load(nii_file)
     img_data = nii_img.get_fdata()
+    orig_shape = nii_img.shape
     affine = nii_img.affine
 
     # data = data.astype(np.float32)
 
     # Transform the data to time by (x, y z), a 2d array
-    img_2d_array = img_data.reshape(
+    img_2d_matrix = img_data.reshape(
         (np.prod(np.shape(img_data)[:-1]), img_data.shape[-1])
     )
-    img_2d_array_transposed = np.transpose(img_2d_array)
-
-    img_df = pd.DataFrame(img_2d_array_transposed)
+    img_2d_matrix_transposed = np.transpose(img_2d_matrix)
 
     if save_df:
+        import pandas as pd
+
         # Build the output path
         nii_file = Path(nii_file)
         path_stem = nii_file.stem
         tsv_file = Path(path_stem + ".tsv")
         tsv_file = str(tsv_file.absolute())
+        img_df = pd.DataFrame(img_2d_matrix_transposed)
         img_df.to_csv(tsv_file, sep="\t", header=None, index=False)
 
-    return img_df, affine
+    return img_2d_matrix_transposed, orig_shape, affine
 
 
-def df_to_nii(df, tsv_file=None, headers=None):
-    pass
+def matrix_to_nii(matrix, orig_shape, affine):
+    """Transform a a 2D, time by (x, y, z) matrix back to a .nii file."""
+    import numpy as np
+    import nibabel as nib
+
+    data = np.transpose(matrix)
+    data = data.reshape(orig_shape)
+    # data32 = np.float32(data)
+    out_image = nib.Nifti1Image(data, affine)
+
+    return out_image
