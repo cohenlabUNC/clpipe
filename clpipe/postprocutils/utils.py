@@ -70,6 +70,18 @@ def get_scrub_vector(fdts, fd_thres=0.3, fd_behind=1, fd_ahead=1, fd_contig=3):
     return scrubVect
 
 
+def get_scrub_targets(scrubVect: list):
+    """Given a scrubbing vector of 1s and 0s, convert this into a list of indexes."""
+
+    scrub_targets = []
+
+    for x in range(0, len(scrubVect)):
+        if x == 1:
+            scrub_targets.append(x)
+
+    return scrub_targets
+
+
 def scrub_image(data, fdts):
     import numpy
 
