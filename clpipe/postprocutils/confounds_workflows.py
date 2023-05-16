@@ -68,7 +68,7 @@ def build_confounds_processing_workflow(
         ] = "fsl_regfilt_R"
 
     # Gather motion outlier details if present
-    motion_outliers = False
+    motion_outliers = True
     try:
         motion_outliers = postprocessing_config["ConfoundOptions"]["MotionOutliers"][
             "Include"
@@ -128,7 +128,8 @@ def build_confounds_processing_workflow(
             confounds_processing_steps.append(step)
 
     # Setup the confounds file prep workflow
-    current_wf = build_confounds_prep_workflow(
+    #   Should always be the first confounds workflow.
+    confounds_prep_wf = build_confounds_prep_workflow(
         column_names,
         scrub_threshold=threshold,
         scrub_target_variable=scrub_var,
@@ -138,11 +139,11 @@ def build_confounds_processing_workflow(
         base_dir=base_dir,
         crashdump_dir=crashdump_dir,
     )
-    confounds_wf.connect(input_node, "in_file", current_wf, "inputnode.in_file")
+    confounds_wf.connect(input_node, "in_file", confounds_prep_wf, "inputnode.in_file")
 
     # Setup postprocessing workflow if any relevant postprocessing steps are included
     if confounds_processing_steps:
-        prev_wf = current_wf
+        prev_wf = confounds_prep_wf
         current_wf = build_confounds_postprocessing_workflow(
             postprocessing_config,
             confounds_processing_steps,
@@ -158,34 +159,15 @@ def build_confounds_processing_workflow(
 
     # Provide motion outlier columns if requested
     if motion_outliers:
-        threshold = postprocessing_config["ConfoundOptions"]["MotionOutliers"][
-            "Threshold"
-        ]
-        scrub_var = postprocessing_config["ConfoundOptions"]["MotionOutliers"][
-            "ScrubVar"
-        ]
-        scrub_ahead = postprocessing_config["ConfoundOptions"]["MotionOutliers"][
-            "ScrubAhead"
-        ]
-        scrub_behind = postprocessing_config["ConfoundOptions"]["MotionOutliers"][
-            "ScrubBehind"
-        ]
-        scrub_contiguous = postprocessing_config["ConfoundOptions"]["MotionOutliers"][
-            "ScrubContiguous"
-        ]
-
         prev_wf = current_wf
         current_wf = build_confounds_add_motion_outliers_workflow(
             threshold,
-            scrub_var,
-            scrub_ahead,
-            scrub_behind,
-            scrub_contiguous,
             base_dir=base_dir,
             crashdump_dir=crashdump_dir,
         )
         confounds_wf.connect(
-            input_node, "in_file", current_wf, "inputnode.raw_confounds_file"
+            confounds_prep_wf, "outputnode.scrub_targets", current_wf, 
+            "inputnode.scrub_targets"
         )
         confounds_wf.connect(
             prev_wf, "outputnode.out_file", current_wf, "inputnode.in_file"
@@ -422,8 +404,6 @@ def build_confounds_add_motion_outliers_workflow(
 
         confounds_file (os.PathLike, optional): The confounds file
             flowing through the confounds pipeline. Defaults to None.
-        raw_confounds_file (os.PathLike, optional): The unprocessed, original
-            confounds file to reference the original scrub var column.
         out_file (os.PathLike, optional): The confounds file with outlier
             spike regressors appended. Defaults to None.
 
