@@ -217,7 +217,6 @@ def test_postprocess2_wf_confound_regression_first(
     assert True
 
 
-@pytest.mark.skip(reason="Test hangs")
 def test_postprocess2_wf_aroma(
     artifact_dir,
     postprocessing_config,
@@ -232,8 +231,8 @@ def test_postprocess2_wf_aroma(
 ):
     postprocessing_config["ProcessingSteps"] = [
         "AROMARegression",
+        "TemporalFiltering",
         "SpatialSmoothing",
-        "IntensityNormalization",
     ]
 
     test_path = helpers.create_test_dir(artifact_dir, request.node.name)
@@ -251,20 +250,18 @@ def test_postprocess2_wf_aroma(
         crashdump_dir=test_path,
     )
 
+    wf.write_graph(
+        dotfilename=test_path / "postProcessSubjectFlow", graph2use="colored"
+    )
+
     wf.run()
 
-    if write_graph:
-        wf.write_graph(
-            dotfilename=test_path / "postProcessSubjectFlow", graph2use=write_graph
-        )
+    helpers.plot_timeseries(out_path, sample_raw_image)
 
     if plot_img:
         helpers.plot_4D_img_slice(out_path, "postProcessed.png")
 
-    assert True
 
-
-@pytest.mark.skip(reason="Test hangs")
 def test_postprocess2_wf_aroma_last(
     artifact_dir,
     postprocessing_config,
@@ -280,7 +277,6 @@ def test_postprocess2_wf_aroma_last(
     postprocessing_config["ProcessingSteps"] = [
         "TemporalFiltering",
         "SpatialSmoothing",
-        "IntensityNormalization",
         "AROMARegression",
     ]
 
@@ -299,17 +295,16 @@ def test_postprocess2_wf_aroma_last(
         crashdump_dir=test_path,
     )
 
+    wf.write_graph(
+        dotfilename=test_path / "postProcessSubjectFlow", graph2use="colored"
+    )
+
     wf.run()
 
-    if write_graph:
-        wf.write_graph(
-            dotfilename=test_path / "postProcessSubjectFlow", graph2use=write_graph
-        )
+    helpers.plot_timeseries(out_path, sample_raw_image)
 
     if plot_img:
         helpers.plot_4D_img_slice(out_path, "postProcessed.png")
-
-    assert True
 
 
 def test_postprocess2_wf_no_mask(
