@@ -342,25 +342,14 @@ def build_confounds_postprocessing_workflow(
 
 
 def build_confounds_add_motion_outliers_workflow(
-    threshold: float,
-    scrub_var: str,
-    scrub_ahead: int,
-    scrub_behind: int,
-    scrub_contiguous: int,
     confounds_file: os.PathLike = None,
-    raw_confounds_file: os.PathLike = None,
+    scrub_targets: list = None,
     out_file: os.PathLike = None,
     base_dir: os.PathLike = None,
     crashdump_dir: os.PathLike = None,
 ):
     """Builds a confounds workflow which calculates motion outliers and appends them as spike regressor columns to the given confounds.
 
-    Args:
-        threshold (float): Cutoff value in reference to scrub_var, which when exceeded, marks the timepoint as an outlier.
-        scrub_var (str): The target confound for scurbbing, usually framewise_displacement
-        scrub_ahead (int): Scrub this many volumes ahead of an outlier.
-        scrub_behind (int): Scurb this many volumes behind an outlier.
-        scrub_contiguous (int): Ensure this number of contiguous volumes.
         confounds_file (os.PathLike, optional): The confounds file flowing through the confounds pipeline. Defaults to None.
         raw_confounds_file (os.PathLike, optional): The unprocessed, original confounds file to reference the original scrub var column.
         out_file (os.PathLike, optional): The confounds file with outlier spike regressors appended. Defaults to None.
@@ -375,7 +364,7 @@ def build_confounds_add_motion_outliers_workflow(
 
     input_node = pe.Node(
         IdentityInterface(
-            fields=["in_file", "out_file", "raw_confounds_file"], mandatory_inputs=False
+            fields=["in_file", "out_file", "scrub_targets"], mandatory_inputs=False
         ),
         name="inputnode",
     )
@@ -384,33 +373,20 @@ def build_confounds_add_motion_outliers_workflow(
         name="outputnode",
     )
 
+    input_node.inputs.scrub_targets = scrub_targets
     if confounds_file:
         input_node.inputs.in_file = confounds_file
-    if raw_confounds_file:
-        input_node.inputs.raw_confounds_file = raw_confounds_file
     if out_file:
         input_node.inputs.out_file = out_file
 
-    add_motion_outliers_node = pe.Node(
+    construct_motion_outliers_node = pe.Node(
         Function(
-            input_names=[
-                "confounds_file",
-                "scrub_var",
-                "threshold",
-                "scrub_ahead",
-                "scrub_behind",
-                "scrub_contiguous",
-            ],
+            input_names=["scrub_targets"],
             output_names=["out_file"],
-            function=get_motion_outliers,
+            function=_construct_motion_outliers,
         ),
         name="get_motion_outliers",
     )
-    add_motion_outliers_node.inputs.threshold = threshold
-    add_motion_outliers_node.inputs.scrub_var = scrub_var
-    add_motion_outliers_node.inputs.scrub_ahead = scrub_ahead
-    add_motion_outliers_node.inputs.scrub_behind = scrub_behind
-    add_motion_outliers_node.inputs.scrub_contiguous = scrub_contiguous
 
     combine_confounds_node = pe.Node(
         Function(
@@ -421,17 +397,16 @@ def build_confounds_add_motion_outliers_workflow(
         name="combine_confounds",
     )
 
-    # Use the raw confounds file to obtain motion outliers, because it will contain an unmodified scrub var
+    # Send the scrub targets to be contrusted into motion outlier columns
     workflow.connect(
-        input_node, "raw_confounds_file", add_motion_outliers_node, "confounds_file"
+        input_node, "scrub_targets", construct_motion_outliers_node, "scrub_targets"
     )
-    # Connect the workflow confounds file for combination with the motion outliers
+    # Concat the motion outliers and scrub targets
     workflow.connect(
         input_node, "in_file", combine_confounds_node, "base_confounds_file"
     )
-    # Connect the motion outliers with the workflow confounds file
     workflow.connect(
-        add_motion_outliers_node,
+        construct_motion_outliers_node,
         "out_file",
         combine_confounds_node,
         "append_confounds_file",
@@ -442,28 +417,10 @@ def build_confounds_add_motion_outliers_workflow(
     return workflow
 
 
-def get_motion_outliers(
-    confounds_file,
-    scrub_var: str,
-    threshold: float,
-    scrub_ahead: int,
-    scrub_behind: int,
-    scrub_contiguous: int,
-):
+def _construct_motion_outliers(scrub_targets: list):
     from pathlib import Path
-    import pandas as pd
-    from clpipe.postprocutils.utils import get_scrub_targets
     from clpipe.glm_setup import _construct_motion_outliers
 
-    confounds_df = pd.read_csv(confounds_file, sep="\t")
-
-    # Get the column to be used for thresholding
-    timepoints = confounds_df[scrub_var]
-
-    # Gather the scrub indexes
-    scrub_targets = get_scrub_targets(
-        timepoints, threshold, scrub_behind, scrub_ahead, scrub_contiguous
-    )
     # Create outlier columns
     mot_outliers = _construct_motion_outliers(scrub_targets)
     # Give the outlier columns names
