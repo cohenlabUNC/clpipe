@@ -1033,63 +1033,6 @@ def build_trim_timepoints_workflow(
     return workflow
 
 
-def build_get_scrub_targets_workflow(
-    target_variable: str,
-    threshold: float,
-    scrub_ahead: int,
-    scrub_behind: int,
-    scrub_contiguous: int,
-    in_file: os.PathLike = None,
-    base_dir: os.PathLike = None,
-    crashdump_dir: os.PathLike = None,
-):
-    workflow = pe.Workflow(name=STEP_SCRUB_TIMEPOINTS, base_dir=base_dir)
-    """ Workflow returning a list of scrub targets."""
-    if crashdump_dir is not None:
-        workflow.config["execution"]["crashdump_dir"] = crashdump_dir
-
-    # Setup identity (pass through) input/output nodes
-    input_node = build_input_node()
-    output_node = build_output_node()
-
-    # Convert image to timeseries (not necessary to convert back)
-    # Pull target var out of confound timeseries
-
-    # Write node for grabbing a file
-    confounds_df = pd.read_csv(in_file, sep="\t")
-
-    # Get the column to be used for thresholding
-    target_timeseries = confounds_df[target_variable]
-
-    scrub_target_node = pe.Node(
-        Function(
-            input_names=["fdts", "fd_thres", "fd_behind", "fd_ahead", "fd_contig"],
-            output_names=["scrub_targets"],
-            function=get_scrub_targets,
-        ),
-        name="get_scrub_targets_node",
-    )
-
-    # Set WF inputs and outputs
-    if in_file:
-        input_node.inputs.timeseries = target_timeseries
-
-    input_node.inputs.target_variable = target_variable
-    input_node.inputs.threshold = threshold
-    input_node.inputs.scrub_ahead = scrub_ahead
-    input_node.inputs.scrub_behind = scrub_behind
-    input_node.inputs.scrub_contiguous = scrub_contiguous
-
-    workflow.connect(input_node, "timeseries", scrub_target_node, "fdts")
-    workflow.connect(input_node, "threshold", scrub_target_node, "fd_thres")
-    workflow.connect(input_node, "scrub_behind", scrub_target_node, "fd_behind")
-    workflow.connect(input_node, "scrub_ahead", scrub_target_node, "fd_ahead")
-    workflow.connect(input_node, "scrub_contiguous", scrub_target_node, "fd_contig")
-    workflow.connect(scrub_target_node, "scrub_targets", output_node, "out_file")
-
-    return workflow
-
-
 def build_scrubbing_workflow(
     in_file: os.PathLike = None,
     scrub_targets=None,
