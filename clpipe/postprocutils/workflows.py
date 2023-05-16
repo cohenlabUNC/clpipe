@@ -24,6 +24,7 @@ from nipype.interfaces.utility import Function, IdentityInterface
 from nipype.interfaces.io import ExportFile
 import nipype.pipeline.engine as pe
 
+import clpipe.postprocutils.r_setup
 from .nodes import (
     build_input_node,
     build_output_node,
@@ -31,8 +32,8 @@ from .nodes import (
     RegressAromaR,
     ImageSlice,
 )
+from .utils import get_scrub_targets
 from ..errors import ImplementationNotFoundError
-import clpipe.postprocutils.r_setup
 
 # TODO: Set these values up as hierarchical, maybe with enums
 
@@ -1045,7 +1046,14 @@ def build_scrubbing_workflow(
     input_node = build_input_node()
     output_node = build_output_node()
 
-    scrubbing_node = pe.Node(name="slicer_node")
+    scrub_target_node = pe.Node(
+        Function(
+            input_names=["timeseries"],
+            output_names=["scrub_targets"],
+            function=get_scrub_targets,
+        ),
+        name="get_scrub_targets_node",
+    )
 
     # Set WF inputs and outputs
     if in_file:
@@ -1053,9 +1061,9 @@ def build_scrubbing_workflow(
     if out_file:
         input_node.inputs.out_file = out_file
 
-    workflow.connect(input_node, "in_file", scrubbing_node, "in_file")
-    workflow.connect(input_node, "out_file", scrubbing_node, "out_file")
-    workflow.connect(scrubbing_node, "out_file", output_node, "out_file")
+    # workflow.connect(input_node, "in_file", scrubbing_node, "in_file")
+    # workflow.connect(input_node, "out_file", scrubbing_node, "out_file")
+    # workflow.connect(scrubbing_node, "out_file", output_node, "out_file")
 
     return workflow
 
