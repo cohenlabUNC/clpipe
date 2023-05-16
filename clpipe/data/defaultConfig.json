@@ -133,23 +133,15 @@
 			"AROMARegression":{
 				"Implementation": "fsl_regfilt"
 			},
-			"ScrubTimepoints":[
-				{
+			"ScrubTimepoints":{
 					"TargetVariable": "framewise_displacement",
+					"DropCSV": "",
 					"Threshold": 0.9,
 					"Action": "remove",
 					"ScrubAhead": 0,
 					"ScrubBehind": 0,
 					"ScrubContiguous": 0
-				},
-				{
-					"DropCSV": "EXAMPLE_DROP_FILE.csv",
-					"Action": "remove",
-					"ScrubAhead": 0,
-					"ScrubBehind": 0,
-					"ScrubContiguous": 0
-				}
-			],
+			},
 			"Resample":{
 				"ReferenceImage": "SET REFERENCE IMAGE"
 			},
