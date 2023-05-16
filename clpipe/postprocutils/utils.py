@@ -315,3 +315,16 @@ def matrix_to_nii(matrix, orig_shape, affine):
     out_image = nib.Nifti1Image(data, affine)
 
     return out_image
+
+
+def vector_to_txt(vector, out_file):
+    """Convert an input vector to a txt file."""
+    import numpy as np
+    from pathlib import Path
+
+    np_vector = np.array(vector)
+    
+    out_file = Path(out_file).resolve()
+    np.savetxt(out_file, np_vector)
+
+    return out_file
