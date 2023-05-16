@@ -295,11 +295,16 @@ def test_resample_wf(
 def test_scrubbing_wf(
     artifact_dir, sample_raw_image, plot_img, write_graph, request, helpers
 ):
+    """Test that a list of arbitrary timepoints can be scrubbed from an image."""
+
     test_path = helpers.create_test_dir(artifact_dir, request.node.name)
     scrubbed_path = test_path / "scrubbed.nii.gz"
 
-    wf = build_scrub_workflow(
+    scrub_targets = []
+
+    wf = build_scrubbing_workflow(
         in_file=sample_raw_image,
+        scrub_targets=scrub_targets,
         out_file=scrubbed_path,
         base_dir=test_path,
         crashdump_dir=test_path,
@@ -311,3 +316,36 @@ def test_scrubbing_wf(
 
     if plot_img:
         helpers.plot_4D_img_slice(scrubbed_path, "scrubbed.png")
+
+
+def test_scrubbing_wf_confounds(
+    artifact_dir, sample_confounds_timeseries, request, helpers
+):
+    """Test that a list of arbitrary timepoints can be scrubbed from a confounds file."""
+
+    test_path = helpers.create_test_dir(artifact_dir, request.node.name)
+    scrubbed_path = test_path / "scrubbed_confounds.tsv"
+
+    wf = build_scrubbing_workflow(
+        in_file=sample_confounds_timeseries,
+        out_file=scrubbed_path,
+        base_dir=test_path,
+        crashdump_dir=test_path,
+    )
+    wf.run()
+
+
+def test_scrubbing_wf_confounds(artifact_dir, sample_melodic_mixing, request, helpers):
+    """Test that a list of arbitrary timepoints can be scrubbed from an
+    AROMA mixing file."""
+
+    test_path = helpers.create_test_dir(artifact_dir, request.node.name)
+    scrubbed_path = test_path / "scrubbed_melodic_mixing.tsv"
+
+    wf = build_scrubbing_workflow(
+        in_file=sample_melodic_mixing,
+        out_file=scrubbed_path,
+        base_dir=test_path,
+        crashdump_dir=test_path,
+    )
+    wf.run()
