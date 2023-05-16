@@ -477,6 +477,7 @@ def config_file_fmriprep(clpipe_fmriprep_dir: Path):
 def config_file_postproc2(clpipe_postproc2_dir: Path):
     """Return config file from the test postproc2 directory."""
 
+    return clpipe_postproc2_dir / "clpipe_config.json"
 
 @pytest.fixture(scope="module")
 def config_file_postproc2_legacy_fmriprep(clpipe_postproc2_legacy_fmriprep_dir: Path):
