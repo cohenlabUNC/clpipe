@@ -166,18 +166,16 @@ def test_fslmath_temporal_filter_wf(
 class TestWorkflows:    
     def teardown(self):
         """All workflow tests share these steps once their workflow is setup."""
-        self.wf.write_graph(dotfilename = self.test_path / "filteredflow", graph2use="orig")
+        self.wf.write_graph(dotfilename = self.test_path / "wf_diagram", graph2use="orig")
         self.wf.run()
 
         self.helpers.plot_timeseries(self.export_path, self.sample_raw_image)
 
         if self.plot_img:
-            self.helpers.plot_4D_img_slice(self.export_path, "filtered.png")
+            self.helpers.plot_4D_img_slice(self.export_path, "sample_processed .png")
 
     def test_3dtproject_temporal_filter_wf(self):
         """Test the basic case of running the workflow."""
-
-        self.export_path = self.test_path / "sample_raw_filtered.nii.gz"
         
         self.wf = build_3dtproject_temporal_filter(bpHigh= .9, bpLow= 0.005, tr=2,
                                                    import_file=self.sample_raw_image,
@@ -188,20 +186,20 @@ class TestWorkflows:
     def test_3dtproject_temporal_filter_wf_scrubs(self):
         """Test the basic case of running the workflow."""
 
-        self.export_path = self.test_path / "sample_raw_filtered.nii.gz"
-        
         self.wf = build_3dtproject_temporal_filter(bpHigh= .9, bpLow= 0.005, tr=2,
-                                                   scrub_targets=[3,6],
+                                                   scrub_targets=True,
                                                    import_file=self.sample_raw_image,
                                                    export_file=self.export_path,
                                                    base_dir=self.test_path, crashdump_dir=self.test_path,
                                                    mask_file=self.sample_raw_image_mask)
+        self.wf.inputs.inputnode.scrub_targets = [3,6]
 
     @pytest.fixture(autouse=True)
     def _test_path(self, request, artifact_dir):
         """Setup an artifact directory for the currently running test."""
         self.test_path = artifact_dir / request.module.__name__ / request.node.name
         self.test_path.mkdir(parents=True, exist_ok=True)
+        self.export_path = self.test_path / "sample_processed.nii.gz"
 
     @pytest.fixture(autouse=True)
     def _request_fixtures(self, sample_raw_image, sample_raw_image_mask, helpers, plot_img):
