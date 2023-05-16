@@ -36,9 +36,7 @@ def test_postprocess2_wf_2_steps(
 
 def test_build_confounds_prep_workflow(
     artifact_dir,
-    postprocessing_config,
     sample_confounds_timeseries,
-    write_graph,
     helpers,
     request,
 ):
@@ -47,8 +45,8 @@ def test_build_confounds_prep_workflow(
 
     wf = build_confounds_prep_workflow(
         ["csf", "csf_derivative1", "white_matter", "white_matter_derivative1"],
-        threshold=0.9,
-        scrub_var="framewise_displacement",
+        scrub_threshold=0.9,
+        scrub_target_variable="framewise_displacement",
         scrub_ahead=0,
         scrub_behind=0,
         scrub_contiguous=0,
@@ -58,7 +56,7 @@ def test_build_confounds_prep_workflow(
         crashdump_dir=test_path,
     )
 
-    wf.write_graph(dotfilename=test_path / "confounds_flow", graph2use=write_graph)
+    wf.write_graph(dotfilename=test_path / "confounds_flow", graph2use="colored")
 
     wf.run()
 
