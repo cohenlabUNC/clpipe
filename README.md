@@ -43,3 +43,26 @@ and the console commands should be immediately useable.
 
 ### Release Strategy
 
+#### Versioning Scheme
+
+clpipe follows the `x.y.z` versioning scheme, where x is a breaking update, y introduces
+major features, and z indicates minor updates.
+
+#### Release Branch
+
+When enough changes to the `develop` branch have been made, they can be merged together into
+the main branch as a **release**. In order to allow futher development on the `develop`
+branch to continue, a new branch should be created off of `develop` that is specific to that release.
+The release branch should be named after the version `develop` was on when the release
+branch was created - for example, `release-1.7.3`, if `develop` was on version 1.7.3.
+
+#### Incrementing Develop
+
+As soon as a release branch is created, the `develop` branch should have its version
+updated in `setup.py`, usually by the minor value. For example, from `1.7.2` to `1.7.3`. If a major feature or breaking change
+is included in subsequent development, the version should be updated to reflect this before release.
+
+#### Release Branch PR to Main
+
+#### Release Tagging, Documentation, and Artifact Distribution
+
