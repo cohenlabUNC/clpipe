@@ -219,7 +219,7 @@ def build_confounds_prep_workflow(
     Returns:
         pe.Workflow: An intial confounds prep workflow
     """
-    workflow = pe.Workflow(name="Confounds_Prep", base_dir=base_dir)
+    workflow = pe.Workflow(name="prep_wf", base_dir=base_dir)
     if crashdump_dir is not None:
         workflow.config["execution"]["crashdump_dir"] = crashdump_dir
 
@@ -272,7 +272,7 @@ def build_confounds_prep_workflow(
                 output_names=["scrub_vector"],
                 function=get_scrub_vector_node,
             ),
-            name="get_scrub_vector_node",
+            name="get_scrub_vector",
         )
         # Setup scrub inputs
         scrub_target_node.inputs.scrub_target_variable = scrub_target_variable
@@ -330,7 +330,7 @@ def build_confounds_postprocessing_workflow(
         pe.Workflow: A confounds postprocessing workflow.
     """
 
-    workflow = pe.Workflow(name="Confounds_Postprocessing", base_dir=base_dir)
+    workflow = pe.Workflow(name="processing_adapter_wf", base_dir=base_dir)
     if crashdump_dir is not None:
         workflow.config["execution"]["crashdump_dir"] = crashdump_dir
 
@@ -377,7 +377,7 @@ def build_confounds_postprocessing_workflow(
     postproc_wf = build_image_postprocessing_workflow(
         postprocessing_config,
         processing_steps=confounds_processing_steps,
-        name="Confounds_Apply_Postprocessing",
+        name="processing_wf",
         mixing_file=mixing_file,
         noise_file=noise_file,
         tr=tr,
@@ -424,7 +424,7 @@ def build_confounds_add_motion_outliers_workflow(
         pe.Workflow: A workflow which attaches spike regressors to a confounds file.
     """
 
-    workflow = pe.Workflow(name="Confounds_Add_Motion_Outliers", base_dir=base_dir)
+    workflow = pe.Workflow(name="motion_outliers_wf", base_dir=base_dir)
     if crashdump_dir is not None:
         workflow.config["execution"]["crashdump_dir"] = crashdump_dir
 

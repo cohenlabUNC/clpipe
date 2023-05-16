@@ -68,7 +68,7 @@ STEP_SCRUB_TIMEPOINTS = "ScrubTimepoints"
 def build_postprocessing_workflow(
     image_wf: pe.Workflow = None,
     confounds_wf: pe.Workflow = None,
-    name: str = "Postprocessing_Pipeline",
+    name: str = "image_wf",
     postprocessing_config: dict = None,
     confounds_file: os.PathLike = None,
     base_dir: os.PathLike = None,

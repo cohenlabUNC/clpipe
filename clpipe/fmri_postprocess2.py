@@ -361,8 +361,10 @@ def postprocess_image(
     file_name_no_extensions = Path(
         str(image_path).rstrip("".join(image_path.suffixes))
     ).stem
+    # Remove modality to shorten necessary pipeline name
+    file_name_no_modality = file_name_no_extensions.replace("_desc-preproc_bold", "")
     # Remove hyphens to allow use as a pipeline name
-    pipeline_name = file_name_no_extensions.replace("-", "_")
+    pipeline_name = file_name_no_modality.replace("-", "_")
 
     bids: BIDSLayout = get_bids(
         bids_dir, database_path=pybids_db_path, fmriprep_dir=fmriprep_dir
@@ -446,7 +448,7 @@ def postprocess_image(
     postproc_wf = build_postprocessing_workflow(
         image_wf=image_wf,
         confounds_wf=confounds_wf,
-        name=f"{pipeline_name}_Postprocessing_Pipeline",
+        name=f"{pipeline_name}_wf",
         postprocessing_config=postprocessing_config,
         base_dir=subject_working_dir,
         crashdump_dir=log_dir,
@@ -479,7 +481,7 @@ def _setup_image_workflow(
     wf = build_image_postprocessing_workflow(
         postprocessing_config,
         export_path=export_path,
-        name=f"Image_Postprocessing_Pipeline",
+        name=f"image_wf",
         mask_file=mask_image,
         confounds_file=confounds,
         mixing_file=mixing_file,
@@ -543,7 +545,7 @@ def _setup_confounds_wf(
         postprocessing_config,
         export_file=export_file,
         tr=tr,
-        name=f"Confounds_Processing_Pipeline",
+        name=f"confounds_wf",
         mixing_file=mixing_file,
         noise_file=noise_file,
         base_dir=working_dir,
