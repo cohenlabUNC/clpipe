@@ -1032,6 +1032,7 @@ def build_trim_timepoints_workflow(
 
 def build_scrubbing_workflow(
     in_file: os.PathLike = None,
+    scrub_targets: list = None,
     out_file: os.PathLike = None,
     base_dir: os.PathLike = None,
     crashdump_dir: os.PathLike = None,
