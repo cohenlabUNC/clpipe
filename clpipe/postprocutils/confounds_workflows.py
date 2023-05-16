@@ -32,8 +32,9 @@ def build_confounds_processing_workflow(
     base_dir: os.PathLike = None,
     crashdump_dir: os.PathLike = None,
 ):
-    """Builds a processing workflow specifically for a given confounds file. If any temporal postprocessing
-    steps are included, those steps will be run on the confounds file as well.
+    """Builds a processing workflow specifically for a given confounds file.
+    If any temporal postprocessing steps are included,
+        those steps will be run on the confounds file as well.
 
     Args:
         postprocessing_config (dict): The instructions for postprocessing.
@@ -175,11 +176,11 @@ def build_confounds_processing_workflow(
 
 def build_confounds_prep_workflow(
     column_names: List,
-    scrub_target_variable: str,
-    scrub_threshold: float,
-    scrub_ahead: int,
-    scrub_behind: int,
-    scrub_contiguous: int,
+    scrub_target_variable: str = None,
+    scrub_threshold: float = None,
+    scrub_ahead: int = None,
+    scrub_behind: int = None,
+    scrub_contiguous: int = None,
     in_file: os.PathLike = None,
     out_file: os.PathLike = None,
     base_dir: os.PathLike = None,
@@ -211,21 +212,6 @@ def build_confounds_prep_workflow(
         name="outputnode",
     )
 
-    scrub_target_node = pe.Node(
-        Function(
-            input_names=[
-                "confounds_file",
-                "scrub_target_variable",
-                "scrub_threshold",
-                "scrub_behind",
-                "scrub_ahead",
-                "scrub_contiguous",
-            ],
-            output_names=["scrub_targets"],
-            function=_get_scrub_targets,
-        ),
-        name="get_scrub_targets_node",
-    )
     tsv_select_node = pe.Node(
         Function(
             input_names=["tsv_file", "column_names"],
@@ -250,15 +236,35 @@ def build_confounds_prep_workflow(
 
     input_node.inputs.column_names = column_names
 
-    # Setup scrub inputs
-    scrub_target_node.inputs.scrub_target_variable = scrub_target_variable
-    scrub_target_node.inputs.scrub_threshold = scrub_threshold
-    scrub_target_node.inputs.scrub_behind = scrub_behind
-    scrub_target_node.inputs.scrub_ahead = scrub_ahead
-    scrub_target_node.inputs.scrub_contiguous = scrub_contiguous
+    if scrub_target_variable:
+        scrub_target_node = pe.Node(
+            Function(
+                input_names=[
+                    "confounds_file",
+                    "scrub_target_variable",
+                    "scrub_threshold",
+                    "scrub_behind",
+                    "scrub_ahead",
+                    "scrub_contiguous",
+                ],
+                output_names=["scrub_targets"],
+                function=_get_scrub_targets,
+            ),
+            name="get_scrub_targets_node",
+        )
+        # Setup scrub inputs
+        scrub_target_node.inputs.scrub_target_variable = scrub_target_variable
+        scrub_target_node.inputs.scrub_threshold = scrub_threshold
+        scrub_target_node.inputs.scrub_behind = scrub_behind
+        scrub_target_node.inputs.scrub_ahead = scrub_ahead
+        scrub_target_node.inputs.scrub_contiguous = scrub_contiguous
+
+        workflow.connect(input_node, "in_file", scrub_target_node, "confounds_file")
+        workflow.connect(
+            scrub_target_node, "scrub_targets", output_node, "scrub_targets"
+        )
 
     # Setup input connections
-    workflow.connect(input_node, "in_file", scrub_target_node, "confounds_file")
     workflow.connect(input_node, "in_file", tsv_select_node, "tsv_file")
     workflow.connect(input_node, "column_names", tsv_select_node, "column_names")
 
@@ -269,7 +275,6 @@ def build_confounds_prep_workflow(
 
     # Set outputs
     workflow.connect(tsv_replace_nas_node, "tsv_no_na", output_node, "out_file")
-    workflow.connect(scrub_target_node, "scrub_targets", output_node, "scrub_targets")
 
     return workflow
 
