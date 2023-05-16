@@ -70,30 +70,66 @@ def get_scrub_vector(fdts, fd_thres=0.3, fd_behind=1, fd_ahead=1, fd_contig=3):
     return scrubVect
 
 
-def get_scrub_targets(scrubVect: list):
+def get_scrub_targets(scrub_vector: list):
     """Given a scrubbing vector of 1s and 0s, convert this into a list of indexes."""
 
-    scrub_targets = []
-
-    for x in range(0, len(scrubVect)):
-        if x == 1:
-            scrub_targets.append(x)
-
-    return scrub_targets
+    return [i for i, e in enumerate(scrub_vector) if e == 1]
 
 
 def scrub_data(data, fdts):
     import numpy
 
-    scrubTargets = [i for i, e in enumerate(fdts) if e == 1]
+    scrubTargets = get_scrub_targets(fdts)
     data[scrubTargets, :] = numpy.nan
     return data
 
 
-def scrub_image(image_path, scrub_targets, insert_na=True):
+def scrub_image(nii_file, scrub_vector, insert_na=True, export_path=None):
     """Scrub the targets from the given image."""
+    import nibabel as nib
+    import numpy as np
+    from pathlib import Path
 
-    pass
+    from clpipe.postprocutils.utils import get_scrub_targets
+
+    image = nib.load(nii_file)
+    data = image.get_fdata()
+    affine = image.affine
+    orig_shape = data.shape
+
+    # Reorganize the data to be 2D with time on X
+    data = data.reshape((np.prod(np.shape(data)[:-1]), data.shape[-1]))
+    data = np.transpose(data)
+
+    # Get the scrub indexes
+    scrub_targets = get_scrub_targets(scrub_vector)
+    if insert_na:
+        # Replace scrub targets with NA
+        data[scrub_targets, :] = np.nan
+    else:
+        # Remove the scrub targets
+        data = np.delete(data, scrub_targets, axis=0)
+
+    # Swap the data back to original format
+    data = np.transpose(data)
+    data = data.reshape(orig_shape)
+
+    if export_path is None:
+        # Crude way to figure out .nii vs .nii.gz
+        path_stem = nii_file.stem
+        if path_stem[-4:] == ".nii":
+            path_stem = Path(path_stem).stem
+            out_path = Path(path_stem + "_scrubbed.nii.gz")
+        else:
+            out_path = Path(path_stem + "_scrubbed.nii")
+        out_path = str(out_path.absolute())
+    else:
+        out_path = export_path
+
+    out_image = nib.Nifti1Image(data, affine)
+    nib.save(out_image, out_path)
+
+    return out_path
 
 
 def calc_filter(hp, lp, tr, order):

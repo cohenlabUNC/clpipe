@@ -1034,9 +1034,10 @@ def build_trim_timepoints_workflow(
 
 
 def build_scrubbing_workflow(
-    in_file: os.PathLike = None,
-    scrub_vector=None,
-    out_file: os.PathLike = None,
+    scrub_vector: list,
+    insert_na=True,
+    import_path: os.PathLike = None,
+    export_path: os.PathLike = None,
     base_dir: os.PathLike = None,
     crashdump_dir: os.PathLike = None,
 ):
@@ -1066,24 +1067,25 @@ def build_scrubbing_workflow(
 
     scrub_node = pe.Node(
         Function(
-            input_names=["data", "scrub_vector"],
-            output_names=["output"],
+            input_names=["nii_file", "scrub_vector", "insert_na", "export_path"],
+            output_names=["out_file"],
             function=scrub_image,
         ),
         name="scrub_timepoints",
     )
 
     # Set WF inputs and outputs
-    if in_file:
-        input_node.inputs.in_file = in_file
-    if out_file:
-        input_node.inputs.out_file = out_file
-    if scrub_vector:
-        input_node.inputs.scrub_vector = scrub_vector
+    if import_path:
+        input_node.inputs.in_file = import_path
+    if export_path:
+        input_node.inputs.out_file = export_path
+    input_node.inputs.scrub_vector = scrub_vector
+    input_node.inputs.insert_na = insert_na
 
-    workflow.connect(input_node, "in_file", scrub_node, "in_file")
-    workflow.connect(input_node, "out_file", scrub_node, "out_file")
-    workflow.connect(scrub_node, "data", output_node, "out_file")
+    workflow.connect(input_node, "in_file", scrub_node, "nii_file")
+    workflow.connect(input_node, "scrub_vector", scrub_node, "scrub_vector")
+    workflow.connect(input_node, "insert_na", scrub_node, "insert_na")
+    workflow.connect(input_node, "out_file", scrub_node, "export_path")
     workflow.connect(scrub_node, "out_file", output_node, "out_file")
 
     return workflow

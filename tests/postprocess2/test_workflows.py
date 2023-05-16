@@ -292,9 +292,7 @@ def test_resample_wf(
         helpers.plot_4D_img_slice(resampled_path, "resample.png")
 
 
-def test_scrubbing_wf(
-    artifact_dir, sample_raw_image, plot_img, write_graph, request, helpers
-):
+def test_scrubbing_wf(artifact_dir, sample_raw_image, plot_img, request, helpers):
     """Test that a list of arbitrary timepoints can be scrubbed from an image."""
 
     test_path = helpers.create_test_dir(artifact_dir, request.node.name)
@@ -303,9 +301,9 @@ def test_scrubbing_wf(
     scrub_vector = [0, 1, 0, 0, 0, 0, 1, 0, 0, 0]
 
     wf = build_scrubbing_workflow(
-        in_file=sample_raw_image,
-        scrub_vector=scrub_vector,
-        out_file=scrubbed_path,
+        scrub_vector,
+        import_path=sample_raw_image,
+        export_path=scrubbed_path,
         base_dir=test_path,
         crashdump_dir=test_path,
     )
