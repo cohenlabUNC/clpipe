@@ -1,6 +1,35 @@
 import pytest
 
 from clpipe.postprocutils.workflows import *
+from clpipe.postprocutils.confounds_workflows import *
+
+def test_postprocess2_wf_2_steps(artifact_dir,
+                                 postprocessing_config,
+                                 sample_confounds_timeseries, 
+                                 write_graph,
+                                 helpers,
+                                 request):
+
+    postprocessing_config["ProcessingSteps"] = ["IntensityNormalization", "TemporalFiltering"]
+
+    test_path = helpers.create_test_dir(artifact_dir, request.node.name)
+    out_path = test_path / "postprocessed.csv"
+    
+    wf = build_confounds_processing_workflow(
+        postprocessing_config, 
+        confounds_file=sample_confounds_timeseries, 
+        export_file=out_path,
+        tr=2,
+        base_dir=test_path,
+        crashdump_dir=test_path
+    )
+    
+    wf.write_graph(dotfilename = test_path / "confounds_flow", graph2use=write_graph)
+    
+    wf.run()
+
+    assert True
+
 
 
 def test_build_get_scrub_targets_workflow(
