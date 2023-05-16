@@ -32,3 +32,14 @@ All clpipe commands should now be accessible.
 
 All necessary dependencies should install to your local Python library, 
 and the console commands should be immediately useable.
+
+## Contribution Guide
+
+### Dev Environment Setup
+
+#### Docker Container
+
+### Committing & Branching
+
+### Release Strategy
+
