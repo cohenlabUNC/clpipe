@@ -7,6 +7,7 @@ postprocessing pipeline.
 import os
 
 from math import sqrt, log
+from pathlib import Path
 import pkg_resources
 
 # TODO: import these without specifying, to help with code readability
@@ -32,7 +33,7 @@ from .nodes import (
     RegressAromaR,
     ImageSlice,
 )
-from .utils import get_scrub_targets
+from .utils import get_scrub_targets, scrub_image
 from ..errors import ImplementationNotFoundError
 
 # TODO: Set these values up as hierarchical, maybe with enums
@@ -1031,14 +1032,20 @@ def build_trim_timepoints_workflow(
     return workflow
 
 
-def build_scrubbing_workflow(
+def build_get_scrub_targets_workflow(
     in_file: os.PathLike = None,
-    scrub_targets: list = None,
+    counfounds_file: os.PathLike = None,
+    target_variable: str = None,
+    threshold: float = None,
+    scrub_ahead: int = None,
+    scrub_behind: int = None,
+    scrub_contiguous: int = None,
     out_file: os.PathLike = None,
     base_dir: os.PathLike = None,
     crashdump_dir: os.PathLike = None,
 ):
     workflow = pe.Workflow(name=STEP_SCRUB_TIMEPOINTS, base_dir=base_dir)
+    """ Workflow returning a list of scrub targets."""
     if crashdump_dir is not None:
         workflow.config["execution"]["crashdump_dir"] = crashdump_dir
 
@@ -1046,6 +1053,12 @@ def build_scrubbing_workflow(
     input_node = build_input_node()
     output_node = build_output_node()
 
+    # Convert image to timeseries (not necessary to convert back)
+    # Pull target var out of confound timeseries
+
+    # Change behavior of this function (new) to return index list instead of 1s and 0s vector
+    # Eventually create function that translates index list to 1s and 0s vector
+    #   This leads into better outliers reporting
     scrub_target_node = pe.Node(
         Function(
             input_names=["timeseries"],
@@ -1053,6 +1066,59 @@ def build_scrubbing_workflow(
             function=get_scrub_targets,
         ),
         name="get_scrub_targets_node",
+    )
+
+    # Set WF inputs and outputs
+    if in_file:
+        input_node.inputs.in_file = in_file
+    if out_file:
+        input_node.inputs.out_file = out_file
+
+    # workflow.connect(input_node, "in_file", scrubbing_node, "in_file")
+    # workflow.connect(input_node, "out_file", scrubbing_node, "out_file")
+    # workflow.connect(scrubbing_node, "out_file", output_node, "out_file")
+
+    return workflow
+
+
+def build_scrub_workflow(
+    in_file: os.PathLike = None,
+    scrub_targets=None,
+    out_file: os.PathLike = None,
+    base_dir: os.PathLike = None,
+    crashdump_dir: os.PathLike = None,
+):
+    workflow = pe.Workflow(name=STEP_SCRUB_TIMEPOINTS, base_dir=base_dir)
+    """ Workflow for scrubbing a target file based on given scrub targets."""
+
+    if crashdump_dir is not None:
+        workflow.config["execution"]["crashdump_dir"] = crashdump_dir
+
+    # Setup identity (pass through) input/output nodes
+    input_node = build_input_node()
+    output_node = build_output_node()
+
+    # Determine if in_file is a .nii file or .tsv/.csv
+    in_file = Path(in_file)
+    suffix = in_file.suffix
+    if suffix == ".gz" or suffix == ".nii":
+        # Convert .nii to dataframe and back to .nii after
+        pass
+    elif suffix == ".tsv" or suffix == ".csv":
+        # Simply load in dataframe
+        pass
+    else:
+        raise ValueError(
+            f"Expected one of filetype: .gz, .nii, .tsv, or .csv but got: {suffix}"
+        )
+
+    scrub_node = pe.Node(
+        Function(
+            input_names=["data", "fdts"],
+            output_names=["scrubbed_image"],
+            function=scrub_image,
+        ),
+        name="scrub_node",
     )
 
     # Set WF inputs and outputs
