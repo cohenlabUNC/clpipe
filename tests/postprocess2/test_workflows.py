@@ -309,10 +309,12 @@ def test_scrubbing_wf(
         base_dir=test_path,
         crashdump_dir=test_path,
     )
+
+    wf.write_graph(dotfilename=test_path / "scrubbed_flow", graph2use="colored")
+
     wf.run()
 
-    if write_graph:
-        wf.write_graph(dotfilename=test_path / "scrubbed_flow", graph2use=write_graph)
+    helpers.plot_timeseries(scrubbed_path, sample_raw_image)
 
     if plot_img:
         helpers.plot_4D_img_slice(scrubbed_path, "scrubbed.png")

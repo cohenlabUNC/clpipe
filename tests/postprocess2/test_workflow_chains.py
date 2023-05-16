@@ -161,12 +161,11 @@ def test_postprocess2_wf_confound_regression_last(
         crashdump_dir=test_path,
     )
 
-    wf.run()
+    wf.write_graph(
+        dotfilename=test_path / "postProcessSubjectFlow", graph2use="colored"
+    )
 
-    if write_graph:
-        wf.write_graph(
-            dotfilename=test_path / "postProcessSubjectFlow", graph2use=write_graph
-        )
+    wf.run()
 
     if plot_img:
         helpers.plot_4D_img_slice(out_path, "postProcessed.png")
@@ -204,12 +203,11 @@ def test_postprocess2_wf_confound_regression_first(
         crashdump_dir=test_path,
     )
 
-    wf.run()
+    wf.write_graph(
+        dotfilename=test_path / "postProcessSubjectFlow", graph2use="colored"
+    )
 
-    if write_graph:
-        wf.write_graph(
-            dotfilename=test_path / "postProcessSubjectFlow", graph2use=write_graph
-        )
+    wf.run()
 
     if plot_img:
         helpers.plot_4D_img_slice(out_path, "postProcessed.png")
