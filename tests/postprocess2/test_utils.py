@@ -1,4 +1,4 @@
-from clpipe.postprocutils.utils import nii_to_matrix, matrix_to_nii
+from clpipe.postprocutils.utils import nii_to_matrix, matrix_to_nii, scrub_image
 import nibabel as nib
 import numpy as np
 
@@ -25,3 +25,21 @@ def test_matrix_to_nii(sample_raw_image):
 
     assert nii.shape == orig_shape
     assert np.array_equal(nii.affine, orig_affine)
+
+
+def test_scrub_image_no_insert_na(
+    artifact_dir, sample_raw_image, plot_img, request, helpers
+):
+    test_path = helpers.create_test_dir(artifact_dir, request.node.name)
+    scrubbed_path = test_path / "scrubbed.nii.gz"
+
+    scrub_vector = [0, 1, 0, 0, 0, 0, 1, 0, 0, 0]
+
+    scrub_image(
+        sample_raw_image, scrub_vector, insert_na=False, export_path=scrubbed_path
+    )
+
+    helpers.plot_timeseries(scrubbed_path, sample_raw_image)
+
+    if plot_img:
+        helpers.plot_4D_img_slice(scrubbed_path, "scrubbed.png")

@@ -106,13 +106,20 @@ def scrub_image(nii_file, scrub_vector, insert_na=True, export_path=None):
     if insert_na:
         # Replace scrub targets with NA
         data[scrub_targets, :] = np.nan
+        new_shape = orig_shape
     else:
         # Remove the scrub targets
         data = np.delete(data, scrub_targets, axis=0)
+        new_shape = (
+            orig_shape[0],
+            orig_shape[1],
+            orig_shape[2],
+            orig_shape[3] - len(scrub_targets),
+        )
 
     # Swap the data back to original format
     data = np.transpose(data)
-    data = data.reshape(orig_shape)
+    data = data.reshape(new_shape)
 
     if export_path is None:
         # Crude way to figure out .nii vs .nii.gz

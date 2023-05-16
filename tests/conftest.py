@@ -80,11 +80,13 @@ class Helpers:
         n_timepoints, n_voxels = data.shape[-1], np.prod(data.shape[:-1])
 
         base_data = base_image.get_fdata()
-        n_timepoints, n_voxels = base_data.shape[-1], np.prod(base_data.shape[:-1])
+        base_n_timepoints, base_n_voxels = base_data.shape[-1], np.prod(
+            base_data.shape[:-1]
+        )
 
         # Place all voxels on one axis
         data_2d = np.reshape(data, (n_voxels, n_timepoints))
-        base_data_2d = np.reshape(base_data, (n_voxels, n_timepoints))
+        base_data_2d = np.reshape(base_data, (base_n_voxels, base_n_timepoints))
 
         fig, axs = plt.subplots(nrows=2, ncols=2, figsize=(8, 8))
         axes_to_show = [95806, 84147, 77717, 86717]

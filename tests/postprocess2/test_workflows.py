@@ -318,6 +318,35 @@ def test_scrubbing_wf(artifact_dir, sample_raw_image, plot_img, request, helpers
         helpers.plot_4D_img_slice(scrubbed_path, "scrubbed.png")
 
 
+def test_scrubbing_wf_no_insert_na(
+    artifact_dir, sample_raw_image, plot_img, request, helpers
+):
+    """Test that a list of arbitrary timepoints can be scrubbed from an image."""
+
+    test_path = helpers.create_test_dir(artifact_dir, request.node.name)
+    scrubbed_path = test_path / "scrubbed.nii.gz"
+
+    scrub_vector = [0, 1, 0, 0, 0, 0, 1, 0, 0, 0]
+
+    wf = build_scrubbing_workflow(
+        scrub_vector,
+        import_path=sample_raw_image,
+        insert_na=False,
+        export_path=scrubbed_path,
+        base_dir=test_path,
+        crashdump_dir=test_path,
+    )
+
+    wf.write_graph(dotfilename=test_path / "scrubbed_flow", graph2use="colored")
+
+    wf.run()
+
+    helpers.plot_timeseries(scrubbed_path, sample_raw_image)
+
+    if plot_img:
+        helpers.plot_4D_img_slice(scrubbed_path, "scrubbed.png")
+
+
 def test_scrubbing_wf_confounds(
     artifact_dir, sample_confounds_timeseries, request, helpers
 ):
