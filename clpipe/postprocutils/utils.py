@@ -183,6 +183,42 @@ def plot_image_sample(
     # # Create a save path in the same directory as the image_path
     # output_path = Path(image_path).parent / title
 
-    # plotting.plot_epi(
-    #   image_slice, title=title, output_file=output_path,
-    #   display_mode=display_mode)
+    plotting.plot_epi(
+        image_slice, title=title, output_file=output_path, display_mode=display_mode
+    )
+
+
+def nii_to_df(nii_file, save_df=False):
+    """Transform a .nii file to a 2D, time by (x, y, z) dataframe."""
+    import numpy as np
+    import nibabel as nib
+    from pathlib import Path
+    import pandas as pd
+
+    nii_img = nib.load(nii_file)
+    img_data = nii_img.get_fdata()
+    affine = nii_img.affine
+
+    # data = data.astype(np.float32)
+
+    # Transform the data to time by (x, y z), a 2d array
+    img_2d_array = img_data.reshape(
+        (np.prod(np.shape(img_data)[:-1]), img_data.shape[-1])
+    )
+    img_2d_array_transposed = np.transpose(img_2d_array)
+
+    img_df = pd.DataFrame(img_2d_array_transposed)
+
+    if save_df:
+        # Build the output path
+        nii_file = Path(nii_file)
+        path_stem = nii_file.stem
+        tsv_file = Path(path_stem + ".tsv")
+        tsv_file = str(tsv_file.absolute())
+        img_df.to_csv(tsv_file, sep="\t", header=None, index=False)
+
+    return img_df, affine
+
+
+def df_to_nii(df, tsv_file=None, headers=None):
+    pass
