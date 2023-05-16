@@ -134,7 +134,7 @@
 				"Implementation": "fsl_regfilt"
 			},
 			"ScrubTimepoints":{
-				"TargetVariables": "framewise_displacement",
+				"TargetVariable": "framewise_displacement",
 				"Threshold": 0.9,
 				"ScrubAhead": 0,
 				"ScrubBehind": 0,

@@ -63,10 +63,27 @@ def build_confounds_processing_workflow(
             "Implementation"
         ] = "fsl_regfilt_R"
 
+    # Gather motion outlier details if present
     motion_outliers = False
     try:
         motion_outliers = postprocessing_config["ConfoundOptions"]["MotionOutliers"][
             "Include"
+        ]
+
+        threshold = postprocessing_config["ConfoundOptions"]["MotionOutliers"][
+            "Threshold"
+        ]
+        scrub_var = postprocessing_config["ConfoundOptions"]["MotionOutliers"][
+            "ScrubVar"
+        ]
+        scrub_ahead = postprocessing_config["ConfoundOptions"]["MotionOutliers"][
+            "ScrubAhead"
+        ]
+        scrub_behind = postprocessing_config["ConfoundOptions"]["MotionOutliers"][
+            "ScrubBehind"
+        ]
+        scrub_contiguous = postprocessing_config["ConfoundOptions"]["MotionOutliers"][
+            "ScrubContiguous"
         ]
     except KeyError:
         motion_outliers = False
@@ -108,7 +125,14 @@ def build_confounds_processing_workflow(
 
     # Setup the confounds file prep workflow
     current_wf = build_confounds_prep_workflow(
-        column_names, base_dir=base_dir, crashdump_dir=crashdump_dir
+        column_names,
+        threshold=threshold,
+        scrub_var=scrub_var,
+        scrub_ahead=scrub_ahead,
+        scrub_behind=scrub_behind,
+        scrub_contiguous=scrub_contiguous,
+        base_dir=base_dir,
+        crashdump_dir=crashdump_dir,
     )
     confounds_wf.connect(input_node, "in_file", current_wf, "inputnode.in_file")
 
