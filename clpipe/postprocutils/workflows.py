@@ -191,6 +191,14 @@ def build_image_postprocessing_workflow(
     if tr:
         input_node.inputs.tr = tr
 
+    """
+    threshold = postprocessing_config["ProcessingStepOptions"][step]["TargetVariable"]
+    scrub_var = postprocessing_config["ProcessingStepOptions"][step]["Threshold"]
+    scrub_ahead = postprocessing_config["ProcessingStepOptions"][step]["ScrubAhead"]
+    scrub_behind = postprocessing_config["ProcessingStepOptions"][step]["ScrubBehind"]
+    scrub_contiguous = postprocessing_config["ProcessingStepOptions"][step]["ScrubContiguous"]
+    """
+
     current_wf = None
     prev_wf = None
 
@@ -333,6 +341,16 @@ def build_image_postprocessing_workflow(
                 base_dir=postproc_wf.base_dir,
                 crashdump_dir=crashdump_dir,
             )
+
+        elif step == STEP_SCRUB_TIMEPOINTS:
+            insert_na = postprocessing_config["ProcessingStepOptions"][step]["InsertNA"]
+
+            current_wf = build_scrubbing_workflow(
+                insert_na=insert_na,
+                base_dir=postproc_wf.base_dir,
+                crashdump_dir=crashdump_dir,
+            )
+            # postproc_wf.connect(image_prep_wf, "outputnode.out_file", current_wf, "inputnode.scrub_targets")
 
         # Send input of postproc workflow to first workflow
         if index == 0:
@@ -1034,7 +1052,7 @@ def build_trim_timepoints_workflow(
 
 
 def build_scrubbing_workflow(
-    scrub_vector: list,
+    scrub_vector: list = None,
     insert_na=True,
     import_path: os.PathLike = None,
     export_path: os.PathLike = None,
@@ -1051,20 +1069,6 @@ def build_scrubbing_workflow(
     input_node = build_input_node()
     output_node = build_output_node()
 
-    # Determine if in_file is a .nii file or .tsv/.csv
-    # in_file = Path(in_file)
-    # suffix = in_file.suffix
-    # if suffix == ".gz" or suffix == ".nii":
-    #     # Convert .nii to dataframe and back to .nii after
-    #     pass
-    # elif suffix == ".tsv" or suffix == ".csv":
-    #     # Simply load in dataframe
-    #     pass
-    # else:
-    #     raise ValueError(
-    #         f"Expected one of filetype: .gz, .nii, .tsv, or .csv but got: {suffix}"
-    #     )
-
     scrub_node = pe.Node(
         Function(
             input_names=["nii_file", "scrub_vector", "insert_na", "export_path"],
@@ -1079,7 +1083,8 @@ def build_scrubbing_workflow(
         input_node.inputs.in_file = import_path
     if export_path:
         input_node.inputs.out_file = export_path
-    input_node.inputs.scrub_vector = scrub_vector
+    if scrub_vector:
+        input_node.inputs.scrub_vector = scrub_vector
     input_node.inputs.insert_na = insert_na
 
     workflow.connect(input_node, "in_file", scrub_node, "nii_file")
