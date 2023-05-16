@@ -803,9 +803,10 @@ def build_fslmath_temporal_filter(
     return workflow
 
 def build_3dtproject_temporal_filter(bpHigh: float, bpLow: float, tr: float, order: float=None, 
+                                     scrub_targets: bool=False, 
                                      import_file: os.PathLike=None, export_file: os.PathLike=None,
                                       base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None,
-                                      scrub_targets: list=None, mask_file: os.PathLike=None):
+                                       mask_file: os.PathLike=None):
     
     #Reference Command
     # rel "3dTproject -overwrite -input \"$preNRBP\" -mask \"${subjMask}${ext}\" -dt $tr \
@@ -850,7 +851,6 @@ def build_3dtproject_temporal_filter(bpHigh: float, bpLow: float, tr: float, ord
         input_node.inputs.mask_file = mask_file
         workflow.connect(input_node, "mask_file", temporal_filter_node, "mask")
     if scrub_targets:
-        input_node.inputs.scrub_targets = scrub_targets
         vector_to_txt_node = pe.Node(
             Function(
                 input_names=["vector", "out_file"],
