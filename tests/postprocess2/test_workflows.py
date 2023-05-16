@@ -265,6 +265,8 @@ def test_apply_aroma_fsl_regfilt_wf(
     )
     wf.run()
 
+    helpers.plot_timeseries(regressed_path, sample_raw_image)
+
     if write_graph:
         wf.write_graph(dotfilename=test_path / "aromaflow", graph2use=write_graph)
 
