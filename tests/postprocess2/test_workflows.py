@@ -171,8 +171,7 @@ def test_3dtproject_temporal_filter_wf(artifact_dir, sample_raw_image, request, 
     
     wf = build_3dtproject_temporal_filter(bpHigh= .9, bpLow= 0.005, tr=2, 
                                           in_file=sample_raw_image, out_file=filtered_path,
-                                          base_dir=test_path, crashdump_dir=test_path, 
-                                          nuisance_file=sample_nuisance_file,
+                                          base_dir=test_path, crashdump_dir=test_path,
                                           mask_file=sample_raw_image_mask)
     
     wf.write_graph(dotfilename = test_path / "filteredflow", graph2use="colored")

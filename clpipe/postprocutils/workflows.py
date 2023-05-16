@@ -269,15 +269,12 @@ def build_image_postprocessing_workflow(
                 "Implementation"
             ]
 
-            temporal_filter_implementation = _getTemporalFilterImplementation(
-                implementation_name
-            )
-
-            current_wf = temporal_filter_implementation(
+            current_wf = _build_temporal_filter_wf(
                 hp=hp,
                 lp=lp,
                 tr=tr,
                 order=order,
+                scrub_targets=None,
                 base_dir=postproc_wf.base_dir,
                 crashdump_dir=crashdump_dir,
             )
@@ -426,17 +423,16 @@ def build_image_postprocessing_workflow(
 
     return postproc_wf
 
-
-def _getTemporalFilterImplementation(implementationName: str):
+def _build_temporal_filter_wf(implementationName: str, hp: float, lp: float, tr: float, order: float=None, in_file: os.PathLike=None, 
+    out_file: os.PathLike=None, base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None, scrub_targets: os.PathLike=None, mask_file: os.PathLike=None):
     if implementationName == IMPLEMENTATION_BUTTERWORTH:
-        return build_butterworth_filter_workflow
+        return build_butterworth_filter_workflow(hp=hp,lp=lp, tr=tr, order=order, base_dir=base_dir, crashdump_dir=crashdump_dir)
     elif implementationName == IMPLEMENTATION_FSLMATHS:
-        return build_fslmath_temporal_filter
+        return build_fslmath_temporal_filter(hp=hp,lp=lp, tr=tr, order=order, base_dir=base_dir, crashdump_dir=crashdump_dir)
+    elif implementationName == IMPLEMENTATION_AFNI_3DTPROJECT:
+        return build_3dtproject_temporal_filter(bpHigh=lp, bpLow=hp, tr=tr, order=order, base_dir=base_dir, crashdump_dir=crashdump_dir, scrub_targets=scrub_targets, mask_file=mask_file)
     else:
-        raise ImplementationNotFoundError(
-            f"{STEP_TEMPORAL_FILTERING} implementation not found: {implementationName}"
-        )
-
+        raise ImplementationNotFoundError(f"{STEP_TEMPORAL_FILTERING} implementation not found: {implementationName}")
 
 def _getIntensityNormalizationImplementation(implementationName: str):
     if implementationName == IMPLEMENTATION_10000_GLOBAL_MEDIAN:
@@ -809,7 +805,7 @@ def build_fslmath_temporal_filter(
 def build_3dtproject_temporal_filter(bpHigh: float, bpLow: float, tr: float, order: float=None, 
                                      in_file: os.PathLike=None, out_file: os.PathLike=None,
                                       base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None,
-                                      nuisance_file: os.PathLike=None, mask_file: os.PathLike=None):
+                                      scrub_targets: os.PathLike=None, mask_file: os.PathLike=None):
     
     #Reference Command
     # rel "3dTproject -overwrite -input \"$preNRBP\" -mask \"${subjMask}${ext}\" -dt $tr \
@@ -826,12 +822,14 @@ def build_3dtproject_temporal_filter(bpHigh: float, bpLow: float, tr: float, ord
     # Setup the 3DTProject Temporal Filter
     temp_filt = TProject()
     temp_filt.inputs.TR = tr
-    temp_filt.inputs.mask = mask_file
     temp_filt.inputs.polort = 2
-    temp_filt.inputs.ort = nuisance_file
     temp_filt.inputs.bandpass = (bpLow, bpHigh)
     temp_filt.inputs.out_file = out_file
     temp_filt.inputs.args = "-overwrite"
+    if(mask_file):
+        temp_filt.inputs.mask = mask_file
+    if(scrub_targets):
+        temp_filt.inputs.ort = scrub_targets
 
     mean_image_node = pe.Node(MeanImage(), name="mean_image")
     temporal_filter_node = pe.Node(temp_filt, name="3dTproject_temporal_filter")
