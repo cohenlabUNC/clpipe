@@ -50,7 +50,7 @@ def test_build_confounds_processing_workflow_2_steps_no_scrub(
         "TemporalFiltering",
     ]
     postprocessing_config["ConfoundOptions"]["MotionOutliers"]["Include"] = False
-    
+
     test_path = helpers.create_test_dir(artifact_dir, request.node.name)
     out_path = test_path / "postprocessed.tsv"
 

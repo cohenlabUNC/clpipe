@@ -1051,26 +1051,26 @@ def build_scrubbing_workflow(
     output_node = build_output_node()
 
     # Determine if in_file is a .nii file or .tsv/.csv
-    in_file = Path(in_file)
-    suffix = in_file.suffix
-    if suffix == ".gz" or suffix == ".nii":
-        # Convert .nii to dataframe and back to .nii after
-        pass
-    elif suffix == ".tsv" or suffix == ".csv":
-        # Simply load in dataframe
-        pass
-    else:
-        raise ValueError(
-            f"Expected one of filetype: .gz, .nii, .tsv, or .csv but got: {suffix}"
-        )
+    # in_file = Path(in_file)
+    # suffix = in_file.suffix
+    # if suffix == ".gz" or suffix == ".nii":
+    #     # Convert .nii to dataframe and back to .nii after
+    #     pass
+    # elif suffix == ".tsv" or suffix == ".csv":
+    #     # Simply load in dataframe
+    #     pass
+    # else:
+    #     raise ValueError(
+    #         f"Expected one of filetype: .gz, .nii, .tsv, or .csv but got: {suffix}"
+    #     )
 
     scrub_node = pe.Node(
         Function(
-            input_names=["input", "scrub_vector"],
+            input_names=["data", "scrub_vector"],
             output_names=["output"],
             function=scrub_image,
         ),
-        name="scrub_node",
+        name="scrub_timepoints",
     )
 
     # Set WF inputs and outputs
@@ -1078,10 +1078,13 @@ def build_scrubbing_workflow(
         input_node.inputs.in_file = in_file
     if out_file:
         input_node.inputs.out_file = out_file
+    if scrub_vector:
+        input_node.inputs.scrub_vector = scrub_vector
 
-    # workflow.connect(input_node, "in_file", scrubbing_node, "in_file")
-    # workflow.connect(input_node, "out_file", scrubbing_node, "out_file")
-    # workflow.connect(scrubbing_node, "out_file", output_node, "out_file")
+    workflow.connect(input_node, "in_file", scrub_node, "in_file")
+    workflow.connect(input_node, "out_file", scrub_node, "out_file")
+    workflow.connect(scrub_node, "data", output_node, "out_file")
+    workflow.connect(scrub_node, "out_file", output_node, "out_file")
 
     return workflow
 

@@ -300,11 +300,11 @@ def test_scrubbing_wf(
     test_path = helpers.create_test_dir(artifact_dir, request.node.name)
     scrubbed_path = test_path / "scrubbed.nii.gz"
 
-    scrub_targets = []
+    scrub_vector = [0, 1, 0, 0, 0, 0, 1, 0, 0, 0]
 
     wf = build_scrubbing_workflow(
         in_file=sample_raw_image,
-        scrub_targets=scrub_targets,
+        scrub_vector=scrub_vector,
         out_file=scrubbed_path,
         base_dir=test_path,
         crashdump_dir=test_path,
