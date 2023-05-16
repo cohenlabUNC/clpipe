@@ -853,7 +853,7 @@ def build_3dtproject_temporal_filter(bpHigh: float, bpLow: float, tr: float, ord
     if scrub_targets:
         vector_to_txt_node = pe.Node(
             Function(
-                input_names=["vector", "out_file"],
+                input_names=["vector"],
                 output_names=["out_file"],
                 function=vector_to_txt,
             ), 

@@ -192,7 +192,7 @@ class TestWorkflows:
                                                    export_file=self.export_path,
                                                    base_dir=self.test_path, crashdump_dir=self.test_path,
                                                    mask_file=self.sample_raw_image_mask)
-        self.wf.inputs.inputnode.scrub_targets = [3,6]
+        self.wf.inputs.inputnode.scrub_targets = [0, 0, 1, 0, 0, 0, 0, 1, 0, 0]
 
     @pytest.fixture(autouse=True)
     def _test_path(self, request, artifact_dir):

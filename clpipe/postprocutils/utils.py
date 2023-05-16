@@ -317,21 +317,15 @@ def matrix_to_nii(matrix, orig_shape, affine):
     return out_image
 
 
-def vector_to_txt(vector, out_file: str):
-
+def vector_to_txt(vector):
     """Convert an input vector to a txt file."""
-    # import pandas as pd
     from pathlib import Path
-    #import pandas as pd
 
-    #np_vector = pd.DataFrame(vector, dtype=pd.Int8Dtype)
-    
-    
-    #out_file = Path(out_file).resolve()
-    #csv_string = np_vector.to_csv(sep="\t", header=None, index=False)
+    fname = Path("vector.txt")
 
-    with open(out_file, 'w') as file:
-        file.write(str(vector))
+    f = open(fname, "w")
+    for x in vector:
+        f.write(f"{x}\n")
+    f.close()
 
-    # out_file = Path(out_file).resolve()
-    return out_file
+    return str(fname.resolve())
