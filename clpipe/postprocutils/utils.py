@@ -321,6 +321,9 @@ def matrix_to_nii(matrix, orig_shape, affine):
 
 def expand_columns(timeseries, confound_columns: List[str]) -> List[str]:
     import pandas as pd
+
+    df = pd.read_csv(timeseries, sep="\t")
+    column_list = df.columns
     
     # Change to file handle
     # column_list = timeseries[0]
