@@ -315,3 +315,22 @@ def matrix_to_nii(matrix, orig_shape, affine):
     out_image = nib.Nifti1Image(data, affine)
 
     return out_image
+
+def expand_columns(timeseries, confound_columns: List[str]) -> List[str]:
+    import pandas as pd
+    
+    # Change to file handle
+    # column_list = timeseries[0]
+    expanded_columns = []
+    for pattern in confound_columns:
+        matching_columns = []
+        if "*" in pattern:
+            matching_columns = fnmatch.filter(column_list, pattern)
+        elif pattern in column_list:
+            matching_columns = [pattern]
+        else:
+            # TODO: Raising warning -
+            # Import logger and hook into nypipe logging
+            pass
+        expanded_columns.extend(matching_columns)
+    return [*set(expanded_columns)]     # Removes duplicates from list
