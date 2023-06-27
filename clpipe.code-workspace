@@ -1,0 +1,55 @@
+{
+	"folders": [{
+		"path": "."
+	}],
+	"settings": {
+		"python.linting.flake8Enabled": true,
+		"python.linting.enabled": false,
+		"python.testing.pytestArgs": [
+			"tests",
+			"--basetemp", "tests/temp"
+		],
+		"python.testing.unittestEnabled": false,
+		"python.testing.pytestEnabled": true,
+		"editor.rulers": [
+			88
+		],
+		"restoreTerminals.terminals": [
+			{
+				"splitTerminals": [
+					{
+						"name": "Python Shell", "commands": ["python"]
+					}]
+			},
+			{
+				"splitTerminals": [
+					{
+						"name": "Project Root"
+					}]
+			}
+		],
+		"editor.dropIntoEditor.enabled": false,
+		"githubPullRequests.ignoredPullRequestBranches": [
+			"master"
+		]
+	},
+	"launch": {
+		"version": "0.2.0",
+		"configurations": [
+			{
+				"name": "Python: Current File",
+				"type": "python",
+				"request": "launch",
+				"program": "${file}",
+				"console": "integratedTerminal"
+			},
+			{
+				"name": "Pytest",
+				"type": "python",
+				"request": "launch",
+				"program": "pytest tests",
+				"console": "integratedTerminal"
+			}
+		]
+	}
+}
