@@ -3,6 +3,9 @@ import nipype.pipeline.engine as pe
 from pathlib import Path
 import os
 
+from typing import List
+import fnmatch
+
 DEFAULT_GRAPH_STYLE = "colored"
 
 
