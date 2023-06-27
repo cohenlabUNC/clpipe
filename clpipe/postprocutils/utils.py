@@ -4,7 +4,7 @@ from pathlib import Path
 import os
 
 from typing import List
-import fnmatch
+
 
 DEFAULT_GRAPH_STYLE = "colored"
 
@@ -319,16 +319,18 @@ def matrix_to_nii(matrix, orig_shape, affine):
 
     return out_image
 
-def expand_columns(timeseries, confound_columns: List[str]) -> List[str]:
-    import pandas as pd
 
-    df = pd.read_csv(timeseries, sep="\t")
+def expand_columns(tsv_file, column_names):
+    import pandas as pd
+    import fnmatch
+
+    df = pd.read_csv(tsv_file, sep="\t")
     column_list = df.columns
-    
+
     # Change to file handle
     # column_list = timeseries[0]
     expanded_columns = []
-    for pattern in confound_columns:
+    for pattern in column_names:
         matching_columns = []
         if "*" in pattern:
             matching_columns = fnmatch.filter(column_list, pattern)
@@ -339,4 +341,4 @@ def expand_columns(timeseries, confound_columns: List[str]) -> List[str]:
             # Import logger and hook into nypipe logging
             pass
         expanded_columns.extend(matching_columns)
-    return [*set(expanded_columns)]     # Removes duplicates from list
+    return [*set(expanded_columns)]  # Removes duplicates from list
