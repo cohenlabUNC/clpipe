@@ -2,6 +2,7 @@ import pytest
 import os
 
 from clpipe.postprocutils.utils import *
+from typing import List
 
 @pytest.fixture(scope = "function")
 def sample_confound_columns() -> List[str]:
