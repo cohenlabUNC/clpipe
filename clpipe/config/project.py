@@ -3,13 +3,13 @@ import marshmallow_dataclass
 import json, yaml, os
 from pkg_resources import resource_stream
 from .bids import DICOM_to_BIDS, BIDSValidator
-from .fmri_prep import FMRIPrep
+from .fmriprep import FMRIPrep
 from .beta_series import BetaSeries
-from .post_processing import PostProcessing
+from .postprocessing import PostProcessing
 from .roi import ROIOptions
 from .susan import SusanOptions
 from .source_options import SourceOptions
-from .postprocessing2 import PostProcessing2
+from .postprocessing import PostProcessingConfig
 from .reho import ReHoExtraction
 from .t2star import T2StarExtraction
 
@@ -106,15 +106,6 @@ class ProjectConfig:
         if value is not None:
             self._PostProcessingOptions = value
 
-    PostProcessingOptions2: PostProcessing2
-    @property
-    def PostProcessingOptions2(self):
-        return self._PostProcessingOptions2
-    @PostProcessingOptions2.setter
-    def PostProcessingOptions2(self, value):
-        if value is not None:
-            self._PostProcessingOptions2 = value
-
     BetaSeriesOptions: BetaSeries
     @property
     def BetaSeriesOptions(self):
@@ -123,15 +114,6 @@ class ProjectConfig:
     def BetaSeriesOptions(self, value):
         if value is not None:
             self._BetaSeriesOptions = value
-
-    SUSANOptions: SusanOptions
-    @property
-    def SUSANOptions(self):
-        return self._SUSANOptions
-    @SUSANOptions.setter
-    def SUSANOptions(self, value):
-        if value is not None:
-            self._SUSANOptions = value
 
     ProcessingStreams: list
     @property
