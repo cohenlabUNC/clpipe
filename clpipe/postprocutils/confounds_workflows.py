@@ -13,7 +13,7 @@ import nipype.pipeline.engine as pe
 
 from .workflows import build_image_postprocessing_workflow
 from .utils import get_scrub_vector_node, expand_columns
-from ..config.postprocessing import PostProcessingConfig
+from ..config.postprocessing import PostProcessingOptions
 
 # A list of the temporal-based processing steps applicable to confounds
 CONFOUND_STEPS = {
@@ -25,7 +25,7 @@ CONFOUND_STEPS = {
 
 
 def build_confounds_processing_workflow(
-    postproc_config: PostProcessingConfig,
+    postproc_config: PostProcessingOptions,
     confounds_file: os.PathLike = None,
     scrub_vector: list = None,
     export_file: os.PathLike = None,
@@ -282,7 +282,7 @@ def build_confounds_prep_workflow(
 
 
 def build_confounds_postprocessing_workflow(
-    postproc_config: PostProcessingConfig,
+    postproc_config: PostProcessingOptions,
     confounds_processing_steps: List,
     mixing_file: os.PathLike,
     tr: float,

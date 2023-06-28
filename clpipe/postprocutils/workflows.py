@@ -34,7 +34,7 @@ from .nodes import (
 )
 from .utils import scrub_image, get_scrub_vector_node
 from ..errors import ImplementationNotFoundError
-from ..config.postprocessing import PostProcessingConfig
+from ..config.postprocessing import PostProcessingOptions
 
 # TODO: Set these values up as hierarchical, maybe with enums
 
