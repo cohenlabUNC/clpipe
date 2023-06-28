@@ -68,12 +68,14 @@ def test_wrong_order(config_file, tmp_path):
     with open(config_file, "r") as f:
         newConf = json.load(f)
 
-    convertedConfig = convert_project_config(oldConf, newConf)
-    with open(os.path.join(tmp_path,'convertedConfig.json'), 'w') as f:
+    convertedConfig = convertConfig(oldConf, newConf)
+    with open(os.path.join(tmp_path, "convertedConfig.json"), "w") as f:
         json.dump(convertedConfig, f)
 
-    convertedConfig = load_pipeline_config(json_file=os.path.join(tmp_path,'convertedConfig.json'))
-    correctConfig = load_pipeline_config()
+    convertedConfig = getProjectConfig(
+        json_file=os.path.join(tmp_path, "convertedConfig.json")
+    )
+    correctConfig = getProjectConfig()
     assert correctConfig == convertedConfig
 
 
