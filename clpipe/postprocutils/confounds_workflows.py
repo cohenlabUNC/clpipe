@@ -13,7 +13,7 @@ from nipype.interfaces.io import ExportFile
 import nipype.pipeline.engine as pe
 
 from .workflows import build_image_postprocessing_workflow
-from .utils import get_scrub_vector_node
+from .utils import get_scrub_vector_node, expand_columns
 
 # A list of the temporal-based processing steps applicable to confounds
 CONFOUND_STEPS = {
@@ -234,6 +234,14 @@ def build_confounds_prep_workflow(
         name="outputnode",
     )
 
+    tsv_expand_columns_node = pe.Node(
+        Function(
+            input_names=["tsv_file", "column_names"],
+            output_names=["expanded_column_names"],
+            function=expand_columns,
+        ),
+        name="tsv_expand_columns",
+    )
     tsv_select_node = pe.Node(
         Function(
             input_names=["tsv_file", "column_names"],
@@ -285,8 +293,14 @@ def build_confounds_prep_workflow(
         workflow.connect(scrub_target_node, "scrub_vector", output_node, "scrub_vector")
 
     # Setup input connections
+    workflow.connect(input_node, "in_file", tsv_expand_columns_node, "tsv_file")
+    workflow.connect(input_node, "column_names", tsv_expand_columns_node, "column_names")
+
+    # Expand columns and select desired columns from input TSV
+    workflow.connect(
+        tsv_expand_columns_node, "expanded_column_names", tsv_select_node, "column_names"
+    )
     workflow.connect(input_node, "in_file", tsv_select_node, "tsv_file")
-    workflow.connect(input_node, "column_names", tsv_select_node, "column_names")
 
     # Select desired columns from input tsv, replace n/a values with column mean,
     #   and convert it to a .nii file

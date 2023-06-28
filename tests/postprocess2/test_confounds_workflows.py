@@ -47,9 +47,7 @@ def test_build_confounds_processing_workflow_aroma_regression(
 ):
     """Check that confounds processing works with IN and TF."""
 
-    postprocessing_config["ProcessingSteps"] = [
-        "AROMARegression"
-    ]
+    postprocessing_config["ProcessingSteps"] = ["AROMARegression"]
 
     test_path = helpers.create_test_dir(artifact_dir, request.node.name)
     out_path = test_path / "postprocessed.tsv"
@@ -102,6 +100,7 @@ def test_build_confounds_processing_workflow_2_steps_no_scrub(
     wf.run()
 
 
+## THIS IS IMPORTATN COPY THIS AND ADD SPLAT
 def test_build_confounds_prep_workflow(
     artifact_dir,
     sample_confounds_timeseries,
@@ -114,8 +113,7 @@ def test_build_confounds_prep_workflow(
     wf = build_confounds_prep_workflow(
         [
             "framewise_displacement",
-            "csf",
-            "csf_derivative1",
+            "csf*",
             "white_matter",
             "white_matter_derivative1",
         ],
