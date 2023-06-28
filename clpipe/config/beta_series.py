@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 @dataclass
-class BetaSeries:
+class BetaSeriesOptions:
     TargetDirectory: str
     @property
     def TargetDirectory(self):
