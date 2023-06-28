@@ -1,5 +1,17 @@
 # Change Log
 
+## 1.8.1 (Jun 28, 2023)
+
+## Enhancements
+- `postproc2` - Added new step ScrubTimepoints
+
+## Bug Fixes
+-
+
+## Development
+
+
+
 ## 1.8.0 (Apr 05, 2023)
 
 ### GLM Setup Command Deprecation
