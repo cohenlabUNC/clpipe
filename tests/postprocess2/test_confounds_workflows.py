@@ -6,24 +6,24 @@ from clpipe.postprocutils.confounds_workflows import *
 
 def test_build_confounds_processing_workflow_2_steps(
     artifact_dir,
-    postprocessing_config,
+    postproc_config,
     sample_confounds_timeseries,
     helpers,
     request,
 ):
     """Check that confounds processing works with IN and TF."""
 
-    postprocessing_config["ProcessingSteps"] = [
-        "IntensityNormalization",
-        "TemporalFiltering",
+    postproc_config.processing_steps = [
+        STEP_INTENSITY_NORMALIZATION,
+        STEP_TEMPORAL_FILTERING,
     ]
-    postprocessing_config["ConfoundOptions"]["MotionOutliers"]["Threshold"] = 0.13
+    postproc_config.confound_options.motion_outliers.threshold = 0.13
 
     test_path = helpers.create_test_dir(artifact_dir, request.node.name)
     out_path = test_path / "postprocessed.tsv"
 
     wf = build_confounds_processing_workflow(
-        postprocessing_config,
+        postproc_config,
         confounds_file=sample_confounds_timeseries,
         export_file=out_path,
         tr=2,

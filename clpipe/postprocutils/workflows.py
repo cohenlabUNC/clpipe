@@ -7,9 +7,7 @@ postprocessing pipeline.
 import os
 
 from math import sqrt, log
-from pathlib import Path
 import pkg_resources
-import pandas as pd
 
 # TODO: import these without specifying, to help with code readability
 from nipype.interfaces.fsl.maths import (
@@ -36,6 +34,7 @@ from .nodes import (
 )
 from .utils import scrub_image, get_scrub_vector_node
 from ..errors import ImplementationNotFoundError
+from ..config.postprocessing import PostProcessingConfig
 
 # TODO: Set these values up as hierarchical, maybe with enums
 
@@ -181,7 +180,7 @@ def build_postprocessing_workflow(
 
 
 def build_image_postprocessing_workflow(
-    postprocessing_config: dict,
+    postproc_config: PostProcessingConfig,
     in_file: os.PathLike = None,
     export_path: os.PathLike = None,
     name: str = "Postprocessing_Pipeline",
@@ -198,11 +197,9 @@ def build_image_postprocessing_workflow(
     postproc_wf = pe.Workflow(name=name, base_dir=base_dir)
 
     if crashdump_dir is not None:
-        postproc_wf.config["execution"]["crashdump_dir"] = crashdump_dir
-
-    if processing_steps is None:
-        processing_steps = postprocessing_config["ProcessingSteps"]
-    step_count = len(processing_steps)
+        postproc_wf.config['execution']['crashdump_dir'] = crashdump_dir
+    
+    step_count = len(postproc_config.processing_steps)
 
     if step_count < 1:
         raise ValueError(
@@ -256,18 +253,10 @@ def build_image_postprocessing_workflow(
         if step == STEP_TEMPORAL_FILTERING:
             if not tr:
                 raise ValueError(f"Missing TR corresponding to image: {in_file}")
-            hp = postprocessing_config["ProcessingStepOptions"][step][
-                "FilteringHighPass"
-            ]
-            lp = postprocessing_config["ProcessingStepOptions"][step][
-                "FilteringLowPass"
-            ]
-            order = postprocessing_config["ProcessingStepOptions"][step][
-                "FilteringOrder"
-            ]
-            implementation_name = postprocessing_config["ProcessingStepOptions"][step][
-                "Implementation"
-            ]
+            hp = postproc_config.processing_step_options.temporal_filtering.filtering_high_pass
+            lp = postproc_config.processing_step_options.temporal_filtering.filtering_low_pass
+            order = postproc_config.processing_step_options.temporal_filtering.filtering_order
+            implementation_name = postproc_config.processing_step_options.temporal_filtering.implementation
 
             temporal_filter_implementation = _getTemporalFilterImplementation(
                 implementation_name
@@ -283,9 +272,7 @@ def build_image_postprocessing_workflow(
             )
 
         elif step == STEP_INTENSITY_NORMALIZATION:
-            implementation_name = postprocessing_config["ProcessingStepOptions"][step][
-                "Implementation"
-            ]
+            implementation_name = postproc_config.processing_step_options.intensity_normalization.implementation
 
             intensity_normalization_implementation = (
                 _getIntensityNormalizationImplementation(implementation_name)
@@ -298,15 +285,11 @@ def build_image_postprocessing_workflow(
             )
 
         elif step == STEP_SPATIAL_SMOOTHING:
-            fwhm_mm = postprocessing_config["ProcessingStepOptions"][step]["FWHM"]
-            # brightness_threshold = postprocessing_config["ProcessingStepOptions"][step]["BrightnessThreshold"]
-            implementation_name = postprocessing_config["ProcessingStepOptions"][step][
-                "Implementation"
-            ]
+            fwhm_mm= postproc_config.processing_step_options.spatial_smoothing.fwhm
+            #brightness_threshold = postproc_config.processing_step_options.spatial_smoothing.brightness_threshold
+            implementation_name = postproc_config.processing_step_options.spatial_smoothing.implementation
 
-            spatial_smoothing_implementation = _getSpatialSmoothingImplementation(
-                implementation_name
-            )
+            spatial_smoothing_implementation = _getSpatialSmoothingImplementation(implementation_name)
 
             current_wf = spatial_smoothing_implementation(
                 base_dir=postproc_wf.base_dir,
@@ -316,9 +299,7 @@ def build_image_postprocessing_workflow(
             )
 
         elif step == STEP_AROMA_REGRESSION:
-            implementation_name = postprocessing_config["ProcessingStepOptions"][step][
-                "Implementation"
-            ]
+            implementation_name = postproc_config.processing_step_options.aroma_regression.implementation
 
             apply_aroma_implementation = _getAROMARegressionImplementation(
                 implementation_name
@@ -333,9 +314,7 @@ def build_image_postprocessing_workflow(
             )
 
         elif step == STEP_CONFOUND_REGRESSION:
-            implementation_name = postprocessing_config["ProcessingStepOptions"][step][
-                "Implementation"
-            ]
+            implementation_name = postproc_config.processing_step_options.confoundRegression.implementation
 
             confound_regression_implementation = _getConfoundRegressionImplementation(
                 implementation_name
@@ -361,12 +340,8 @@ def build_image_postprocessing_workflow(
             )
 
         elif step == STEP_TRIM_TIMEPOINTS:
-            trim_from_beginning = postprocessing_config["ProcessingStepOptions"][step][
-                "FromEnd"
-            ]
-            trim_from_end = postprocessing_config["ProcessingStepOptions"][step][
-                "FromBeginning"
-            ]
+            trim_from_beginning = postproc_config.processing_step_options.trim_timepoints.from_beginning
+            trim_from_end = postproc_config.processing_step_options.trim_timepoints.from_end
 
             current_wf = build_trim_timepoints_workflow(
                 trim_from_beginning=trim_from_beginning,
@@ -376,9 +351,7 @@ def build_image_postprocessing_workflow(
             )
 
         elif step == STEP_RESAMPLE:
-            reference_image = postprocessing_config["ProcessingStepOptions"][step][
-                "ReferenceImage"
-            ]
+            reference_image = postproc_config.processing_step_options.resample.reference_image
             if reference_image == "SET REFERENCE IMAGE":
                 raise ValueError(
                     "No reference image provided. Please set a path to reference in clpipe_config.json"
@@ -391,7 +364,7 @@ def build_image_postprocessing_workflow(
             )
 
         elif step == STEP_SCRUB_TIMEPOINTS:
-            insert_na = postprocessing_config["ProcessingStepOptions"][step]["InsertNA"]
+            insert_na = postproc_config.processing_step_options.scrub_timepoints.insert_na
 
             current_wf = build_scrubbing_workflow(
                 insert_na=insert_na,

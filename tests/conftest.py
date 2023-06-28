@@ -1,6 +1,5 @@
 import pytest
 import sys
-import shutil
 import json
 from pathlib import Path
 
@@ -12,6 +11,7 @@ from nilearn.image import load_img, index_img
 sys.path.append("../clpipe")
 from clpipe.project_setup import project_setup
 from clpipe.config_json_parser import ClpipeConfigParser, GLMConfigParser
+from clpipe.config.project import getProjectConfig
 import utils
 
 PROJECT_TITLE = "test_project"
@@ -509,6 +509,19 @@ def glm_config_file(clpipe_fmriprep_dir: Path) -> Path:
 def old_glm_config_file(clpipe_dir_old_glm_config: Path) -> Path:
     """Returns a reference to an old-style glm config populated with project setup."""
     return clpipe_dir_old_glm_config / "glm_config.json"
+
+
+@pytest.fixture(scope="session")
+def project_config(clpipe_dir):
+    """Provide the project config as populated by default config file."""
+    config_source = clpipe_dir / "clpipe_config.json"
+
+    return getProjectConfig(config_source)
+
+@pytest.fixture(scope="session")
+def postproc_config(project_config):
+    """Provide the project config as populated by default config file."""
+    return project_config.postprocess_config
 
 
 #####################

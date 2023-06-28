@@ -5,7 +5,6 @@ confound file processing.
 """
 
 import os
-import copy
 from typing import List
 
 from nipype.interfaces.utility import Function, IdentityInterface
@@ -14,6 +13,7 @@ import nipype.pipeline.engine as pe
 
 from .workflows import build_image_postprocessing_workflow
 from .utils import get_scrub_vector_node, expand_columns
+from ..config.postprocessing import PostProcessingConfig
 
 # A list of the temporal-based processing steps applicable to confounds
 CONFOUND_STEPS = {
@@ -25,7 +25,7 @@ CONFOUND_STEPS = {
 
 
 def build_confounds_processing_workflow(
-    postprocessing_config: dict,
+    postproc_config: PostProcessingConfig,
     confounds_file: os.PathLike = None,
     scrub_vector: list = None,
     export_file: os.PathLike = None,
@@ -33,7 +33,6 @@ def build_confounds_processing_workflow(
     noise_file: os.PathLike = None,
     tr: float = None,
     name: str = "Confounds_Processing_Pipeline",
-    processing_steps: list = None,
     column_names: list = None,
     base_dir: os.PathLike = None,
     crashdump_dir: os.PathLike = None,
@@ -61,42 +60,10 @@ def build_confounds_processing_workflow(
         pe.Workflow: A confound processing workflow.
     """
 
-    if processing_steps is None:
-        processing_steps = postprocessing_config["ProcessingSteps"]
-    if column_names is None:
-        column_names = postprocessing_config["ConfoundOptions"]["Columns"]
-
     # Force use of the R variant of fsl_regfilt for confounds
-    if "AROMARegression" in processing_steps:
-        postprocessing_config = copy.deepcopy(postprocessing_config)
-        postprocessing_config["ProcessingStepOptions"]["AROMARegression"][
-            "Implementation"
-        ] = "fsl_regfilt_R"
-
-    # Gather motion outlier details if present
-    motion_outliers = True
-    try:
-        motion_outliers = postprocessing_config["ConfoundOptions"]["MotionOutliers"][
-            "Include"
-        ]
-
-        threshold = postprocessing_config["ConfoundOptions"]["MotionOutliers"][
-            "Threshold"
-        ]
-        scrub_var = postprocessing_config["ConfoundOptions"]["MotionOutliers"][
-            "ScrubVar"
-        ]
-        scrub_ahead = postprocessing_config["ConfoundOptions"]["MotionOutliers"][
-            "ScrubAhead"
-        ]
-        scrub_behind = postprocessing_config["ConfoundOptions"]["MotionOutliers"][
-            "ScrubBehind"
-        ]
-        scrub_contiguous = postprocessing_config["ConfoundOptions"]["MotionOutliers"][
-            "ScrubContiguous"
-        ]
-    except KeyError:
-        motion_outliers = False
+    if "AROMARegression" in postproc_config.processing_steps:
+        postproc_config.processing_step_options.aroma_regression.implementation = \
+            "fsl_regfilt_R"
 
     confounds_wf = pe.Workflow(name=name, base_dir=base_dir)
     if crashdump_dir is not None:
@@ -130,7 +97,7 @@ def build_confounds_processing_workflow(
 
     # Select any of the postprocessing steps that apply to confounds
     confounds_processing_steps = []
-    for step in processing_steps:
+    for step in postproc_config.processing_steps:
         if step in CONFOUND_STEPS:
             confounds_processing_steps.append(step)
 
@@ -138,11 +105,11 @@ def build_confounds_processing_workflow(
     #   Should always be the first confounds workflow.
     confounds_prep_wf = build_confounds_prep_workflow(
         column_names,
-        scrub_threshold=threshold,
-        scrub_target_variable=scrub_var,
-        scrub_ahead=scrub_ahead,
-        scrub_behind=scrub_behind,
-        scrub_contiguous=scrub_contiguous,
+        scrub_threshold=postproc_config.confound_options.motion_outliers.threshold,
+        scrub_target_variable=postproc_config.confound_options.motion_outliers.scrub_var,
+        scrub_ahead=postproc_config.confound_options.motion_outliers.scrub_ahead,
+        scrub_behind=postproc_config.confound_options.motion_outliers.scrub_behind,
+        scrub_contiguous=postproc_config.confound_options.motion_outliers.scrub_contiguous,
         base_dir=base_dir,
         crashdump_dir=crashdump_dir,
     )
@@ -152,7 +119,7 @@ def build_confounds_processing_workflow(
     if confounds_processing_steps:
         prev_wf = confounds_prep_wf
         current_wf = build_confounds_postprocessing_workflow(
-            postprocessing_config,
+            postproc_config,
             confounds_processing_steps,
             mixing_file,
             tr,
@@ -168,10 +135,10 @@ def build_confounds_processing_workflow(
         )
 
     # Provide motion outlier columns if requested
-    if motion_outliers:
+    if postproc_config.confound_options.motion_outliers.include:
         prev_wf = current_wf
         current_wf = build_confounds_add_motion_outliers_workflow(
-            threshold,
+            postproc_config.confound_options.motion_outliers.threshold,
             base_dir=base_dir,
             crashdump_dir=crashdump_dir,
         )
@@ -315,7 +282,7 @@ def build_confounds_prep_workflow(
 
 
 def build_confounds_postprocessing_workflow(
-    postprocessing_config: dict,
+    postproc_config: PostProcessingConfig,
     confounds_processing_steps: List,
     mixing_file: os.PathLike,
     tr: float,
@@ -389,7 +356,7 @@ def build_confounds_postprocessing_workflow(
 
     # Build the inner postprocessing workflow
     postproc_wf = build_image_postprocessing_workflow(
-        postprocessing_config,
+        postproc_config,
         processing_steps=confounds_processing_steps,
         name="processing_wf",
         mixing_file=mixing_file,
