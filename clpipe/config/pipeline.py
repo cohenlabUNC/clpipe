@@ -13,7 +13,7 @@ from .reho import ReHoExtractionOptions
 from .t2star import T2StarExtractionOptions
 
 @dataclass
-class ProjectOptions:
+class PipelineConfig:
     project_title: str = ""
     contributors: str = ""
     project_directory: str = ""
@@ -36,9 +36,9 @@ class ProjectOptions:
     class Meta:
         ordered = True
     
-def load_project_config(json_file = None, yaml_file = None):
+def load_pipeline_config(json_file = None, yaml_file = None):
     #Generate schema from given dataclasses
-    config_schema = marshmallow_dataclass.class_schema(ProjectOptions)
+    config_schema = marshmallow_dataclass.class_schema(PipelineConfig)
 
     if(json_file == None and yaml_file == None):
         # Load default config
@@ -63,7 +63,7 @@ def dump_project_config(config, outputdir, file_name="project_config", yaml_file
     outpath = Path(outputdir) / file_name
 
     #Generate schema from given dataclasses
-    ConfigSchema = marshmallow_dataclass.class_schema(ProjectOptions)
+    ConfigSchema = marshmallow_dataclass.class_schema(PipelineConfig)
     config_dict = ConfigSchema().dump(config)
 
     outpath_json = outpath.parent / (outpath.name + '.json')
@@ -95,7 +95,7 @@ def convert_project_config(old_config, new_config=None):
             This wont get sorted. Can maybe try coding it
     """
     if not new_config:
-        new_config = ProjectOptions().to_dict()
+        new_config = PipelineConfig().to_dict()
     schema_keys = list(new_config.keys())
 
     for key in schema_keys:

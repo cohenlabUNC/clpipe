@@ -4,7 +4,7 @@ import yaml
 import os
 from pkg_resources import resource_stream
 
-from clpipe.config.project import *
+from clpipe.config.pipeline import *
 
 """
 Removed tests for lack of fields and extra fields as this test will always pass
@@ -14,7 +14,7 @@ because we will always load the config object from the new config file only
 
 def test_json_load(config_file):
     """ Ensure that the config class loads in .json data as expected. """
-    config = load_project_config(json_file=config_file)
+    config = load_pipeline_config(json_file=config_file)
     assert config is not None
     assert config.ProjectTitle == "test_project"
     assert (
@@ -30,7 +30,7 @@ def test_yaml_load(config_file, tmp_path):
 
     with open(os.path.join(tmp_path, "config.yaml"), "w") as yaml_file:
         yaml.dump(conf_json, yaml_file, sort_keys=False)
-    config = load_project_config(yaml_file=os.path.join(tmp_path,'config.yaml'))
+    config = load_pipeline_config(yaml_file=os.path.join(tmp_path,'config.yaml'))
     assert config is not None
     assert config.ProjectTitle == "test_project"
     assert (
@@ -47,7 +47,7 @@ def test_default(clpipe_config_default):
     """Ensure that data from the default config file (data/defaltConfig.json)
     is successfully loaded into the configuration object.
     """
-    config = load_project_config()
+    config = load_pipeline_config()
     assert config.ProjectTitle == clpipe_config_default["ProjectTitle"]
     assert config.Authors == clpipe_config_default["Authors/Contributors"]
     assert (
@@ -72,8 +72,8 @@ def test_wrong_order(config_file, tmp_path):
     with open(os.path.join(tmp_path,'convertedConfig.json'), 'w') as f:
         json.dump(convertedConfig, f)
 
-    convertedConfig = load_project_config(json_file=os.path.join(tmp_path,'convertedConfig.json'))
-    correctConfig = load_project_config()
+    convertedConfig = load_pipeline_config(json_file=os.path.join(tmp_path,'convertedConfig.json'))
+    correctConfig = load_pipeline_config()
     assert correctConfig == convertedConfig
 
 
@@ -81,7 +81,7 @@ def test_author_contributor(config_file):
     """Check that the conversion of the Authors/Contributors to just 'Contributors'
     works successfully.
     """
-    config = load_project_config(json_file=config_file)
+    config = load_pipeline_config(json_file=config_file)
     assert config is not None
     assert config.Authors == "SET AUTHOR"
 
