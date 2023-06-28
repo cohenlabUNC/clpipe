@@ -3,14 +3,15 @@
 ## 1.8.1 (Jun 28, 2023)
 
 ## Enhancements
-- `postproc2` - Added new step ScrubTimepoints
+- `postproc2` - Added new step ScrubTimepoints, allowing timepoints to be removed from the image and confounds where a set threshold is exceeded for a chosen confound variable.
 
 ## Bug Fixes
 -
 
 ## Development
-
-
+- `clpipe` - Contribution guide is now in its own markdown file separate from the setup guide. More details added to guide
+- `tests` - New helper added for plotting timeseries data
+- `tests` - Longer 100 timepoint sample image added for steps like Temporal Filtering that need more data for effective testing
 
 ## 1.8.0 (Apr 05, 2023)
 
