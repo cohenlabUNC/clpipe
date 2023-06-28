@@ -2,12 +2,11 @@ from dataclasses import dataclass
 import marshmallow_dataclass
 import json, yaml, os
 from pkg_resources import resource_stream
-from .bids import DICOM_to_BIDS, BIDSValidator
+from .bids import Convert2BIDS, BIDSValidator
 from .fmriprep import FMRIPrep
 from .beta_series import BetaSeries
 from .postprocessing import PostProcessing
 from .roi import ROIOptions
-from .susan import SusanOptions
 from .source_options import SourceOptions
 from .postprocessing import PostProcessingConfig
 from .reho import ReHoExtraction
@@ -15,168 +14,21 @@ from .t2star import T2StarExtraction
 
 @dataclass
 class ProjectConfig:
-    #Add variable names exactly same as json file
-    ProjectTitle: str
-    @property
-    def ProjectTitle(self):
-        return self._ProjectTitle
-    @ProjectTitle.setter
-    def ProjectTitle(self, value):
-        if value is not None:
-            self._ProjectTitle = value
-
-    Authors: str
-    @property
-    def Authors(self):
-        return self._Authors
-    @Authors.setter
-    def Authors(self, value):
-        if value is not None:
-            self._Authors = value
-
-    ProjectDirectory: str
-    @property
-    def ProjectDirectory(self):
-        return self._ProjectDirectory
-    @ProjectDirectory.setter
-    def ProjectDirectory(self, value):
-        if value is not None:
-            self._ProjectDirectory = value
-
-    EmailAddress: str
-    @property
-    def EmailAddress(self):
-        return self._EmailAddress
-    @EmailAddress.setter
-    def EmailAddress(self, value):
-        if value is not None:
-            self._EmailAddress = value
-
-    TempDirectory: str
-    @property
-    def TempDirectory(self):
-        return self._TempDirectory
-    @TempDirectory.setter
-    def TempDirectory(self, value):
-        if value is not None:
-            self._TempDirectory = value
-
-    SourceOptions: SourceOptions
-    @property
-    def SourceOptions(self):
-        return self._SourceOptions
-    @SourceOptions.setter
-    def SourceOptions(self, value):
-        if value is not None:
-            self._SourceOptions = value
-
-    DICOMToBIDSOptions: DICOM_to_BIDS
-    @property
-    def DICOMToBIDSOptions(self):
-        return self._DICOMToBIDSOptions
-    @DICOMToBIDSOptions.setter
-    def DICOMToBIDSOptions(self, value):
-        if value is not None:
-            self._DICOMToBIDSOptions = value
-
-    BIDSValidationOptions: BIDSValidator
-    @property
-    def BIDSValidationOptions(self):
-        return self._BIDSValidationOptions
-    @BIDSValidationOptions.setter
-    def BIDSValidationOptions(self, value):
-        if value is not None:
-            self._BIDSValidationOptions = value
-
-    FMRIPrepOptions: FMRIPrep
-    @property
-    def FMRIPrepOptions(self):
-        return self._FMRIPrepOptions
-    @FMRIPrepOptions.setter
-    def FMRIPrepOptions(self, value):
-        if value is not None:
-            self._FMRIPrepOptions = value
-
-    PostProcessingOptions: PostProcessing
-    @property
-    def PostProcessingOptions(self):
-        return self._PostProcessingOptions
-    @PostProcessingOptions.setter
-    def PostProcessingOptions(self, value):
-        if value is not None:
-            self._PostProcessingOptions = value
-
-    BetaSeriesOptions: BetaSeries
-    @property
-    def BetaSeriesOptions(self):
-        return self._BetaSeriesOptions
-    @BetaSeriesOptions.setter
-    def BetaSeriesOptions(self, value):
-        if value is not None:
-            self._BetaSeriesOptions = value
-
-    ProcessingStreams: list
-    @property
-    def ProcessingStreams(self):
-        return self._ProcessingStreams
-    @ProcessingStreams.setter
-    def ProcessingStreams(self, value):
-        if value is not None:
-            self._ProcessingStreams = value
-
-    ROIExtractionOptions: ROIOptions
-    @property
-    def ROIExtractionOptions(self):
-        return self._ROIExtractionOptions
-    @ROIExtractionOptions.setter
-    def ROIExtractionOptions(self, value):
-        if value is not None:
-            self._ROIExtractionOptions = value
-
-    ReHoExtraction: ReHoExtraction
-    @property
-    def ReHoExtraction(self):
-        return self._ReHoExtraction
-    @ReHoExtraction.setter
-    def ReHoExtraction(self, value):
-        if value is not None:
-            self._ReHoExtraction = value
-
-    T2StarExtraction: T2StarExtraction
-    @property
-    def T2StarExtraction(self):
-        return self._T2StarExtraction
-    @T2StarExtraction.setter
-    def T2StarExtraction(self, value):
-        if value is not None:
-            self._T2StarExtraction = value
-
-    RunLog: list
-    @property
-    def RunLog(self):
-        return self._RunLog
-    @RunLog.setter
-    def RunLog(self, value):
-        if value is not None:
-            self._RunLog = value
-
-    StatusCache: str
-    @property
-    def StatusCache(self):
-        return self._StatusCache
-    @StatusCache.setter
-    def StatusCache(self, value):
-        if value is not None:
-            self._StatusCache = value
-
-    BatchConfig: str
-    @property
-    def BatchConfig(self):
-        return self._BatchConfig
-    @BatchConfig.setter
-    def BatchConfig(self, value):
-        if value is not None:
-            self._BatchConfig = value
+    project_title: str
+    authors: str
+    project_directory: str
+    email_address: str
+    source: SourceConfig
+    convert2bids: Convert2BIDSConfig
+    bids_validation: BIDSValidatorConfig
+    fmriprep: FMRIPrepConfig
+    postprocessing: PostProcessingConfig
+    beta_series: BetaSeriesConfig
+    processing_streams: list
+    roi_extraction: ROIExtractionConfig
+    reho_extraction: ReHoExtractionConfig
+    t2_star_extraction: T2StarExtractionConfig
+    batch_config_path: str
 
 #Add this class to get a ordered dictionary in the dump method
 class Meta:

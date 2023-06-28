@@ -32,7 +32,7 @@ with warnings.catch_warnings():
     from bids.layout import BIDSFile
 
 from .config_json_parser import ClpipeConfigParser
-from .config.postprocessing2 import DEFAULT_PROCESSING_STREAM
+from .config.postprocessing import DEFAULT_PROCESSING_STREAM
 from .batch_manager import BatchManager, Job
 from .postprocutils.workflows import (
     build_image_postprocessing_workflow,
