@@ -27,6 +27,7 @@ Available processing steps:
 	- AROMA Regression
 	- Confound Regression
 	- Apply Mask
+	- Scrub Timepoints
 	- Resample
 	- Trim Timepoints
 
@@ -60,26 +61,7 @@ Otherwise, this block will be included when running "project setup."
 				"FilteringLowPass": -1,
 				"FilteringOrder": 2
 			}, 
-			"IntensityNormalization": {
-				"Implementation": "10000_GlobalMedian"
-			}, 
-			"SpatialSmoothing": {
-				"Implementation": "SUSAN",
-				"FWHM": 6
-			},
-			"AROMARegression":{
-				"Implementation": "fsl_regfilt_R"
-			},
-			"Resample":{
-				"ReferenceImage": "SET REFERENCE IMAGE"
-			},
-			"TrimTimepoints": {
-				"FromEnd": 0,
-				"FromBeginning": 0
-			},
-			"ConfoundRegression": {
-				"Implementation": "afni_3dTproject"
-			}
+			...additional processing step options
 		},
 		"ConfoundOptions": {
 			"Columns": [
@@ -100,6 +82,36 @@ Otherwise, this block will be included when running "project setup."
 			"NThreads": "1"
     	}	
 	}
+
+Processing Step Details
+=======================
+
+Scrub Timepoints
+------------------
+
+The ``ScrubTimepoints`` step can be used to remove timepoints from the image timeseries
+based on a target variable from that image's confounds file. Timepoints scrubbed
+from an image's timeseries are also removed its respective confound file.
+
+Processing Step Options:
+.. code-block:: json
+
+	"ScrubTimepoints": {
+		"TargetVariable": "framewise_displacement",
+		"Threshold": 0.9,
+		"ScrubAhead": 0,
+		"ScrubBehind": 0,
+		"ScrubContiguous": 0,
+		"InsertNA": true
+	}
+
+Definitions:
+* ``TargetVariable:`` Which confound variable to use as a reference for scrubbing
+* ``Threshold:`` Any timepoint of the target variable exceeding this value will be scrubbed
+* ``ScrubAhead:`` Set the number of timepoints to scrub ahead of target timepoints
+* ``ScrubBehind:`` Set the number of timepoints to scrub behind target timepoints
+* ``ScrubContiguous:`` Scrub everything between scrub targets up to this far apart
+* ``InsertNA:`` Set true to replace scrubbed timepoints with NA. False removes the timepoints completely.
 
 Configuration Definitions
 ===================
