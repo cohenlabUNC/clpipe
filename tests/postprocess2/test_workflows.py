@@ -163,10 +163,10 @@ def test_fslmath_temporal_filter_wf(
 
     assert True
 
-def test_3dtproject_temporal_filter_wf(artifact_dir, sample_raw_image, request, helpers, plot_img, 
+def test_3dtproject_temporal_filter_wf(test_path, helpers, sample_raw_image, plot_img, 
                                     sample_raw_image_mask):
     
-    test_path = helpers.create_test_dir(artifact_dir, request.node.name)
+    
     filtered_path = test_path / "sample_raw_filtered.nii.gz"
     
     wf = build_3dtproject_temporal_filter(bpHigh= .9, bpLow= 0.005, tr=2,
@@ -185,6 +185,15 @@ def test_3dtproject_temporal_filter_wf(artifact_dir, sample_raw_image, request, 
         helpers.plot_4D_img_slice(filtered_path, "filtered.png")
 
     assert True
+
+
+@pytest.fixture(scope="function")
+def test_path(artifact_dir, request):
+    test_path = artifact_dir / request.module.__name__ / request.node.name
+    test_path.mkdir(parents=True, exist_ok=True)
+
+    return test_path
+
     
 def test_confound_regression_fsl_glm_wf(artifact_dir, sample_raw_image, sample_postprocessed_confounds, sample_raw_image_mask, plot_img, write_graph, request, helpers):
     test_path = helpers.create_test_dir(artifact_dir, request.node.name)
