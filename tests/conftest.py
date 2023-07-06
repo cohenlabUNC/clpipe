@@ -170,7 +170,7 @@ def sample_postprocessed_confounds() -> Path:
 @pytest.fixture(scope="session")
 def sample_nuisance_file() -> Path:
     with open('tests/data/sample_nuisance_file.txt', 'w') as f:
-        f.write("3,7")
+        f.write("0\n0\n1\n0\n0\n0\n1\n0\n0\n0")
     return Path("tests/data/sample_nuisance_file.txt").resolve()
 
 @pytest.fixture(scope="session")
