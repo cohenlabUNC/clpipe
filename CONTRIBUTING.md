@@ -143,3 +143,4 @@ the main repository with the hotfix.
 
 WIP, a quick list for now:
   - Creating skeleton code, documention, and simple tests for your feature *before* you begin to code is highly encouraged, as it helps you plan out your feature. Difficulties in the stage help reveal issues in design and saves time in the long run. This also helps ensure these crucial elements of the feature are not ignored to "go back and add later"
+  - All code should be formatted with Black to enforce consistent style
