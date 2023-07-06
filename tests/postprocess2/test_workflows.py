@@ -151,12 +151,13 @@ def test_fslmath_temporal_filter_wf(
         base_dir=test_path,
         crashdump_dir=test_path,
     )
+    wf.write_graph(dotfilename=test_path / "filteredflow", graph2use="colored")
+
     wf.run()
 
     helpers.plot_timeseries(filtered_path, sample_raw_image)
 
-    if write_graph:
-        wf.write_graph(dotfilename=test_path / "filteredflow", graph2use=write_graph)
+    
 
     if plot_img:
         helpers.plot_4D_img_slice(filtered_path, "filtered.png")
