@@ -345,12 +345,17 @@ def expand_columns(tsv_file, column_names):
 def vector_to_txt(vector, out_file: str):
 
     """Convert an input vector to a txt file."""
-    import numpy as np
+    # import pandas as pd
     from pathlib import Path
+    #import pandas as pd
 
-    np_vector = np.array(vector, dtype=np.int8)
+    #np_vector = pd.DataFrame(vector, dtype=pd.Int8Dtype)
     
-    out_file = Path(out_file).resolve()
-    np.savetxt(out_file, np_vector)
+    
+    #out_file = Path(out_file).resolve()
+    #csv_string = np_vector.to_csv(sep="\t", header=None, index=False)
+
+    with open(out_file, 'w') as file:
+        file.write(str(vector))
 
     return out_file
