@@ -808,10 +808,6 @@ def build_3dtproject_temporal_filter(bpHigh: float, bpLow: float, tr: float, ord
                                       base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None,
                                        mask_file: os.PathLike=None):
     
-    #Reference Command
-    # rel "3dTproject -overwrite -input \"$preNRBP\" -mask \"${subjMask}${ext}\" -dt $tr \
-	#     	-prefix \"$postNRBP\" -polort 2 -ort ${nuisance_file} -passband $bpLow $bpHigh"
-    
     workflow = pe.Workflow(name=f"{STEP_TEMPORAL_FILTERING}_{IMPLEMENTATION_AFNI_3DTPROJECT}", base_dir=base_dir)
     if crashdump_dir is not None:
         workflow.config['execution']['crashdump_dir'] = crashdump_dir
@@ -838,6 +834,7 @@ def build_3dtproject_temporal_filter(bpHigh: float, bpLow: float, tr: float, ord
     temp_filt.inputs.args = "-overwrite"
     temp_filt.inputs.outputtype = "NIFTI_GZ"
     temp_filt.inputs.polort = 2
+    temp_filt.inputs.cenmode = "NTRP"
     
     mean_image_node = pe.Node(MeanImage(), name="mean_image")
     temporal_filter_node = pe.Node(temp_filt, name="3dTproject_temporal_filter")
@@ -860,7 +857,7 @@ def build_3dtproject_temporal_filter(bpHigh: float, bpLow: float, tr: float, ord
             name="vector_to_txt")
         vector_to_txt_node.inputs.out_file = "scrub_ort.txt"
         workflow.connect(input_node, "scrub_targets", vector_to_txt_node, "vector")
-        workflow.connect(vector_to_txt_node, "out_file", temporal_filter_node, "ort")
+        workflow.connect(vector_to_txt_node, "out_file", temporal_filter_node, "censor")
     workflow.connect(mean_image_node, "out_file", add_node, "operand_file")
     workflow.connect(temporal_filter_node, "out_file", add_node, "in_file")
     workflow.connect(add_node, "out_file", output_node, "out_file")
