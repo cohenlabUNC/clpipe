@@ -163,36 +163,37 @@ def test_fslmath_temporal_filter_wf(
 
     assert True
 
-def test_3dtproject_temporal_filter_wf(test_path, helpers, sample_raw_image, plot_img, 
-                                    sample_raw_image_mask):
-    
-    
-    filtered_path = test_path / "sample_raw_filtered.nii.gz"
-    
-    wf = build_3dtproject_temporal_filter(bpHigh= .9, bpLow= 0.005, tr=2,
-                                          import_file=sample_raw_image,
-                                          export_file=filtered_path,
-                                          base_dir=test_path, crashdump_dir=test_path,
-                                          mask_file=sample_raw_image_mask)
-    
-    wf.write_graph(dotfilename = test_path / "filteredflow", graph2use="orig")
+class TestWorkflows:    
+    def teardown(self):
+        self.wf.write_graph(dotfilename = self.test_path / "filteredflow", graph2use="orig")
+        self.wf.run()
 
-    wf.run()
+        self.helpers.plot_timeseries(self.export_path, self.sample_raw_image)
 
-    helpers.plot_timeseries(filtered_path, sample_raw_image)
+        if self.plot_img:
+            self.helpers.plot_4D_img_slice(self.export_path, "filtered.png")
 
-    if plot_img:
-        helpers.plot_4D_img_slice(filtered_path, "filtered.png")
+    def test_3dtproject_temporal_filter_wf(self):
+        self.export_path = self.test_path / "sample_raw_filtered.nii.gz"
+        
+        self.wf = build_3dtproject_temporal_filter(bpHigh= .9, bpLow= 0.005, tr=2,
+                                                   import_file=self.sample_raw_image,
+                                                   export_file=self.export_path,
+                                                   base_dir=self.test_path, crashdump_dir=self.test_path,
+                                                   mask_file=self.sample_raw_image_mask)
 
-    assert True
+    @pytest.fixture(autouse=True)
+    def _test_path(self, request, artifact_dir):
+        self.test_path = artifact_dir / request.module.__name__ / request.node.name
+        self.test_path.mkdir(parents=True, exist_ok=True)
 
+    @pytest.fixture(autouse=True)
+    def _request_fixtures(self, sample_raw_image, sample_raw_image_mask, helpers, plot_img):
+        self.sample_raw_image = sample_raw_image
+        self.sample_raw_image_mask = sample_raw_image_mask
+        self.helpers = helpers
+        self.plot_img = plot_img
 
-@pytest.fixture(scope="function")
-def test_path(artifact_dir, request):
-    test_path = artifact_dir / request.module.__name__ / request.node.name
-    test_path.mkdir(parents=True, exist_ok=True)
-
-    return test_path
 
     
 def test_confound_regression_fsl_glm_wf(artifact_dir, sample_raw_image, sample_postprocessed_confounds, sample_raw_image_mask, plot_img, write_graph, request, helpers):
