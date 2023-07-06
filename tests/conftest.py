@@ -68,7 +68,7 @@ class Helpers:
         plotting.plot_img(image_slice, output_file=plot_path)
 
     @staticmethod
-    def plot_timeseries(image_path: Path, base_image_path: Path):
+    def plot_timeseries(image_path: Path, base_image_path: Path, highlight_range: list=None):
         import nibabel as nib
         import numpy as np
         import matplotlib.pyplot as plt
@@ -94,19 +94,30 @@ class Helpers:
         fig.supylabel("Signal intensity")
 
         for i, ax in enumerate(axs.flatten()):
+            data = data_2d[axes_to_show[i]]
+            base_data = base_data_2d[axes_to_show[i]]
+
             # Select a random voxel to plot
             # Plot the time-series data
-            (processed_plot,) = ax.plot(data_2d[axes_to_show[i]], label="processed")
-            (raw_plot,) = ax.plot(base_data_2d[axes_to_show[i]], label="raw")
+            (processed_plot,) = ax.plot(data, label="processed")
+            (raw_plot,) = ax.plot(base_data, label="raw")
             ax.set_title(f"voxel: {axes_to_show[i]}")
 
-
             # Set the x-axis ticks to display all integers
-            axis_len = len(data_2d[axes_to_show[i]])
-            axis_range = range(1, axis_len  + 1)
+            axis_len = len(data)
+            axis_range = range(0, axis_len)
+            ticklabels = [str(tick) if tick % 10 == 0 else '' for tick in axis_range]
             ax.set_xticks(axis_range)
-            ax.set_xticklabels(axis_range)
-            ax.set_xlim(1, axis_len)
+            ax.set_xticklabels(ticklabels)
+            #ax.set_xlim(1, axis_len)
+
+            if highlight_range:
+                min_value = min(np.concatenate((data, base_data)))
+                max_value = max(np.concatenate((data, base_data)))
+                ax.axhspan(
+                    min_value, max_value, xmin=highlight_range[0]/axis_len,
+                    xmax=highlight_range[1]/axis_len, color='red', alpha=0.2
+                )
 
         fig.legend(handles=[raw_plot, processed_plot])
 
@@ -148,10 +159,24 @@ def sample_raw_image() -> Path:
     'Interoception during aging: The heartbeat detection task'
     Located at https://openneuro.org/datasets/ds003763/versions/1.0.0
 
-    The image consists of slices 100-110 of sub-09113/func/sub-09113_task-heart_bold.nii.gz
+    The image consists of slices 100-110 of 
+        sub-09113/func/sub-09113_task-heart_bold.nii.gz
+
+    Useful for tests that require a shorter timeseries for runtime consideration,
+    or those where timeseries length is not important.
     """
 
     return Path("tests/data/sample_raw.nii.gz").resolve()
+
+@pytest.fixture(scope="session")
+def sample_raw_image_longer() -> Path:
+    """
+    Based on same image as sample_raw_image but uses 100 timepoints, from 100-200.
+
+    Useful for tests that require more timepoints.
+    """
+
+    return Path("tests/data/sample_raw_longer.nii.gz").resolve()
 
 
 @pytest.fixture(scope="session")
