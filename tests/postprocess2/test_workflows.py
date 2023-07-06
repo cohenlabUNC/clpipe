@@ -169,17 +169,17 @@ def test_3dtproject_temporal_filter_wf(artifact_dir, sample_raw_image, request, 
     test_path = helpers.create_test_dir(artifact_dir, request.node.name)
     filtered_path = test_path / "sample_raw_filtered.nii.gz"
     
-    wf = build_3dtproject_temporal_filter(bpHigh= 2.5, bpLow= 0.5, tr=2, 
+    wf = build_3dtproject_temporal_filter(bpHigh= .9, bpLow= 0.005, tr=2, 
                                           in_file=sample_raw_image, out_file=filtered_path,
                                           base_dir=test_path, crashdump_dir=test_path, 
                                           nuisance_file=sample_nuisance_file,
                                           mask_file=sample_raw_image_mask)
+    
+    wf.write_graph(dotfilename = test_path / "filteredflow", graph2use="colored")
+
     wf.run()
 
     helpers.plot_timeseries(filtered_path, sample_raw_image)
-
-    if write_graph:
-        wf.write_graph(dotfilename = test_path / "filteredflow", graph2use=write_graph)
 
     if plot_img:
         helpers.plot_4D_img_slice(filtered_path, "filtered.png")
