@@ -3,6 +3,9 @@
 ## Dev Environment Setup
 
 ### Docker Container
+WIP
+### Longleaf
+WIP
 
 ## Committing & Branching
 
@@ -54,6 +57,18 @@ This will keep your feature up-to-date in a cleaner fashion than merging.
 `git rebase develop`
 
 ### Merging your Feature into Develop
+
+#### Merge Checklist
+
+When your feature is complete, make sure you have completed the following tasks before merging:
+
+- Ensure you have created tests to cover the feature (ideally this is done *before* you start coding the feature)
+- Ensure all tests pass
+- Ensure your code is documented - functions should have explanation, and unintuitive sections of code should include elaborating comments
+- Add a description of the feature to the latest section of the changelog
+- Add user documentation if your feature should be known by the user
+
+#### Request to Merge into Develop
 
 Unless you are a core clpipe contributor, merging into `develop` from your feature 
 should be done via a pull request on GitHub. This will allow core contributors to review
@@ -124,3 +139,7 @@ Finally, if the `x.y.z` version of main is the same as the release branch being
 hotfixed, a PR should be made from the release branch to main to update
 the main repository with the hotfix.
 
+## Coding Guidelines
+
+WIP, a quick list for now:
+  - Creating skeleton code, documention, and simple tests for your feature *before* you begin to code is highly encouraged, as it helps you plan out your feature. Difficulties in the stage help reveal issues in design and saves time in the long run. This also helps ensure these crucial elements of the feature are not ignored to "go back and add later"
