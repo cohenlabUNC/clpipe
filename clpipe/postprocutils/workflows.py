@@ -269,7 +269,7 @@ def build_image_postprocessing_workflow(
                 "Implementation"
             ]
 
-            current_wf = _build_temporal_filter_wf(
+            current_wf = build_temporal_filter_workflow(
                 hp=hp,
                 lp=lp,
                 tr=tr,
@@ -423,7 +423,7 @@ def build_image_postprocessing_workflow(
 
     return postproc_wf
 
-def _build_temporal_filter_wf(implementationName: str, hp: float, lp: float, tr: float, order: float=None, in_file: os.PathLike=None, 
+def build_temporal_filter_workflow(implementationName: str, hp: float, lp: float, tr: float, order: float=None, in_file: os.PathLike=None, 
     out_file: os.PathLike=None, base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None, scrub_targets: os.PathLike=None, mask_file: os.PathLike=None):
     if implementationName == IMPLEMENTATION_BUTTERWORTH:
         return build_butterworth_filter_workflow(hp=hp,lp=lp, tr=tr, order=order, base_dir=base_dir, crashdump_dir=crashdump_dir)
