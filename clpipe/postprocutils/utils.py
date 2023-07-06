@@ -342,12 +342,13 @@ def expand_columns(tsv_file, column_names):
         expanded_columns.extend(matching_columns)
     return [*set(expanded_columns)]  # Removes duplicates from list
 
-def vector_to_txt(vector, out_file):
+def vector_to_txt(vector, out_file: str):
+
     """Convert an input vector to a txt file."""
     import numpy as np
     from pathlib import Path
 
-    np_vector = np.array(vector)
+    np_vector = np.array(vector, dtype=np.int8)
     
     out_file = Path(out_file).resolve()
     np.savetxt(out_file, np_vector)
