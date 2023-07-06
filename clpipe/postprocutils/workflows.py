@@ -803,7 +803,7 @@ def build_fslmath_temporal_filter(
     return workflow
 
 def build_3dtproject_temporal_filter(bpHigh: float, bpLow: float, tr: float, order: float=None, 
-                                     in_file: os.PathLike=None, out_file: os.PathLike=None,
+                                     import_file: os.PathLike=None, export_file: os.PathLike=None,
                                       base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None,
                                       scrub_targets: os.PathLike=None, mask_file: os.PathLike=None):
     
@@ -816,7 +816,13 @@ def build_3dtproject_temporal_filter(bpHigh: float, bpLow: float, tr: float, ord
         workflow.config['execution']['crashdump_dir'] = crashdump_dir
 
     # Setup identity (pass through) input/output nodes
-    input_node = build_input_node()
+    input_node = pe.Node(
+        IdentityInterface(
+            fields=["in_file", "out_file", "mask_file", "TR", "bpLow", "bpHigh", "scrub_targets"],
+            mandatory_inputs=False,
+        ),
+        name="inputnode",
+    )
     output_node = build_output_node()
 
     # Setup the 3DTProject Temporal Filter
@@ -824,31 +830,29 @@ def build_3dtproject_temporal_filter(bpHigh: float, bpLow: float, tr: float, ord
     temp_filt.inputs.TR = tr
     temp_filt.inputs.polort = 2
     temp_filt.inputs.bandpass = (bpLow, bpHigh)
-    temp_filt.inputs.out_file = out_file
     temp_filt.inputs.args = "-overwrite"
-    if(mask_file):
-        temp_filt.inputs.mask = mask_file
-    if(scrub_targets):
+    temp_filt.inputs.outputtype = "NIFTI_GZ"
+    if scrub_targets:
         temp_filt.inputs.ort = scrub_targets
 
     mean_image_node = pe.Node(MeanImage(), name="mean_image")
     temporal_filter_node = pe.Node(temp_filt, name="3dTproject_temporal_filter")
     add_node = pe.Node(BinaryMaths(operation='add'), name="add_mean")
 
-    # Set WF inputs and outputs
-    if in_file:
-        input_node.inputs.in_file = in_file
-    if out_file:
-        input_node.inputs.out_file = out_file
-
-    #connect(source , sourceOutput, dest, destInput) (Input-A) A (Output-A) -> (Input-B = Output-A) B (Output-B)
     workflow.connect(input_node, "in_file", mean_image_node, "in_file")
     workflow.connect(input_node, "in_file", temporal_filter_node, "in_file")
-    workflow.connect(input_node, "out_file", add_node, "out_file")
+    workflow.connect(input_node, "mask_file", temporal_filter_node, "mask")
     workflow.connect(mean_image_node, "out_file", add_node, "operand_file")
     workflow.connect(temporal_filter_node, "out_file", add_node, "in_file")
     workflow.connect(add_node, "out_file", output_node, "out_file")
 
+    if export_file:
+        export_node = pe.Node(
+            ExportFile(out_file=export_file, clobber=True, check_extension=False),
+            name="export_image",
+        )
+        workflow.connect(output_node, "out_file", export_node, "in_file")
+    
     return workflow
 
 def build_confound_regression_fsl_glm_workflow(

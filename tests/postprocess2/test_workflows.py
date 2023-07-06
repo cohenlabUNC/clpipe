@@ -169,10 +169,13 @@ def test_3dtproject_temporal_filter_wf(artifact_dir, sample_raw_image, request, 
     test_path = helpers.create_test_dir(artifact_dir, request.node.name)
     filtered_path = test_path / "sample_raw_filtered.nii.gz"
     
-    wf = build_3dtproject_temporal_filter(bpHigh= .9, bpLow= 0.005, tr=2, 
-                                          in_file=sample_raw_image, out_file=filtered_path,
+    wf = build_3dtproject_temporal_filter(bpHigh= .9, bpLow= 0.005, tr=2,
+                                          export_file=filtered_path,
                                           base_dir=test_path, crashdump_dir=test_path,
                                           mask_file=sample_raw_image_mask)
+    wf.inputs.inputnode.in_file = sample_raw_image
+    wf.inputs.inputnode.out_file = filtered_path
+    wf.inputs.inputnode.mask_file = sample_raw_image_mask
     
     wf.write_graph(dotfilename = test_path / "filteredflow", graph2use="colored")
 
