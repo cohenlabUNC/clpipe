@@ -71,13 +71,24 @@ For UNC-CH Users
 
 If you are a Longleaf user and a member of the rc_hng_psx group,
 clpipe has already been installed for you via the module system. 
-Add the following line to your ``~/.bashrc`` file to include clpipe's modules:
+
+clpipe is not currently available as part of Longleaf's default module collection.
+Instead, it is provided through the HNG's module directory, which you must
+setup manually.
+
+First, make the HNG modules available:
 
 .. code-block:: console
 
-    module use /proj/hng/software/modules
+    module use /proj/hng/software/module
 
-You can then use the following to access the latest version of clpipe:
+Now save this module source to your default collection:
+
+.. code-block:: console
+
+    module save
+
+You can then use the following to access the latest version of clpipe at any time:
 
 .. code-block:: console
 
