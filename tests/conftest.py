@@ -68,7 +68,12 @@ class Helpers:
         plotting.plot_img(image_slice, output_file=plot_path)
 
     @staticmethod
-    def plot_timeseries(image_path: Path, base_image_path: Path, highlight_range: list=None):
+    def plot_timeseries(
+        image_path: Path, 
+        base_image_path: Path,
+        highlight_ranges: list=None,
+        num_figs: int=4
+    ):
         import nibabel as nib
         import numpy as np
         import matplotlib.pyplot as plt
@@ -88,12 +93,32 @@ class Helpers:
         data_2d = np.reshape(data, (n_voxels, n_timepoints))
         base_data_2d = np.reshape(base_data, (base_n_voxels, base_n_timepoints))
 
-        fig, axs = plt.subplots(nrows=2, ncols=2, figsize=(8, 8))
+        import math
+        if num_figs > 4 or num_figs < 1:
+            raise ValueError("num_figs must be in the range 1-4")
+        
+        # TODO: Abstract this logic.
+        nrows = 1
+        ncols = 1
+        if num_figs == 2:
+            ncols = 2
+        elif num_figs == 3:
+            ncols = 3
+        elif num_figs == 4:
+            nrows = 2
+            ncols = 2
+        
+        fig, axs = plt.subplots(nrows=nrows, ncols=ncols, figsize=(12, 8))
+        if num_figs == 1:
+            axs = [axs]
+        else:
+            axs = axs.flatten()
         axes_to_show = [95806, 84147, 77717, 86717]
+        axes_to_show = axes_to_show[:num_figs]
         fig.supxlabel("Time")
         fig.supylabel("Signal intensity")
 
-        for i, ax in enumerate(axs.flatten()):
+        for i, ax in enumerate(axs):
             data = data_2d[axes_to_show[i]]
             base_data = base_data_2d[axes_to_show[i]]
 
@@ -111,13 +136,11 @@ class Helpers:
             ax.set_xticklabels(ticklabels)
             #ax.set_xlim(1, axis_len)
 
-            if highlight_range:
-                min_value = min(np.concatenate((data, base_data)))
-                max_value = max(np.concatenate((data, base_data)))
-                ax.axhspan(
-                    min_value, max_value, xmin=highlight_range[0]/axis_len,
-                    xmax=highlight_range[1]/axis_len, color='red', alpha=0.2
-                )
+            if highlight_ranges:
+                for highlight_range in highlight_ranges:
+                    ax.axvspan(
+                        highlight_range[0], highlight_range[1], color='red', alpha=0.2
+                    )
 
         fig.legend(handles=[raw_plot, processed_plot])
 
