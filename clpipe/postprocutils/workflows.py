@@ -809,7 +809,7 @@ def build_fslmath_temporal_filter(
 def build_3dtproject_temporal_filter(bpHigh: float, bpLow: float, tr: float, order: float=None, 
                                      in_file: os.PathLike=None, out_file: os.PathLike=None,
                                       base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None,
-                                      nuisance_file: os.PathLike=None):
+                                      nuisance_file: os.PathLike=None, mask_file: os.PathLike=None):
     
     #Reference Command
     # rel "3dTproject -overwrite -input \"$preNRBP\" -mask \"${subjMask}${ext}\" -dt $tr \
@@ -826,13 +826,15 @@ def build_3dtproject_temporal_filter(bpHigh: float, bpLow: float, tr: float, ord
     # Setup the 3DTProject Temporal Filter
     temp_filt = TProject()
     temp_filt.inputs.overwrite = True
-    # temp_filt.inputs.input_file = in_file
     temp_filt.inputs.tr = tr
+    temp_filt.inputs.mask = mask_file
     temp_filt.inputs.polort = 2
     temp_filt.inputs.ort = nuisance_file
     temp_filt.inputs.passband = (bpLow, bpHigh)
 
-    temp_filt_node = pe.Node(temp_filt)
+    mean_image_node = pe.Node(MeanImage(), name="mean_image")
+    temporal_filter_node = pe.Node(temp_filt, name="3dTproject-temporal-filter")
+    add_node = pe.Node(BinaryMaths(operation='add'), name="add_mean")
 
     # Set WF inputs and outputs
     if in_file:
@@ -841,9 +843,17 @@ def build_3dtproject_temporal_filter(bpHigh: float, bpLow: float, tr: float, ord
         input_node.inputs.out_file = out_file
 
     #connect(source , sourceOutput, dest, destInput) (Input-A) A (Output-A) -> (Input-B = Output-A) B (Output-B)
-    workflow.connect(input_node, "in_file", temp_filt_node, "in_file")
-    workflow.connect(temp_filt_node, "out_file", output_node, "out_file")
+    workflow.connect(input_node, "in_file", mean_image_node, "in_file")
+    workflow.connect(input_node, "in_file", temporal_filter_node, "in_file")
+    workflow.connect(input_node, "out_file", add_node, "out_file")
+    workflow.connect(mean_image_node, "out_file", add_node, "operand_file")
+    workflow.connect(temporal_filter_node, "out_file", add_node, "in_file")
+    workflow.connect(add_node, "out_file", output_node, "out_file")
 
+
+    # workflow.connect(input_node, "in_file", temp_filt_node, "in_file")
+    # workflow.connect(input_node, "out_file", temp_filt_node, "out_file")
+    # workflow.connect(temp_filt_node, "out_file", output_node, "out_file")
     return workflow
 
 def build_confound_regression_fsl_glm_workflow(
