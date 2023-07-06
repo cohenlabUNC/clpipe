@@ -818,20 +818,25 @@ def build_3dtproject_temporal_filter(bpHigh: float, bpLow: float, tr: float, ord
     # Setup identity (pass through) input/output nodes
     input_node = pe.Node(
         IdentityInterface(
-            fields=["in_file", "out_file", "mask_file", "TR", "bpLow", "bpHigh", "scrub_targets"],
+            fields=["in_file", "out_file", "mask_file", "TR", 
+                    "bandpass", "scrub_targets", "export_file"],
             mandatory_inputs=False,
         ),
         name="inputnode",
+        
     )
+    if import_file:
+        input_node.inputs.in_file = import_file
+    input_node.inputs.TR = tr
+    input_node.inputs.bandpass = (bpLow, bpHigh)
+    
     output_node = build_output_node()
 
     # Setup the 3DTProject Temporal Filter
     temp_filt = TProject()
-    temp_filt.inputs.TR = tr
-    temp_filt.inputs.polort = 2
-    temp_filt.inputs.bandpass = (bpLow, bpHigh)
     temp_filt.inputs.args = "-overwrite"
     temp_filt.inputs.outputtype = "NIFTI_GZ"
+    temp_filt.inputs.polort = 2
     if scrub_targets:
         temp_filt.inputs.ort = scrub_targets
 
@@ -841,17 +846,23 @@ def build_3dtproject_temporal_filter(bpHigh: float, bpLow: float, tr: float, ord
 
     workflow.connect(input_node, "in_file", mean_image_node, "in_file")
     workflow.connect(input_node, "in_file", temporal_filter_node, "in_file")
-    workflow.connect(input_node, "mask_file", temporal_filter_node, "mask")
+    workflow.connect(input_node, "TR", temporal_filter_node, "TR")
+    workflow.connect(input_node, "bandpass", temporal_filter_node, "bandpass")
+    if mask_file:
+        input_node.inputs.mask_file = mask_file
+        workflow.connect(input_node, "mask_file", temporal_filter_node, "mask")
     workflow.connect(mean_image_node, "out_file", add_node, "operand_file")
     workflow.connect(temporal_filter_node, "out_file", add_node, "in_file")
     workflow.connect(add_node, "out_file", output_node, "out_file")
 
     if export_file:
+        input_node.inputs.export_file = export_file
         export_node = pe.Node(
             ExportFile(out_file=export_file, clobber=True, check_extension=False),
             name="export_image",
         )
         workflow.connect(output_node, "out_file", export_node, "in_file")
+        workflow.connect(input_node, "export_file", export_node, "out_file")
     
     return workflow
 
