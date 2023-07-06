@@ -165,6 +165,7 @@ def test_fslmath_temporal_filter_wf(
 
 class TestWorkflows:    
     def teardown(self):
+        """All workflow tests share these steps once their workflow is setup."""
         self.wf.write_graph(dotfilename = self.test_path / "filteredflow", graph2use="orig")
         self.wf.run()
 
@@ -174,6 +175,8 @@ class TestWorkflows:
             self.helpers.plot_4D_img_slice(self.export_path, "filtered.png")
 
     def test_3dtproject_temporal_filter_wf(self):
+        """Test the basic case of running the workflow."""
+
         self.export_path = self.test_path / "sample_raw_filtered.nii.gz"
         
         self.wf = build_3dtproject_temporal_filter(bpHigh= .9, bpLow= 0.005, tr=2,
@@ -184,11 +187,15 @@ class TestWorkflows:
 
     @pytest.fixture(autouse=True)
     def _test_path(self, request, artifact_dir):
+        """Setup an artifact directory for the currently running test."""
         self.test_path = artifact_dir / request.module.__name__ / request.node.name
         self.test_path.mkdir(parents=True, exist_ok=True)
 
     @pytest.fixture(autouse=True)
     def _request_fixtures(self, sample_raw_image, sample_raw_image_mask, helpers, plot_img):
+        """Import fixtures from conftest to be used by the class. Done here instead
+            of in a 'setup' function because fixtures can only be requested by tests
+            or other fixtures."""
         self.sample_raw_image = sample_raw_image
         self.sample_raw_image_mask = sample_raw_image_mask
         self.helpers = helpers
