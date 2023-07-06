@@ -831,9 +831,10 @@ def build_3dtproject_temporal_filter(bpHigh: float, bpLow: float, tr: float, ord
     temp_filt.inputs.ort = nuisance_file
     temp_filt.inputs.bandpass = (bpLow, bpHigh)
     temp_filt.inputs.out_file = out_file
+    temp_filt.inputs.args = "-overwrite"
 
     mean_image_node = pe.Node(MeanImage(), name="mean_image")
-    temporal_filter_node = pe.Node(temp_filt, name="3dTproject-temporal-filter")
+    temporal_filter_node = pe.Node(temp_filt, name="3dTproject_temporal_filter")
     add_node = pe.Node(BinaryMaths(operation='add'), name="add_mean")
 
     # Set WF inputs and outputs
