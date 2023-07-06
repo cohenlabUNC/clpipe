@@ -2,8 +2,12 @@
 Postprocessing
 ===================
 
+------------------
 postprocess2
 ------------------
+
+Overview
+==================
 
 The ``clpipe postprocess2`` command combines the functionality of the legacy
 ``fmri_postprocess`` and ``glm_setup`` commands into a unified postprocessing stream.
@@ -31,14 +35,21 @@ Available processing steps:
 	- Resample
 	- Trim Timepoints
 
+Example Pipeline
+------------------
+
 .. image:: resources/example_pipeline.png
 
-Configuration Setup
+
+Configuration Overview
 ===================
 
 This command requires a new configuration block - if you using an existing
 clpipe project, you will have to insert this json into your configuration file.
 Otherwise, this block will be included when running "project setup."
+
+Configuration Block
+-------------------
 
 .. code-block:: json
 
@@ -83,40 +94,8 @@ Otherwise, this block will be included when running "project setup."
     	}	
 	}
 
-Processing Step Details
-=======================
-
-Scrub Timepoints
-------------------
-
-The ``ScrubTimepoints`` step can be used to remove timepoints from the image timeseries
-based on a target variable from that image's confounds file. Timepoints scrubbed
-from an image's timeseries are also removed its respective confound file.
-
-Processing Step Options:
-.. code-block:: json
-
-	"ScrubTimepoints": {
-		"TargetVariable": "framewise_displacement",
-		"Threshold": 0.9,
-		"ScrubAhead": 0,
-		"ScrubBehind": 0,
-		"ScrubContiguous": 0,
-		"InsertNA": true
-	}
-
-Definitions:
-* ``TargetVariable:`` Which confound variable to use as a reference for scrubbing
-* ``Threshold:`` Any timepoint of the target variable exceeding this value will be scrubbed
-* ``ScrubAhead:`` Set the number of timepoints to scrub ahead of target timepoints
-* ``ScrubBehind:`` Set the number of timepoints to scrub behind target timepoints
-* ``ScrubContiguous:`` Scrub everything between scrub targets up to this far apart
-* ``InsertNA:`` Set true to replace scrubbed timepoints with NA. False removes the timepoints completely.
-
 Configuration Definitions
-===================
-
-* ``PostProcessingOptions:`` Options for configuring post-fmriprep processing steps.
+-------------------
 
     * ``WorkingDirectory:`` Directory for caching intermediary processing files.
     * ``WriteProcessGraph:`` Set 'true' to write a processing graph alongside your output.
@@ -166,6 +145,41 @@ Configuration Definitions
         * ``MemoryUsage:`` How much memory to allocate per job.
         * ``TimeUsage:`` How much time to allocate per job.
         * ``NThreads:`` How many threads to allocate per job.
+
+
+Processing Step Options
+====================
+
+Scrub Timepoints
+--------------------
+
+The ``ScrubTimepoints`` step can be used to remove timepoints from the image timeseries
+based on a target variable from that image's confounds file. Timepoints scrubbed
+from an image's timeseries are also removed its respective confound file.
+
+ProcessingStepOptions Block:
+
+.. code-block:: json
+
+	"ScrubTimepoints": {
+		"TargetVariable": "framewise_displacement",
+		"Threshold": 0.9,
+		"ScrubAhead": 0,
+		"ScrubBehind": 0,
+		"ScrubContiguous": 0,
+		"InsertNA": true
+	}
+
+Definitions:
+
+* ``TargetVariable:`` Which confound variable to use as a reference for scrubbing
+* ``Threshold:`` Any timepoint of the target variable exceeding this value will be scrubbed
+* ``ScrubAhead:`` Set the number of timepoints to scrub ahead of target timepoints
+* ``ScrubBehind:`` Set the number of timepoints to scrub behind target timepoints
+* ``ScrubContiguous:`` Scrub everything between scrub targets up to this far apart
+* ``InsertNA:`` Set true to replace scrubbed timepoints with NA. False removes the timepoints completely.
+
+
 
 
 Processing Streams Setup
@@ -242,7 +256,7 @@ of ``clpipe postprocess2`` the name of the stream:
 
 	clpipe postprocess2 -config_file clpipe_config.json -processing_stream smooth_aroma-regress_filter-butterworth_normalize -submit
 
-
+------------------
 Legacy postprocess Command
 ------------------
 
@@ -259,7 +273,7 @@ be postprocessed using the following command:
 	:prog: clpipe postprocess
 
 
-
+------------------
 Processing Checker
 ------------------
 
@@ -281,6 +295,7 @@ please see the following documentation:
 	:prog: clpipe reports fmri-process-check
 
 
+------------------
 SUSAN Spatial Smoothing
 ------------------
 
