@@ -825,12 +825,12 @@ def build_3dtproject_temporal_filter(bpHigh: float, bpLow: float, tr: float, ord
 
     # Setup the 3DTProject Temporal Filter
     temp_filt = TProject()
-    temp_filt.inputs.overwrite = True
-    temp_filt.inputs.tr = tr
+    temp_filt.inputs.TR = tr
     temp_filt.inputs.mask = mask_file
     temp_filt.inputs.polort = 2
     temp_filt.inputs.ort = nuisance_file
-    temp_filt.inputs.passband = (bpLow, bpHigh)
+    temp_filt.inputs.bandpass = (bpLow, bpHigh)
+    temp_filt.inputs.out_file = out_file
 
     mean_image_node = pe.Node(MeanImage(), name="mean_image")
     temporal_filter_node = pe.Node(temp_filt, name="3dTproject-temporal-filter")
@@ -850,10 +850,6 @@ def build_3dtproject_temporal_filter(bpHigh: float, bpLow: float, tr: float, ord
     workflow.connect(temporal_filter_node, "out_file", add_node, "in_file")
     workflow.connect(add_node, "out_file", output_node, "out_file")
 
-
-    # workflow.connect(input_node, "in_file", temp_filt_node, "in_file")
-    # workflow.connect(input_node, "out_file", temp_filt_node, "out_file")
-    # workflow.connect(temp_filt_node, "out_file", output_node, "out_file")
     return workflow
 
 def build_confound_regression_fsl_glm_workflow(
