@@ -163,17 +163,14 @@ def test_fslmath_temporal_filter_wf(
 
     assert True
 
-
-def test_confound_regression_fsl_glm_wf(
-    artifact_dir,
-    sample_raw_image,
-    sample_postprocessed_confounds,
-    sample_raw_image_mask,
-    plot_img,
-    write_graph,
-    request,
-    helpers,
-):
+def test_3dtproject_temporal_filter_wf():
+    test_path = ""
+    filtered_path = ""
+    wf = build_3dtproject_temporal_filter()
+    wf.run()
+    assert True
+    
+def test_confound_regression_fsl_glm_wf(artifact_dir, sample_raw_image, sample_postprocessed_confounds, sample_raw_image_mask, plot_img, write_graph, request, helpers):
     test_path = helpers.create_test_dir(artifact_dir, request.node.name)
 
     regressed_path = test_path / "sample_raw_regressed.nii"

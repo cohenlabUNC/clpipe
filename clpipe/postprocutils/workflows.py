@@ -806,6 +806,45 @@ def build_fslmath_temporal_filter(
 
     return workflow
 
+def build_3dtproject_temporal_filter(bpHigh: float, bpLow: float, tr: float, order: float=None, 
+                                     in_file: os.PathLike=None, out_file: os.PathLike=None,
+                                      base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None,
+                                      nuisance_file: os.PathLike=None):
+    
+    #Reference Command
+    # rel "3dTproject -overwrite -input \"$preNRBP\" -mask \"${subjMask}${ext}\" -dt $tr \
+	#     	-prefix \"$postNRBP\" -polort 2 -ort ${nuisance_file} -passband $bpLow $bpHigh"
+    
+    workflow = pe.Workflow(name=f"{STEP_TEMPORAL_FILTERING}_{IMPLEMENTATION_AFNI_3DTPROJECT}", base_dir=base_dir)
+    if crashdump_dir is not None:
+        workflow.config['execution']['crashdump_dir'] = crashdump_dir
+
+    # Setup identity (pass through) input/output nodes
+    input_node = build_input_node()
+    output_node = build_output_node()
+
+    # Setup the 3DTProject Temporal Filter
+    temp_filt = TProject()
+    temp_filt.inputs.overwrite = True
+    # temp_filt.inputs.input_file = in_file
+    temp_filt.inputs.tr = tr
+    temp_filt.inputs.polort = 2
+    temp_filt.inputs.ort = nuisance_file
+    temp_filt.inputs.passband = (bpLow, bpHigh)
+
+    temp_filt_node = pe.Node(temp_filt)
+
+    # Set WF inputs and outputs
+    if in_file:
+        input_node.inputs.in_file = in_file
+    if out_file:
+        input_node.inputs.out_file = out_file
+
+    #connect(source , sourceOutput, dest, destInput) (Input-A) A (Output-A) -> (Input-B = Output-A) B (Output-B)
+    workflow.connect(input_node, "in_file", temp_filt_node, "in_file")
+    workflow.connect(temp_filt_node, "out_file", output_node, "out_file")
+
+    return workflow
 
 def build_confound_regression_fsl_glm_workflow(
     in_file: os.PathLike = None,
