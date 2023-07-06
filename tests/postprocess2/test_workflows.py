@@ -356,9 +356,12 @@ def test_scrubbing_wf_confounds(
     test_path = helpers.create_test_dir(artifact_dir, request.node.name)
     scrubbed_path = test_path / "scrubbed_confounds.tsv"
 
+    scrub_vector = [0, 1, 0, 0, 0, 0, 1, 0, 0, 0]
+
     wf = build_scrubbing_workflow(
-        in_file=sample_confounds_timeseries,
-        out_file=scrubbed_path,
+        scrub_vector,
+        import_path=sample_confounds_timeseries,
+        export_path=scrubbed_path,
         base_dir=test_path,
         crashdump_dir=test_path,
     )
@@ -372,9 +375,12 @@ def test_scrubbing_wf_aroma(artifact_dir, sample_melodic_mixing, request, helper
     test_path = helpers.create_test_dir(artifact_dir, request.node.name)
     scrubbed_path = test_path / "scrubbed_melodic_mixing.tsv"
 
+    scrub_vector = [0, 1, 0, 0, 0, 0, 1, 0, 0, 0]
+
     wf = build_scrubbing_workflow(
-        in_file=sample_melodic_mixing,
-        out_file=scrubbed_path,
+        scrub_vector,
+        import_path=sample_melodic_mixing,
+        export_path=scrubbed_path,
         base_dir=test_path,
         crashdump_dir=test_path,
     )
