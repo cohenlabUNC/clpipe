@@ -163,36 +163,50 @@ def test_fslmath_temporal_filter_wf(
 
     assert True
 
-class TestWorkflows:    
+class TestWorkflows:
+    highlight_ranges = None
+
     def teardown(self):
         """All workflow tests share these steps once their workflow is setup."""
         self.wf.write_graph(dotfilename = self.test_path / "wf_diagram", graph2use="orig")
         self.wf.run()
+        
 
-        self.helpers.plot_timeseries(self.export_path, self.sample_raw_image)
+        self.helpers.plot_timeseries(
+            self.export_path, self.sample_raw_image, 
+            highlight_ranges=self.highlight_ranges,
+            num_figs=1
+            )
 
         if self.plot_img:
-            self.helpers.plot_4D_img_slice(self.export_path, "sample_processed .png")
+            self.helpers.plot_4D_img_slice(self.export_path, "sample_processed.png")
 
     def test_3dtproject_temporal_filter_wf(self):
         """Test the basic case of running the workflow."""
         
-        self.wf = build_3dtproject_temporal_filter(bpHigh= .9, bpLow= 0.005, tr=2,
-                                                   import_file=self.sample_raw_image,
-                                                   export_file=self.export_path,
-                                                   base_dir=self.test_path, crashdump_dir=self.test_path,
-                                                   mask_file=self.sample_raw_image_mask)
+        self.wf = build_3dtproject_temporal_filter(
+            bpHigh= .9, bpLow= 0.005, tr=2,
+            import_file=self.sample_raw_image,
+            export_file=self.export_path,
+            base_dir=self.test_path, crashdump_dir=self.test_path,
+            mask_file=self.sample_raw_image_mask
+        )
         
     def test_3dtproject_temporal_filter_wf_scrubs(self):
         """Test the basic case of running the workflow."""
 
-        self.wf = build_3dtproject_temporal_filter(bpHigh= .9, bpLow= 0.005, tr=2,
-                                                   scrub_targets=True,
-                                                   import_file=self.sample_raw_image,
-                                                   export_file=self.export_path,
-                                                   base_dir=self.test_path, crashdump_dir=self.test_path,
-                                                   mask_file=self.sample_raw_image_mask)
-        self.wf.inputs.inputnode.scrub_targets = [0, 0, 1, 0, 0, 0, 0, 1, 0, 0]
+        self.wf = build_3dtproject_temporal_filter(
+            bpHigh= .9, bpLow= 0.005, tr=2,
+            scrub_targets=True,
+            import_file=self.sample_raw_image,
+            export_file=self.export_path,
+            base_dir=self.test_path, crashdump_dir=self.test_path,
+            mask_file=self.sample_raw_image_mask
+        )
+        scrub_targets = [1] * 100
+        scrub_targets[46:52] = [0] * 6
+        self.highlight_ranges = [(45.5, 52.5)]
+        self.wf.inputs.inputnode.scrub_targets = scrub_targets
 
     @pytest.fixture(autouse=True)
     def _test_path(self, request, artifact_dir):
@@ -202,11 +216,11 @@ class TestWorkflows:
         self.export_path = self.test_path / "sample_processed.nii.gz"
 
     @pytest.fixture(autouse=True)
-    def _request_fixtures(self, sample_raw_image, sample_raw_image_mask, helpers, plot_img):
+    def _request_fixtures(self, sample_raw_image_longer, sample_raw_image_mask, helpers, plot_img):
         """Import fixtures from conftest to be used by the class. Done here instead
             of in a 'setup' function because fixtures can only be requested by tests
             or other fixtures."""
-        self.sample_raw_image = sample_raw_image
+        self.sample_raw_image = sample_raw_image_longer
         self.sample_raw_image_mask = sample_raw_image_mask
         self.helpers = helpers
         self.plot_img = plot_img
