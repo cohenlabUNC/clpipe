@@ -34,7 +34,7 @@ from .nodes import (
     RegressAromaR,
     ImageSlice,
 )
-from .utils import scrub_image, get_scrub_vector_node
+from .utils import scrub_image, get_scrub_vector_node, vector_to_txt
 from ..errors import ImplementationNotFoundError
 
 # TODO: Set these values up as hierarchical, maybe with enums
@@ -805,7 +805,7 @@ def build_fslmath_temporal_filter(
 def build_3dtproject_temporal_filter(bpHigh: float, bpLow: float, tr: float, order: float=None, 
                                      import_file: os.PathLike=None, export_file: os.PathLike=None,
                                       base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None,
-                                      scrub_targets: os.PathLike=None, mask_file: os.PathLike=None):
+                                      scrub_targets: list=None, mask_file: os.PathLike=None):
     
     #Reference Command
     # rel "3dTproject -overwrite -input \"$preNRBP\" -mask \"${subjMask}${ext}\" -dt $tr \
@@ -837,9 +837,7 @@ def build_3dtproject_temporal_filter(bpHigh: float, bpLow: float, tr: float, ord
     temp_filt.inputs.args = "-overwrite"
     temp_filt.inputs.outputtype = "NIFTI_GZ"
     temp_filt.inputs.polort = 2
-    if scrub_targets:
-        temp_filt.inputs.ort = scrub_targets
-
+    
     mean_image_node = pe.Node(MeanImage(), name="mean_image")
     temporal_filter_node = pe.Node(temp_filt, name="3dTproject_temporal_filter")
     add_node = pe.Node(BinaryMaths(operation='add'), name="add_mean")
@@ -851,6 +849,18 @@ def build_3dtproject_temporal_filter(bpHigh: float, bpLow: float, tr: float, ord
     if mask_file:
         input_node.inputs.mask_file = mask_file
         workflow.connect(input_node, "mask_file", temporal_filter_node, "mask")
+    if scrub_targets:
+        input_node.inputs.scrub_targets = scrub_targets
+        vector_to_txt_node = pe.Node(
+            Function(
+                input_names=["vector", "out_file"],
+                output_names=["out_file"],
+                function=vector_to_txt,
+            ), 
+            name="vector_to_txt")
+        vector_to_txt_node.inputs.out_file = "scrub_ort.txt"
+        workflow.connect(input_node, "scrub_targets", vector_to_txt_node, "vector")
+        workflow.connect(vector_to_txt_node, "out_file", temporal_filter_node, "ort")
     workflow.connect(mean_image_node, "out_file", add_node, "operand_file")
     workflow.connect(temporal_filter_node, "out_file", add_node, "in_file")
     workflow.connect(add_node, "out_file", output_node, "out_file")

@@ -184,6 +184,18 @@ class TestWorkflows:
                                                    export_file=self.export_path,
                                                    base_dir=self.test_path, crashdump_dir=self.test_path,
                                                    mask_file=self.sample_raw_image_mask)
+        
+    def test_3dtproject_temporal_filter_wf_scrubs(self):
+        """Test the basic case of running the workflow."""
+
+        self.export_path = self.test_path / "sample_raw_filtered.nii.gz"
+        
+        self.wf = build_3dtproject_temporal_filter(bpHigh= .9, bpLow= 0.005, tr=2,
+                                                   scrub_targets=[3,6],
+                                                   import_file=self.sample_raw_image,
+                                                   export_file=self.export_path,
+                                                   base_dir=self.test_path, crashdump_dir=self.test_path,
+                                                   mask_file=self.sample_raw_image_mask)
 
     @pytest.fixture(autouse=True)
     def _test_path(self, request, artifact_dir):

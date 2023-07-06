@@ -319,7 +319,6 @@ def matrix_to_nii(matrix, orig_shape, affine):
 
     return out_image
 
-
 def expand_columns(tsv_file, column_names):
     import pandas as pd
     import fnmatch
@@ -342,3 +341,15 @@ def expand_columns(tsv_file, column_names):
             pass
         expanded_columns.extend(matching_columns)
     return [*set(expanded_columns)]  # Removes duplicates from list
+
+def vector_to_txt(vector, out_file):
+    """Convert an input vector to a txt file."""
+    import numpy as np
+    from pathlib import Path
+
+    np_vector = np.array(vector)
+    
+    out_file = Path(out_file).resolve()
+    np.savetxt(out_file, np_vector)
+
+    return out_file
