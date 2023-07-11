@@ -150,6 +150,52 @@ Configuration Definitions
 Processing Step Options
 ====================
 
+Temporal Filtering
+--------------------
+
+This step removes signals from an image's timeseries based on cutoff thresholds.
+
+**ProcessingStepOptions Block:**
+
+.. code-block:: json
+
+	"TemporalFiltering": {
+		"Implementation":"fslmaths",
+		"FilteringHighPass": 0.008,
+		"FilteringLowPass": -1,
+		"FilteringOrder": 2
+	}
+
+**Definitions:**
+
+* ``Implementation:`` fslmaths, 3dTProject
+* ``FilteringHighPass:`` Values below this threshold are filtered. Defaults to .08 Hz. Set to -1 to disable.
+* ``FilteringLowPass:`` Values above this threshold are filtered. Disabled by default (-1).
+* ``FilteringOrder:`` Order of the filter. Defaults to 2.
+
+**Special Case: Filtering with Scrubbed Timepoints**
+
+When the scrubbing step is active at the same time as temporal filtering (see
+Scrub Timepoints), filtering is handled with a special workflow. This for two
+reasons: first, temporal filtering must be done before scrubbing, because this step
+cannot tolerate NAs or non-continuous gaps in the timeseries. Second, filtering can
+distribute the impact of a disruptive motion artifact throughout a timeseries, despite
+scrubbing the offending timepoints aftwards. The solution to this is to interpolate
+over the timepoints to be scrubbed when temporal filtering.
+
+The following diagram shows a timeseries with a large motion artifact (blue), with the points
+to be scrubbed highlighted in red:
+
+.. image:: resources/filter_with_scrubs_example.png
+
+The processed timeseries (orange), after filtering, shows how the scrubbed points
+were interpolated to improve the performance of the filter.
+
+*Warning*: To achieve interpolation, this special case always uses the 3dTproject
+implementation, regardless of the implementation requested.
+
+
+
 Scrub Timepoints
 --------------------
 
@@ -178,7 +224,6 @@ Definitions:
 * ``ScrubBehind:`` Set the number of timepoints to scrub behind target timepoints
 * ``ScrubContiguous:`` Scrub everything between scrub targets up to this far apart
 * ``InsertNA:`` Set true to replace scrubbed timepoints with NA. False removes the timepoints completely.
-
 
 
 

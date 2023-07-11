@@ -68,7 +68,12 @@ class Helpers:
         plotting.plot_img(image_slice, output_file=plot_path)
 
     @staticmethod
-    def plot_timeseries(image_path: Path, base_image_path: Path):
+    def plot_timeseries(
+        image_path: Path, 
+        base_image_path: Path,
+        highlight_ranges: list=None,
+        num_figs: int=4
+    ):
         import nibabel as nib
         import numpy as np
         import matplotlib.pyplot as plt
@@ -88,17 +93,54 @@ class Helpers:
         data_2d = np.reshape(data, (n_voxels, n_timepoints))
         base_data_2d = np.reshape(base_data, (base_n_voxels, base_n_timepoints))
 
-        fig, axs = plt.subplots(nrows=2, ncols=2, figsize=(8, 8))
+        import math
+        if num_figs > 4 or num_figs < 1:
+            raise ValueError("num_figs must be in the range 1-4")
+        
+        # TODO: Abstract this logic.
+        nrows = 1
+        ncols = 1
+        if num_figs == 2:
+            ncols = 2
+        elif num_figs == 3:
+            ncols = 3
+        elif num_figs == 4:
+            nrows = 2
+            ncols = 2
+        
+        fig, axs = plt.subplots(nrows=nrows, ncols=ncols, figsize=(12, 8))
+        if num_figs == 1:
+            axs = [axs]
+        else:
+            axs = axs.flatten()
         axes_to_show = [95806, 84147, 77717, 86717]
+        axes_to_show = axes_to_show[:num_figs]
         fig.supxlabel("Time")
         fig.supylabel("Signal intensity")
 
-        for i, ax in enumerate(axs.flatten()):
+        for i, ax in enumerate(axs):
+            data = data_2d[axes_to_show[i]]
+            base_data = base_data_2d[axes_to_show[i]]
+
             # Select a random voxel to plot
             # Plot the time-series data
-            (processed_plot,) = ax.plot(data_2d[axes_to_show[i]], label="processed")
-            (raw_plot,) = ax.plot(base_data_2d[axes_to_show[i]], label="raw")
+            (processed_plot,) = ax.plot(data, label="processed")
+            (raw_plot,) = ax.plot(base_data, label="raw")
             ax.set_title(f"voxel: {axes_to_show[i]}")
+
+            # Set the x-axis ticks to display all integers
+            axis_len = len(data)
+            axis_range = range(0, axis_len)
+            ticklabels = [str(tick) if tick % 10 == 0 else '' for tick in axis_range]
+            ax.set_xticks(axis_range)
+            ax.set_xticklabels(ticklabels)
+            #ax.set_xlim(1, axis_len)
+
+            if highlight_ranges:
+                for highlight_range in highlight_ranges:
+                    ax.axvspan(
+                        highlight_range[0], highlight_range[1], color='red', alpha=0.2
+                    )
 
         fig.legend(handles=[raw_plot, processed_plot])
 
@@ -140,10 +182,24 @@ def sample_raw_image() -> Path:
     'Interoception during aging: The heartbeat detection task'
     Located at https://openneuro.org/datasets/ds003763/versions/1.0.0
 
-    The image consists of slices 100-110 of sub-09113/func/sub-09113_task-heart_bold.nii.gz
+    The image consists of slices 100-110 of 
+        sub-09113/func/sub-09113_task-heart_bold.nii.gz
+
+    Useful for tests that require a shorter timeseries for runtime consideration,
+    or those where timeseries length is not important.
     """
 
     return Path("tests/data/sample_raw.nii.gz").resolve()
+
+@pytest.fixture(scope="session")
+def sample_raw_image_longer() -> Path:
+    """
+    Based on same image as sample_raw_image but uses 100 timepoints, from 100-200.
+
+    Useful for tests that require more timepoints.
+    """
+
+    return Path("tests/data/sample_raw_longer.nii.gz").resolve()
 
 
 @pytest.fixture(scope="session")
@@ -166,6 +222,12 @@ def sample_confounds_timeseries() -> Path:
 def sample_postprocessed_confounds() -> Path:
     return Path("tests/data/sample_postprocessed_confounds.tsv").resolve()
 
+
+@pytest.fixture(scope="session")
+def sample_nuisance_file() -> Path:
+    with open('tests/data/sample_nuisance_file.txt', 'w') as f:
+        f.write("0\n0\n1\n0\n0\n0\n1\n0\n0\n0")
+    return Path("tests/data/sample_nuisance_file.txt").resolve()
 
 @pytest.fixture(scope="session")
 def sample_melodic_mixing() -> Path:
