@@ -2,11 +2,12 @@
 
 ## 1.8.1 (Jun 28, 2023)
 
-## Enhancements
+### Enhancements
 - `postproc2` - Added new step ScrubTimepoints, allowing timepoints to be removed from the image and confounds where a set threshold is exceeded for a chosen confound variable.
+- `postproc2` - Wildcard statements such as `t_comp_cor*` can now be used in the `Columns` section of `ConfoundsOptions` to select multiple columns at once.
 - `postproc2` - Added special case to Temporal Filtering, which will interpolate over any values removed in the ScrubTimepoints step. See the documentation at Postprocessing/postprocess2/Processing Step Options/Temporal Filtering
 
-## Development
+### Development
 - `clpipe` - Contribution guide is now in its own markdown file separate from the setup guide. More details added to guide
 - `tests` - New helper added for plotting timeseries data
 - `tests` - Longer 100 timepoint sample image added for steps like Temporal Filtering that need more data for effective testing
