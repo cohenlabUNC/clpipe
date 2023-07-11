@@ -4,9 +4,7 @@
 
 ## Enhancements
 - `postproc2` - Added new step ScrubTimepoints, allowing timepoints to be removed from the image and confounds where a set threshold is exceeded for a chosen confound variable.
-
-## Bug Fixes
--
+- `postproc2` - Added special case to Temporal Filtering, which will interpolate over any values removed in the ScrubTimepoints step. See the documentation at Postprocessing/postprocess2/Processing Step Options/Temporal Filtering
 
 ## Development
 - `clpipe` - Contribution guide is now in its own markdown file separate from the setup guide. More details added to guide
