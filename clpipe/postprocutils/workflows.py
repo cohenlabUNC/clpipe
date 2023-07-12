@@ -270,6 +270,7 @@ def build_image_postprocessing_workflow(
             ]
 
             current_wf = build_temporal_filter_workflow(
+                implementation_name,
                 hp=hp,
                 lp=lp,
                 tr=tr,
