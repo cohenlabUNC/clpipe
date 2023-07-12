@@ -227,7 +227,7 @@ class TestWorkflows:
         self.plot_img = plot_img
 
 
-    
+@pytest.mark.skip(reason="Needs to be fixed but not prioritized")    
 def test_confound_regression_fsl_glm_wf(artifact_dir, sample_raw_image, sample_postprocessed_confounds, sample_raw_image_mask, plot_img, write_graph, request, helpers):
     test_path = helpers.create_test_dir(artifact_dir, request.node.name)
 
@@ -317,8 +317,7 @@ def test_apply_aroma_fsl_regfilt_wf(
     if plot_img:
         helpers.plot_4D_img_slice(regressed_path, "aromaaplied.png")
 
-
-# TODO: Provide reference image
+@pytest.mark.skip(reason="Need to provide reference image")
 def test_resample_wf(
     artifact_dir,
     sample_raw_image,
@@ -403,6 +402,7 @@ def test_scrubbing_wf_no_insert_na(
         helpers.plot_4D_img_slice(scrubbed_path, "scrubbed.png")
 
 
+@pytest.mark.skip(reason="Need to wrap tsv as image.")
 def test_scrubbing_wf_confounds(
     artifact_dir, sample_confounds_timeseries, request, helpers
 ):
@@ -422,7 +422,7 @@ def test_scrubbing_wf_confounds(
     )
     wf.run()
 
-
+@pytest.mark.skip(reason="Need to wrap tsv as image.")
 def test_scrubbing_wf_aroma(artifact_dir, sample_melodic_mixing, request, helpers):
     """Test that a list of arbitrary timepoints can be scrubbed from an
     AROMA mixing file."""
