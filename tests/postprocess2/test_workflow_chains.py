@@ -446,11 +446,14 @@ def test_postprocess2_wf_scrubbing(
     test_path = helpers.create_test_dir(artifact_dir, request.node.name)
     out_path = test_path / "postProcessed.nii.gz"
 
+    scrub_vector = [0, 1, 0, 0, 0, 0, 1, 0, 0, 0]
+
     wf = build_image_postprocessing_workflow(
         postprocessing_config,
         in_file=sample_raw_image,
         export_path=out_path,
         tr=2,
+        scrub_vector=scrub_vector,
         mask_file=sample_raw_image_mask,
         confounds_file=sample_postprocessed_confounds,
         base_dir=test_path,
