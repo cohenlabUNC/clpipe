@@ -153,7 +153,6 @@ def fmri_roi_extraction(subjects=None,config_file=None, target_dir=None, target_
             sub_string_temp = sub_string_temp + ' ' + subject
             batch_manager.addjob(Job('ROI_extract_' + subject +'_'+atlas_name, sub_string_temp))
             if single:
-                logger.info('Running Subject '+ subject + ' Atlas: '+ atlas_name + ' Atlas Type: ' + atlas_type)
                 _fmri_roi_extract_subject(subject, task, atlas_name, atlas_filename, atlas_labels, atlas_type, custom_radius, custom_flag, config, overlap_ok, overwrite, logger)
     if not single:
         if submit:
@@ -164,12 +163,15 @@ def fmri_roi_extraction(subjects=None,config_file=None, target_dir=None, target_
             click.echo(batch_manager.print_jobs())
 
 def _fmri_roi_extract_subject(subject, task, atlas_name, atlas_filename, atlas_label, atlas_type,radius, custom_flag, config, overlap_ok, overwrite, logger):
+    logger.info('Running Subject '+ subject + ' Atlas: '+ atlas_name + ' Atlas Type: ' + atlas_type)
+    
     if not custom_flag:
         atlas_path = resource_filename(__name__, atlas_filename)
         atlas_labelpath = resource_filename(__name__, atlas_label)
     else:
         atlas_path = os.path.abspath(atlas_filename)
         atlas_labelpath = os.path.abspath(atlas_label)
+    logger.debug(f"Using atlas path: {atlas_path}")
 
     search_string = os.path.abspath(
         os.path.join(config.config['ROIExtractionOptions']['TargetDirectory'], "sub-" + subject, "**",
@@ -185,19 +187,52 @@ def _fmri_roi_extract_subject(subject, task, atlas_name, atlas_filename, atlas_l
     shutil.copy2(atlas_labelpath,config.config['ROIExtractionOptions']['OutputDirectory'])
 
     for file in subject_files:
-        logger.info("Extracting the " + atlas_name + " atlas for " + file)
-       
+        logger.info(f"Processing image: {Path(file).stem}")
         file_outname = os.path.splitext(os.path.basename(file))[0]
         if '.nii' in file_outname:
             file_outname = os.path.splitext(file_outname)[0]
-        if os.path.exists(os.path.join(config.config['ROIExtractionOptions']['OutputDirectory'],
-                                        atlas_name + '/' + file_outname + "_atlas-" + atlas_name + '.csv')) and not overwrite:
-            logger.info("File Exists! Skipping")
+
+        if os.path.exists(os.path.join(
+            config.config['ROIExtractionOptions']['OutputDirectory'],
+            atlas_name + '/' + file_outname + "_atlas-" + atlas_name + '.csv'
+        )) and not overwrite:
+            logger.info("File Exists! Skipping. Use -overwrite to reprocess.")
             continue
+
+        found_mask = False
+        fallback = False
         try:
             mask_file = _mask_finder(file, config, logger)
-            ROI_ts = _fmri_roi_extract_image(file, atlas_path, atlas_type, radius, overlap_ok, logger, mask = mask_file)
+            found_mask = True
+        except MaskFileNotFoundError:
+            if config.config['ROIExtractionOptions']['RequireMask']:
+                logger.warning("Skipping this scan due to missing brain mask.")
+                continue
+            else:
+                logger.warning(
+                    "Unable to find a mask for this image. Extracting ROIs without using brain mask."
+                )
+        else:
+            try:
+                logger.info("Starting masked ROI extraction...")
+                # Attempt to run ROI extraction with mask
+                ROI_ts = _fmri_roi_extract_image(
+                    file, atlas_path, atlas_type, radius, overlap_ok, logger, mask = mask_file
+                )
+            except ValueError as ve:
+                # Fallback for if any ROIs are outside of the mask region
+                logger.warning(
+                    ve.__str__() + ". Extracting ROIs without using brain mask."
+                )
+                fallback = True
+        
+        if not found_mask or fallback:
+            logger.info("Starting non-masked ROI extraction...")
+            ROI_ts = _fmri_roi_extract_image(
+                file, atlas_path, atlas_type, radius, overlap_ok, logger
+        )
 
+        if fallback:
             temp_mask = concat_imgs([mask_file,mask_file])
             mask_ROIs = _fmri_roi_extract_image(temp_mask, atlas_path, atlas_type, radius, overlap_ok, logger)
             mask_ROIs = np.nan_to_num(mask_ROIs)
@@ -206,27 +241,15 @@ def _fmri_roi_extract_subject(subject, task, atlas_name, atlas_filename, atlas_l
             logger.debug(to_remove)
             ROI_ts[:, to_remove] = np.nan
 
-            np.savetxt(
-            os.path.join(os.path.join(config.config['ROIExtractionOptions']['OutputDirectory'], atlas_name),
-                        file_outname + "_atlas-" + atlas_name + '_voxel_prop.csv'), mask_ROIs[0], delimiter=',')
-
-        except MaskFileNotFoundError as mfnfe:
-            logger.warning(mfnfe)
-            logger.warning("Extracting ROIs without using brain mask.")
-            if config.config['ROIExtractionOptions']['RequireMask']:
-                logger.warning("Skipping this scan due to missing brain mask.")
-                continue
-
-            ROI_ts = _fmri_roi_extract_image(file, atlas_path, atlas_type, radius, overlap_ok, logger)
-
-        except ValueError as ve:
-            # Follows original logic catching the empty spheres error given
-            #    when a mask file is included, for unknown reasons.
-            logger.warning(ve.__str__() + ". Extracting ROIs without using brain mask.")
-            ROI_ts = _fmri_roi_extract_image(file, atlas_path, atlas_type, radius, overlap_ok, logger)
-            
+            # Save ROI masked threshold timeseries
+            np.savetxt(os.path.join(os.path.join(config.config['ROIExtractionOptions']['OutputDirectory'], atlas_name),
+                file_outname + "_atlas-" + atlas_name + '_voxel_prop.csv'), mask_ROIs[0], delimiter=',')
+        
+        # Save the ROI timeseries
         np.savetxt(os.path.join(os.path.join(config.config['ROIExtractionOptions']['OutputDirectory'], atlas_name),
             file_outname + "_atlas-" + atlas_name + '.csv'), ROI_ts, delimiter=',')
+        
+        logger.info("Extraction completed.")
 
 
 def _fmri_roi_extract_image(data,  atlas_path, atlas_type, radius, overlap_ok,logger,mask = None):

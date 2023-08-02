@@ -1,5 +1,5 @@
 PACKAGE_NAME = 'clpipe'
-VERSION = '1.8.0.5'
+VERSION = '1.8.1'
 
 DESCRIPTION = 'clpipe: MRI processing pipeline for high performance clusters'
 REPO_URL = 'https://github.com/cohenlabUNC/clpipe'
@@ -33,7 +33,7 @@ INSTALL_REQUIRES = [
       'pybids>=0.14.0',
       'templateflow',
       'deepdiff',
-      "pydantic",
+      "pydantic==1.10.7",
       "matplotlib",
       "heudiconv>=0.10.0",
       "tqdm",

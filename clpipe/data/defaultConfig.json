@@ -133,6 +133,14 @@
 			"AROMARegression":{
 				"Implementation": "fsl_regfilt"
 			},
+			"ScrubTimepoints":{
+				"TargetVariable": "framewise_displacement",
+				"Threshold": 0.9,
+				"ScrubAhead": 0,
+				"ScrubBehind": 0,
+				"ScrubContiguous": 0,
+				"InsertNA": true
+			},
 			"Resample":{
 				"ReferenceImage": "SET REFERENCE IMAGE"
 			},

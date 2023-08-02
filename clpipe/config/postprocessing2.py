@@ -114,6 +114,19 @@ class Resample:
         ordered = True
 
 @dataclass
+class ScrubTimepoints:
+    TargetVariable: str
+    Threshold: float
+    ScrubAhead: int
+    ScrubBehind: int
+    ScrubContiguous: int
+    InsertNA: bool
+    
+    #Add this class to get a ordered dictionary in the dump method
+    class Meta:
+        ordered = True
+
+@dataclass
 class TrimTimepoints:
     FromEnd: int
     @property
@@ -190,6 +203,15 @@ class ProcessingStepOptions:
         if value is not None:
             self._AROMARegression = value
 
+    ScrubTimepoints: ScrubTimepoints
+    @property
+    def ScrubTimepoints(self):
+        return self._ScrubTimepoints
+    @ScrubTimepoints.setter
+    def ScrubTimepoints(self, value):
+        if value is not None:
+            self._ScrubTimepoints = value
+    
     Resample: Resample
     @property
     def Resample(self):
@@ -216,6 +238,8 @@ class ProcessingStepOptions:
     def ConfoundRegression(self, value):
         if value is not None:
             self._ConfoundRegression = value
+
+    
 
     #Add this class to get a ordered dictionary in the dump method
     class Meta:
