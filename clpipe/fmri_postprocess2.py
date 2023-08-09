@@ -441,37 +441,6 @@ def postprocess_image(
     postproc_wf.run()
     sys.exit(0)
 
-
-def _setup_image_workflow(
-    postprocessing_config,
-    pipeline_name,
-    tr,
-    export_path,
-    working_dir,
-    log_dir,
-    logger,
-    mask_image=None,
-    confounds=None,
-    mixing_file=None,
-    noise_file=None,
-):
-    logger.info(f"Building postprocessing workflow for: {pipeline_name}")
-    wf = build_image_postprocessing_workflow(
-        postprocessing_config,
-        export_path=export_path,
-        name=f"image_wf",
-        mask_file=mask_image,
-        confounds_file=confounds,
-        mixing_file=mixing_file,
-        noise_file=noise_file,
-        tr=tr,
-        base_dir=working_dir,
-        crashdump_dir=log_dir,
-    )
-
-    return wf
-
-
 def build_export_path(
     image_path: os.PathLike,
     subject_id: str,
@@ -501,36 +470,6 @@ def build_export_path(
     print(f"Export path: {export_path}")
 
     return export_path
-
-
-def _setup_confounds_wf(
-    postprocessing_config,
-    pipeline_name,
-    tr,
-    export_file,
-    working_dir,
-    log_dir,
-    logger,
-    mixing_file=None,
-    noise_file=None,
-):
-    # TODO: Run this async or batch
-    logger.info(f"Building confounds workflow for {pipeline_name}")
-
-    logger.info(f"Postprocessed confound out file: {export_file}")
-
-    confounds_wf = build_confounds_processing_workflow(
-        postprocessing_config,
-        export_file=export_file,
-        tr=tr,
-        name=f"confounds_wf",
-        mixing_file=mixing_file,
-        noise_file=noise_file,
-        base_dir=working_dir,
-        crashdump_dir=log_dir,
-    )
-
-    return confounds_wf
 
 
 def _fetch_postprocessing_stream_config(
