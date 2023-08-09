@@ -325,6 +325,9 @@ def test_postprocess2_wf_scrubbing(
         "white_matter",
         "white_matter_derivative1",
     ]
+    # Setup target & threshold to ensure some scrubbing happens
+    postprocessing_config["ProcessingStepOptions"]["ScrubTimepoints"]["TargetVariable"] = "csf"
+    postprocessing_config["ProcessingStepOptions"]["ScrubTimepoints"]["Threshold"] = 332.44
 
     test_path = helpers.create_test_dir(artifact_dir, request.node.name)
     out_path = test_path / "postprocessed_image.nii.gz"
@@ -369,6 +372,10 @@ def test_postprocess2_wf_scrubbing_aroma(
         "AROMARegression",
         "ScrubTimepoints",
     ]
+
+    # Setup target & threshold to ensure some scrubbing happens
+    postprocessing_config["ProcessingStepOptions"]["ScrubTimepoints"]["TargetVariable"] = "csf"
+    postprocessing_config["ProcessingStepOptions"]["ScrubTimepoints"]["Threshold"] = 332.44
 
     test_path = helpers.create_test_dir(artifact_dir, request.node.name)
     out_path = test_path / "postprocessed_image.nii.gz"
@@ -415,6 +422,9 @@ def test_postprocess2_wf_scrubbing_confound_regression(
         "ConfoundRegression",
         "ScrubTimepoints",
     ]
+    # Setup target & threshold to ensure some scrubbing happens
+    postprocessing_config["ProcessingStepOptions"]["ScrubTimepoints"]["TargetVariable"] = "csf"
+    postprocessing_config["ProcessingStepOptions"]["ScrubTimepoints"]["Threshold"] = 332.44
 
     test_path = helpers.create_test_dir(artifact_dir, request.node.name)
     out_path = test_path / "postprocessed_image.nii.gz"
