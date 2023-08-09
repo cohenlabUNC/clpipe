@@ -528,6 +528,7 @@ def _combine_confounds_files(base_confounds_file, append_confounds_file):
     out_file = Path(out_file + "_combined.tsv")
 
     base_confounds_df = pd.read_csv(base_confounds_file, sep="\t")
+    base_confounds_df = base_confounds_df.fillna('n/a')
     try:
         append_confounds_df = pd.read_csv(append_confounds_file, sep="\t")
 
@@ -649,6 +650,7 @@ def _nii_to_tsv(nii_file, tsv_file=None, headers=None):
         tsv_file = str(tsv_file.absolute())
 
     transposed_df = pd.DataFrame(transposed_matrix, columns=headers)
+    transposed_df = transposed_df.fillna('n/a')
     transposed_df.to_csv(tsv_file, sep="\t", index=False)
 
     return tsv_file
