@@ -31,142 +31,126 @@ def test_build_postprocessing_wf(
     wf.run()
 
     wf.write_graph(
-        dotfilename=test_path / "global_workflow", graph2use='colored'
+        dotfilename=test_path / "workflow_graph", graph2use='colored'
     )
 
-    
 
-def test_postprocess2_wf_2_steps(
+def test_build_postprocessing_wf_no_mask(
     artifact_dir,
     postprocessing_config,
     request,
     sample_raw_image,
-    sample_raw_image_mask,
     sample_confounds_timeseries,
-    plot_img,
-    write_graph,
     helpers,
 ):
     postprocessing_config["ProcessingSteps"] = [
-        "SpatialSmoothing",
         "IntensityNormalization",
+        "TemporalFiltering",
+        "SpatialSmoothing",
     ]
 
     test_path = helpers.create_test_dir(artifact_dir, request.node.name)
-    out_path = test_path / "postProcessed.nii.gz"
+    out_path = test_path / "postprocessed_image.nii.gz"
+    confounds_out_path = test_path / "postprocessed_confounds.tsv"
 
-    wf = build_image_postprocessing_workflow(
+    wf = build_postprocessing_wf(
         postprocessing_config,
-        in_file=sample_raw_image,
-        export_path=out_path,
+        image_file=sample_raw_image,
+        image_export_path=out_path,
         tr=2,
-        mask_file=sample_raw_image_mask,
         confounds_file=sample_confounds_timeseries,
+        confounds_export_path=confounds_out_path,
         base_dir=test_path,
         crashdump_dir=test_path,
     )
 
     wf.run()
 
-    if write_graph:
-        wf.write_graph(
-            dotfilename=test_path / "postProcessSubjectFlow", graph2use=write_graph
-        )
+    wf.write_graph(
+        dotfilename=test_path / "workflow_graph", graph2use='colored'
+    )
 
-    if plot_img:
-        helpers.plot_4D_img_slice(out_path, "postProcessed.png")
-
-
-def test_postprocess2_wf_3_steps(
+    
+def test_build_postprocessing_wf_2_steps(
     artifact_dir,
     postprocessing_config,
     request,
     sample_raw_image,
     sample_raw_image_mask,
     sample_confounds_timeseries,
-    plot_img,
-    write_graph,
     helpers,
 ):
     postprocessing_config["ProcessingSteps"] = [
         "SpatialSmoothing",
-        "IntensityNormalization",
         "TemporalFiltering",
     ]
 
     test_path = helpers.create_test_dir(artifact_dir, request.node.name)
-    out_path = test_path / "postProcessed.nii.gz"
+    out_path = test_path / "postprocessed_image.nii.gz"
+    confounds_out_path = test_path / "postprocessed_confounds.tsv"
 
-    wf = build_image_postprocessing_workflow(
+    wf = build_postprocessing_wf(
         postprocessing_config,
-        in_file=sample_raw_image,
-        export_path=out_path,
+        image_file=sample_raw_image,
+        image_export_path=out_path,
         tr=2,
         mask_file=sample_raw_image_mask,
         confounds_file=sample_confounds_timeseries,
+        confounds_export_path=confounds_out_path,
         base_dir=test_path,
-        crashdump_dir=test_path,
+        crashdump_dir=test_path
     )
 
     wf.run()
 
-    if write_graph:
-        wf.write_graph(
-            dotfilename=test_path / "postProcessSubjectFlow", graph2use=write_graph
-        )
+    wf.write_graph(
+        dotfilename=test_path / "workflow_graph", graph2use='colored'
+    )
 
-    if plot_img:
-        helpers.plot_4D_img_slice(out_path, "postProcessed.png")
+    helpers.plot_4D_img_slice(out_path, "postprocessed.png")
 
 
-def test_postprocess2_wf_1_step(
+def test_build_postprocessing_wf_1_step(
     artifact_dir,
     postprocessing_config,
     request,
     sample_raw_image,
     sample_raw_image_mask,
     sample_confounds_timeseries,
-    plot_img,
-    write_graph,
     helpers,
 ):
-    postprocessing_config["ProcessingSteps"] = ["SpatialSmoothing"]
+    postprocessing_config["ProcessingSteps"] = ["TemporalFiltering"]
 
     test_path = helpers.create_test_dir(artifact_dir, request.node.name)
-    out_path = test_path / "postProcessed.nii.gz"
+    out_path = test_path / "postprocessed_image.nii.gz"
+    confounds_out_path = test_path / "postprocessed_confounds.tsv"
 
-    wf = build_image_postprocessing_workflow(
+    wf = build_postprocessing_wf(
         postprocessing_config,
-        in_file=sample_raw_image,
-        export_path=out_path,
+        image_file=sample_raw_image,
+        image_export_path=out_path,
         tr=2,
         mask_file=sample_raw_image_mask,
         confounds_file=sample_confounds_timeseries,
+        confounds_export_path=confounds_out_path,
         base_dir=test_path,
-        crashdump_dir=test_path,
+        crashdump_dir=test_path
     )
 
     wf.run()
 
-    if write_graph:
-        wf.write_graph(
-            dotfilename=test_path / "postProcessSubjectFlow", graph2use=write_graph
-        )
-
-    if plot_img:
-        helpers.plot_4D_img_slice(out_path, "postProcessed.png")
+    wf.write_graph(
+        dotfilename=test_path / "workflow_graph", graph2use='colored'
+    )
 
 
-# This test won't work until properly processed confound file provided
 def test_postprocess2_wf_confound_regression_last(
     artifact_dir,
     postprocessing_config,
     request,
     sample_raw_image,
     sample_raw_image_mask,
-    sample_postprocessed_confounds,
-    plot_img,
-    write_graph,
+    sample_confounds_timeseries,
     helpers,
 ):
     postprocessing_config["ProcessingSteps"] = [
@@ -175,27 +159,26 @@ def test_postprocess2_wf_confound_regression_last(
     ]
 
     test_path = helpers.create_test_dir(artifact_dir, request.node.name)
-    out_path = test_path / "postProcessed.nii.gz"
+    out_path = test_path / "postprocessed_image.nii.gz"
+    confounds_out_path = test_path / "postprocessed_confounds.tsv"
 
-    wf = build_image_postprocessing_workflow(
+    wf = build_postprocessing_wf(
         postprocessing_config,
-        in_file=sample_raw_image,
-        export_path=out_path,
+        image_file=sample_raw_image,
+        image_export_path=out_path,
         tr=2,
         mask_file=sample_raw_image_mask,
-        confounds_file=sample_postprocessed_confounds,
+        confounds_file=sample_confounds_timeseries,
+        confounds_export_path=confounds_out_path,
         base_dir=test_path,
-        crashdump_dir=test_path,
-    )
-
-    wf.write_graph(
-        dotfilename=test_path / "postProcessSubjectFlow", graph2use="colored"
+        crashdump_dir=test_path
     )
 
     wf.run()
 
-    if plot_img:
-        helpers.plot_4D_img_slice(out_path, "postProcessed.png")
+    wf.write_graph(
+        dotfilename=test_path / "workflow_graph", graph2use='colored'
+    )
 
 
 def test_postprocess2_wf_confound_regression_first(
@@ -204,40 +187,35 @@ def test_postprocess2_wf_confound_regression_first(
     request,
     sample_raw_image,
     sample_raw_image_mask,
-    sample_postprocessed_confounds,
-    plot_img,
-    write_graph,
+    sample_confounds_timeseries,
     helpers,
 ):
     postprocessing_config["ProcessingSteps"] = [
         "ConfoundRegression",
-        "SpatialSmoothing",
+        "TemporalFiltering",
     ]
 
     test_path = helpers.create_test_dir(artifact_dir, request.node.name)
-    out_path = test_path / "postProcessed.nii.gz"
+    out_path = test_path / "postprocessed_image.nii.gz"
+    confounds_out_path = test_path / "postprocessed_confounds.tsv"
 
-    wf = build_image_postprocessing_workflow(
+    wf = build_postprocessing_wf(
         postprocessing_config,
-        in_file=sample_raw_image,
-        export_path=out_path,
+        image_file=sample_raw_image,
+        image_export_path=out_path,
         tr=2,
         mask_file=sample_raw_image_mask,
-        confounds_file=sample_postprocessed_confounds,
+        confounds_file=sample_confounds_timeseries,
+        confounds_export_path=confounds_out_path,
         base_dir=test_path,
-        crashdump_dir=test_path,
-    )
-
-    wf.write_graph(
-        dotfilename=test_path / "postProcessSubjectFlow", graph2use="colored"
+        crashdump_dir=test_path
     )
 
     wf.run()
 
-    if plot_img:
-        helpers.plot_4D_img_slice(out_path, "postProcessed.png")
-
-    assert True
+    wf.write_graph(
+        dotfilename=test_path / "workflow_graph", graph2use='colored'
+    )
 
 
 def test_postprocess2_wf_aroma(
@@ -246,6 +224,7 @@ def test_postprocess2_wf_aroma(
     request,
     sample_raw_image,
     sample_raw_image_mask,
+    sample_confounds_timeseries,
     sample_melodic_mixing,
     sample_aroma_noise_ics,
     helpers,
@@ -257,28 +236,31 @@ def test_postprocess2_wf_aroma(
     ]
 
     test_path = helpers.create_test_dir(artifact_dir, request.node.name)
-    out_path = test_path / "postProcessed.nii.gz"
+    out_path = test_path / "postprocessed_image.nii.gz"
+    confounds_out_path = test_path / "postprocessed_confounds.tsv"
 
-    wf = build_image_postprocessing_workflow(
+    wf = build_postprocessing_wf(
         postprocessing_config,
-        in_file=sample_raw_image,
-        export_path=out_path,
+        image_file=sample_raw_image,
+        image_export_path=out_path,
         tr=2,
         mask_file=sample_raw_image_mask,
+        confounds_file=sample_confounds_timeseries,
+        confounds_export_path=confounds_out_path,
         mixing_file=sample_melodic_mixing,
         noise_file=sample_aroma_noise_ics,
         base_dir=test_path,
-        crashdump_dir=test_path,
-    )
-
-    wf.write_graph(
-        dotfilename=test_path / "postProcessSubjectFlow", graph2use="colored"
+        crashdump_dir=test_path
     )
 
     wf.run()
 
+    wf.write_graph(
+        dotfilename=test_path / "workflow_graph", graph2use='colored'
+    )
+
     helpers.plot_timeseries(out_path, sample_raw_image)
-    helpers.plot_4D_img_slice(out_path, "postProcessed.png")
+    helpers.plot_4D_img_slice(out_path, "postprocessed.png")
 
 
 def test_postprocess2_wf_aroma_last(
@@ -287,6 +269,7 @@ def test_postprocess2_wf_aroma_last(
     request,
     sample_raw_image,
     sample_raw_image_mask,
+    sample_confounds_timeseries,
     sample_melodic_mixing,
     sample_aroma_noise_ics,
     helpers,
@@ -298,163 +281,31 @@ def test_postprocess2_wf_aroma_last(
     ]
 
     test_path = helpers.create_test_dir(artifact_dir, request.node.name)
-    out_path = test_path / "postProcessed.nii.gz"
+    out_path = test_path / "postprocessed_image.nii.gz"
+    confounds_out_path = test_path / "postprocessed_confounds.tsv"
 
-    wf = build_image_postprocessing_workflow(
+    wf = build_postprocessing_wf(
         postprocessing_config,
-        in_file=sample_raw_image,
-        export_path=out_path,
+        image_file=sample_raw_image,
+        image_export_path=out_path,
         tr=2,
         mask_file=sample_raw_image_mask,
+        confounds_file=sample_confounds_timeseries,
+        confounds_export_path=confounds_out_path,
         mixing_file=sample_melodic_mixing,
         noise_file=sample_aroma_noise_ics,
         base_dir=test_path,
-        crashdump_dir=test_path,
+        crashdump_dir=test_path
     )
+
+    wf.run()
 
     wf.write_graph(
-        dotfilename=test_path / "postProcessSubjectFlow", graph2use="colored"
+        dotfilename=test_path / "workflow_graph", graph2use='colored'
     )
-
-    wf.run()
 
     helpers.plot_timeseries(out_path, sample_raw_image)
-    helpers.plot_4D_img_slice(out_path, "postProcessed.png")
-
-
-def test_postprocess2_wf_no_mask(
-    artifact_dir,
-    postprocessing_config,
-    request,
-    sample_raw_image,
-    plot_img,
-    write_graph,
-    helpers,
-):
-    test_path = helpers.create_test_dir(artifact_dir, request.node.name)
-    out_path = test_path / "postProcessed.nii.gz"
-
-    postprocessing_config["ProcessingSteps"] = [
-        "TemporalFiltering",
-        "SpatialSmoothing",
-        "IntensityNormalization",
-    ]
-
-    wf = build_image_postprocessing_workflow(
-        postprocessing_config,
-        sample_raw_image,
-        out_path,
-        tr=2,
-        base_dir=test_path,
-        crashdump_dir=test_path,
-    )
-
-    wf.run()
-
-    if write_graph:
-        wf.write_graph(
-            dotfilename=test_path / "postProcessSubjectFlow", graph2use=write_graph
-        )
-
-    if plot_img:
-        helpers.plot_4D_img_slice(out_path, "postProcessed.png")
-
-    assert True
-
-
-def test_postprocess2_wf_fslmaths_temporal_filter(
-    artifact_dir,
-    postprocessing_config,
-    request,
-    sample_raw_image,
-    sample_raw_image_mask,
-    sample_confounds_timeseries,
-    plot_img,
-    write_graph,
-    helpers,
-):
-    postprocessing_config["ProcessingSteps"] = [
-        "SpatialSmoothing",
-        "IntensityNormalization",
-        "TemporalFiltering",
-    ]
-    postprocessing_config["ProcessingStepOptions"]["TemporalFiltering"][
-        "Implementation"
-    ] = "fslmaths"
-
-    test_path = helpers.create_test_dir(artifact_dir, request.node.name)
-    out_path = test_path / "postProcessed.nii.gz"
-
-    wf = build_image_postprocessing_workflow(
-        postprocessing_config,
-        in_file=sample_raw_image,
-        export_path=out_path,
-        tr=2,
-        mask_file=sample_raw_image_mask,
-        confounds_file=sample_confounds_timeseries,
-        base_dir=test_path,
-        crashdump_dir=test_path,
-    )
-
-    wf.run()
-
-    if write_graph:
-        wf.write_graph(
-            dotfilename=test_path / "postProcessSubjectFlow", graph2use=write_graph
-        )
-
-    if plot_img:
-        helpers.plot_4D_img_slice(out_path, "postProcessed.png")
-
-
-def test_prepare_confounds(
-    sample_confounds_timeseries, postprocessing_config, artifact_dir, helpers, request
-):
-    test_path = helpers.create_test_dir(artifact_dir, request.node.name)
-    out_path = test_path / "new_confounds.tsv"
-
-    cf_workflow = build_confounds_processing_workflow(
-        postprocessing_config,
-        confounds_file=sample_confounds_timeseries,
-        export_file=out_path,
-        base_dir=test_path,
-        crashdump_dir=test_path,
-        tr=2,
-    )
-
-    cf_workflow.run()
-
-
-def test_prepare_confounds_aroma(
-    sample_confounds_timeseries,
-    postprocessing_config,
-    sample_melodic_mixing,
-    sample_aroma_noise_ics,
-    artifact_dir,
-    helpers,
-    request,
-):
-    test_path = helpers.create_test_dir(artifact_dir, request.node.name)
-    out_path = test_path / "new_confounds.tsv"
-
-    postprocessing_config["ProcessingSteps"] = [
-        "AROMARegression",
-        "TemporalFiltering",
-        "IntensityNormalization",
-    ]
-
-    cf_workflow = build_confounds_processing_workflow(
-        postprocessing_config,
-        confounds_file=sample_confounds_timeseries,
-        export_file=out_path,
-        mixing_file=sample_melodic_mixing,
-        noise_file=sample_aroma_noise_ics,
-        base_dir=test_path,
-        crashdump_dir=test_path,
-        tr=2,
-    )
-
-    cf_workflow.run()
+    helpers.plot_4D_img_slice(out_path, "postprocessed.png")
 
 
 def test_postprocess2_wf_scrubbing(
@@ -463,15 +314,10 @@ def test_postprocess2_wf_scrubbing(
     request,
     sample_raw_image,
     sample_raw_image_mask,
-    sample_postprocessed_confounds,
-    plot_img,
+    sample_confounds_timeseries,
     helpers,
 ):
-    postprocessing_config["ProcessingSteps"] = [
-        "TemporalFiltering",
-        "ConfoundRegression",
-        "ScrubTimepoints"]
-    
+    postprocessing_config["ProcessingSteps"] = ["TemporalFiltering", "ScrubTimepoints"]
     postprocessing_config["ConfoundOptions"]["Columns"] = [
         "framewise_displacement",
         "csf",
@@ -481,27 +327,118 @@ def test_postprocess2_wf_scrubbing(
     ]
 
     test_path = helpers.create_test_dir(artifact_dir, request.node.name)
-    out_path = test_path / "postProcessed.nii.gz"
+    out_path = test_path / "postprocessed_image.nii.gz"
+    confounds_out_path = test_path / "postprocessed_confounds.tsv"
 
-    scrub_vector = [0, 1, 0, 0, 0, 0, 1, 0, 0, 0]
-
-    wf = build_image_postprocessing_workflow(
+    wf = build_postprocessing_wf(
         postprocessing_config,
-        in_file=sample_raw_image,
-        export_path=out_path,
+        image_file=sample_raw_image,
+        image_export_path=out_path,
         tr=2,
-        scrub_vector=scrub_vector,
         mask_file=sample_raw_image_mask,
-        confounds_file=sample_postprocessed_confounds,
+        confounds_file=sample_confounds_timeseries,
+        confounds_export_path=confounds_out_path,
         base_dir=test_path,
-        crashdump_dir=test_path,
-    )
-
-    wf.write_graph(
-        dotfilename=test_path / "postProcessSubjectFlow", graph2use="colored"
+        crashdump_dir=test_path
     )
 
     wf.run()
 
-    if plot_img:
-        helpers.plot_4D_img_slice(out_path, "postProcessed.png")
+    wf.write_graph(
+        dotfilename=test_path / "workflow_graph", graph2use='colored'
+    )
+
+    helpers.plot_timeseries(out_path, sample_raw_image)
+    helpers.plot_4D_img_slice(out_path, "postprocessed.png")
+
+
+def test_postprocess2_wf_scrubbing_aroma(
+    artifact_dir,
+    postprocessing_config,
+    request,
+    sample_raw_image,
+    sample_raw_image_mask,
+    sample_confounds_timeseries,
+    sample_melodic_mixing,
+    sample_aroma_noise_ics,
+    helpers,
+):
+    postprocessing_config["ProcessingSteps"] = [
+        "TemporalFiltering",
+        "SpatialSmoothing",
+        "AROMARegression",
+        "ScrubTimepoints",
+    ]
+
+    test_path = helpers.create_test_dir(artifact_dir, request.node.name)
+    out_path = test_path / "postprocessed_image.nii.gz"
+    confounds_out_path = test_path / "postprocessed_confounds.tsv"
+
+    wf = build_postprocessing_wf(
+        postprocessing_config,
+        image_file=sample_raw_image,
+        image_export_path=out_path,
+        tr=2,
+        mask_file=sample_raw_image_mask,
+        confounds_file=sample_confounds_timeseries,
+        confounds_export_path=confounds_out_path,
+        mixing_file=sample_melodic_mixing,
+        noise_file=sample_aroma_noise_ics,
+        base_dir=test_path,
+        crashdump_dir=test_path
+    )
+
+    wf.run()
+
+    wf.write_graph(
+        dotfilename=test_path / "workflow_graph", graph2use='colored'
+    )
+
+    helpers.plot_timeseries(out_path, sample_raw_image)
+    helpers.plot_4D_img_slice(out_path, "postprocessed.png")
+
+
+def test_postprocess2_wf_scrubbing_confound_regression(
+    artifact_dir,
+    postprocessing_config,
+    request,
+    sample_raw_image,
+    sample_raw_image_mask,
+    sample_confounds_timeseries,
+    sample_melodic_mixing,
+    sample_aroma_noise_ics,
+    helpers,
+):
+    postprocessing_config["ProcessingSteps"] = [
+        "TemporalFiltering",
+        "SpatialSmoothing",
+        "ConfoundRegression",
+        "ScrubTimepoints",
+    ]
+
+    test_path = helpers.create_test_dir(artifact_dir, request.node.name)
+    out_path = test_path / "postprocessed_image.nii.gz"
+    confounds_out_path = test_path / "postprocessed_confounds.tsv"
+
+    wf = build_postprocessing_wf(
+        postprocessing_config,
+        image_file=sample_raw_image,
+        image_export_path=out_path,
+        tr=2,
+        mask_file=sample_raw_image_mask,
+        confounds_file=sample_confounds_timeseries,
+        confounds_export_path=confounds_out_path,
+        mixing_file=sample_melodic_mixing,
+        noise_file=sample_aroma_noise_ics,
+        base_dir=test_path,
+        crashdump_dir=test_path
+    )
+
+    wf.run()
+
+    wf.write_graph(
+        dotfilename=test_path / "workflow_graph", graph2use='colored'
+    )
+
+    helpers.plot_timeseries(out_path, sample_raw_image)
+    helpers.plot_4D_img_slice(out_path, "postprocessed.png")
