@@ -148,9 +148,10 @@ def build_confounds_processing_workflow(
     )
     confounds_wf.connect(input_node, "in_file", confounds_prep_wf, "inputnode.in_file")
 
+    current_wf = confounds_prep_wf
     # Setup postprocessing workflow if any relevant postprocessing steps are included
     if confounds_processing_steps:
-        prev_wf = confounds_prep_wf
+        prev_wf = current_wf
         current_wf = build_confounds_postprocessing_workflow(
             postprocessing_config,
             confounds_processing_steps,
