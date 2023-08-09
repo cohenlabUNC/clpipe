@@ -1,6 +1,6 @@
 import pytest
 
-from clpipe.postprocutils.workflows import *
+from clpipe.postprocutils.image_workflows import *
 from clpipe.postprocutils.confounds_workflows import build_confounds_processing_workflow
 
 

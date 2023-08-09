@@ -12,7 +12,7 @@ from nipype.interfaces.utility import Function, IdentityInterface
 from nipype.interfaces.io import ExportFile
 import nipype.pipeline.engine as pe
 
-from .workflows import build_image_postprocessing_workflow
+from .image_workflows import build_image_postprocessing_workflow
 from .utils import get_scrub_vector_node, expand_columns
 
 # A list of the temporal-based processing steps applicable to confounds

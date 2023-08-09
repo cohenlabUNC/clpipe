@@ -1,6 +1,6 @@
 import pytest
 
-from clpipe.postprocutils.workflows import *
+from clpipe.postprocutils.image_workflows import *
 from clpipe.fmri_postprocess2 import *
 from pathlib import Path
 
@@ -49,6 +49,34 @@ def test_postprocess_subjects_dir_invalid_subject(
             fmriprep_dir=fmriprep_dir,
             output_dir=postproc_dir,
             log_dir=log_dir,
+        )
+
+
+@pytest.mark.skip(reason="Need BIDS db fixture.")
+def test_postprocess_image(
+    artifact_dir,
+    config,
+    request,
+    sample_raw_image,
+    sample_raw_image_mask,
+    sample_confounds_timeseries,
+    helpers,
+):
+    test_path = helpers.create_test_dir(artifact_dir, request.node.name)
+    out_path = test_path / "postprocessed_image.nii.gz"
+    confounds_out_path = test_path / "postprocessed_confounds.tsv"
+
+    with pytest.raises(SystemExit):
+        postprocess_image(
+            config_file,
+            image_path,
+            bids_dir,
+            fmriprep_dir,
+            pybids_db_path,
+            out_dir,
+            subject_out_dir,
+            subject_working_dir,
+            log_dir,
         )
 
 

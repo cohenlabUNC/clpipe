@@ -22,7 +22,7 @@ from .bids import (
     get_tr,
     validate_subject_exists,
 )
-
+import nipype.pipeline.engine as pe
 import pydantic
 
 # This hides a pybids future warning
@@ -34,10 +34,7 @@ with warnings.catch_warnings():
 from .config_json_parser import ClpipeConfigParser
 from .config.postprocessing2 import DEFAULT_PROCESSING_STREAM
 from .batch_manager import BatchManager, Job
-from .postprocutils.workflows import (
-    build_image_postprocessing_workflow,
-    build_postprocessing_workflow,
-)
+from .postprocutils.global_workflows import build_postprocessing_wf
 from .postprocutils.confounds_workflows import build_confounds_processing_workflow
 from .postprocutils.utils import draw_graph
 from .utils import add_file_handler, get_logger, resolve_fmriprep_dir
@@ -397,68 +394,49 @@ def postprocess_image(
             logger.error(nfnfe)
             sys.exit(1)
 
+    # Search for this subject's files necessary for processing
     mask_image = get_mask(bids, query_params, logger)
     tr = get_tr(bids, query_params, logger)
     confounds_path = get_confounds(bids, non_image_query_params, logger)
 
-    image_wf = None
-    confounds_wf = None
-
+    # Try and build an export path for postprocess confounds if the subject has
+    #   confounds to work with
+    confounds_export_path = None
     if confounds_path is not None:
         try:
             confounds_export_path = build_export_path(
                 confounds_path, query_params["subject"], fmriprep_dir, subject_out_dir
             )
-
-            confounds_wf = _setup_confounds_wf(
-                postprocessing_config,
-                pipeline_name,
-                tr,
-                confounds_export_path,
-                subject_working_dir,
-                log_dir,
-                logger,
-                mixing_file=mixing_file,
-                noise_file=noise_file,
-            )
-
         except ValueError as ve:
             logger.warn(ve)
             logger.warn("Skipping confounds processing")
 
+    # Build the image export path
+    image_export_path = None
     if not confounds_only:
         image_export_path = build_export_path(
             image_path, query_params["subject"], fmriprep_dir, subject_out_dir
         )
 
-        image_wf = _setup_image_workflow(
-            postprocessing_config,
-            pipeline_name,
-            tr,
-            image_export_path,
-            subject_working_dir,
-            log_dir,
-            logger,
-            mask_image=mask_image,
-            confounds=confounds_export_path,
-            mixing_file=mixing_file,
-            noise_file=noise_file,
-        )
-
-    postproc_wf = build_postprocessing_workflow(
-        image_wf=image_wf,
-        confounds_wf=confounds_wf,
-        name=f"{pipeline_name}_wf",
-        postprocessing_config=postprocessing_config,
+    # Build the global postprocessing workflow
+    postproc_wf: pe.Workflow = build_postprocessing_wf(
+        postprocessing_config,
+        tr,
+        name=pipeline_name,
+        image_file=bids_image,
+        image_export_path=image_export_path,
+        confounds_file=confounds_path,
+        confounds_export_path=confounds_export_path,
+        subject_working_dir=subject_working_dir,
+        mask_image=mask_image,
+        mixing_file=mixing_file,
+        noise_file=noise_file,
         base_dir=subject_working_dir,
         crashdump_dir=log_dir,
     )
 
     if postprocessing_config["WriteProcessGraph"]:
         draw_graph(postproc_wf, "processing_graph", stream_output_dir, logger=logger)
-
-    postproc_wf.inputs.inputnode.in_file = image_path
-    postproc_wf.inputs.inputnode.confounds_file = confounds_path
 
     postproc_wf.run()
     sys.exit(0)

@@ -1,7 +1,40 @@
 import pytest
 
-from clpipe.fmri_postprocess2 import *
+from clpipe.postprocutils.image_workflows import *
+from clpipe.postprocutils.global_workflows import *
 
+def test_build_postprocessing_wf(
+    artifact_dir,
+    postprocessing_config,
+    request,
+    sample_raw_image,
+    sample_raw_image_mask,
+    sample_confounds_timeseries,
+    helpers,
+):
+    test_path = helpers.create_test_dir(artifact_dir, request.node.name)
+    out_path = test_path / "postprocessed_image.nii.gz"
+    confounds_out_path = test_path / "postprocessed_confounds.tsv"
+
+    wf = build_postprocessing_wf(
+        postprocessing_config,
+        image_file=sample_raw_image,
+        image_export_path=out_path,
+        tr=2,
+        mask_file=sample_raw_image_mask,
+        confounds_file=sample_confounds_timeseries,
+        confounds_export_path=confounds_out_path,
+        base_dir=test_path,
+        crashdump_dir=test_path,
+    )
+
+    wf.run()
+
+    wf.write_graph(
+        dotfilename=test_path / "global_workflow", graph2use='colored'
+    )
+
+    
 
 def test_postprocess2_wf_2_steps(
     artifact_dir,
@@ -434,7 +467,11 @@ def test_postprocess2_wf_scrubbing(
     plot_img,
     helpers,
 ):
-    postprocessing_config["ProcessingSteps"] = ["TemporalFiltering", "ScrubTimepoints"]
+    postprocessing_config["ProcessingSteps"] = [
+        "TemporalFiltering",
+        "ConfoundRegression",
+        "ScrubTimepoints"]
+    
     postprocessing_config["ConfoundOptions"]["Columns"] = [
         "framewise_displacement",
         "csf",
