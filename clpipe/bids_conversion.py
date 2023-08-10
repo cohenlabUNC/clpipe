@@ -1,6 +1,6 @@
 from pathlib import Path
 from .batch_manager import BatchManager, Job
-from .config_json_parser import ClpipeConfigParser
+from .config.project import load_project_config, ProjectOptions
 import os
 import parse
 import glob
@@ -29,25 +29,16 @@ def convert2bids(dicom_dir=None, dicom_dir_format=None, bids_dir=None,
                  longitudinal=False, status_cache=None, submit=False, debug=False, 
                  dcm2bids=True, batch=False):
     
-    config_parser = ClpipeConfigParser()
-    config_parser.config_updater(config_file)
-    config = config_parser.config
+    config: ProjectOptions = load_project_config(config_file)
 
-    project_dir = config["ProjectDirectory"]
-
-    add_file_handler(os.path.join(project_dir, "logs"))
+    add_file_handler(os.path.join(config.project_directory, "logs"))
     logger = get_logger(STEP_NAME, debug=debug)
 
-    dicom_dir = dicom_dir if dicom_dir else config['DICOMToBIDSOptions']['DICOMDirectory']
-    dicom_dir_format = dicom_dir_format if dicom_dir_format else config['DICOMToBIDSOptions']['DICOMFormatString']
-    bids_dir = bids_dir if bids_dir else config['DICOMToBIDSOptions']['BIDSDirectory']
-    conv_config_file = conv_config_file if conv_config_file else config['DICOMToBIDSOptions']['ConversionConfig']
-    log_dir = log_dir if log_dir else config['DICOMToBIDSOptions']['LogDirectory']
-
-    batch_config = config['BatchConfig']
-    mem_usage = config['DICOMToBIDSOptions']['MemUsage']
-    time_usage = config['DICOMToBIDSOptions']['TimeUsage']
-    n_threads = config['DICOMToBIDSOptions']['CoreUsage']
+    dicom_dir = dicom_dir if dicom_dir else config.convert2bids.dicom_directory
+    dicom_dir_format = dicom_dir_format if dicom_dir_format else config.convert2bids.dicom_format_string
+    bids_dir = bids_dir if bids_dir else config.convert2bids.bids_directory
+    conv_config_file = conv_config_file if conv_config_file else config.convert2bids.conversion_config
+    log_dir = log_dir if log_dir else config.convert2bids.log_directory
 
     if not dicom_dir:
         logger.error('DICOM directory not specified.')
@@ -65,11 +56,11 @@ def convert2bids(dicom_dir=None, dicom_dir_format=None, bids_dir=None,
         logger.error("Conversion config file not specified")
         sys.exit(1)
 
-    batch_manager = BatchManager(batch_config, log_dir, debug=debug)
+    batch_manager = BatchManager(config.batch_config_path, log_dir, debug=debug)
     batch_manager.create_submission_head()
-    batch_manager.update_mem_usage(mem_usage)
-    batch_manager.update_time(time_usage)
-    batch_manager.update_nthreads(n_threads)
+    batch_manager.update_mem_usage(config.convert2bids.mem_usage)
+    batch_manager.update_time(config.convert2bids.time_usage)
+    batch_manager.update_nthreads(config.convert2bids.core_usage)
 
     logger.info(f"Starting BIDS conversion targeting: {dicom_dir}")
     logger.debug(f"Using config file: {config_file}")
@@ -82,13 +73,6 @@ def convert2bids(dicom_dir=None, dicom_dir_format=None, bids_dir=None,
     if dcm2bids:
         logger.info("Using converter: dcm2bids")
 
-        config_parser.setup_dcm2bids(
-            dicom_dir,
-            conv_config_file,
-            bids_dir,
-            dicom_dir_format,
-            log_dir)
-
         # move sub / session detection code to seperate function to try with heudiconv
         dcm2bids_wrapper(
             dicom_dir=dicom_dir, dicom_dir_format=dicom_dir_format, 
@@ -100,11 +84,6 @@ def convert2bids(dicom_dir=None, dicom_dir_format=None, bids_dir=None,
 
     elif not dcm2bids:
         logger.info("Using converter: heudiconv")
-
-        config_parser.setup_heudiconv(
-            dicom_dir,
-            os.path.abspath(conv_config_file),
-            os.path.abspath(bids_dir))
 
         heudiconv_wrapper(
             subjects=subjects, session=session, dicom_dir=dicom_dir, submit=submit,
@@ -339,7 +318,7 @@ def _get_sub_session_list(dicom_dir, dicom_dir_format, logger, subjects=None, se
 @click.option('-submit', is_flag = True, default=False, help = 'Submission job to HPC.')
 def dicom_to_nifti_to_bids_converter_setup(subject = None, session = None, dicom_directory=None, output_file=None, config_file = None,  submit=False):
     """This command can be used to compute and extract a dicom information spreadsheet so that a heuristic file can be written. Users should specify a subject with all scans of interest present, and run this command on all sessions of interest. """
-    config = ClpipeConfigParser()
+    config: ProjectOptions = load_project_config(config_file)
 
     heuristic_file = resource_filename(__name__, 'data/setup_heuristic.py')
 
@@ -352,7 +331,7 @@ def dicom_to_nifti_to_bids_converter_setup(subject = None, session = None, dicom
                            ''' -f {heuristic} -o ./test/ -b --minmeta \n cp ./test/''' \
                            '''.heudiconv/{subject}/info/dicominfo.tsv {outputfile} \n rm -rf ./test/'''
 
-    batch_manager = BatchManager(config.config['BatchConfig'], None)
+    batch_manager = BatchManager(config.batch_config_path, None)
     batch_manager.update_time('1:0:0')
     batch_manager.update_mem_usage('3000')
     if session:
