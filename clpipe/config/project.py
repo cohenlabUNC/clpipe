@@ -352,7 +352,7 @@ class ROIOptions(Option):
     
     PropVoxels: float = 0.5
     """ROIs with less than this proportion of voxels within the mask area are
-    set to NaN."""
+    set to nan."""
     
     MemoryUsage: str
     TimeUsage: str
