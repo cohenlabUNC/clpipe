@@ -171,31 +171,6 @@
         "NThreads": "1",
         "LogDirectory": ""
 	},
-	"ReHoExtraction": {
-		"TargetDirectory": "",
-		"TargetSuffix": "",
-		"ExclusionFile": "",
-		"WorkingDirectory":"",
-		"MaskDirectory": "",
-		"MaskSuffix":  "space-MNI152NLin2009cAsym_desc-brain_mask.nii.gz",
-		"MaskFileOverride": "",
-		"OutputDirectory": "",
-		"OutputSuffix": "",
-		"Neighborhood": "vertices",
-		"LogDirectory": ""
-	},
-	"T2StarExtraction": {
-		"TargetDirectory": "",
-		"TargetSuffix": "",
-		"ExclusionFile": "",
-		"WorkingDirectory":"",
-		"MaskDirectory": "",
-		"MaskSuffix":  "space-MNI152NLin2009cAsym_desc-brain_mask.nii.gz",
-		"MaskFileOverride": "",
-		"OutputDirectory": "",
-		"OutputSuffix": "",
-		"LogDirectory": ""
-	},
 	"RunLog": [],
 	"StatusCache": "",
 	"BatchConfig": "slurmUNCConfig.json"
