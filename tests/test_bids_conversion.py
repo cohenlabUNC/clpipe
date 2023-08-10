@@ -1,7 +1,7 @@
 import pytest
 from pathlib import Path
 
-from clpipe.bids_conversion import convert2bids
+from clpipe.convert2bids import convert2bids
 
 
 def test_dcm2bids(clpipe_dicom_dir: Path, config_file: Path):

@@ -224,7 +224,7 @@ def convert2bids_cli(dicom_dir, dicom_dir_format, bids_dir,
 
     Available subject IDs are determined by the dicom_dir_format string.
     """
-    from .bids_conversion import convert2bids
+    from .convert2bids import convert2bids
     convert2bids(
         dicom_dir=dicom_dir, dicom_dir_format=dicom_dir_format, 
         bids_dir=bids_dir, conv_config_file=conv_config_file,
