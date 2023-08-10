@@ -194,7 +194,7 @@ class ConfoundOptions:
 @dataclass
 class BatchOptions:
     memory_usage: str = ""
-    timeUsage: str = ""
+    time_usage: str = ""
     n_threads: str = ""
 
     #Add this class to get a ordered dictionary in the dump method
@@ -420,5 +420,7 @@ KEY_MAP = {
     "mask_file_override": "MaskFileOverride",
     "neighborhood": "Neighborhood",
     "t2_star_extraction": "T2StarExtraction",
-    "batch_config_path": "BatchConfig"
+    "batch_config_path": "BatchConfig",
+    "target_variable": "TargetVariable",
+    "insert_na": "InsertNA",
 }
