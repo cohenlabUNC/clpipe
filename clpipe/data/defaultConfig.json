@@ -159,29 +159,6 @@
 			}
 		}
 	],
-	"BetaSeriesOptions": {
-		"TargetDirectory": "",
-		"TargetSuffix": "preproc_bold.nii.gz",
-		"OutputDirectory": "",
-		"OutputSuffix": "betaseries.nii.gz",
-		"ConfoundSuffix": "desc-confounds_regressors.tsv",
-		"Regress": true,
-		"NuisanceRegression": "QuadLagged",
-		"WhiteMatter": true,
-		"CSF": true,
-		"GlobalSignalRegression": true,
-		"FilteringHighPass": 0.008,
-		"FilteringLowPass": -1,
-		"FilteringOrder": 2,
-		"TaskSpecificOptions": [
-			{
-				"Task": "",
-				"ExcludeColumnInfo": "trial_type",
-				"ExcludeTrialTypes": ["block"]
-			}
-		],
-      "LogDirectory": ""
-    },
 	"ROIExtractionOptions": {
 		"TargetDirectory": "",
 		"TargetSuffix": "",

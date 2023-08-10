@@ -40,32 +40,7 @@ Header
 .. autoclass:: clpipe.config.project.ProjectOptions
 
 
-Beta Series Options
--------------------
 
-These options are for the beta series calculations. This is a complex method, please see DOCUMENTATION NOT COMPLETE, for implementation details.
-
-* ``BetaSeriesOptions`` Options for various postprocessing steps.
-
-    * ``TargetDirectory:`` What directory holds your fMRIPrep preprocessed data.
-    * ``TargetSuffix:`` What suffix do your preprocessed fMRI NiFTi files have? Default is preproc_bold.nii.gz.
-    * ``OutputDirectory:`` Where you want your postprocessed files to go.
-    * ``OutputSuffix:`` What suffix do you want appended to your postprocessed files? Make sure to end it with .nii.gz.
-    * ``ConfoundSuffix:`` What suffix does the confound regressors file have. Default is confound_regressor.txt.
-    * ``Regress:`` True/False. Do you want to perform nuisance regression on the data. Default True. For more info see Postprocessing/Nuisance Regression.
-    * ``RegressionParameters:`` These are the headers for the various regression parameters in the fmriprep confound file. The defaults are for the latest fmriprep version. Change only if you are using a much earlier version of fmriprep.
-    * ``NuisanceRegression:`` What type of nuisance regression do you want to perform. Default to QuadLagged (33 Parameter Regression). For more information see Postprocessing/Nuisance Regression.
-    * ``WhiteMatter:`` True/False. Include mean whitematter signal into nuisance regression. Defaults to True.
-    * ``CSF:`` True/False. Include mean cerebral spinal fluid signal into nuisance regression. Defaults to True.
-    * ``GlobalSignalRegression:`` True/False. Include global signal into nuisance regression. Defaults to True.
-    * ``FilteringHighPass:`` High pass frequency for filtering. Defaults to .08 Hz. For more information on filtering see Postprocessing/Frequency Filtering. Set to -1 to remove high pass filtering.
-    * ``FilteringLowPass:`` Low pass frequency for filtering. Defaults to no filter (-1). For more information on filtering see Postprocessing/Frequency Filtering. Set to -1 to remove low pass filtering.
-    * ``FilteringOrder:`` Order of filter. Defaults to 2. For more information on filtering see Postprocessing/Frequency Filtering.
-    * ``TaskSpecificOptions:`` A list of option blocks, one for each task you are interested in using beta series with.
-            * ``Task:`` Task name, must match BIDS task- signifier.
-            * ``ExcludeColumnInfo`` The name of the column in the BIDS formatted events files that contain the information about the trials needed to be excluded from the beta series analysis. (for example, if you have events nested within blocks, then you would want to exclude the block "events")
-            * ``ExcludeTrialType:`` A list of trial types to exclude.
-    * ``LogDirectory:`` Where cluster output files are stored.
 
 
 Processing Streams

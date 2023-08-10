@@ -560,7 +560,6 @@ KEY_MAP = {
     "scrub_contiguous": "ScrubContiguous",
     "batch_options": "BatchOptions",
     "memory_usage": "MemoryUsage",
-    "beta_series": "BetaSeriesOptions",
     "target_suffix": "TargetSuffix",
     "output_suffix": "OutputSuffix",
     "confound_suffix": "ConfoundSuffix",
