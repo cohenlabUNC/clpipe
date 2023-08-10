@@ -17,7 +17,7 @@ the limitations on Nilearn's ROI extractor functions.
 ROI Extraction Options
 ----------------
 
-.. autoclass:: clpipe.config.project.ROIOptions
+.. autoclass:: clpipe.config.project.ROIExtractOptions
 
 .. click:: clpipe.cli:fmri_roi_extraction_cli
 	:prog: clpipe roi extract
