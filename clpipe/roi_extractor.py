@@ -410,18 +410,19 @@ def _fmri_roi_extract_image(
     data, atlas_path, atlas_type, radius, overlap_ok, logger, mask=None
 ):
     if "label" in atlas_type:
-        logger.debug("Labels Extract")
+        logger.info("Extract type: label")
         label_masker = NiftiLabelsMasker(atlas_path, mask_img=mask)
         timeseries = label_masker.fit_transform(data)
     if "sphere" in atlas_type:
         atlas_path = np.loadtxt(atlas_path)
-        logger.debug("Sphere Extract")
+        logger.info("Extract type: sphere")
+        logger.info(f"Sphere radius: {radius}mm")
         spheres_masker = NiftiSpheresMasker(
             atlas_path, float(radius), mask_img=mask, allow_overlap=overlap_ok
         )
         timeseries = spheres_masker.fit_transform(data)
     if "maps" in atlas_type:
-        logger.debug("Maps Extract")
+        logger.info("Extract type: maps")
         maps_masker = NiftiMapsMasker(
             atlas_path, mask_img=mask, allow_overlap=overlap_ok
         )

@@ -624,7 +624,7 @@ def fsl_onset_extract_cli(config_file, glm_config_file, debug):
 @click.option('-custom_atlas', help = 'A custom atlas image, in .nii or .nii.gz for label or maps, or a .txt tab delimited set of ROI coordinates if for a sphere atlas. Not needed if specified in config.')
 @click.option('-custom_label', help = 'A custom atlas label file. Not needed if specified in config.')
 @click.option('-custom_type', help = 'What type of atlas? (label, maps, or spheres). Not needed if specified in config.')
-@click.option('-radius', help = "If a sphere atlas, what radius sphere, in mm. Not needed if specified in config.", default = '5')
+@click.option('-sphere_radius', help = "Sphere radius in mm. Only applies to sphere atlases.", default = '5')
 @click.option('-overlap_ok', is_flag=True, default=False, help = "Are overlapping ROIs allowed?")
 @click.option('-overwrite', is_flag=True, default=False, help = "Overwrite existing ROI timeseries?")
 @click.option('-log_output_dir', type=click.Path(dir_okay=True, file_okay=False),

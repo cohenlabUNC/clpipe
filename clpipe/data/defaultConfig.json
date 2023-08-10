@@ -166,7 +166,7 @@
 		"Atlases": ["power"],
 		"RequireMask": true,
 		"PropVoxels": 0.5,
-        "MemoryUsage":"20000",
+        "MemoryUsage":"20G",
         "TimeUsage": "2:0:0",
         "NThreads": "1",
         "LogDirectory": ""
