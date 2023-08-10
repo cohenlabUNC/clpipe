@@ -285,103 +285,125 @@ def _fmri_roi_extract_subject(
     )
 
     for file in subject_files:
-        logger.info(f"Processing image: {Path(file).stem}")
-        file_outname = os.path.splitext(os.path.basename(file))[0]
-        if ".nii" in file_outname:
-            file_outname = os.path.splitext(file_outname)[0]
+        fmri_roi_extract_image(
+            file,
+            config,
+            atlas_name,
+            atlas_path,
+            atlas_type,
+            radius,
+            overlap_ok,
+            overwrite,
+            logger,
+        )
 
-        if (
-            os.path.exists(
-                os.path.join(
-                    config.config["ROIExtractionOptions"]["OutputDirectory"],
-                    atlas_name + "/" + file_outname + "_atlas-" + atlas_name + ".csv",
-                )
+
+def fmri_roi_extract_image(
+    file,
+    config,
+    atlas_name,
+    atlas_path,
+    atlas_type,
+    radius,
+    overlap_ok,
+    overwrite,
+    logger,
+):
+    logger.info(f"Processing image: {Path(file).stem}")
+    file_outname = os.path.splitext(os.path.basename(file))[0]
+    if ".nii" in file_outname:
+        file_outname = os.path.splitext(file_outname)[0]
+
+    if (
+        os.path.exists(
+            os.path.join(
+                config.config["ROIExtractionOptions"]["OutputDirectory"],
+                atlas_name + "/" + file_outname + "_atlas-" + atlas_name + ".csv",
             )
-            and not overwrite
-        ):
-            logger.info("File Exists! Skipping. Use -overwrite to reprocess.")
-            continue
+        )
+        and not overwrite
+    ):
+        logger.info("File Exists! Skipping. Use -overwrite to reprocess.")
+        return
 
-        found_mask = False
-        fallback = False
-        try:
-            mask_file = _mask_finder(file, config, logger)
-            found_mask = True
-        except MaskFileNotFoundError:
-            if config.config["ROIExtractionOptions"]["RequireMask"]:
-                logger.warning("Skipping this scan due to missing brain mask.")
-                continue
-            else:
-                logger.warning(
-                    "Unable to find a mask for this image. Extracting ROIs without using brain mask."
-                )
+    found_mask = False
+    fallback = False
+    try:
+        mask_file = _mask_finder(file, config, logger)
+        found_mask = True
+    except MaskFileNotFoundError:
+        if config.config["ROIExtractionOptions"]["RequireMask"]:
+            logger.warning("Skipping this scan due to missing brain mask.")
+            return
         else:
-            try:
-                logger.info("Starting masked ROI extraction...")
-                # Attempt to run ROI extraction with mask
-                ROI_ts = _fmri_roi_extract_image(
-                    file,
-                    atlas_path,
-                    atlas_type,
-                    radius,
-                    overlap_ok,
-                    logger,
-                    mask=mask_file,
-                )
-            except ValueError as ve:
-                # Fallback for if any ROIs are outside of the mask region
-                logger.warning(
-                    ve.__str__() + ". Extracting ROIs without using brain mask."
-                )
-                fallback = True
-
-        if not found_mask or fallback:
-            logger.info("Starting non-masked ROI extraction...")
+            logger.warning(
+                "Unable to find a mask for this image. Extracting ROIs without using brain mask."
+            )
+    else:
+        try:
+            logger.info("Starting masked ROI extraction...")
+            # Attempt to run ROI extraction with mask
             ROI_ts = _fmri_roi_extract_image(
-                file, atlas_path, atlas_type, radius, overlap_ok, logger
+                file,
+                atlas_path,
+                atlas_type,
+                radius,
+                overlap_ok,
+                logger,
+                mask=mask_file,
             )
+        except ValueError as ve:
+            # Fallback for if any ROIs are outside of the mask region
+            logger.warning(ve.__str__() + ". Extracting ROIs without using brain mask.")
+            fallback = True
 
-        if fallback:
-            temp_mask = concat_imgs([mask_file, mask_file])
-            mask_ROIs = _fmri_roi_extract_image(
-                temp_mask, atlas_path, atlas_type, radius, overlap_ok, logger
-            )
-            mask_ROIs = np.nan_to_num(mask_ROIs)
-            logger.debug(mask_ROIs[0])
-            to_remove = [
-                ind
-                for ind, prop in np.ndenumerate(mask_ROIs[0])
-                if prop < config.config["ROIExtractionOptions"]["PropVoxels"]
-            ]
-            logger.debug(to_remove)
-            ROI_ts[:, to_remove] = np.nan
+    if not found_mask or fallback:
+        logger.info("Starting non-masked ROI extraction...")
+        ROI_ts = _fmri_roi_extract_image(
+            file, atlas_path, atlas_type, radius, overlap_ok, logger
+        )
 
-            # Save ROI masked threshold timeseries
-            np.savetxt(
-                os.path.join(
-                    os.path.join(
-                        config.config["ROIExtractionOptions"]["OutputDirectory"],
-                        atlas_name,
-                    ),
-                    file_outname + "_atlas-" + atlas_name + "_voxel_prop.csv",
-                ),
-                mask_ROIs[0],
-                delimiter=",",
-            )
+    if fallback:
+        temp_mask = concat_imgs([mask_file, mask_file])
+        mask_ROIs = _fmri_roi_extract_image(
+            temp_mask, atlas_path, atlas_type, radius, overlap_ok, logger
+        )
+        mask_ROIs = np.nan_to_num(mask_ROIs)
+        logger.debug(mask_ROIs[0])
+        to_remove = [
+            ind
+            for ind, prop in np.ndenumerate(mask_ROIs[0])
+            if prop < config.config["ROIExtractionOptions"]["PropVoxels"]
+        ]
+        logger.debug(to_remove)
+        ROI_ts[:, to_remove] = np.nan
 
-        # Save the ROI timeseries
+        # Save ROI masked threshold timeseries
         np.savetxt(
             os.path.join(
                 os.path.join(
-                    config.config["ROIExtractionOptions"]["OutputDirectory"], atlas_name
+                    config.config["ROIExtractionOptions"]["OutputDirectory"],
+                    atlas_name,
                 ),
-                file_outname + "_atlas-" + atlas_name + ".csv",
+                file_outname + "_atlas-" + atlas_name + "_voxel_prop.csv",
             ),
-            ROI_ts,
+            mask_ROIs[0],
             delimiter=",",
         )
 
-        logger.info("Extraction completed.")
+    # Save the ROI timeseries
+    np.savetxt(
+        os.path.join(
+            os.path.join(
+                config.config["ROIExtractionOptions"]["OutputDirectory"], atlas_name
+            ),
+            file_outname + "_atlas-" + atlas_name + ".csv",
+        ),
+        ROI_ts,
+        delimiter=",",
+    )
+
+    logger.info("Extraction completed.")
 
 
 def _fmri_roi_extract_image(
