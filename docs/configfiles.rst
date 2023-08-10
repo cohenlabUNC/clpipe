@@ -178,21 +178,8 @@ Header
 FMRIPrep Options
 ----------------
 
-* ``FMRIPrepOptions:`` Options regarding fMRIprep.
-
-    * ``BIDSDirectory:`` Your BIDs formatted raw data directory. Use absolute paths if possible.
-    * ``OutputDirectory:`` Where you want your preprocessed files to go. Use absolute paths
-    * ``WorkingDirectory`` Where you want your working files to go. Use absolute paths. For Longleaf users, use /pine/scr/<o>/<n>/<onyen>, where <onyen> is your onyen, and <o> <n> are the first and second letters of your onyen respectively.
-    * ``FMRIPrepPath:`` Where the fMRIprep Singularity image is.
-    * ``FreesurferLicensePath:`` Where your Freesurfer license .txt file is.
-    * ``TemplateFlowToggle:`` This flag activates the use of templateflow, which is used in later versions of FMRIPREP,
-    * ``TemplateFlowPath``: Where the templateflow template folder is located,
-    * ``TemplateFlowTemplates``: Which templates (standard spaces) should clpipe download for use in templateflow?
-    * ``FMapCleanupROIs``: How many timepoints should the fmap_cleanup function extract from blip-up/blip-down field maps, set to -1 to disable.
-    * ``CommandLineOpts:`` Additional arguments to pass to FMRIprep
-    * ``FMRIPrepMemoryUsage:`` How much memory in RAM each subject's preprocessing will use, in Mbs. Default is 20000Mb or 20Gb.
-    * ``FMRIPrepTimeUsage:`` How much time on the cluster FMRIPrep is allowed to use. Defaults to 16 hours.
-    * ``LogDirectory:`` Where cluster output files are stored.
+.. autoclass:: clpipe.config.project.FMRIPrepOptions
+	:members:
 
 
 Postprocessing Options

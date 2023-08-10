@@ -47,23 +47,42 @@ class BIDSValidatorOptions:
 
 @dataclass
 class FMRIPrepOptions:
-    #Add variable names exactly same as json file
+    """Your BIDs formatted raw data directory."""
     bids_directory: str = ""
-    working_directory: str = ""
+    """Storage location for intermediary fMRIPrep files. Takes up a large
+    amount of space - Longleaf users should use their /work folder."""
+    working_directory: str = "SET WORKING DIRECTORY"
+    """Where you want your preprocessed files to go."""
     output_directory: str = ""
-    fmriprep_path: str = ""
-    freesurfer_license_path: str = ""
+    """Path to your fMRIPrep Singularity image."""
+    fmriprep_path: str = "/proj/hng/singularity_imgs/fmriprep_22.1.1.sif"
+    """Path to your Freesurfer license .txt file."""
+    freesurfer_license_path: str = "/proj/hng/singularity_imgs/license.txt"
+    """Set True to generate AROMA artifacts. Significantly increases run
+    time and memory usage."""
     use_aroma: bool = False
+    """Any additional arguments to pass to FMRIprep."""
     commandline_opts: str = ""
+    """Set True to activate to use templateflow, which allows you to
+    generate multiple template variantions for the same outputs."""
     templateflow_toggle: bool = True
-    templateflow_path: str = ""
-    templateflow_templates: list = field(default_factory=list)
+    """The path to your templateflow directory."""
+    templateflow_path: str = "/proj/hng/singularity_imgs/template_flow"
+    """Which templates (standard spaces) should clpipe download for use in templateflow?"""
+    templateflow_templates: list = field(default_factory=lambda: ["MNI152NLin2009cAsym", "MNI152NLin6Asym", "OASIS30ANTs", "MNIPediatricAsym", "MNIInfant"])
+    """How many timepoints should the fmap_cleanup function extract from blip-up/blip-down field maps, set to -1 to disable."""
     fmap_roi_cleanup: int = 3
-    fmriprep_memory_usage: str = ""
-    fmriprep_time_usage: str = ""
-    n_threads: str = ""
+    """How much memory in RAM each subject's preprocessing will use."""
+    fmriprep_memory_usage: str = "50G"
+    """How much time on the cluster fMRIPrep is allowed to use."""
+    fmriprep_time_usage: str = "16:0:0"
+    """How many threads to use in each job."""
+    n_threads: str = "12"
+    """Path to your logging directory for fMRIPrep outputs. Not generally changed from default."""
     log_directory: str = ""
+    """Set True to use a Docker image."""
     docker_toggle: bool = False
+    """Path to your fMRIPrep Docker image."""
     docker_fmriprep_version: str = ""
     
     #Add this class to get a ordered dictionary in the dump method
