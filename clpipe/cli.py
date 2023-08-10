@@ -151,7 +151,6 @@ def _add_commands():
     roi_cli.add_command(fmri_roi_extraction_cli, help_priority=2)
 
     reports_cli.add_command(get_fmriprep_reports_cli)
-    reports_cli.add_command(get_fmri_process_check_cli)
 
     cli.add_command(bids_cli, help_priority=11, hidden=True)
     cli.add_command(dicom_cli, help_priority=5, hidden=True)
@@ -376,7 +375,7 @@ def postprocess_cli(subjects, config_file, fmriprep_dir, output_dir,
 def postprocess_subject_cli(subject_id, bids_dir, fmriprep_dir, output_dir, 
                             processing_stream, config_file, index_dir, 
                             batch, submit, log_dir, debug):
-    from .fmri_postprocess2 import postprocess_subject
+    from .postprocess import postprocess_subject
     postprocess_subject(
         subject_id, bids_dir, fmriprep_dir, output_dir, config_file, index_dir, 
         batch, submit, log_dir, processing_stream=processing_stream,
@@ -398,7 +397,7 @@ def postprocess_subject_cli(subject_id, bids_dir, fmriprep_dir, output_dir,
 def postprocess_image_cli(config_file, image_path, bids_dir, fmriprep_dir, 
                           index_dir, out_dir, subject_out_dir, debug,
                           processing_stream, subject_working_dir, log_dir):
-    from .fmri_postprocess2 import postprocess_image
+    from postprocess import postprocess_image
     postprocess_image(
         config_file, image_path, bids_dir, fmriprep_dir, index_dir, out_dir, 
         subject_out_dir, subject_working_dir, log_dir, 

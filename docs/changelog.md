@@ -4,6 +4,7 @@
 - Removed original postprocessing command
 - postprocess2 is now named postprocess
 - Removed original susan command, now a step of postprocess
+- Disabled fmri-process-check report for now, pending rework
 
 ## 1.8.1 (Jun 28, 2023)
 

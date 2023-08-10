@@ -18,9 +18,9 @@ def fmri_process_check(config_file, output_file=None, debug=False):
     logger = get_logger(STEP_NAME, debug=debug)
     logger.info("Test Printing")
 
-    sublist = [o for o in os.listdir(resolve_fmriprep_dir_new(config.PostProcessingOptions.TargetDirectory))
+    sublist = [o for o in os.listdir(resolve_fmriprep_dir_new(config.FMRIPrepOptions.OutputDirectory))
                if os.path.isdir(
-            os.path.join(resolve_fmriprep_dir_new(config.PostProcessingOptions.TargetDirectory), o)) and 'sub-' in o]
+            os.path.join(resolve_fmriprep_dir_new(config.FMRIPrepOptions.OutputDirectory), o)) and 'sub-' in o]
 
     file_list = []
     for sub in sublist:
@@ -29,7 +29,7 @@ def fmri_process_check(config_file, output_file=None, debug=False):
             os.path.join(config.FMRIPrepOptions.BIDSDirectory, sub, '**', 'func', '*.nii.gz'),
             recursive=True)
         fmriprep_files = glob.glob(
-            os.path.join(config.PostProcessingOptions.TargetDirectory, sub, '**', 'func',
+            os.path.join(config.FMRIPrepOptions.OutputDirectory, sub, '**', 'func',
                          '*' + config.PostProcessingOptions.TargetSuffix), recursive=True)
         logger.debug('[%s]' % ', '.join(map(str, fmriprep_files)))
 
