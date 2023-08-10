@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 @dataclass
-class BIDSValidator:
+class BIDSValidatorConfig:
     BIDSValidatorImage: str
     @property
     def BIDSValidatorImage(self):
@@ -25,7 +25,7 @@ class BIDSValidator:
         ordered = True
 
 @dataclass
-class DICOM_to_BIDS:
+class Convert2BIDSConfig:
     #Add variable names exactly same as json file
     DICOMDirectory: str
     @property
