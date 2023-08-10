@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 @dataclass
-class ReHoExtraction:
+class ReHoExtractionOptions:
     TargetDirectory: str
     @property
     def TargetDirectory(self):

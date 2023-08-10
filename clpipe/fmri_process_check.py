@@ -3,7 +3,7 @@ import pandas as pd
 import os
 import glob
 from .utils import get_logger, add_file_handler, resolve_fmriprep_dir_new
-from .config.project import getProjectConfig
+from .config.project import load_project_config
 
 STEP_NAME = "fmri-process-check"
 
@@ -12,7 +12,7 @@ def fmri_process_check(config_file, output_file=None, debug=False):
     dataset, and creates a CSV file that lists all scans across all three datasets. 
     Use to find which subjects/scans failed processing."""
 
-    config = getProjectConfig(config_file)
+    config = load_project_config(config_file)
 
     add_file_handler(os.path.join(config.ProjectDirectory, "logs"))
     logger = get_logger(STEP_NAME, debug=debug)

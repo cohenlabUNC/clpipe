@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 @dataclass
-class T2StarExtraction:
+class T2StarExtractionOptions:
     TargetDirectory: str
     @property
     def TargetDirectory(self):
