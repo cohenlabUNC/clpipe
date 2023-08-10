@@ -2,10 +2,6 @@
 Postprocessing
 ===================
 
-------------------
-postprocess2
-------------------
-
 Overview
 ==================
 
@@ -300,57 +296,3 @@ of ``clpipe postprocess2`` the name of the stream:
 .. code-block:: console
 
 	clpipe postprocess2 -config_file clpipe_config.json -processing_stream smooth_aroma-regress_filter-butterworth_normalize -submit
-
-------------------
-Legacy postprocess Command
-------------------
-
-Not all features of the legacy postprocess command have been implemented yet in
-postprocess2, namely some which support functional connectivity, 
-so the command remains available for this use.
-
-When performing functional connectivity analysis, there are several additional 
-processing steps that need to be taken after the minimal preprocessing of fMRIPrep. 
-clpipe implements these steps in Python, and a fMRIprep preprocessed dataset can 
-be postprocessed using the following command:
-
-.. click:: clpipe.cli:fmri_postprocess_cli
-	:prog: clpipe postprocess
-
-
-------------------
-Processing Checker
-------------------
-
-clpipe has a convenient function for determining which scans successfully made it 
-through both preprocessing using fMRIprep and postprocessing.
-
-This command will create a csv file listing all scans found in the BIDS dataset, 
-and corresponding scans in the fMRIprep dataset and the postprocessed dataset.
-
-For a description of the various postprocessing steps, along with references,
-please see the following documentation:
-
-1. Nuisance Regression
-2. Frequency Filtering
-3. Scrubbing
-4. Spectral Interpolation
-
-.. click:: clpipe.fmri_process_check:fmri_process_check
-	:prog: clpipe reports fmri-process-check
-
-
-------------------
-SUSAN Spatial Smoothing
-------------------
-
-
-clpipe uses FSL's `SUSAN smoothing <https://fsl.fmrib.ox.ac.uk/fsl/fslwiki/SUSAN>`_ 
-to perform spatial smoothing. This step is usually done after postprocessing. 
-Options for this are configurable on a processing stream basis, 
-see config file for more details.
-
-.. click:: clpipe.susan_smoothing:susan_smoothing
-	:prog: susan_smoothing
-
-
