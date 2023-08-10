@@ -131,7 +131,7 @@ def _add_commands():
     cli.add_command(convert2bids_cli, help_priority=10)
     cli.add_command(bids_validate_cli, help_priority=15)
     cli.add_command(fmriprep_process_cli, help_priority=20)
-    cli.add_command(fmri_postprocess_cli, help_priority=30)
+    cli.add_command(fmri_postprocess_cli, help_priority=30, hidden=True)
     cli.add_command(fmri_postprocess2_cli, help_priority=35)
     cli.add_command(flywheel_sync_cli, help_priority=55)
 
