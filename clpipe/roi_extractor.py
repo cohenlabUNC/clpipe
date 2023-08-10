@@ -329,13 +329,16 @@ def fmri_roi_extract_image(
     found_mask = False
     fallback = False
     try:
+        # First, try to find this image's mask.
         mask_file = _mask_finder(file, config, logger)
         found_mask = True
     except MaskFileNotFoundError:
         if config.config["ROIExtractionOptions"]["RequireMask"]:
+            # If a mask is required, return here due to missing mask.
             logger.warning("Skipping this scan due to missing brain mask.")
             return
         else:
+            # Otherwise, continue on with a warning.
             logger.warning(
                 "Unable to find a mask for this image. Extracting ROIs without using brain mask."
             )
@@ -353,16 +356,18 @@ def fmri_roi_extract_image(
                 mask=mask_file,
             )
         except ValueError as ve:
-            # Fallback for if any ROIs are outside of the mask region
+            # Trigger fallback flag if any ROIs are outside of the mask region.
             logger.warning(ve.__str__() + ". Extracting ROIs without using brain mask.")
             fallback = True
 
+    # Run non-masked extraction if no mask found or fallback needed
     if not found_mask or fallback:
         logger.info("Starting non-masked ROI extraction...")
         ROI_ts = _fmri_roi_extract_image(
             file, atlas_path, atlas_type, radius, overlap_ok, logger
         )
 
+    
     if fallback:
         temp_mask = concat_imgs([mask_file, mask_file])
         mask_ROIs = _fmri_roi_extract_image(

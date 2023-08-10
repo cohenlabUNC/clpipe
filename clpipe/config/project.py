@@ -331,6 +331,36 @@ class PostProcessingOptions(Option):
 
 
 @dataclass
+class ROIOptions(Option):
+    """"""
+
+    TargetDirectory: str = ""
+    """Target folder for processing - usually an fMRIPrep output directory."""
+
+    TargetSuffix: str = "space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz"
+    """Narrow down the images to use by specifying the path's suffix."""
+
+    OutputDirectory: str = ""
+    """Location of this command's output. Defaults to data_ROI_ts."""
+    
+    Atlases: list
+    """List of atlases to use. Use 'clpipe roi atlases' to show available atlases."""
+    
+    RequireMask: bool = True
+    """Choose whether or not an accompanying mask for each image is required in the 
+    target directory."""
+    
+    PropVoxels: float = 0.5
+    """ROIs with less than this proportion of voxels within the mask area are
+    set to NaN."""
+    
+    MemoryUsage: str
+    TimeUsage: str
+    NThreads: str
+    LogDirectory: str
+
+
+@dataclass
 class ProjectOptions(Option):
     """Contains metadata for your project and option blocks for each command."""
 

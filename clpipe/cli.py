@@ -620,7 +620,7 @@ def fsl_onset_extract_cli(config_file, glm_config_file, debug):
 @click.option('-output_dir', '-o', type=click.Path(dir_okay=True, file_okay=False),
               help='Where to put the ROI extracted data. If a configuration file is provided with a output directory, this argument is not necessary.')
 @click.option('-task', help = 'Which task to process. If none, then all tasks are processed.')
-@click.option('-atlas_name', help = "What atlas to use. Please refer to documentation, or use the command get_available_atlases to see which are available. When specified for a custom atlas, this is what the output files will be named.")
+@click.option('-atlas_name', help = "What atlas to use. Use the command 'clpipe roi atlases'  to see which are available. When specified for a custom atlas, this is what the output files will be named.")
 @click.option('-custom_atlas', help = 'A custom atlas image, in .nii or .nii.gz for label or maps, or a .txt tab delimited set of ROI coordinates if for a sphere atlas. Not needed if specified in config.')
 @click.option('-custom_label', help = 'A custom atlas label file. Not needed if specified in config.')
 @click.option('-custom_type', help = 'What type of atlas? (label, maps, or spheres). Not needed if specified in config.')
