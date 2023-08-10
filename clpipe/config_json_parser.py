@@ -70,14 +70,6 @@ class ClpipeConfigParser:
         self.setup_bids_validation(None)
         self.setup_fmriprep_directories(os.path.join(self.config['ProjectDirectory'], 'data_BIDS'),
                                         None, os.path.join(self.config['ProjectDirectory'], 'data_fmriprep'))
-        self.setup_postproc(self.config['FMRIPrepOptions']['OutputDirectory'],
-                            target_suffix= None,
-                            output_dir= os.path.join(self.config['ProjectDirectory'], 'data_postproc', 'postproc_default'),
-                            output_suffix= 'postproc.nii.gz')
-        self.setup_postproc(self.config['FMRIPrepOptions']['OutputDirectory'],
-                            target_suffix=None,
-                            output_dir=os.path.join(self.config['ProjectDirectory'], 'data_postproc', 'betaseries_default'),
-                            output_suffix='betaseries.nii.gz', beta_series=True)
         self.setup_roiextract(target_dir = os.path.join(self.config['ProjectDirectory'], 'data_postproc2', 'default'),
                               target_suffix= 'postproc_bold.nii.gz',
                               output_dir= os.path.join(self.config['ProjectDirectory'],
@@ -115,26 +107,6 @@ class ClpipeConfigParser:
             self.config['FMRIPrepOptions']['LogDirectory'] = os.path.abspath(log_dir)
         else:
             self.config['FMRIPrepOptions']['LogDirectory'] = os.path.join(self.config['ProjectDirectory'], 'logs', 'FMRIprep_logs')
-
-    def setup_postproc(self, target_dir, target_suffix, output_dir, output_suffix, beta_series = False, log_dir = None):
-        target_output = 'PostProcessingOptions'
-        log_target = 'postproc_logs'
-        if beta_series:
-            target_output = 'BetaSeriesOptions'
-            log_target = 'betaseries_logs'
-
-        if target_dir is not None:
-            self.config[target_output]['TargetDirectory'] = os.path.abspath(target_dir)
-        if output_dir is not None:
-            self.config[target_output]['OutputDirectory'] = os.path.abspath(output_dir)
-        if target_suffix is not None:
-            self.config[target_output]['TargetSuffix'] = target_suffix
-        if output_suffix is not None:
-            self.config[target_output]['OutputSuffix'] = output_suffix
-        if log_dir is not None:
-            self.config[target_output]['LogDirectory'] = os.path.abspath(log_dir)
-        else:
-            self.config[target_output]['LogDirectory'] = os.path.join(self.config['ProjectDirectory'], 'logs', log_target)
 
     def setup_heudiconv(self, dicom_directory, heuristic_file, output_directory):
         if dicom_directory is not None:

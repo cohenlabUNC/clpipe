@@ -52,8 +52,6 @@ def project_setup(project_title=None, project_dir=None,
     setup_dcm2bids_directories(config)
     setup_bids_validation_directories(config)
     setup_fmriprep_directories(config)
-    setup_postproc(config)
-    setup_postproc(config, beta_series=True)
     setup_roiextract_directories(config)
     setup_glm_directories(config['ProjectDirectory'])
 
@@ -127,15 +125,6 @@ def setup_fmriprep_directories(config):
         os.makedirs(config['FMRIPrepOptions']['OutputDirectory'], exist_ok=True)
     if(config['FMRIPrepOptions']['LogDirectory'] != ""):
         os.makedirs(config['FMRIPrepOptions']['LogDirectory'], exist_ok=True)
-
-def setup_postproc(config, beta_series=False):
-    target_output = 'PostProcessingOptions'
-    if beta_series:
-        target_output = 'BetaSeriesOptions'
-
-    if(config[target_output]['OutputDirectory'] != ""):
-        os.makedirs(config[target_output]['OutputDirectory'], exist_ok=True)
-    os.makedirs(config[target_output]['LogDirectory'], exist_ok=True)
 
 def setup_roiextract_directories(config):
     if(config['ROIExtractionOptions']['OutputDirectory'] != ""):
