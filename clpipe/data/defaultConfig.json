@@ -144,18 +144,6 @@
 		],
       "LogDirectory": ""
     },
-	"SUSANOptions": {
-		"TargetDirectory": "",
-		"TargetSuffix": "preproc_bold.nii.gz",
-		"OutputDirectory": "",
-		"OutputSuffix": "preproc_susan.nii.gz",
-		"BrightnessThreshold": 500,
-		"FWHM": 0,
-		"MemoryUsage": "5000",
-		"TimeUsage": "2:0:0",
-		"NThreads": "4",
-        "LogDirectory": ""
-	},
 	"ProcessingStreams": [
 		{
 			"ProcessingStream": "smooth_aroma-regress_filter_normalize",
