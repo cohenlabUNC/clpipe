@@ -39,7 +39,7 @@ def fmri_roi_extraction(
     radius="5",
     submit=False,
     single=False,
-    overlap_ok=False,
+    overlap_ok=None,
     debug=False,
     overwrite=False,
 ):
@@ -197,8 +197,9 @@ def fmri_roi_extraction(
                 sub_string_temp = sub_string_temp + " -radius=" + custom_radius
             if task is not None:
                 sub_string_temp = sub_string_temp + " -task=" + task
-            if overlap_ok:
+            if overlap_ok or config.config["ROIExtractionOptions"]["OverlapOk"]:
                 sub_string_temp = sub_string_temp + " -overlap_ok"
+                logger.debug("Overlap ok flag set")
 
             sub_string_temp = sub_string_temp + " " + subject
             batch_manager.addjob(

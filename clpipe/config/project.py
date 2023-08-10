@@ -331,7 +331,7 @@ class PostProcessingOptions(Option):
 
 
 @dataclass
-class ROIOptions(Option):
+class ROIExtractOptions(Option):
     """"""
 
     target_directory: str = ""
@@ -356,6 +356,9 @@ class ROIOptions(Option):
     prop_voxels: float = 0.5
     """ROIs with less than this proportion of voxels within the mask area are
     set to nan."""
+
+    overlap_ok: bool = False
+    """Are overlapping ROIs allowed?"""
     
     memory_usage: str = "20G"
     time_usage: str = "2:0:0"
@@ -560,6 +563,7 @@ KEY_MAP = {
     "atlases": "Atlases",
     "require_mask": "RequireMask",
     "prop_voxels": "PropVoxels",
+    "overlap_ok": "OverlapOk",
     "reho_extraction": "ReHoExtraction",
     "exclusion_file": "ExclusionFile",
     "mask_directory": "MaskDirectory",

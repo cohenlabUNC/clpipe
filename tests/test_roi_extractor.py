@@ -12,7 +12,23 @@ from clpipe.utils import get_logger
 def test_fmri_roi_extraction(config_file_postproc2):
     """Basic test of roi_extraction using single run."""
     fmri_roi_extraction(
-        subjects=["1"], single=True, config_file=config_file_postproc2, debug=True
+        subjects=["1"], single=False, config_file=config_file_postproc2, debug=True
+    )
+
+def test_fmri_roi_extraction_overlap_ok(clpipe_postproc2_dir):
+    config_file_path = clpipe_postproc2_dir / "clpipe_config.json"
+
+    # Replace once new config is implemented
+    from clpipe.config_json_parser import ClpipeConfigParser
+    configParser = ClpipeConfigParser()
+    configParser.config_updater(config_file_path)
+
+    configParser.config["ROIExtractionOptions"]["OverlapOk"] = True
+    configParser.config_json_dump(clpipe_postproc2_dir, "clpipe_config.json")
+
+    """Basic test of roi_extraction using single run."""
+    fmri_roi_extraction(
+        subjects=["1"], single=False, config_file=config_file_path, debug=True
     )
 
 
@@ -21,7 +37,7 @@ def test_fmri_roi_extraction_legacy(config_file_postproc2_legacy_fmriprep):
     on fmriprep version < 21"""
     fmri_roi_extraction(
         subjects=["1"],
-        single=True,
+        single=False,
         config_file=config_file_postproc2_legacy_fmriprep,
         debug=True,
     )

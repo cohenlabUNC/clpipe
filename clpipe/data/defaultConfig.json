@@ -166,6 +166,7 @@
 		"Atlases": ["power"],
 		"RequireMask": true,
 		"PropVoxels": 0.5,
+		"OverlapOk": false,
         "MemoryUsage":"20G",
         "TimeUsage": "2:0:0",
         "NThreads": "1",
