@@ -487,12 +487,12 @@ def clpipe_config_default() -> dict:
 
 @pytest.fixture(scope="module")
 def postprocessing_config(clpipe_config_default):
-    return clpipe_config_default["PostProcessingOptions2"]
+    return clpipe_config_default["PostProcessingOptions"]
 
 
 @pytest.fixture(scope="session")
 def config_file_confounds(clpipe_config_default, config_file):
-    clpipe_config_default["PostProcessingOptions2"]["ConfoundOptions"]["Include"] = True
+    clpipe_config_default["PostProcessingOptions"]["ConfoundOptions"]["Include"] = True
 
     with open(config_file, "w") as f:
         json.dump(clpipe_config_default, f)
@@ -502,7 +502,7 @@ def config_file_confounds(clpipe_config_default, config_file):
 
 @pytest.fixture(scope="session")
 def config_file_aroma(clpipe_config_default, config_file):
-    clpipe_config_default["PostProcessingOptions2"]["ProcessingSteps"] = [
+    clpipe_config_default["PostProcessingOptions"]["ProcessingSteps"] = [
         "AROMARegression",
         "SpatialSmoothing",
         "IntensityNormalization",
@@ -516,8 +516,8 @@ def config_file_aroma(clpipe_config_default, config_file):
 
 @pytest.fixture(scope="session")
 def config_file_aroma_confounds(clpipe_config_default, config_file):
-    clpipe_config_default["PostProcessingOptions2"]["ConfoundOptions"]["Include"] = True
-    clpipe_config_default["PostProcessingOptions2"]["ProcessingSteps"] = [
+    clpipe_config_default["PostProcessingOptions"]["ConfoundOptions"]["Include"] = True
+    clpipe_config_default["PostProcessingOptions"]["ProcessingSteps"] = [
         "AROMARegression",
         "TemporalFiltering",
     ]
