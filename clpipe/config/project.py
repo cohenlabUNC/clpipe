@@ -379,19 +379,19 @@ class PostProcessingOptions:
 
 @dataclass
 class ProjectOptions:
-    """"""
+    """Contains metadata for your project and option blocks for each command."""
 
-    project_title: str = ""
-    """"""
+    project_title: str = "A Neuroimaging Project"
+    """The title of your project."""
 
-    contributors: str = ""
-    """"""
+    contributors: str = "SET CONTRIBUTORS"
+    """Members of the project team."""
 
     project_directory: str = ""
-    """"""
+    """The root directory of your clpipe project."""
 
-    email_address: str = ""
-    """"""
+    email_address: str = "SET EMAIL ADDRESS"
+    """Email address used for delivering batch job updates."""
 
     source: SourceOptions = SourceOptions()
     convert2bids: Convert2BIDSOptions = Convert2BIDSOptions()

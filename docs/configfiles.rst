@@ -37,10 +37,7 @@ Header
 ------
 
 
-* ``ProjectTitle:`` The title of your project. Not used in processing.
-* ``Authors/Contributors`` Members of the project team. Not used in processing.
-* ``ProjectDirectory`` Where the project is. Not used in processing.
-
+.. autoclass:: clpipe.config.project.ProjectOptions
 
 
 Beta Series Options
