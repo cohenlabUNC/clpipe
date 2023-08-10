@@ -1,7 +1,7 @@
 import pytest
 
 from clpipe.postprocutils.image_workflows import *
-from clpipe.fmri_postprocess2 import *
+from clpipe.postprocess import *
 from pathlib import Path
 
 

@@ -5,7 +5,6 @@ from pkg_resources import resource_stream
 from .bids import DICOM_to_BIDS, BIDSValidator
 from .fmri_prep import FMRIPrep
 from .beta_series import BetaSeries
-from .legacy_postprocessing import LegacyPostProcessing
 from .roi import ROIOptions
 from .susan import SusanOptions
 from .source_options import SourceOptions
@@ -99,12 +98,12 @@ class ProjectConfig:
 
     PostProcessingOptions: PostProcessing
     @property
-    def PostProcessingOptions2(self):
-        return self._PostProcessingOptions2
-    @PostProcessingOptions2.setter
-    def PostProcessingOptions2(self, value):
+    def PostProcessingOptions(self):
+        return self._PostProcessingOptions
+    @PostProcessingOptions.setter
+    def PostProcessingOptions(self, value):
         if value is not None:
-            self._PostProcessingOptions2 = value
+            self._PostProcessingOptions = value
 
     BetaSeriesOptions: BetaSeries
     @property
