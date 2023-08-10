@@ -334,32 +334,32 @@ class PostProcessingOptions(Option):
 class ROIOptions(Option):
     """"""
 
-    TargetDirectory: str = ""
+    target_directory: str = ""
     """Target folder for processing - usually an fMRIPrep output directory."""
 
-    TargetSuffix: str = "preproc_bold.nii.gz"
+    target_suffix: str = "preproc_bold.nii.gz"
     """Narrow down the images to use by specifying the path's suffix."""
 
-    OutputDirectory: str = ""
+    output_directory: str = ""
     """Location of this command's output. Defaults to data_ROI_ts."""
     
-    Atlases: list = field(
+    atlases: list = field(
         default_factory=lambda: ["power"]
         )
     """List of atlases to use. Use 'clpipe roi atlases' to show available atlases."""
     
-    RequireMask: bool = True
+    require_mask: bool = True
     """Choose whether or not an accompanying mask for each image is required in the 
     target directory."""
     
-    PropVoxels: float = 0.5
+    prop_voxels: float = 0.5
     """ROIs with less than this proportion of voxels within the mask area are
     set to nan."""
     
-    MemoryUsage: str = "20G"
-    TimeUsage: str = "2:0:0"
-    NThreads: str = "1"
-    LogDirectory: str = ""
+    memory_usage: str = "20G"
+    time_usage: str = "2:0:0"
+    n_threads: str = "1"
+    log_directory: str = ""
 
 
 @dataclass
