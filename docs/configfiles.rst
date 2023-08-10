@@ -254,48 +254,6 @@ Header
 * ``ProjectDirectory`` Where the project is. Not used in processing.
 
 
-FMRIPrep Options
-----------------
-
-.. autoclass:: clpipe.config.project.FMRIPrepOptions
-	:members:
-
-
-Postprocessing Options
-----------------------
-
-These are the processing options for function connectivity postprocessing only. Beta Series or GLM are separate option blocks.
-Note: These are the master options, and changes in ```ProcessingStreams``` are changes from the master options.
-
-* ``PostProcessingOptions:`` Options for various postprocessing steps.
-
-    * ``TargetDirectory:`` What directory holds your fMRIPrep preprocessed data.
-    * ``TargetSuffix:`` What suffix do your preprocessed fMRI NiFTi files have? Default is preproc_bold.nii.gz.
-    * ``OutputDirectory:`` Where you want your postprocessed files to go.
-    * ``OutputSuffix:`` What suffix do you want appended to your postprocessed files? Make sure to end it with .nii.gz.
-    * ``ConfoundSuffix:`` What suffix does the confound regressors file have. Default is confound_regressor.txt.
-    * ``Regress:`` True/False. Do you want to perform nuisance regression on the data. Default True. For more info see Postprocessing/Nuisance Regression.
-    * ``RegressionParameters:`` These are the headers for the various regression parameters in the fmriprep confound file. The defaults are for the latest fmriprep version. Change only if you are using a much earlier version of fmriprep.
-    * ``NuisanceRegression:`` What type of nuisance regression do you want to perform. Default to QuadLagged (33 Parameter Regression). For more information see Postprocessing/Nuisance Regression.
-    * ``WhiteMatter:`` True/False. Include mean whitematter signal into nuisance regression. Defaults to True.
-    * ``CSF:`` True/False. Include mean cerebral spinal fluid signal into nuisance regression. Defaults to True.
-    * ``GlobalSignalRegression:`` True/False. Include global signal into nuisance regression. Defaults to True.
-    * ``FilteringHighPass:`` High pass frequency for filtering. Defaults to .08 Hz. For more information on filtering see Postprocessing/Frequency Filtering. Set to -1 to remove high pass filtering.
-    * ``FilteringLowPass:`` Low pass frequency for filtering. Defaults to no filter (-1). For more information on filtering see Postprocessing/Frequency Filtering. Set to -1 to remove low pass filtering.
-    * ``FilteringOrder:`` Order of filter. Defaults to 2. For more information on filtering see Postprocessing/Frequency Filtering.
-    * ``OversamplingFreq``: The oversampling frequency for the spectral interpolation. Defaults to 4. For more information on spectral interpolation see Postprocessing/Spectral Interpolation.
-    * ``PercentFrequencySample:`` Proportion (0 to 1, 1 being 100%) of spectrum to use in spectral interpolation. Defaults to 1. For more information on spectral interpolation see Postprocessing/Spectral Interpolation.
-    * ``Scrubbing:`` True/False. Use scrubbing. Defaults to true. For more information on scrubbing see Postprocessing/Scrubbing.
-    * ``ScrubFDThreshold:`` At what framewise displacement to scrub. Defaults to .3.
-    * ``ScrubAhead:`` If a timepoint is scrubbed, how many points after to remove. Defaults to 2.
-    * ``ScrubBehind:`` If a timepoint is scrubbed, how many points before to remove. Defaults to 2.
-    * ``ScrubContig:`` How many good contiguous timepoints need to exist. Defaults to 4.
-    * ``PostProcessingMemoryUsage:`` How much memory (RAM) per subject to request, in Mbs. Defaults to 20000Mb or 20Gb.
-    * ``PostProcessingMemoryUsage:`` How much time per subject to request. Format is Hours:Mins:Seconds. Defaults to 8 hours.
-    * ``NThreads:`` How many CPUs to request. Defaults to 1. Do not modify lightly.
-    * ``SpectralInterpolationBinSize:`` How many voxels per bin to work on in spectral interpolation. Increasing this reduces time but increases memory usage. Defaults to 5000.
-    * ``BIDSValidatorImage:`` Where the BIDS validator Singularity image is.
-    * ``LogDirectory:`` Where cluster output files are stored.
 
 Beta Series Options
 -------------------
@@ -324,12 +282,6 @@ These options are for the beta series calculations. This is a complex method, pl
             * ``ExcludeTrialType:`` A list of trial types to exclude.
     * ``LogDirectory:`` Where cluster output files are stored.
 
-SUSAN Smoothing
----------------
-
-* ``SUSANOptions`` Options for FSL's SUSAN smoothing procedure
-    * ``BrightnessThreshold``: The voxel intensity threshold used to distinguish where to smooth. It should be above background level, but below the contrast between edges.
-    * ``FWHM``: The size of the smoothing kernel. Specifically the full width half max of the Gaussian kernel. Scaled in millimeters. 0 uses a 3x3x3 voxel smoother.
 
 Processing Streams
 ------------------

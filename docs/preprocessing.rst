@@ -16,7 +16,12 @@ use the following command:
 .. click:: clpipe.cli:fmriprep_process_cli
    :prog: clpipe preprocess
 
+Configuration Options
+-------------------------------
 
+.. autoclass:: clpipe.config.project.FMRIPrepOptions
+	:members:
+   
 Getting Quality Control Reports
 -------------------------------
 
