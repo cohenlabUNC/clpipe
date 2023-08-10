@@ -37,22 +37,29 @@ class SourceOptions:
 
 @dataclass
 class Convert2BIDSOptions:
-    #Add variable names exactly same as json file
     """"""
+    
     dicom_directory: str = ""
     """"""
+
     bids_directory: str = ""
     """"""
+
     conversion_config: str = ""
     """"""
+
     dicom_format_string: str = ""
     """"""
+
     time_usage: str = ""
     """"""
+
     mem_usage: str = ""
     """"""
+
     core_usage: str = ""
     """"""
+
     log_directory: str = ""
 
     #Add this class to get a ordered dictionary in the dump method
@@ -63,6 +70,7 @@ class Convert2BIDSOptions:
 @dataclass
 class BIDSValidatorOptions:
     """"""
+
     bids_validator_image: str = ""
     """"""
     log_directory: str = ""
@@ -141,11 +149,19 @@ DEFAULT_PROCESSING_STREAM = "default"
 
 @dataclass
 class TemporalFiltering:
-    implementation: str = ""
-    filtering_high_pass: float = 0.0
-    filtering_low_pass: int = 0
-    filtering_order: int = 0
+    """"""
 
+    implementation: str = ""
+    """"""
+
+    filtering_high_pass: float = 0.0
+    """"""
+
+    filtering_low_pass: int = 0
+    """"""
+    
+    filtering_order: int = 0
+    """"""
     #Add this class to get a ordered dictionary in the dump method
     class Meta:
         ordered = True
@@ -153,7 +169,10 @@ class TemporalFiltering:
 
 @dataclass
 class IntensityNormalization:
+    """"""
+
     implementation: str = ""
+    """"""
 
     #Add this class to get a ordered dictionary in the dump method
     class Meta:
@@ -162,8 +181,12 @@ class IntensityNormalization:
 
 @dataclass
 class SpatialSmoothing:
+    """"""
+
     implementation: str = ""
+    """"""
     fwhm: int = 0
+    """"""
 
     #Add this class to get a ordered dictionary in the dump method
     class Meta:
@@ -172,6 +195,7 @@ class SpatialSmoothing:
 
 @dataclass
 class AROMARegression:
+    """"""
     implementation: str = ""
 
     #Add this class to get a ordered dictionary in the dump method
@@ -180,17 +204,33 @@ class AROMARegression:
 
 @dataclass
 class ScrubTimepoints:
+    """"""
+
     target_variable: str = ""
+    """"""
+
     threshold: float = 0.0
+    """"""
+
     scrub_ahead: int = 0
+    """"""
+
     scrub_behind: int = 0
+    """"""
+
     scrub_contiguous: int = 0
+    """"""
+
     insert_na: bool = False
+    """"""
 
 
 @dataclass
 class Resample:
+    """"""
+    
     reference_image: str = ""
+    """"""
 
     #Add this class to get a ordered dictionary in the dump method
     class Meta:
@@ -199,8 +239,13 @@ class Resample:
 
 @dataclass
 class TrimTimepoints:
+    """"""
+
     from_end: int = 0
+    """"""
+
     from_beginning: int = 0
+    """"""
     
     #Add this class to get a ordered dictionary in the dump method
     class Meta:
@@ -209,7 +254,10 @@ class TrimTimepoints:
 
 @dataclass
 class ConfoundRegression:
+    """"""
+
     implementation: str = ""
+    """"""
 
     #Add this class to get a ordered dictionary in the dump method
     class Meta:
@@ -218,6 +266,8 @@ class ConfoundRegression:
 
 @dataclass
 class ProcessingStepOptions:
+    """"""
+
     temporal_filtering: TemporalFiltering = TemporalFiltering()
     intensity_normalization: IntensityNormalization = IntensityNormalization()
     spatial_smoothing: SpatialSmoothing = SpatialSmoothing()
@@ -234,12 +284,25 @@ class ProcessingStepOptions:
 
 @dataclass
 class MotionOutliers:
+    """"""
+
     include: bool = False
+    """"""
+
     scrub_var: str = "framewise_displacement"
+    """"""
+
     threshold: float = 0.0
+    """"""
+
     scrub_ahead: int = 0
+    """"""
+
     scrub_behind: int = 0
+    """"""
+
     scrub_contiguous: int = 0
+    """"""
 
     #Add this class to get a ordered dictionary in the dump method
     class Meta:
@@ -248,8 +311,13 @@ class MotionOutliers:
 
 @dataclass
 class ConfoundOptions:
+    """"""
+
     columns: list = field(default_factory=list)
+    """"""
+
     motion_outliers: MotionOutliers = MotionOutliers()
+    """"""
 
     #Add this class to get a ordered dictionary in the dump method
     class Meta:
@@ -258,9 +326,16 @@ class ConfoundOptions:
 
 @dataclass
 class BatchOptions:
+    """"""
+
     memory_usage: str = ""
+    """"""
+
     time_usage: str = ""
+    """"""
+
     n_threads: str = ""
+    """"""
 
     #Add this class to get a ordered dictionary in the dump method
     class Meta:
@@ -269,13 +344,29 @@ class BatchOptions:
 
 @dataclass
 class PostProcessingOptions:
+    """"""
+
     working_directory: str = ""
+    """"""
+
     write_process_graph: bool = True
+    """"""
+
     target_directory: str = ""
+    """"""
+
     target_image_space: str = ""
+    """"""
+
     target_tasks: list = field(default_factory=list)
+    """"""
+
     target_acquisitions: list = field(default_factory=list)
+    """"""
+
     output_directory: str = field(default_factory=list)
+    """"""
+    
     processing_steps: list = field(default_factory=list)
     processing_step_options: ProcessingStepOptions = ProcessingStepOptions()
     confound_options: ConfoundOptions = ConfoundOptions()
@@ -289,28 +380,26 @@ class PostProcessingOptions:
 @dataclass
 class ProjectOptions:
     """"""
+
     project_title: str = ""
     """"""
+
     contributors: str = ""
     """"""
+
     project_directory: str = ""
     """"""
+
     email_address: str = ""
     """"""
+
     source: SourceOptions = SourceOptions()
-    """"""
     convert2bids: Convert2BIDSOptions = Convert2BIDSOptions()
-    """"""
     bids_validation: BIDSValidatorOptions = BIDSValidatorOptions()
-    """"""
     fmriprep: FMRIPrepOptions = FMRIPrepOptions()
-    """"""
     postprocessing: PostProcessingOptions = PostProcessingOptions()
-    """"""
     processing_streams: list = field(default_factory=list)
-    """"""
     batch_config_path: str = ""
-    """"""
     version: str = ""
 
     def to_dict(self):
