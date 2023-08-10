@@ -42,6 +42,15 @@ class AROMARegression:
     class Meta:
         ordered = True
 
+@dataclass
+class ScrubTimepoints:
+    target_variable: str
+    threshold: float
+    scrub_ahead: int
+    scrub_behind: int
+    scrub_contiguous: int
+    insert_na: bool
+
 
 @dataclass
 class Resample:
@@ -90,6 +99,7 @@ class ProcessingStepOptions:
     intensity_normalization: IntensityNormalization
     spatial_smoothing: SpatialSmoothing
     aroma_regression: AROMARegression
+    scrub_timepoints: ScrubTimepoints
     resample: Resample
     trim_timepoints: TrimTimepoints
     confound_regression: ConfoundRegression
