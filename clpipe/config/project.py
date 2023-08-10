@@ -6,7 +6,6 @@ from .bids import DICOM_to_BIDS, BIDSValidator
 from .fmri_prep import FMRIPrep
 from .beta_series import BetaSeries
 from .roi import ROIOptions
-from .susan import SusanOptions
 from .source_options import SourceOptions
 from .postprocessing import PostProcessing
 from .reho import ReHoExtraction
@@ -105,24 +104,6 @@ class ProjectConfig:
         if value is not None:
             self._PostProcessingOptions = value
 
-    BetaSeriesOptions: BetaSeries
-    @property
-    def BetaSeriesOptions(self):
-        return self._BetaSeriesOptions
-    @BetaSeriesOptions.setter
-    def BetaSeriesOptions(self, value):
-        if value is not None:
-            self._BetaSeriesOptions = value
-
-    SUSANOptions: SusanOptions
-    @property
-    def SUSANOptions(self):
-        return self._SUSANOptions
-    @SUSANOptions.setter
-    def SUSANOptions(self, value):
-        if value is not None:
-            self._SUSANOptions = value
-
     ProcessingStreams: list
     @property
     def ProcessingStreams(self):
@@ -131,6 +112,15 @@ class ProjectConfig:
     def ProcessingStreams(self, value):
         if value is not None:
             self._ProcessingStreams = value
+
+    BetaSeriesOptions: BetaSeries
+    @property
+    def BetaSeriesOptions(self):
+        return self._BetaSeriesOptions
+    @BetaSeriesOptions.setter
+    def BetaSeriesOptions(self, value):
+        if value is not None:
+            self._BetaSeriesOptions = value
 
     ROIExtractionOptions: ROIOptions
     @property

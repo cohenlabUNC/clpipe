@@ -83,11 +83,6 @@ class ClpipeConfigParser:
                               output_dir= os.path.join(self.config['ProjectDirectory'],
                                            'data_ROI_ts', 'postproc_default'),
                               )
-        self.setup_susan(os.path.join(self.config['ProjectDirectory'], 'data_postproc', 'postproc_default'),
-                            target_suffix='postproc.nii.gz',
-                            output_dir=os.path.join(self.config['ProjectDirectory'], 'data_postproc',
-                                                    'postproc_default'),
-                            output_suffix='postproc_default.nii.gz')
         self.setup_glm(self.config['ProjectDirectory'])
 
     def setup_glm(self, project_path):

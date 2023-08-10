@@ -55,7 +55,6 @@ def project_setup(project_title=None, project_dir=None,
     setup_postproc(config)
     setup_postproc(config, beta_series=True)
     setup_roiextract_directories(config)
-    setup_susan_directories(config)
     setup_glm_directories(config['ProjectDirectory'])
 
     add_file_handler(logs_dir)
