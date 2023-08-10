@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 @dataclass
-class PostProcessing:
+class LegacyPostProcessing:
     TargetDirectory: str
     @property
     def TargetDirectory(self):

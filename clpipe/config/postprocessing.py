@@ -367,7 +367,7 @@ class BatchOptions:
 
 
 @dataclass
-class PostProcessing2:
+class PostProcessing:
     WorkingDirectory: str
     @property
     def WorkingDirectory(self):

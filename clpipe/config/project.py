@@ -5,11 +5,11 @@ from pkg_resources import resource_stream
 from .bids import DICOM_to_BIDS, BIDSValidator
 from .fmri_prep import FMRIPrep
 from .beta_series import BetaSeries
-from .post_processing import PostProcessing
+from .legacy_postprocessing import LegacyPostProcessing
 from .roi import ROIOptions
 from .susan import SusanOptions
 from .source_options import SourceOptions
-from .postprocessing2 import PostProcessing2
+from .postprocessing import PostProcessing
 from .reho import ReHoExtraction
 from .t2star import T2StarExtraction
 
@@ -98,15 +98,6 @@ class ProjectConfig:
             self._FMRIPrepOptions = value
 
     PostProcessingOptions: PostProcessing
-    @property
-    def PostProcessingOptions(self):
-        return self._PostProcessingOptions
-    @PostProcessingOptions.setter
-    def PostProcessingOptions(self, value):
-        if value is not None:
-            self._PostProcessingOptions = value
-
-    PostProcessingOptions2: PostProcessing2
     @property
     def PostProcessingOptions2(self):
         return self._PostProcessingOptions2
