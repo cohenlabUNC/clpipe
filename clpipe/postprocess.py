@@ -119,7 +119,7 @@ def postprocess_subjects(
     output_dir = Path(output_dir)
     logger.info(f"Output directory: {output_dir}")
 
-    working_dir = config["PostProcessingOptions2"]["WorkingDirectory"]
+    working_dir = config["PostProcessingOptions"]["WorkingDirectory"]
     if working_dir == "":
         logger.warn("Working directory not set, defaulting to output directory.")
     else:
