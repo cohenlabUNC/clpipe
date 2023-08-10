@@ -4,15 +4,32 @@ import json, yaml, os
 from pathlib import Path
 from pkg_resources import resource_stream
 
+
 @dataclass
 class SourceOptions:
-    source_url: str = ""
+    """Options for configuring sources of DICOM data."""
+
+    source_url: str = "fw://"
+    """The URL to your source data - for Flywheel this should start with fw: 
+    and point to a project. You can use fw ls to browse your fw project space 
+    to find the right path."""
+
+   
     dropoff_directory: str = ""
+    """A destination for your synced data - usually this will be data_DICOMs"""
+    
     temp_directory: str = ""
-    commandline_opts: str = ""
-    time_usage: str = ""
-    mem_usage: str = ""
-    core_usage: str = ""
+    """A location for Flywheel to store its temporary files - 
+    necessary on shared compute, because Flywheel will use system 
+    level tmp space by default, which can cause issues."""
+    
+    commandline_opts: str = "-y"
+    """Any additional options you may need to include - 
+    you can browse Flywheel syncs other options with fw sync -help"""
+
+    time_usage: str = "1:0:0"
+    mem_usage: str = "10G"
+    core_usage: str = "1"
 
     #Add this class to get a ordered dictionary in the dump method
     class Meta:
@@ -21,13 +38,21 @@ class SourceOptions:
 @dataclass
 class Convert2BIDSOptions:
     #Add variable names exactly same as json file
+    """"""
     dicom_directory: str = ""
+    """"""
     bids_directory: str = ""
+    """"""
     conversion_config: str = ""
+    """"""
     dicom_format_string: str = ""
+    """"""
     time_usage: str = ""
+    """"""
     mem_usage: str = ""
+    """"""
     core_usage: str = ""
+    """"""
     log_directory: str = ""
 
     #Add this class to get a ordered dictionary in the dump method
@@ -37,7 +62,9 @@ class Convert2BIDSOptions:
 
 @dataclass
 class BIDSValidatorOptions:
+    """"""
     bids_validator_image: str = ""
+    """"""
     log_directory: str = ""
     
     #Add this class to get a ordered dictionary in the dump method
@@ -47,43 +74,62 @@ class BIDSValidatorOptions:
 
 @dataclass
 class FMRIPrepOptions:
+    """Options for configuring fMRIPrep."""
+
+    bids_directory: str = "" 
     """Your BIDs formatted raw data directory."""
-    bids_directory: str = ""
+
+    working_directory: str = "SET WORKING DIRECTORY"
     """Storage location for intermediary fMRIPrep files. Takes up a large
     amount of space - Longleaf users should use their /work folder."""
-    working_directory: str = "SET WORKING DIRECTORY"
-    """Where you want your preprocessed files to go."""
-    output_directory: str = ""
-    """Path to your fMRIPrep Singularity image."""
+
+    
+    output_directory: str = "" 
+    """ Where to save your preprocessed images. """
+
     fmriprep_path: str = "/proj/hng/singularity_imgs/fmriprep_22.1.1.sif"
-    """Path to your Freesurfer license .txt file."""
+    """Path to your fMRIPrep Singularity image."""
+    
     freesurfer_license_path: str = "/proj/hng/singularity_imgs/license.txt"
+    """Path to your Freesurfer license .txt file."""
+    
+    use_aroma: bool = False
     """Set True to generate AROMA artifacts. Significantly increases run
     time and memory usage."""
-    use_aroma: bool = False
-    """Any additional arguments to pass to FMRIprep."""
+    
     commandline_opts: str = ""
+    """Any additional arguments to pass to FMRIprep."""
+    
+    templateflow_toggle: bool = True
     """Set True to activate to use templateflow, which allows you to
     generate multiple template variantions for the same outputs."""
-    templateflow_toggle: bool = True
-    """The path to your templateflow directory."""
+    
     templateflow_path: str = "/proj/hng/singularity_imgs/template_flow"
-    """Which templates (standard spaces) should clpipe download for use in templateflow?"""
+    """The path to your templateflow directory."""
+
     templateflow_templates: list = field(default_factory=lambda: ["MNI152NLin2009cAsym", "MNI152NLin6Asym", "OASIS30ANTs", "MNIPediatricAsym", "MNIInfant"])
-    """How many timepoints should the fmap_cleanup function extract from blip-up/blip-down field maps, set to -1 to disable."""
+    """Which templates (standard spaces) should clpipe download for use in templateflow?"""
+
     fmap_roi_cleanup: int = 3
-    """How much memory in RAM each subject's preprocessing will use."""
+    """How many timepoints should the fmap_cleanup function extract from blip-up/blip-down field maps, set to -1 to disable."""
+    
     fmriprep_memory_usage: str = "50G"
-    """How much time on the cluster fMRIPrep is allowed to use."""
+    """How much memory in RAM each subject's preprocessing will use."""
+
     fmriprep_time_usage: str = "16:0:0"
-    """How many threads to use in each job."""
+    """How much time on the cluster fMRIPrep is allowed to use."""
+    
     n_threads: str = "12"
-    """Path to your logging directory for fMRIPrep outputs. Not generally changed from default."""
+    """How many threads to use in each job."""
+
     log_directory: str = ""
-    """Set True to use a Docker image."""
+    """Path to your logging directory for fMRIPrep outputs. Not generally changed from default."""
+
     docker_toggle: bool = False
-    """Path to your fMRIPrep Docker image."""
+    """Set True to use a Docker image."""
+    
     docker_fmriprep_version: str = ""
+    """Path to your fMRIPrep Docker image."""
     
     #Add this class to get a ordered dictionary in the dump method
     class Meta:
@@ -242,17 +288,29 @@ class PostProcessingOptions:
 
 @dataclass
 class ProjectOptions:
+    """"""
     project_title: str = ""
+    """"""
     contributors: str = ""
+    """"""
     project_directory: str = ""
+    """"""
     email_address: str = ""
+    """"""
     source: SourceOptions = SourceOptions()
+    """"""
     convert2bids: Convert2BIDSOptions = Convert2BIDSOptions()
+    """"""
     bids_validation: BIDSValidatorOptions = BIDSValidatorOptions()
+    """"""
     fmriprep: FMRIPrepOptions = FMRIPrepOptions()
+    """"""
     postprocessing: PostProcessingOptions = PostProcessingOptions()
+    """"""
     processing_streams: list = field(default_factory=list)
+    """"""
     batch_config_path: str = ""
+    """"""
     version: str = ""
 
     def to_dict(self):

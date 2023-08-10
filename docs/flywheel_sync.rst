@@ -39,12 +39,8 @@ and your batch configuration:
 flywheel_sync Options
 ----------------
 
-* ``SourceOptions:`` Options regarding remote data sources.
-
-    * ``SourceURL:`` The URL to your source data - for Flywheel this should start with `fw:` and point to a project. You can use `fw ls` to browse your fw project space to find the right path.
-    * ``DropoffDirectory:`` A destination for your synced data - usually this will be `data_DICOMs`
-    * ``TempDirectory`` A location for Flywheel to store its temporary files - necessary on shared compute, because Flywheel will use system level tmp space by default, which can cause issues.
-    * ``CommandLineOpts:`` Any additional options you may need to include - you can browse Flywheel sync's other options with `fw sync --help`
+.. autoclass:: clpipe.config.project.SourceOptions
+	:members:
 
 
 .. click:: clpipe.cli:flywheel_sync_cli
