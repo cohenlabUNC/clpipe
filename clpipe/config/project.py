@@ -4,9 +4,20 @@ import json, yaml, os
 from pathlib import Path
 from pkg_resources import resource_stream
 
+DEFAULT_PROCESSING_STREAM = "default"
+
+class Option:
+    """Parent option class for configuring global settings.
+    
+    Unfortunately, giving this class the @dataclass decorator does not seem to
+    pass functionality to child classes, even with super.init()
+    """
+    class Meta:
+        ordered = True
+        """Ensures config retains source order when dumped to file."""
 
 @dataclass
-class SourceOptions:
+class SourceOptions(Option):
     """Options for configuring sources of DICOM data."""
 
     source_url: str = "fw://"
@@ -31,12 +42,9 @@ class SourceOptions:
     mem_usage: str = "10G"
     core_usage: str = "1"
 
-    #Add this class to get a ordered dictionary in the dump method
-    class Meta:
-        ordered = True
 
 @dataclass
-class Convert2BIDSOptions:
+class Convert2BIDSOptions(Option):
     """"""
     
     dicom_directory: str = ""
@@ -62,26 +70,18 @@ class Convert2BIDSOptions:
 
     log_directory: str = ""
 
-    #Add this class to get a ordered dictionary in the dump method
-    class Meta:
-        ordered = True
-
 
 @dataclass
-class BIDSValidatorOptions:
+class BIDSValidatorOptions(Option):
     """"""
 
     bids_validator_image: str = ""
     """"""
     log_directory: str = ""
-    
-    #Add this class to get a ordered dictionary in the dump method
-    class Meta:
-        ordered = True
 
 
 @dataclass
-class FMRIPrepOptions:
+class FMRIPrepOptions(Option):
     """Options for configuring fMRIPrep."""
 
     bids_directory: str = "" 
@@ -115,11 +115,19 @@ class FMRIPrepOptions:
     templateflow_path: str = "/proj/hng/singularity_imgs/template_flow"
     """The path to your templateflow directory."""
 
-    templateflow_templates: list = field(default_factory=lambda: ["MNI152NLin2009cAsym", "MNI152NLin6Asym", "OASIS30ANTs", "MNIPediatricAsym", "MNIInfant"])
+    templateflow_templates: list = field(
+        default_factory=lambda: [
+            "MNI152NLin2009cAsym", 
+            "MNI152NLin6Asym", 
+            "OASIS30ANTs", 
+            "MNIPediatricAsym", 
+            "MNIInfant"]
+        )
     """Which templates (standard spaces) should clpipe download for use in templateflow?"""
 
     fmap_roi_cleanup: int = 3
-    """How many timepoints should the fmap_cleanup function extract from blip-up/blip-down field maps, set to -1 to disable."""
+    """How many timepoints should the fmap_cleanup function extract from 
+    blip-up/blip-down field maps, set to -1 to disable."""
     
     fmriprep_memory_usage: str = "50G"
     """How much memory in RAM each subject's preprocessing will use."""
@@ -131,24 +139,18 @@ class FMRIPrepOptions:
     """How many threads to use in each job."""
 
     log_directory: str = ""
-    """Path to your logging directory for fMRIPrep outputs. Not generally changed from default."""
+    """Path to your logging directory for fMRIPrep outputs.
+    Not generally changed from default."""
 
     docker_toggle: bool = False
     """Set True to use a Docker image."""
     
     docker_fmriprep_version: str = ""
     """Path to your fMRIPrep Docker image."""
-    
-    #Add this class to get a ordered dictionary in the dump method
-    class Meta:
-        ordered = True
 
-from dataclasses import dataclass, field
-
-DEFAULT_PROCESSING_STREAM = "default"
 
 @dataclass
-class TemporalFiltering:
+class TemporalFiltering(Option):
     """"""
 
     implementation: str = ""
@@ -162,25 +164,18 @@ class TemporalFiltering:
     
     filtering_order: int = 0
     """"""
-    #Add this class to get a ordered dictionary in the dump method
-    class Meta:
-        ordered = True
 
 
 @dataclass
-class IntensityNormalization:
+class IntensityNormalization(Option):
     """"""
 
     implementation: str = ""
     """"""
 
-    #Add this class to get a ordered dictionary in the dump method
-    class Meta:
-        ordered = True
-
 
 @dataclass
-class SpatialSmoothing:
+class SpatialSmoothing(Option):
     """"""
 
     implementation: str = ""
@@ -188,22 +183,15 @@ class SpatialSmoothing:
     fwhm: int = 0
     """"""
 
-    #Add this class to get a ordered dictionary in the dump method
-    class Meta:
-        ordered = True
-
 
 @dataclass
-class AROMARegression:
+class AROMARegression(Option):
     """"""
     implementation: str = ""
 
-    #Add this class to get a ordered dictionary in the dump method
-    class Meta:
-        ordered = True
 
 @dataclass
-class ScrubTimepoints:
+class ScrubTimepoints(Option):
     """"""
 
     target_variable: str = ""
@@ -226,19 +214,15 @@ class ScrubTimepoints:
 
 
 @dataclass
-class Resample:
+class Resample(Option):
     """"""
     
     reference_image: str = ""
     """"""
 
-    #Add this class to get a ordered dictionary in the dump method
-    class Meta:
-        ordered = True
-
 
 @dataclass
-class TrimTimepoints:
+class TrimTimepoints(Option):
     """"""
 
     from_end: int = 0
@@ -246,26 +230,18 @@ class TrimTimepoints:
 
     from_beginning: int = 0
     """"""
-    
-    #Add this class to get a ordered dictionary in the dump method
-    class Meta:
-        ordered = True
 
 
 @dataclass
-class ConfoundRegression:
+class ConfoundRegression(Option):
     """"""
 
     implementation: str = ""
     """"""
 
-    #Add this class to get a ordered dictionary in the dump method
-    class Meta:
-        ordered = True
-
 
 @dataclass
-class ProcessingStepOptions:
+class ProcessingStepOptions(Option):
     """"""
 
     temporal_filtering: TemporalFiltering = TemporalFiltering()
@@ -277,13 +253,9 @@ class ProcessingStepOptions:
     trim_timepoints: TrimTimepoints = TrimTimepoints()
     confound_regression: ConfoundRegression = ConfoundRegression()
 
-    #Add this class to get a ordered dictionary in the dump method
-    class Meta:
-        ordered = True
-
 
 @dataclass
-class MotionOutliers:
+class MotionOutliers(Option):
     """"""
 
     include: bool = False
@@ -304,13 +276,9 @@ class MotionOutliers:
     scrub_contiguous: int = 0
     """"""
 
-    #Add this class to get a ordered dictionary in the dump method
-    class Meta:
-        ordered = True
-
 
 @dataclass
-class ConfoundOptions:
+class ConfoundOptions(Option):
     """"""
 
     columns: list = field(default_factory=list)
@@ -319,13 +287,9 @@ class ConfoundOptions:
     motion_outliers: MotionOutliers = MotionOutliers()
     """"""
 
-    #Add this class to get a ordered dictionary in the dump method
-    class Meta:
-        ordered = True
-
 
 @dataclass
-class BatchOptions:
+class BatchOptions(Option):
     """"""
 
     memory_usage: str = ""
@@ -337,13 +301,9 @@ class BatchOptions:
     n_threads: str = ""
     """"""
 
-    #Add this class to get a ordered dictionary in the dump method
-    class Meta:
-        ordered = True
-
 
 @dataclass
-class PostProcessingOptions:
+class PostProcessingOptions(Option):
     """"""
 
     working_directory: str = ""
@@ -372,13 +332,9 @@ class PostProcessingOptions:
     confound_options: ConfoundOptions = ConfoundOptions()
     batch_options: BatchOptions = BatchOptions()
 
-    #Add this class to get a ordered dictionary in the dump method
-    class Meta:
-        ordered = True
-
 
 @dataclass
-class ProjectOptions:
+class ProjectOptions(Option):
     """Contains metadata for your project and option blocks for each command."""
 
     project_title: str = "A Neuroimaging Project"
@@ -406,10 +362,6 @@ class ProjectOptions:
         #Generate schema from given dataclasses
         ConfigSchema = marshmallow_dataclass.class_schema(self.__class__)
         return ConfigSchema().dump(self)
-
-    #Add this class to get a ordered dictionary in the dump method
-    class Meta:
-        ordered = True
     
 def load_project_config(json_file = None, yaml_file = None):
     #Generate schema from given dataclasses
