@@ -35,19 +35,20 @@
       "atlas_type": "label",
       "atlas_citation": ""
     },
-    {"atlas_name": "dosenbach",
+    {
+      "atlas_name": "dosenbach",
       "atlas_file": "data/atlases/dosenbach/dos160_roi_atlas.nii.gz",
       "atlas_labels": "data/atlases/dosenbach/dos160_labels.csv",
       "atlas_type": "label",
       "atlas_citation": ""
     },
-    {"atlas_name": "eickhoff_zilles",
+    {
+      "atlas_name": "eickhoff_zilles",
       "atlas_file": "data/atlases/eickhoff_zilles/ez_roi_atlas.nii.gz",
       "atlas_labels": "data/atlases/eickhoff_zilles/ez_labels.csv",
       "atlas_type": "label",
       "atlas_citation": ""
     },
-
     {
       "atlas_name": "msdl",
       "atlas_file": "data/atlases/msdl/msdl_rois.nii.gz",
@@ -62,44 +63,47 @@
       "atlas_type": "sphere",
       "atlas_citation": ""
     },
-    { "atlas_name": "yeo_7Network_Strict",
+    {
+      "atlas_name": "yeo_7Network_Strict",
       "atlas_file": "data/atlases/yeo/Yeo2011_7Networks_MNI152_FreeSurferConformed1mm.nii.gz",
       "atlas_labels": "data/atlases/yeo/Yeo2011_7Networks_ColorLUT.txt",
       "atlas_type": "label",
       "atlas_citation": ""
     },
-    { "atlas_name": "yeo_7Network_Liberal",
+    {
+      "atlas_name": "yeo_7Network_Liberal",
       "atlas_file": "data/atlases/yeo/Yeo2011_7Networks_MNI152_FreeSurferConformed1mm_LiberalMask.nii.gz",
       "atlas_labels": "data/atlases/yeo/Yeo2011_7Networks_ColorLUT.txt",
       "atlas_type": "label",
       "atlas_citation": ""
     },
-    { "atlas_name": "yeo_17Network_Strict",
+    {
+      "atlas_name": "yeo_17Network_Strict",
       "atlas_file": "data/atlases/yeo/Yeo2011_17Networks_MNI152_FreeSurferConformed1mm.nii.gz",
       "atlas_labels": "data/atlases/yeo/Yeo2011_7Networks_ColorLUT.txt",
       "atlas_type": "label",
       "atlas_citation": ""
     },
-    { "atlas_name": "yeo_17Network_Liberal",
+    {
+      "atlas_name": "yeo_17Network_Liberal",
       "atlas_file": "data/atlases/yeo/Yeo2011_17Networks_MNI152_FreeSurferConformed1mm_LiberalMask.nii.gz",
       "atlas_labels": "data/atlases/yeo/Yeo2011_7Networks_ColorLUT.txt",
       "atlas_type": "label",
       "atlas_citation": ""
     },
-    { "atlas_name": "aal",
+    {
+      "atlas_name": "aal",
       "atlas_file": "data/atlases/aal/AAL.nii.gz",
       "atlas_labels": "data/atlases/aal/aal_labels.csv",
       "atlas_type": "label",
       "atlas_citation": ""
     },
-    { "atlas_name": "bigbrain",
+    {
+      "atlas_name": "bigbrain",
       "atlas_file": "data/atlases/bigbrain/BigBrain300_MNI_coordinates.txt",
       "atlas_labels": "data/atlases/bigbrain/BigBrain300_ROIinfo.xlsx",
       "atlas_type": "sphere",
       "atlas_citation": ""
     }
   ]
-
-
-
 }
