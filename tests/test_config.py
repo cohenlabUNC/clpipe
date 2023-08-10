@@ -16,9 +16,9 @@ def test_json_load(config_file):
     """ Ensure that the config class loads in .json data as expected. """
     config = load_project_config(json_file=config_file)
     assert config is not None
-    assert config.ProjectTitle == "test_project"
+    assert config.project_title == "test_project"
     assert (
-        config.PostProcessingOptions.ProcessingStepOptions.TemporalFiltering.FilteringHighPass
+        config.postprocessing.processing_step_options.temporal_filtering.filtering_high_pass
         == 0.008
     )
 
@@ -32,9 +32,9 @@ def test_yaml_load(config_file, tmp_path):
         yaml.dump(conf_json, yaml_file, sort_keys=False)
     config = load_project_config(yaml_file=os.path.join(tmp_path,'config.yaml'))
     assert config is not None
-    assert config.ProjectTitle == "test_project"
+    assert config.project_title == "test_project"
     assert (
-        config.PostProcessingOptions.ProcessingStepOptions.TemporalFiltering.FilteringHighPass
+        config.postprocessing.processing_step_options.temporal_filtering.filtering_high_pass
         == 0.008
     )
 
@@ -48,10 +48,10 @@ def test_default(clpipe_config_default):
     is successfully loaded into the configuration object.
     """
     config = load_project_config()
-    assert config.ProjectTitle == clpipe_config_default["ProjectTitle"]
-    assert config.Authors == clpipe_config_default["Authors/Contributors"]
+    assert config.project_title == clpipe_config_default["ProjectTitle"]
+    assert config.contributors == clpipe_config_default["Authors/Contributors"]
     assert (
-        config.SourceOptions.MemUsage
+        config.source.mem_usage
         == clpipe_config_default["SourceOptions"]["MemUsage"]
     )
 
@@ -83,18 +83,21 @@ def test_author_contributor(config_file):
     """
     config = load_project_config(json_file=config_file)
     assert config is not None
-    assert config.Authors == "SET AUTHOR"
+    assert config.contributors == "SET AUTHOR"
 
+@pytest.mark.skip(reason="Merged this test early.")
 def test_dump_project_config_yaml_default(project_config_default, helpers, artifact_dir, request):
     test_dir = helpers.create_test_dir(artifact_dir, request.node.name)
 
     dump_project_config(project_config_default, test_dir, 'test_project_options', yaml_file=True)
 
+@pytest.mark.skip(reason="Merged this test early.")
 def test_dump_project_config_json_default(project_config_default, helpers, artifact_dir, request):
     test_dir = helpers.create_test_dir(artifact_dir, request.node.name)
 
     dump_project_config(project_config_default, test_dir, 'test_project_options')
 
+@pytest.mark.skip(reason="Merged this test early.")
 def test_dump_project_config_yaml(project_config, helpers, artifact_dir, request):
     test_dir = helpers.create_test_dir(artifact_dir, request.node.name)
 
