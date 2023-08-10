@@ -36,14 +36,15 @@ def get_bids(bids_dir: os.PathLike, validate=False,
                 logger.info("This can take a few minutes...")
 
             if fmriprep_dir:
+                # When setting derivative dir in this version of pybids, don't use
+                #   the BIDSLayoutIndexer, pass through Layout instead - indexer
+                #   ignores derivatives due to bug.
                 return BIDSLayout(
-                    bids_dir, validate=validate, indexer=indexer, 
-                    database_path=database_path, derivatives=fmriprep_dir, 
-                    reset_database=refresh)
+                    bids_dir, database_path=database_path, derivatives=fmriprep_dir, 
+                    reset_database=refresh, validate=validate, index_metadata=index_metadata)
             else:
                 return BIDSLayout(
-                    bids_dir, validate=validate,
-                    indexer=indexer, database_path=database_path,
+                    bids_dir, indexer=indexer, database_path=database_path,
                     reset_database=refresh)
     except FileNotFoundError as fne:
         if logger:
