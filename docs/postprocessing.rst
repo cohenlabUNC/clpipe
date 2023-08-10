@@ -5,14 +5,14 @@ Postprocessing
 Overview
 ==================
 
-The ``clpipe postprocess2`` command combines the functionality of the legacy
-``fmri_postprocess`` and ``glm_setup`` commands into a unified postprocessing stream.
+The ``clpipe postprocess`` command combines the functionality of the
+retired ``fmri_postprocess`` and ``glm_setup`` commands into a unified postprocessing stream.
 
 This command allows for flexible creation of processing streams. The order of
 processing steps and their specific implementations can be modified in the
 configuration file. Any temporally-relevant processing steps can also be
 applied to each image's corresponding confounds file.
-``postprocess2`` caches its processing intermediaries
+``postprocess`` caches its processing intermediaries
 in a working directory, which allows quick re-runs of pipelines with 
 new parameters.
 
@@ -226,7 +226,7 @@ Definitions:
 Processing Streams Setup
 ===================
 
-By default, the output from running fmri_postprocess2 will appear in your
+By default, the output from running fmri_postprocess will appear in your
 clpipe folder at data_postproc2/smooth_filter_normalize, reflecting the
 defaults from PostProcessingOptions2.
 
@@ -245,8 +245,8 @@ specifies a filtering high pass by overriding the default value of -1 with
 Command
 ===================
 
-.. click:: clpipe.cli:fmri_postprocess2_cli
-	:prog: clpipe postprocess2
+.. click:: clpipe.cli:postprocess_cli
+	:prog: clpipe postprocess
 
 .. code-block:: json
 
@@ -291,8 +291,8 @@ Command
 	...
 
 To run a specific stream, give the ``-processing_stream`` stream option
-of ``clpipe postprocess2`` the name of the stream:
+of ``clpipe postprocess`` the name of the stream:
 
 .. code-block:: console
 
-	clpipe postprocess2 -config_file clpipe_config.json -processing_stream smooth_aroma-regress_filter-butterworth_normalize -submit
+	clpipe postprocess -config_file clpipe_config.json -processing_stream smooth_aroma-regress_filter-butterworth_normalize -submit
