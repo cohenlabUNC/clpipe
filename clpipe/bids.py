@@ -8,12 +8,7 @@ import json
 import warnings
 import os
 
-# This hides a pybids future warning
-with warnings.catch_warnings():
-    warnings.filterwarnings("ignore", category=FutureWarning)
-    from bids import BIDSLayout, BIDSLayoutIndexer, config as bids_config
-    from bids.layout import BIDSFile
-
+from bids import BIDSLayout, BIDSLayoutIndexer
 
 def get_bids(bids_dir: os.PathLike, validate=False, 
               database_path: os.PathLike=None, fmriprep_dir: os.PathLike=None, 
