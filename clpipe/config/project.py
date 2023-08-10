@@ -45,38 +45,35 @@ class SourceOptions(Option):
 
 @dataclass
 class Convert2BIDSOptions(Option):
-    """"""
+    """Options for converting DICOM files to BIDS format."""
     
     dicom_directory: str = ""
-    """"""
+    """Path to your source DICOM directory to be converted."""
 
     bids_directory: str = ""
-    """"""
+    """Output directory where your BIDS data will be saved."""
 
     conversion_config: str = ""
-    """"""
+    """The path to your conversion configuration file - either a
+    conversion_config.json file for dcm2bids, or heuristic.py for heudiconv."""
 
     dicom_format_string: str = ""
-    """"""
+    """Used to tell clpipe where to find subject and session level folders in you
+    DICOM directory."""
 
-    time_usage: str = ""
-    """"""
-
-    mem_usage: str = ""
-    """"""
-
-    core_usage: str = ""
-    """"""
-
+    time_usage: str = "1:0:0"
+    mem_usage: str = "5000"
+    core_usage: str = "2"
     log_directory: str = ""
 
 
 @dataclass
 class BIDSValidatorOptions(Option):
-    """"""
+    """Options for validating your BIDS directory."""
 
-    bids_validator_image: str = ""
-    """"""
+    bids_validator_image: str = "/proj/hng/singularity_imgs/validator.simg"
+    """Path to your BIDS validator image."""
+    
     log_directory: str = ""
 
 
