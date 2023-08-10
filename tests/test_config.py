@@ -19,7 +19,7 @@ def test_json_load(config_file):
     assert config is not None
     assert config.ProjectTitle == "test_project"
     assert (
-        config.PostProcessingOptions2.ProcessingStepOptions.TemporalFiltering.FilteringHighPass
+        config.PostProcessingOptions.ProcessingStepOptions.TemporalFiltering.FilteringHighPass
         == 0.008
     )
 
@@ -35,7 +35,7 @@ def test_yaml_load(config_file, tmp_path):
     assert config is not None
     assert config.ProjectTitle == "test_project"
     assert (
-        config.PostProcessingOptions2.ProcessingStepOptions.TemporalFiltering.FilteringHighPass
+        config.PostProcessingOptions.ProcessingStepOptions.TemporalFiltering.FilteringHighPass
         == 0.008
     )
 

@@ -28,89 +28,6 @@
         "SourceURL": "fw://",
         "CoreUsage": "1"
     },
-    "PostProcessingOptions": {
-        "ConfoundsQuadDerive": [
-            "trans_x",
-            "trans_y",
-            "trans_z",
-            "rot_x",
-            "rot_y",
-            "rot_z",
-            "csf",
-            "white_matter",
-            "global_signal"
-        ],
-        "TargetSuffix": "space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz",
-        "TargetDirectory": "",
-        "ConfoundSuffix": "desc-confounds_regressors.tsv",
-        "Confounds": [
-            "trans_x",
-            "trans_y",
-            "trans_z",
-            "rot_x",
-            "rot_y",
-            "rot_z",
-            "csf",
-            "white_matter",
-            "global_signal",
-            "a_comp_cor.*"
-        ],
-        "OutputDirectory": "",
-        "OutputSuffix": "",
-        "ConfoundsQuad": [
-            "trans_x",
-            "trans_y",
-            "trans_z",
-            "rot_x",
-            "rot_y",
-            "rot_z",
-            "csf",
-            "white_matter",
-            "global_signal"
-        ],
-        "ConfoundsDerive": [
-            "trans_x",
-            "trans_y",
-            "trans_z",
-            "rot_x",
-            "rot_y",
-            "rot_z",
-            "csf",
-            "white_matter",
-            "global_signal"
-        ],
-        "DropCSV": "",
-        "Regress": true,
-        "FilteringHighPass": 0.008,
-        "FilteringLowPass": -1,
-        "OversamplingFreq": 4,
-        "PercentFreqSample": 1,
-        "FilteringOrder": 2,
-        "Scrubbing": true,
-        "RespNotchFilter": true,
-        "ScrubAhead": 1,
-        "ScrubBehind": 1,
-        "ScrubContig": 2,
-        "ScrubVar": "framewise_displacement",
-        "ScrubFDThreshold": 0.3,
-        "MotionVars": [
-            "trans_x",
-            "trans_y",
-            "trans_z",
-            "rot_x",
-            "rot_y",
-            "rot_z"
-        ],
-        "RespNotchFilterBand": [
-            0.31,
-            0.43
-        ],
-        "PostProcessingTimeUsage": "8:0:0",
-        "NThreads": "1",
-        "PostProcessingMemoryUsage": "20000",
-        "LogDirectory": "",
-        "SpectralInterpolationBinSize": 5000
-    },
     "FMRIPrepOptions": {
         "OutputDirectory": "",
         "TemplateFlowToggle": true,
@@ -136,7 +53,7 @@
         "NThreads": "12",
         "LogDirectory": ""
     },
-    "PostProcessingOptions2": {
+    "PostProcessingOptions": {
         "WorkingDirectory": "",
         "TargetTasks": [],
         "TargetDirectory": "",
