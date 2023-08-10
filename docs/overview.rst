@@ -130,8 +130,4 @@ HNG group should be able to use the default options with no change.
 Other users will have to modify several fields. 
 We describe the various sections of the config now.
 
-Project Metadata
-----------------------
-
-
 .. autoclass:: clpipe.config.project.ProjectOptions
