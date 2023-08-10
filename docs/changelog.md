@@ -1,5 +1,10 @@
 # Change Log
 
+## 1.9.0 (July x, 2023)
+- Removed original postprocessing command
+- postprocess2 is now named postprocess
+- Removed original susan command, now a step of postprocess
+
 ## 1.8.1 (Jun 28, 2023)
 
 ### Enhancements
