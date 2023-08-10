@@ -14,9 +14,18 @@ This command will create a default configuration file with whatever name you spe
 
    {
 	"ProjectTitle": "A Neuroimaging Project",
-	"Authors/Contributors": "",
+	"Authors/Contributors": "SET AUTHOR",
 	"ProjectDirectory": "",
-	"EmailAddress": "",
+	"EmailAddress": "SET EMAIL ADDRESS",
+	"SourceOptions": {
+		"SourceURL": "fw://",
+		"DropoffDirectory": "",
+		"TempDirectory": "",
+		"CommandLineOpts": "-y",
+		"TimeUsage": "1:0:0",
+		"MemUsage": "10000",
+		"CoreUsage": "1"
+	},
 	"DICOMToBIDSOptions": {
 		"DICOMDirectory": "",
 		"BIDSDirectory": "",
@@ -27,59 +36,143 @@ This command will create a default configuration file with whatever name you spe
         "CoreUsage": "2",
         "LogDirectory": ""
 	},
+	"BIDSValidationOptions": {
+		"BIDSValidatorImage": "/proj/hng/singularity_imgs/validator.simg",
+		"LogDirectory": ""
+	},
 	"FMRIPrepOptions": {
 		"BIDSDirectory": "",
-		"WorkingDirectory": "",
+		"WorkingDirectory": "SET WORKING DIRECTORY",
 		"OutputDirectory": "",
-		"FMRIPrepPath": "/proj/hng/singularity_imgs/fmriprep_1.5.3.sif",
+		"FMRIPrepPath": "/proj/hng/singularity_imgs/fmriprep_22.1.1.sif",
 		"FreesurferLicensePath": "/proj/hng/singularity_imgs/license.txt",
+		"UseAROMA": false,
 		"CommandLineOpts": "",
 		"TemplateFlowToggle": true,
-		"TemplateFlowPath": "",
-		"TemplateFlowTemplates": ["MNI152NLin2009cAsym", "MNI152NLin6Asym", "OASIS30ANTs", "MNIPediatricAsym", "MNIInfant"],
+		"TemplateFlowPath": "/proj/hng/singularity_imgs/template_flow",
+		"TemplateFlowTemplates": [
+			"MNI152NLin2009cAsym", 
+			"MNI152NLin6Asym", 
+			"OASIS30ANTs", 
+			"MNIPediatricAsym", 
+			"MNIInfant"
+		],
 		"FMapCleanupROIs": 3,
-		"FMRIPrepMemoryUsage": "20000",
+		"FMRIPrepMemoryUsage": "50000",
 		"FMRIPrepTimeUsage": "16:0:0",
-		"NThreads": "8",
-        "LogDirectory": ""
+		"NThreads": "12",
+        "LogDirectory": "",
+		"DockerToggle": false,
+		"DockerFMRIPrepVersion": ""
 	},
 	"PostProcessingOptions": {
+		"WorkingDirectory": "",
+		"WriteProcessGraph": true,
 		"TargetDirectory": "",
-		"TargetSuffix": "space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz",
+		"TargetImageSpace": "MNI152NLin2009cAsym",
+		"TargetTasks": [],
+		"TargetAcquisitions": [],
 		"OutputDirectory": "",
-		"OutputSuffix": "",
-		"ConfoundSuffix": "desc-confounds_regressors.tsv",
-		"DropCSV": "",
-		"Regress": true,
-	    "Confounds": ["trans_x", "trans_y", "trans_z", "rot_x", "rot_y", "rot_z",
-   		 "csf", "white_matter", "global_signal", "a_comp_cor.*"],
-		"ConfoundsQuad": ["trans_x", "trans_y", "trans_z", "rot_x", "rot_y", "rot_z",
-    	 "csf", "white_matter", "global_signal"],
-		"ConfoundsDerive": ["trans_x", "trans_y", "trans_z", "rot_x", "rot_y", "rot_z",
-    	 "csf", "white_matter", "global_signal"],
-		"ConfoundsQuadDerive": ["trans_x", "trans_y", "trans_z", "rot_x", "rot_y", "rot_z",
-    	 "csf", "white_matter", "global_signal"],
-		"FilteringHighPass": 0.008,
-		"FilteringLowPass": -1,
-		"FilteringOrder": 2,
-		"OversamplingFreq": 4,
-		"PercentFreqSample": 1,
-		"Scrubbing": true,
-		"ScrubVar": "framewise_displacement",
-		"ScrubFDThreshold": 0.3,
-		"ScrubAhead": 1,
-		"ScrubBehind": 1,
-		"ScrubContig": 2,
-		"RespNotchFilter": true,
-		"MotionVars": ["trans_x", "trans_y", "trans_z", "rot_x", "rot_y", "rot_z"],
-		"RespNotchFilterBand":[0.31,0.43],
-		"PostProcessingMemoryUsage": "20000",
-		"PostProcessingTimeUsage": "8:0:0",
-		"NThreads": "1",
-		"SpectralInterpolationBinSize": 5000,
-		"BIDSValidatorImage": "/proj/hng/singularity_imgs/validator.simg",
-        "LogDirectory": ""
+		"ProcessingSteps": [
+			"SpatialSmoothing",
+			"TemporalFiltering",
+			"IntensityNormalization",
+			"ApplyMask"
+		],
+		"ProcessingStepOptions": {
+			"TemporalFiltering": {
+				"Implementation":"fslmaths",
+				"FilteringHighPass": 0.008,
+				"FilteringLowPass": -1,
+				"FilteringOrder": 2
+			}, 
+			"IntensityNormalization": {
+				"Implementation": "10000_GlobalMedian"
+			}, 
+			"SpatialSmoothing": {
+				"Implementation": "SUSAN",
+      			"FWHM": 6
+			},
+			"AROMARegression":{
+				"Implementation": "fsl_regfilt"
+			},
+			"ScrubTimepoints":{
+				"TargetVariable": "framewise_displacement",
+				"Threshold": 0.9,
+				"ScrubAhead": 0,
+				"ScrubBehind": 0,
+				"ScrubContiguous": 0,
+				"InsertNA": true
+			},
+			"Resample":{
+				"ReferenceImage": "SET REFERENCE IMAGE"
+			},
+			"TrimTimepoints": {
+				"FromEnd": 0,
+				"FromBeginning": 0
+			},
+			"ConfoundRegression": {
+				"Implementation": "afni_3dTproject"
+			}
+		},
+		"ConfoundOptions": {
+			"Columns": [
+				"csf", "csf_derivative1", 
+				"white_matter", "white_matter_derivative1"
+			],
+			"MotionOutliers": {
+				"Include": true,
+				"ScrubVar": "framewise_displacement",
+				"Threshold": 0.9,
+				"ScrubAhead": 0,
+				"ScrubBehind": 0,
+				"ScrubContiguous": 0
+			}
+		},
+		"BatchOptions": {
+			"MemoryUsage": "20000",
+			"TimeUsage": "2:0:0",
+			"NThreads": "1"
+		}	
 	},
+	"ProcessingStreams": [
+		{
+			"ProcessingStream": "smooth_aroma-regress_filter_normalize",
+			"PostProcessingOptions": {
+				"ProcessingSteps": [
+					"SpatialSmoothing",
+					"AROMARegression",
+					"TemporalFiltering",
+					"IntensityNormalization"
+				]
+			}
+		},
+		{
+			"ProcessingStream": "filter_confound-regress",
+			"PostProcessingOptions": {
+				"ProcessingSteps": [
+					"TemporalFiltering",
+					"ConfoundRegression"
+				]
+			}
+		},
+		{
+			"ProcessingStream": "smooth_aroma-regress_filter_normalize_fwhm-8",
+			"PostProcessingOptions": {
+				"ProcessingSteps": [
+					"SpatialSmoothing",
+					"AROMARegression",
+					"TemporalFiltering",
+					"IntensityNormalization"
+				],
+				"ProcessingStepOptions": {
+					"SpatialSmoothing": {
+						"FWHM": 8
+					}
+				}
+			}
+		}
+	],
 	"BetaSeriesOptions": {
 		"TargetDirectory": "",
 		"TargetSuffix": "preproc_bold.nii.gz",
@@ -103,51 +196,6 @@ This command will create a default configuration file with whatever name you spe
 		],
       "LogDirectory": ""
     },
-	"SUSANOptions": {
-		"TargetDirectory": "",
-		"TargetSuffix": "preproc_bold.nii.gz",
-		"OutputDirectory": "",
-		"OutputSuffix": "preproc_susan.nii.gz",
-		"BrightnessThreshold": 500,
-		"FWHM": 0,
-		"MemoryUsage": "5000",
-		"TimeUsage": "2:0:0",
-		"NThreads": "4",
-        "LogDirectory": ""
-	},
-	"ProcessingStreams": [
-		{
-			"ProcessingStream": "noGSR",
-			"PostProcessingOptions": {
-				"GlobalSignalRegression": false,
-				"OutputDirectory": "",
-				"OutputSuffix": ""
-			},
-			"BetaSeriesOptions": {
-				"GlobalSignalRegression": false,
-				"OutputDirectory": "",
-				"OutputSuffix": ""
-			},
-			"SUSANOptions": {
-				"OutputSuffix": "preproc_susan250.nii.gz",
-				"BrightnessThreshold": 250
-			}
-		},
-		{
-			"ProcessingStream": "noScrub",
-			"PostProcessingOptions": {
-				"Scrubbing": false,
-				"OutputDirectory": "",
-				"OutputSuffix": ""
-			},
-			"BetaSeriesOptions":{
-
-			},
-			"SUSANOptions": {
-			}
-		}
-
-	],
 	"ROIExtractionOptions": {
 		"TargetDirectory": "",
 		"TargetSuffix": "",
@@ -155,16 +203,47 @@ This command will create a default configuration file with whatever name you spe
 		"Atlases": ["power"],
 		"RequireMask": true,
 		"PropVoxels": 0.5,
-        "MemoryUsage":"3000",
+        "MemoryUsage":"20000",
         "TimeUsage": "2:0:0",
         "NThreads": "1",
         "LogDirectory": ""
 	},
+	"ReHoExtraction": {
+		"TargetDirectory": "",
+		"TargetSuffix": "",
+		"ExclusionFile": "",
+		"WorkingDirectory":"",
+		"MaskDirectory": "",
+		"MaskSuffix":  "space-MNI152NLin2009cAsym_desc-brain_mask.nii.gz",
+		"MaskFileOverride": "",
+		"OutputDirectory": "",
+		"OutputSuffix": "",
+		"Neighborhood": "vertices",
+		"LogDirectory": ""
+	},
+	"T2StarExtraction": {
+		"TargetDirectory": "",
+		"TargetSuffix": "",
+		"ExclusionFile": "",
+		"WorkingDirectory":"",
+		"MaskDirectory": "",
+		"MaskSuffix":  "space-MNI152NLin2009cAsym_desc-brain_mask.nii.gz",
+		"MaskFileOverride": "",
+		"OutputDirectory": "",
+		"OutputSuffix": "",
+		"LogDirectory": ""
+	},
 	"RunLog": [],
+	"StatusCache": "",
 	"BatchConfig": "slurmUNCConfig.json"
 }
 
-All of these fields are required and have what the designers of clpipe consider to be reasonable defaults for processing. Additionally, users at UNC-CH on the Longleaf cluster with access to the HNG group should be able to use the default options with no change. Other users will have to modify several fields. We describe the various sections of the config now.
+All of these fields are required and have what the designers of clpipe consider to 
+be reasonable defaults for processing. 
+Additionally, users at UNC-CH on the Longleaf cluster with access to the 
+HNG group should be able to use the default options with no change. 
+Other users will have to modify several fields. 
+We describe the various sections of the config now.
 
 Header
 ------
