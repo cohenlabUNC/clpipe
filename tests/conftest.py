@@ -12,6 +12,7 @@ from nilearn.image import load_img, index_img
 sys.path.append("../clpipe")
 from clpipe.project_setup import project_setup
 from clpipe.config_json_parser import ClpipeConfigParser, GLMConfigParser
+from clpipe.config.project import ProjectOptions, convert_project_config
 import utils
 
 PROJECT_TITLE = "test_project"
@@ -483,6 +484,22 @@ def clpipe_config(config_file) -> dict:
 @pytest.fixture(scope="module")
 def clpipe_config_default() -> dict:
     return ClpipeConfigParser().config
+
+@pytest.fixture(scope="session")
+def project_config_default():
+    """Provide the project config as populated by the project config class."""
+    return ProjectOptions()
+
+@pytest.fixture(scope="session")
+def project_config(clpipe_config):
+    """Provide the project config as populated by default config file."""
+
+    return convert_project_config(clpipe_config)
+
+@pytest.fixture(scope="session")
+def postproc_config(project_config):
+    """Provide the project config as populated by default config file."""
+    return project_config.postprocess_config
 
 
 @pytest.fixture(scope="module")

@@ -85,19 +85,19 @@ def test_author_contributor(config_file):
     assert config is not None
     assert config.contributors == "SET AUTHOR"
 
-@pytest.mark.skip(reason="Merged this test early.")
+
 def test_dump_project_config_yaml_default(project_config_default, helpers, artifact_dir, request):
     test_dir = helpers.create_test_dir(artifact_dir, request.node.name)
 
     dump_project_config(project_config_default, test_dir, 'test_project_options', yaml_file=True)
 
-@pytest.mark.skip(reason="Merged this test early.")
+
 def test_dump_project_config_json_default(project_config_default, helpers, artifact_dir, request):
     test_dir = helpers.create_test_dir(artifact_dir, request.node.name)
 
     dump_project_config(project_config_default, test_dir, 'test_project_options')
 
-@pytest.mark.skip(reason="Merged this test early.")
+
 def test_dump_project_config_yaml(project_config, helpers, artifact_dir, request):
     test_dir = helpers.create_test_dir(artifact_dir, request.node.name)
 
