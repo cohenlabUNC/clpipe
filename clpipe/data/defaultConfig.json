@@ -52,57 +52,6 @@
 		"DockerFMRIPrepVersion": ""
 	},
 	"PostProcessingOptions": {
-		"TargetDirectory": "",
-		"TargetSuffix": "space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz",
-		"OutputDirectory": "",
-		"OutputSuffix": "",
-		"ConfoundSuffix": "desc-confounds_timeseries.tsv",
-		"DropCSV": "",
-		"Regress": true,
-	    "Confounds": [
-			"trans_x", "trans_y", "trans_z", 
-			"rot_x", "rot_y", "rot_z",
-   		 	"csf", "white_matter", "global_signal", "a_comp_cor.*"
-		],
-		"ConfoundsQuad": [
-			"trans_x", "trans_y", "trans_z", 
-			"rot_x", "rot_y", "rot_z",
-    	 	"csf", "white_matter", "global_signal"
-		],
-		"ConfoundsDerive": [
-			"trans_x", "trans_y", "trans_z", 
-			"rot_x", "rot_y", "rot_z",
-    	 	"csf", "white_matter", "global_signal"
-		],
-		"ConfoundsQuadDerive": [
-			"trans_x", "trans_y", "trans_z", 
-			"rot_x", "rot_y", "rot_z",
-    	 	"csf", "white_matter", "global_signal"
-		],
-		"FilteringHighPass": 0.008,
-		"FilteringLowPass": -1,
-		"FilteringOrder": 2,
-		"OversamplingFreq": 4,
-		"PercentFreqSample": 1,
-		"Scrubbing": true,
-		"ScrubVar": "framewise_displacement",
-		"ScrubFDThreshold": 0.3,
-		"ScrubAhead": 1,
-		"ScrubBehind": 1,
-		"ScrubContig": 2,
-		"RespNotchFilter": true,
-		"MotionVars": [
-			"trans_x", "trans_y", "trans_z", 
-			"rot_x", "rot_y", "rot_z"
-		],
-		"RespNotchFilterBand":[0.31,0.43],
-		"PostProcessingMemoryUsage": "20000",
-		"PostProcessingTimeUsage": "8:0:0",
-		"NThreads": "1",
-		"SpectralInterpolationBinSize": 5000,
-        "LogDirectory": ""
-	},
-	"PostProcessingOptions2": {
 		"WorkingDirectory": "",
 		"WriteProcessGraph": true,
 		"TargetDirectory": "",
