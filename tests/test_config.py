@@ -4,8 +4,7 @@ import yaml
 import os
 from pkg_resources import resource_stream
 
-from clpipe.config.project import getProjectConfig
-from clpipe.config.config_converter import convertConfig
+from clpipe.config.project import *
 
 """
 Removed tests for lack of fields and extra fields as this test will always pass
@@ -14,8 +13,8 @@ because we will always load the config object from the new config file only
 
 
 def test_json_load(config_file):
-    """Ensure that the config class loads in .json data as expected."""
-    config = getProjectConfig(json_file=config_file)
+    """ Ensure that the config class loads in .json data as expected. """
+    config = load_project_config(json_file=config_file)
     assert config is not None
     assert config.ProjectTitle == "test_project"
     assert (
@@ -31,7 +30,7 @@ def test_yaml_load(config_file, tmp_path):
 
     with open(os.path.join(tmp_path, "config.yaml"), "w") as yaml_file:
         yaml.dump(conf_json, yaml_file, sort_keys=False)
-    config = getProjectConfig(yaml_file=os.path.join(tmp_path, "config.yaml"))
+    config = load_project_config(yaml_file=os.path.join(tmp_path,'config.yaml'))
     assert config is not None
     assert config.ProjectTitle == "test_project"
     assert (
@@ -48,7 +47,7 @@ def test_default(clpipe_config_default):
     """Ensure that data from the default config file (data/defaltConfig.json)
     is successfully loaded into the configuration object.
     """
-    config = getProjectConfig()
+    config = load_project_config()
     assert config.ProjectTitle == clpipe_config_default["ProjectTitle"]
     assert config.Authors == clpipe_config_default["Authors/Contributors"]
     assert (
@@ -69,14 +68,12 @@ def test_wrong_order(config_file, tmp_path):
     with open(config_file, "r") as f:
         newConf = json.load(f)
 
-    convertedConfig = convertConfig(oldConf, newConf)
-    with open(os.path.join(tmp_path, "convertedConfig.json"), "w") as f:
+    convertedConfig = convert_project_config(oldConf, newConf)
+    with open(os.path.join(tmp_path,'convertedConfig.json'), 'w') as f:
         json.dump(convertedConfig, f)
 
-    convertedConfig = getProjectConfig(
-        json_file=os.path.join(tmp_path, "convertedConfig.json")
-    )
-    correctConfig = getProjectConfig()
+    convertedConfig = load_project_config(json_file=os.path.join(tmp_path,'convertedConfig.json'))
+    correctConfig = load_project_config()
     assert correctConfig == convertedConfig
 
 
@@ -84,6 +81,21 @@ def test_author_contributor(config_file):
     """Check that the conversion of the Authors/Contributors to just 'Contributors'
     works successfully.
     """
-    config = getProjectConfig(json_file=config_file)
+    config = load_project_config(json_file=config_file)
     assert config is not None
     assert config.Authors == "SET AUTHOR"
+
+def test_dump_project_config_yaml_default(project_config_default, helpers, artifact_dir, request):
+    test_dir = helpers.create_test_dir(artifact_dir, request.node.name)
+
+    dump_project_config(project_config_default, test_dir, 'test_project_options', yaml_file=True)
+
+def test_dump_project_config_json_default(project_config_default, helpers, artifact_dir, request):
+    test_dir = helpers.create_test_dir(artifact_dir, request.node.name)
+
+    dump_project_config(project_config_default, test_dir, 'test_project_options')
+
+def test_dump_project_config_yaml(project_config, helpers, artifact_dir, request):
+    test_dir = helpers.create_test_dir(artifact_dir, request.node.name)
+
+    dump_project_config(project_config, test_dir, 'test_project_options', yaml_file=True)
