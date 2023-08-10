@@ -40,8 +40,6 @@ flywheel_sync Options
 ----------------
 
 .. autoclass:: clpipe.config.project.SourceOptions
-	:members:
-
 
 .. click:: clpipe.cli:flywheel_sync_cli
 	:prog: clpipe flywheel_sync
