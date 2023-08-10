@@ -1,10 +1,11 @@
 # Change Log
 
 ## 1.9.0 (July x, 2023)
-- Removed original postprocessing command
-- postprocess2 is now named postprocess
-- Removed original susan command, now a step of postprocess
-- Disabled fmri-process-check report for now, pending rework
+- `postprocess` - Removed original postprocessing command
+- `postprocess` - postprocess2 is now named postprocess
+- `postprocess` - Removed original susan command, now a step of postprocess
+- `postprocess` - Disabled fmri-process-check report for now, pending rework
+- `postprocess` - Fixed an issue where postprocess took excessively long to index large datasets due to a bug in pybids
 
 ## 1.8.1 (Jun 28, 2023)
 
