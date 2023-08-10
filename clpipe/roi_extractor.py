@@ -447,25 +447,27 @@ def _mask_finder(data, config, logger):
     """Search for a mask in the fmriprep output directory matching
     the name of the image targeted for roi_extraction"""
 
-    file_struct = file_folder_generator(
+    _, _, _, front_matter, type, path = file_folder_generator(
         os.path.basename(data),
         "func",
         target_suffix=config.config["ROIExtractionOptions"]["TargetSuffix"],
     )
-    logger.debug(f"Mask file structure: {file_struct}")
+    logger.debug(f'Target suffix: {config.config["ROIExtractionOptions"]["TargetSuffix"]}')
+    logger.debug(f"Image components (front_matter, type, path): {front_matter, type, path}")
 
     fmriprep_dir = resolve_fmriprep_dir(
         config.config["FMRIPrepOptions"]["OutputDirectory"]
     )
-    logger.debug(f"Searching for masks in: {fmriprep_dir}")
+    logger.debug(f"fMRIPrep dir: {fmriprep_dir}")
 
     target_mask = os.path.join(
-        fmriprep_dir, os.path.join(file_struct[-1]) + "_desc-brain_mask.nii.gz"
+        fmriprep_dir, path + "_" + type + "_desc-brain_mask.nii.gz"
     )
+    logger.debug(f"Target mask: {target_mask}")
     if not os.path.exists(target_mask):
         logger.warn(f"No .nii.gz mask file found, searching for unzipped variant...")
         target_mask_unzipped = os.path.join(
-            fmriprep_dir, os.path.join(file_struct[-1]) + "_desc-brain_mask.nii"
+            fmriprep_dir, path + "_" + type + "_desc-brain_mask.nii"
         )
         if not os.path.exists(target_mask_unzipped):
             raise MaskFileNotFoundError(f"No mask found on path: {target_mask}")

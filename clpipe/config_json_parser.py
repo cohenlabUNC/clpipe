@@ -71,7 +71,7 @@ class ClpipeConfigParser:
         self.setup_fmriprep_directories(os.path.join(self.config['ProjectDirectory'], 'data_BIDS'),
                                         None, os.path.join(self.config['ProjectDirectory'], 'data_fmriprep'))
         self.setup_roiextract(target_dir = os.path.join(self.config['ProjectDirectory'], 'data_postproc2', 'default'),
-                              target_suffix= 'preproc_bold.nii.gz',
+                              target_suffix= 'desc-postproc_bold.nii.gz',
                               output_dir= os.path.join(self.config['ProjectDirectory'],
                                            'data_ROI_ts', 'postproc_default'),
                               )
@@ -227,11 +227,11 @@ def file_folder_generator(basename, modality, target_suffix = None):
     type = comps[-1]
     if 'ses-' in ses:
         path = os.path.join(sub, ses, modality, front_matter)
-        return [sub, ses, modality, front_matter, type, path]
+        return sub, ses, modality, front_matter, type, path
     else:
         ses = ''
         path = os.path.join(sub, modality, front_matter)
-        return [sub, ses, modality, front_matter, type, path]
+        return sub, ses, modality, front_matter, type, path
 
 def update(d, u):
     for k, v in u.items():

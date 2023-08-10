@@ -337,8 +337,9 @@ class ROIOptions(Option):
     target_directory: str = ""
     """Target folder for processing - usually an fMRIPrep output directory."""
 
-    target_suffix: str = "preproc_bold.nii.gz"
-    """Narrow down the images to use by specifying the path's suffix."""
+    target_suffix: str = "desc-postproc_bold.nii.gz"
+    """Narrow down the images to use by specifying the path's suffix. Use 
+    'desc-preproc_bold.nii.gz' if targeting the fMRIPrep dir."""
 
     output_directory: str = ""
     """Location of this command's output. Defaults to data_ROI_ts."""
