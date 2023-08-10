@@ -4,7 +4,7 @@
 import click
 import sys
 from .config.cli import *
-from .config.postprocessing2 import DEFAULT_PROCESSING_STREAM
+from .config.postprocessing import DEFAULT_PROCESSING_STREAM
 from .config.package import VERSION
 
 DEFAULT_HELP_PRIORITY = 5
@@ -131,8 +131,7 @@ def _add_commands():
     cli.add_command(convert2bids_cli, help_priority=10)
     cli.add_command(bids_validate_cli, help_priority=15)
     cli.add_command(fmriprep_process_cli, help_priority=20)
-    cli.add_command(fmri_postprocess_cli, help_priority=30, hidden=True)
-    cli.add_command(fmri_postprocess2_cli, help_priority=35)
+    cli.add_command(postprocess_cli, help_priority=35)
     cli.add_command(flywheel_sync_cli, help_priority=55)
 
     dicom_cli.add_command(flywheel_sync_cli)
@@ -325,43 +324,6 @@ def get_fmri_process_check_cli(config_file, output_file=None, debug=False):
 
 @click.command(POSTPROCESS_COMMAND_NAME, no_args_is_help=True)
 @click.argument('subjects', nargs=-1, required=False, default=None)
-@click.option('-config_file', '-c', type=click.Path(exists=True, dir_okay=False, file_okay=True), required=True, help = 'Use a given configuration file. If left blank, uses the default config file, requiring definition of BIDS, working and output directories.')
-@click.option('-target_dir', '-i', type=click.Path(exists=True, dir_okay=True, file_okay=False), help='Which fmriprep directory to process. If a configuration file is provided with a BIDS directory, this argument is not necessary. Note, must point to the ``fmriprep`` directory, not its parent directory.')
-@click.option('-target_suffix', help= 'Which file suffix to use. If a configuration file is provided with a target suffix, this argument is not necessary. Defaults to "preproc_bold.nii.gz"')
-@click.option('-output_dir', '-o', type=click.Path(dir_okay=True, file_okay=False), help = 'Where to put the postprocessed data. If a configuration file is provided with a output directory, this argument is not necessary.')
-@click.option('-output_suffix', help = 'What suffix to append to the postprocessed files. If a configuration file is provided with a output suffix, this argument is not necessary.')
-@click.option('-task', help = 'Which task to postprocess. If left blank, defaults to all tasks.')
-@click.option('-TR', help = 'The TR of the scans. If a config file is not provided, this option is required. If a config file is provided, this information is found from the sidecar jsons.')
-@click.option('-processing_stream', '-p', help = 'Optional processing stream selector.')
-@click.option('-log_dir', type=click.Path(dir_okay=True, file_okay=False), help = 'Where to put HPC output files. If not specified, defaults to <outputDir>/batchOutput.')
-@click.option('-beta_series', is_flag = True, default = False, help = "Flag to activate beta-series correlation correlation. ADVANCED METHOD, refer to the documentation.")
-@click.option('-submit', '-s', is_flag = True, default=False, help = 'Flag to submit commands to the HPC.')
-@click.option('-batch/-single', default=True, help = 'Submit to batch, or run in current session. Mainly used internally.')
-@click.option('-debug', '-d', is_flag = True, default=False, help = 'Print detailed processing information and traceback for errors.')
-def fmri_postprocess_cli(config_file=None, subjects=None, target_dir=None, 
-                         target_suffix=None, output_dir=None,
-                         output_suffix=None, log_dir=None,
-                         submit=False, batch=True, task=None, tr=None, 
-                         processing_stream = None, debug = False, 
-                         beta_series = False):
-    """Additional processing for connectivity analysis.
-    
-    Providing no SUBJECTS will default to all subjects.
-    List subject IDs in SUBJECTS to process specific subjects: 
-
-    > clpipe postprocess 123 124 125 ...
-    """
-    from .fmri_postprocess import fmri_postprocess
-    fmri_postprocess(
-        config_file=config_file, subjects=subjects, target_dir=target_dir, 
-        target_suffix=target_suffix, output_dir=output_dir, 
-        output_suffix=output_suffix, log_dir=log_dir, submit=submit, 
-        batch=batch, task=task, tr=tr, processing_stream=processing_stream, 
-        debug=debug, beta_series=beta_series)
-
-
-@click.command(POSTPROCESS2_COMMAND_NAME, no_args_is_help=True)
-@click.argument('subjects', nargs=-1, required=False, default=None)
 @click.option('-config_file', '-c', type=CLICK_FILE_TYPE_EXISTS, required=True, help=CONFIG_HELP)
 @click.option('-fmriprep_dir', '-i', type=CLICK_DIR_TYPE_EXISTS, 
               help=FMRIPREP_DIR_HELP)
@@ -380,7 +342,7 @@ required=False, help=PROCESSING_STREAM_HELP)
 @click.option('-cache/-no-cache', is_flag=True, default=True)
 @click.option('-submit', '-s', is_flag = True, default=False, help=SUBMIT_HELP)
 @click.option('-debug', '-d', is_flag = True, default=False, help=DEBUG_HELP)
-def fmri_postprocess2_cli(subjects, config_file, fmriprep_dir, output_dir, 
+def postprocess_cli(subjects, config_file, fmriprep_dir, output_dir, 
                           processing_stream, batch, submit, log_dir, index_dir, 
                           refresh_index, debug, cache):
     """Additional processing for GLM or connectivity analysis.
@@ -390,7 +352,7 @@ def fmri_postprocess2_cli(subjects, config_file, fmriprep_dir, output_dir,
 
     > clpipe postprocess2 123 124 125 ...
     """
-    from .fmri_postprocess2 import postprocess_subjects
+    from .postprocess import postprocess_subjects
     postprocess_subjects(
         subjects=subjects, config_file=config_file,fmriprep_dir=fmriprep_dir, 
         output_dir=output_dir, processing_stream=processing_stream,

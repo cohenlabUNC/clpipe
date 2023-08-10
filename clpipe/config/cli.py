@@ -77,10 +77,7 @@ FMRIPREP_OUTPUT_DIR_HELP = (
 )
 
 # Postprocess help
-POSTPROCESS_COMMAND_NAME = "legacy-postprocess"
-
-# Postprocess2 help
-POSTPROCESS2_COMMAND_NAME = "postprocess"
+POSTPROCESS_COMMAND_NAME = "postprocess"
 FMRIPREP_DIR_HELP = (
     "Which fmriprep directory to process. "
     "If a configuration file is provided with a BIDS directory, " 
