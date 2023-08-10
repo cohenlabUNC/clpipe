@@ -9,7 +9,7 @@
 		"TempDirectory": "",
 		"CommandLineOpts": "-y",
 		"TimeUsage": "1:0:0",
-		"MemUsage": "10000",
+		"MemUsage": "10G",
 		"CoreUsage": "1"
 	},
 	"DICOMToBIDSOptions": {
@@ -44,7 +44,7 @@
 			"MNIInfant"
 		],
 		"FMapCleanupROIs": 3,
-		"FMRIPrepMemoryUsage": "50000",
+		"FMRIPrepMemoryUsage": "50G",
 		"FMRIPrepTimeUsage": "16:0:0",
 		"NThreads": "12",
         "LogDirectory": "",
