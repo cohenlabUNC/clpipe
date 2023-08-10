@@ -69,7 +69,6 @@ ENTRY_POINTS = '''
       get_glm_config_file=clpipe.grab_config_file:get_glm_config_file
       fmri_roi_extraction=clpipe.cli:fmri_roi_extraction_cli
       test_batch_setup=clpipe.test_batch_setup:test_batch_setup
-      susan_smoothing = clpipe.susan_smoothing:susan_smoothing
       get_available_atlases=clpipe.cli:get_available_atlases_cli
       update_config_file=clpipe.config_json_parser:update_config_file
       templateflow_setup=clpipe.template_flow:templateflow_setup

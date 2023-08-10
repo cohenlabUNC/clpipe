@@ -178,21 +178,6 @@ class ClpipeConfigParser:
             self.config['ROIExtractionOptions']['LogDirectory'] = os.path.join(self.config['ProjectDirectory'], 'logs',
                                                                              'ROI_extraction_logs')
 
-    def setup_susan(self, target_dir, target_suffix, output_dir, output_suffix, log_dir =None):
-        if target_dir is not None:
-            self.config['SUSANOptions']['TargetDirectory'] = os.path.abspath(target_dir)
-        if output_dir is not None:
-            self.config['SUSANOptions']['OutputDirectory'] = os.path.abspath(output_dir)
-        if target_suffix is not None:
-            self.config['SUSANOptions']['TargetSuffix'] = target_suffix
-        if output_suffix is not None:
-            self.config['SUSANOptions']['OutputSuffix'] = output_suffix
-        if log_dir is not None:
-            self.config['SUSANOptions']['LogDirectory'] = os.path.abspath(log_dir)
-        else:
-            self.config['SUSANOptions']['LogDirectory'] = os.path.join(self.config['ProjectDirectory'], 'logs',
-                                                                               'SUSAN_logs')
-
     def get_processing_stream_names(self):
         try:
             names = [i["ProcessingStream"] for i in self.config['ProcessingStreams']]

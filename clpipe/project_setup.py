@@ -142,13 +142,6 @@ def setup_roiextract_directories(config):
         os.makedirs(config['ROIExtractionOptions']['OutputDirectory'], exist_ok=True)
     os.makedirs(config['ROIExtractionOptions']['LogDirectory'], exist_ok=True)
 
-def setup_susan_directories(config):
-    if not os.path.isdir(config['SUSANOptions']['TargetDirectory']):
-        raise ValueError('Target Directory does not exist')
-    if(config['SUSANOptions']['OutputDirectory'] != ""):
-        os.makedirs(config['SUSANOptions']['OutputDirectory'], exist_ok=True)
-    os.makedirs(config['SUSANOptions']['LogDirectory'], exist_ok=True)
-
 def setup_glm_directories(project_path):
     os.mkdir(os.path.join(project_path, "l1_fsfs"))
     os.mkdir(os.path.join(project_path, "data_onsets"))
