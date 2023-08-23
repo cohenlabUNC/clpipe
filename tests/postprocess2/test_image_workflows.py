@@ -352,9 +352,8 @@ def test_resample_wf(
 
 def test_build_multiple_scrubbing_workflow(
     sample_confounds_timeseries,
-    config_file,
+    postprocessing_config,
     clpipe_config,
-    write_graph,
     helpers,
     artifact_dir,
     request,
@@ -366,10 +365,16 @@ def test_build_multiple_scrubbing_workflow(
     test_path = helpers.create_test_dir(artifact_dir, request.node.name)
 
     # Create an input node for the workflow
-    input_node = Node(IdentityInterface(fields=["confounds_file"]), name="inputnode")
+    input_node = Node(IdentityInterface(fields=["confounds_file", "scrub_configs"]), name="inputnode")
     input_node.inputs.confounds_file = (
         sample_confounds_timeseries  # path to the sample confounds timeseries
     )
+
+    # Fetch the list of scrub configs from the default postprocessing config
+    scrub_configs: list = postprocessing_config["ProcessingStepOptions"]["ScrubTimepoints"]
+    
+    # Feed the scrub config list of dicts into the mapper via the workflow inputnode
+    input_node.inputs.scrub_configs = scrub_configs
 
     ### THIS WILL GO IN THE FUNCTION once I can figure out if the map node is working.
     # Define the function node
@@ -393,6 +398,7 @@ def test_build_multiple_scrubbing_workflow(
     test_wf = Workflow(name="test_wf")
     test_wf.add_nodes([input_node, scrub_target_node])
     test_wf.connect(input_node, "confounds_file", scrub_target_node, "confounds_file")
+    test_wf.connect(input_node, "scrub_configs", scrub_target_node, "scrub_configs")
 
     # Run the workflow
     test_wf.base_dir = os.path.join(
