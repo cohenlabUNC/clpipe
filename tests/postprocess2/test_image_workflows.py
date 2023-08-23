@@ -353,7 +353,6 @@ def test_resample_wf(
 def test_build_multiple_scrubbing_workflow(
     sample_confounds_timeseries,
     postprocessing_config,
-    clpipe_config,
     helpers,
     artifact_dir,
     request,
@@ -363,6 +362,10 @@ def test_build_multiple_scrubbing_workflow(
     from nipype.interfaces.utility import IdentityInterface
 
     test_path = helpers.create_test_dir(artifact_dir, request.node.name)
+
+    postprocessing_config["ProcessingStepOptions"]["ScrubTimepoints"][1][
+        "Threshold"
+    ] = 0.13
 
     # Create an input node for the workflow
     input_node = Node(
