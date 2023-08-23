@@ -365,18 +365,22 @@ def test_build_multiple_scrubbing_workflow(
     test_path = helpers.create_test_dir(artifact_dir, request.node.name)
 
     # Create an input node for the workflow
-    input_node = Node(IdentityInterface(fields=["confounds_file", "scrub_configs"]), name="inputnode")
+    input_node = Node(
+        IdentityInterface(fields=["confounds_file", "scrub_configs"]), name="inputnode"
+    )
     input_node.inputs.confounds_file = (
         sample_confounds_timeseries  # path to the sample confounds timeseries
     )
 
     # Fetch the list of scrub configs from the default postprocessing config
-    scrub_configs: list = postprocessing_config["ProcessingStepOptions"]["ScrubTimepoints"]
-    
+    scrub_configs = postprocessing_config["ProcessingStepOptions"]["ScrubTimepoints"]
+
     # Feed the scrub config list of dicts into the mapper via the workflow inputnode
     input_node.inputs.scrub_configs = scrub_configs
 
-    ### THIS WILL GO IN THE FUNCTION once I can figure out if the map node is working.
+    # Define the output node for the workflow
+    output_node = Node(IdentityInterface(fields=["scrub_vector"]), name="outputnode")
+
     # Define the function node
     scrub_target_node = pe.MapNode(
         Function(
@@ -385,20 +389,18 @@ def test_build_multiple_scrubbing_workflow(
             function=get_scrub_vector_node,
         ),
         iterfield=["scrub_configs"],
-        name="get_scrub_vector_node",
+        name="get_scrub_vector_map_node",
     )
 
     # Set the input parameters of the node
-    scrub_parameters = clpipe_config["PostProcessingOptions2"]["ProcessingStepOptions"][
-        "ScrubTimepoints"
-    ]
-    scrub_target_node.inputs.scrub_configs = scrub_parameters
+    scrub_target_node.inputs.scrub_configs = scrub_configs
 
     # Create a new workflow to hold only the scrub_target_node
     test_wf = Workflow(name="test_wf")
-    test_wf.add_nodes([input_node, scrub_target_node])
+    test_wf.add_nodes([input_node, scrub_target_node, output_node])
     test_wf.connect(input_node, "confounds_file", scrub_target_node, "confounds_file")
     test_wf.connect(input_node, "scrub_configs", scrub_target_node, "scrub_configs")
+    test_wf.connect(scrub_target_node, "scrub_vector", output_node, "scrub_vector")
 
     # Run the workflow
     test_wf.base_dir = os.path.join(
@@ -411,6 +413,8 @@ def test_build_multiple_scrubbing_workflow(
         graph2use="colored",
         dotfilename=os.path.join(test_path, "test_wf_graph.dot"),
     )
+
+    # Further validation can be added here, like checking the output files or their properties
 
     # Further validation can be added here, like checking the output files or their properties
 
