@@ -347,6 +347,69 @@ def test_resample_wf(
         helpers.plot_4D_img_slice(resampled_path, "resample.png")
 
 
+## Just make a function that makes a map node (instantiates it and tests the construction of the map node.
+
+
+def test_build_multiple_scrubbing_workflow(
+    sample_confounds_timeseries,
+    config_file,
+    clpipe_config,
+    write_graph,
+    helpers,
+    artifact_dir,
+    request,
+):
+    import os
+    from nipype import Node, Workflow
+    from nipype.interfaces.utility import IdentityInterface
+
+    test_path = helpers.create_test_dir(artifact_dir, request.node.name)
+
+    # Create an input node for the workflow
+    input_node = Node(IdentityInterface(fields=["confounds_file"]), name="inputnode")
+    input_node.inputs.confounds_file = (
+        sample_confounds_timeseries  # path to the sample confounds timeseries
+    )
+
+    ### THIS WILL GO IN THE FUNCTION once I can figure out if the map node is working.
+    # Define the function node
+    scrub_target_node = pe.MapNode(
+        Function(
+            input_names=["confounds_file", "scrub_configs"],
+            output_names=["scrub_vector"],
+            function=get_scrub_vector_node,
+        ),
+        iterfield=["scrub_configs"],
+        name="get_scrub_vector_node",
+    )
+
+    # Set the input parameters of the node
+    scrub_parameters = clpipe_config["PostProcessingOptions2"]["ProcessingStepOptions"][
+        "ScrubTimepoints"
+    ]
+    scrub_target_node.inputs.scrub_configs = scrub_parameters
+
+    # Create a new workflow to hold only the scrub_target_node
+    test_wf = Workflow(name="test_wf")
+    test_wf.add_nodes([input_node, scrub_target_node])
+    test_wf.connect(input_node, "confounds_file", scrub_target_node, "confounds_file")
+
+    # Run the workflow
+    test_wf.base_dir = os.path.join(
+        test_path, "work_dir"
+    )  # specify the working directory for the workflow
+    test_wf.run()
+
+    # Write the workflow graph if needed
+    if write_graph:
+        test_wf.write_graph(
+            graph2use=write_graph,
+            dotfilename=os.path.join(test_path, "test_wf_graph.dot"),
+        )
+
+    # Further validation can be added here, like checking the output files or their properties
+
+
 def test_scrubbing_wf(artifact_dir, sample_raw_image, plot_img, request, helpers):
     """Test that a list of arbitrary timepoints can be scrubbed from an image."""
 

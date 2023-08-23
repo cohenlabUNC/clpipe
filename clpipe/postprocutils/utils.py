@@ -73,24 +73,21 @@ def get_scrub_vector(fdts, fd_thres=0.3, fd_behind=1, fd_ahead=1, fd_contig=3):
     return scrubVect
 
 
-def get_scrub_vector_node(
-    confounds_file,
-    scrub_target_variable: str,
-    scrub_threshold: float,
-    scrub_ahead: int,
-    scrub_behind: int,
-    scrub_contiguous: int,
-):
+def get_scrub_vector_node(confounds_file, scrub_configs):
     """Wrapper for call to get_scrub_vector, but includes extracting column"""
     import pandas as pd
     from clpipe.postprocutils.utils import get_scrub_vector
 
     # Get the column to be used for thresholding
     confounds_df = pd.read_csv(confounds_file, sep="\t")
-    target_timeseries = confounds_df[scrub_target_variable]
+    target_timeseries = confounds_df[scrub_configs["TargetVariable"]]
 
     scrub_vector = get_scrub_vector(
-        target_timeseries, scrub_threshold, scrub_behind, scrub_ahead, scrub_contiguous
+        target_timeseries,
+        scrub_configs["Threshold"],
+        scrub_configs["ScrubBehind"],
+        scrub_configs["ScrubAhead"],
+        scrub_configs["ScrubContiguous"],
     )
     return scrub_vector
 
