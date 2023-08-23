@@ -338,6 +338,22 @@ def expand_columns(tsv_file, column_names):
     return [*set(expanded_columns)]  # Removes duplicates from list
 
 
+def expand_scrub_dict(scrub_configs):
+    # Expand the dictionary using expand_columns function
+    expanded_columns = []
+    for column in scrub_configs["Columns"]:
+        target_var = column["TargetVariable"]
+        if "*" in target_var:
+            expanded_vars = expand_columns([target_var])
+            for exp_var in expanded_vars:
+                new_column = column.copy()
+                new_column["TargetVariable"] = exp_var
+                expanded_columns.append(new_column)
+        else:
+            expanded_columns.append(column)
+    return expanded_columns
+
+
 def logical_or_across_lists(list_of_lists):
     import numpy as np
 
