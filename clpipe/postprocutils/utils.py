@@ -316,15 +316,13 @@ def matrix_to_nii(matrix, orig_shape, affine):
 
     return out_image
 
+
 def expand_columns(tsv_file, column_names):
     import pandas as pd
     import fnmatch
 
     df = pd.read_csv(tsv_file, sep="\t")
     column_list = df.columns
-
-    # Change to file handle
-    # column_list = timeseries[0]
     expanded_columns = []
     for pattern in column_names:
         matching_columns = []
@@ -338,6 +336,14 @@ def expand_columns(tsv_file, column_names):
             pass
         expanded_columns.extend(matching_columns)
     return [*set(expanded_columns)]  # Removes duplicates from list
+
+
+def logical_or_across_lists(list_of_lists):
+    import numpy as np
+    np_array = np.array(list_of_lists)
+    or_result = np.any(np_array, axis=0).tolist()
+    return or_result
+
 
 def vector_to_txt(vector):
     """Convert an input vector to a txt file."""

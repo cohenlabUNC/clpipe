@@ -157,52 +157,57 @@ def test_fslmath_temporal_filter_wf(
 
     helpers.plot_timeseries(filtered_path, sample_raw_image)
 
-    
-
     if plot_img:
         helpers.plot_4D_img_slice(filtered_path, "filtered.png")
 
     assert True
+
 
 class TestWorkflows:
     highlight_ranges = None
 
     def teardown(self):
         """All workflow tests share these steps once their workflow is setup."""
-        self.wf.write_graph(dotfilename = self.test_path / "wf_diagram", graph2use="orig")
+        self.wf.write_graph(dotfilename=self.test_path / "wf_diagram", graph2use="orig")
         self.wf.run()
-        
 
         self.helpers.plot_timeseries(
-            self.export_path, self.sample_raw_image, 
+            self.export_path,
+            self.sample_raw_image,
             highlight_ranges=self.highlight_ranges,
-            num_figs=1
-            )
+            num_figs=1,
+        )
 
         if self.plot_img:
             self.helpers.plot_4D_img_slice(self.export_path, "sample_processed.png")
 
     def test_3dtproject_temporal_filter_wf(self):
         """Test the basic case of running the workflow."""
-        
+
         self.wf = build_3dtproject_temporal_filter(
-            bpHigh= .9, bpLow= 0.005, tr=2,
+            bpHigh=0.9,
+            bpLow=0.005,
+            tr=2,
             import_file=self.sample_raw_image,
             export_file=self.export_path,
-            base_dir=self.test_path, crashdump_dir=self.test_path,
-            mask_file=self.sample_raw_image_mask
+            base_dir=self.test_path,
+            crashdump_dir=self.test_path,
+            mask_file=self.sample_raw_image_mask,
         )
-        
+
     def test_3dtproject_temporal_filter_wf_scrubs(self):
         """Test the basic case of running the workflow."""
 
         self.wf = build_3dtproject_temporal_filter(
-            bpHigh= .9, bpLow= 0.005, tr=2,
+            bpHigh=0.9,
+            bpLow=0.005,
+            tr=2,
             scrub_targets=True,
             import_file=self.sample_raw_image,
             export_file=self.export_path,
-            base_dir=self.test_path, crashdump_dir=self.test_path,
-            mask_file=self.sample_raw_image_mask
+            base_dir=self.test_path,
+            crashdump_dir=self.test_path,
+            mask_file=self.sample_raw_image_mask,
         )
         scrub_targets = [1] * 100
         scrub_targets[46:52] = [0] * 6
@@ -217,18 +222,29 @@ class TestWorkflows:
         self.export_path = self.test_path / "sample_processed.nii.gz"
 
     @pytest.fixture(autouse=True)
-    def _request_fixtures(self, sample_raw_image_longer, sample_raw_image_mask, helpers, plot_img):
+    def _request_fixtures(
+        self, sample_raw_image_longer, sample_raw_image_mask, helpers, plot_img
+    ):
         """Import fixtures from conftest to be used by the class. Done here instead
-            of in a 'setup' function because fixtures can only be requested by tests
-            or other fixtures."""
+        of in a 'setup' function because fixtures can only be requested by tests
+        or other fixtures."""
         self.sample_raw_image = sample_raw_image_longer
         self.sample_raw_image_mask = sample_raw_image_mask
         self.helpers = helpers
         self.plot_img = plot_img
 
 
-@pytest.mark.skip(reason="Needs to be fixed but not prioritized")    
-def test_confound_regression_fsl_glm_wf(artifact_dir, sample_raw_image, sample_postprocessed_confounds, sample_raw_image_mask, plot_img, write_graph, request, helpers):
+@pytest.mark.skip(reason="Needs to be fixed but not prioritized")
+def test_confound_regression_fsl_glm_wf(
+    artifact_dir,
+    sample_raw_image,
+    sample_postprocessed_confounds,
+    sample_raw_image_mask,
+    plot_img,
+    write_graph,
+    request,
+    helpers,
+):
     test_path = helpers.create_test_dir(artifact_dir, request.node.name)
 
     regressed_path = test_path / "sample_raw_regressed.nii"
@@ -317,6 +333,7 @@ def test_apply_aroma_fsl_regfilt_wf(
     if plot_img:
         helpers.plot_4D_img_slice(regressed_path, "aromaaplied.png")
 
+
 @pytest.mark.skip(reason="Need to provide reference image")
 def test_resample_wf(
     artifact_dir,
@@ -360,12 +377,11 @@ def test_build_multiple_scrubbing_workflow(
     import os
     from nipype import Node, Workflow
     from nipype.interfaces.utility import IdentityInterface
+    from clpipe.postprocutils.utils import logical_or_across_lists
 
     test_path = helpers.create_test_dir(artifact_dir, request.node.name)
 
-    postprocessing_config["ProcessingStepOptions"]["ScrubTimepoints"][1][
-        "Threshold"
-    ] = 0.13
+    postprocessing_config["ScrubTimepoints"][1]["Threshold"] = 0.13
 
     # Create an input node for the workflow
     input_node = Node(
@@ -376,7 +392,7 @@ def test_build_multiple_scrubbing_workflow(
     )
 
     # Fetch the list of scrub configs from the default postprocessing config
-    scrub_configs = postprocessing_config["ProcessingStepOptions"]["ScrubTimepoints"]
+    scrub_configs = postprocessing_config["ScrubTimepoints"]
 
     # Feed the scrub config list of dicts into the mapper via the workflow inputnode
     input_node.inputs.scrub_configs = scrub_configs
@@ -398,12 +414,23 @@ def test_build_multiple_scrubbing_workflow(
     # Set the input parameters of the node
     scrub_target_node.inputs.scrub_configs = scrub_configs
 
+    # Create the logical_or_node
+    reduce_node = Node(
+        Function(
+            input_names=["list_of_lists"],
+            output_names=["or_result"],
+            function=logical_or_across_lists,
+        ),
+        name="reduce_node",
+    )
+
     # Create a new workflow to hold only the scrub_target_node
     test_wf = Workflow(name="test_wf")
-    test_wf.add_nodes([input_node, scrub_target_node, output_node])
+    test_wf.add_nodes([input_node, scrub_target_node, reduce_node, output_node])
     test_wf.connect(input_node, "confounds_file", scrub_target_node, "confounds_file")
     test_wf.connect(input_node, "scrub_configs", scrub_target_node, "scrub_configs")
-    test_wf.connect(scrub_target_node, "scrub_vector", output_node, "scrub_vector")
+    test_wf.connect(scrub_target_node, "scrub_vector", reduce_node, "list_of_lists")
+    test_wf.connect(reduce_node, "or_result", output_node, "scrub_vector")
 
     # Run the workflow
     test_wf.base_dir = os.path.join(
@@ -496,6 +523,7 @@ def test_scrubbing_wf_confounds(
         crashdump_dir=test_path,
     )
     wf.run()
+
 
 @pytest.mark.skip(reason="Need to wrap tsv as image.")
 def test_scrubbing_wf_aroma(artifact_dir, sample_melodic_mixing, request, helpers):
