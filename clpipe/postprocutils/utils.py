@@ -340,8 +340,9 @@ def expand_columns(tsv_file, column_names):
 
 def logical_or_across_lists(list_of_lists):
     import numpy as np
+
     np_array = np.array(list_of_lists)
-    or_result = np.any(np_array, axis=0).tolist()
+    or_result = np.any(np_array, axis=0).astype(int).tolist()
     return or_result
 
 
