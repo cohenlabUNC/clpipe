@@ -271,24 +271,24 @@ def build_confounds_prep_workflow(
         scrub_target_node = pe.Node(
             Function(
                 input_names=[
-                    "confounds_file",
-                    "scrub_target_variable",
-                    "scrub_threshold",
-                    "scrub_behind",
-                    "scrub_ahead",
-                    "scrub_contiguous",
+                    "scrub_configs",
+                    "confounds_file"
                 ],
                 output_names=["scrub_vector"],
                 function=get_scrub_vector_node,
             ),
             name="get_scrub_vector",
         )
+        scrub_dict = {
+            "TargetVariable": scrub_target_variable,
+            "Threshold": scrub_threshold,
+            "ScrubAhead": scrub_ahead,
+            "ScrubBehind": scrub_behind,
+            "ScrubContiguous": scrub_contiguous,
+        }
+
         # Setup scrub inputs
-        scrub_target_node.inputs.scrub_target_variable = scrub_target_variable
-        scrub_target_node.inputs.scrub_threshold = scrub_threshold
-        scrub_target_node.inputs.scrub_behind = scrub_behind
-        scrub_target_node.inputs.scrub_ahead = scrub_ahead
-        scrub_target_node.inputs.scrub_contiguous = scrub_contiguous
+        scrub_target_node.inputs.scrub_configs = scrub_dict
 
         workflow.connect(input_node, "in_file", scrub_target_node, "confounds_file")
         workflow.connect(scrub_target_node, "scrub_vector", output_node, "scrub_vector")
