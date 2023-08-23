@@ -381,7 +381,7 @@ def test_build_multiple_scrubbing_workflow(
 
     test_path = helpers.create_test_dir(artifact_dir, request.node.name)
 
-    postprocessing_config["ScrubTimepoints"][1]["Threshold"] = 0.13
+    postprocessing_config["ProcessingStepOptions"]["ScrubTimepoints"][1]["Threshold"] = 0.13
 
     # Create an input node for the workflow
     input_node = Node(
@@ -392,7 +392,7 @@ def test_build_multiple_scrubbing_workflow(
     )
 
     # Fetch the list of scrub configs from the default postprocessing config
-    scrub_configs = postprocessing_config["ScrubTimepoints"]
+    scrub_configs = postprocessing_config["ProcessingStepOptions"]["ScrubTimepoints"]
 
     # Feed the scrub config list of dicts into the mapper via the workflow inputnode
     input_node.inputs.scrub_configs = scrub_configs

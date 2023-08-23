@@ -330,8 +330,8 @@
 		"DICOMFormatString": "",
 		"TimeUsage": "1:0:0",
 		"MemUsage": "5000",
-		"CoreUsage": "2",
-		"LogDirectory": ""
+        "CoreUsage": "2",
+        "LogDirectory": ""
 	},
 	"BIDSValidationOptions": {
 		"BIDSValidatorImage": "/proj/hng/singularity_imgs/validator.simg",
@@ -348,104 +348,21 @@
 		"TemplateFlowToggle": true,
 		"TemplateFlowPath": "/proj/hng/singularity_imgs/template_flow",
 		"TemplateFlowTemplates": [
-			"MNI152NLin2009cAsym",
-			"MNI152NLin6Asym",
-			"OASIS30ANTs",
-			"MNIPediatricAsym",
+			"MNI152NLin2009cAsym", 
+			"MNI152NLin6Asym", 
+			"OASIS30ANTs", 
+			"MNIPediatricAsym", 
 			"MNIInfant"
 		],
 		"FMapCleanupROIs": 3,
 		"FMRIPrepMemoryUsage": "50000",
 		"FMRIPrepTimeUsage": "16:0:0",
 		"NThreads": "12",
-		"LogDirectory": "",
+        "LogDirectory": "",
 		"DockerToggle": false,
 		"DockerFMRIPrepVersion": ""
 	},
 	"PostProcessingOptions": {
-		"TargetDirectory": "",
-		"TargetSuffix": "space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz",
-		"OutputDirectory": "",
-		"OutputSuffix": "",
-		"ConfoundSuffix": "desc-confounds_timeseries.tsv",
-		"DropCSV": "",
-		"Regress": true,
-		"Confounds": [
-			"trans_x",
-			"trans_y",
-			"trans_z",
-			"rot_x",
-			"rot_y",
-			"rot_z",
-			"csf",
-			"white_matter",
-			"global_signal",
-			"a_comp_cor.*"
-		],
-		"ConfoundsQuad": [
-			"trans_x",
-			"trans_y",
-			"trans_z",
-			"rot_x",
-			"rot_y",
-			"rot_z",
-			"csf",
-			"white_matter",
-			"global_signal"
-		],
-		"ConfoundsDerive": [
-			"trans_x",
-			"trans_y",
-			"trans_z",
-			"rot_x",
-			"rot_y",
-			"rot_z",
-			"csf",
-			"white_matter",
-			"global_signal"
-		],
-		"ConfoundsQuadDerive": [
-			"trans_x",
-			"trans_y",
-			"trans_z",
-			"rot_x",
-			"rot_y",
-			"rot_z",
-			"csf",
-			"white_matter",
-			"global_signal"
-		],
-		"FilteringHighPass": 0.008,
-		"FilteringLowPass": -1,
-		"FilteringOrder": 2,
-		"OversamplingFreq": 4,
-		"PercentFreqSample": 1,
-		"Scrubbing": true,
-		"ScrubVar": "framewise_displacement",
-		"ScrubFDThreshold": 0.3,
-		"ScrubAhead": 1,
-		"ScrubBehind": 1,
-		"ScrubContig": 2,
-		"RespNotchFilter": true,
-		"MotionVars": [
-			"trans_x",
-			"trans_y",
-			"trans_z",
-			"rot_x",
-			"rot_y",
-			"rot_z"
-		],
-		"RespNotchFilterBand": [
-			0.31,
-			0.43
-		],
-		"PostProcessingMemoryUsage": "20000",
-		"PostProcessingTimeUsage": "8:0:0",
-		"NThreads": "1",
-		"SpectralInterpolationBinSize": 5000,
-		"LogDirectory": ""
-	},
-	"PostProcessingOptions2": {
 		"WorkingDirectory": "",
 		"WriteProcessGraph": true,
 		"TargetDirectory": "",
@@ -461,19 +378,19 @@
 		],
 		"ProcessingStepOptions": {
 			"TemporalFiltering": {
-				"Implementation": "fslmaths",
+				"Implementation":"fslmaths",
 				"FilteringHighPass": 0.008,
 				"FilteringLowPass": -1,
 				"FilteringOrder": 2
-			},
+			}, 
 			"IntensityNormalization": {
 				"Implementation": "10000_GlobalMedian"
-			},
+			}, 
 			"SpatialSmoothing": {
 				"Implementation": "SUSAN",
-				"FWHM": 6
+      			"FWHM": 6
 			},
-			"AROMARegression": {
+			"AROMARegression":{
 				"Implementation": "fsl_regfilt"
 			},
 			"ScrubTimepoints": [
@@ -494,7 +411,7 @@
 					"InsertNA": false
 				}
 			],
-			"Resample": {
+			"Resample":{
 				"ReferenceImage": "SET REFERENCE IMAGE"
 			},
 			"TrimTimepoints": {
@@ -507,10 +424,8 @@
 		},
 		"ConfoundOptions": {
 			"Columns": [
-				"csf",
-				"csf_derivative1",
-				"white_matter",
-				"white_matter_derivative1"
+				"csf", "csf_derivative1", 
+				"white_matter", "white_matter_derivative1"
 			],
 			"MotionOutliers": {
 				"Include": true,
@@ -525,44 +440,7 @@
 			"MemoryUsage": "20000",
 			"TimeUsage": "2:0:0",
 			"NThreads": "1"
-		}
-	},
-	"BetaSeriesOptions": {
-		"TargetDirectory": "",
-		"TargetSuffix": "preproc_bold.nii.gz",
-		"OutputDirectory": "",
-		"OutputSuffix": "betaseries.nii.gz",
-		"ConfoundSuffix": "desc-confounds_regressors.tsv",
-		"Regress": true,
-		"NuisanceRegression": "QuadLagged",
-		"WhiteMatter": true,
-		"CSF": true,
-		"GlobalSignalRegression": true,
-		"FilteringHighPass": 0.008,
-		"FilteringLowPass": -1,
-		"FilteringOrder": 2,
-		"TaskSpecificOptions": [
-			{
-				"Task": "",
-				"ExcludeColumnInfo": "trial_type",
-				"ExcludeTrialTypes": [
-					"block"
-				]
-			}
-		],
-		"LogDirectory": ""
-	},
-	"SUSANOptions": {
-		"TargetDirectory": "",
-		"TargetSuffix": "preproc_bold.nii.gz",
-		"OutputDirectory": "",
-		"OutputSuffix": "preproc_susan.nii.gz",
-		"BrightnessThreshold": 500,
-		"FWHM": 0,
-		"MemoryUsage": "5000",
-		"TimeUsage": "2:0:0",
-		"NThreads": "4",
-		"LogDirectory": ""
+		}	
 	},
 	"ProcessingStreams": [
 		{
@@ -620,34 +498,30 @@
 			{
 				"Task": "",
 				"ExcludeColumnInfo": "trial_type",
-				"ExcludeTrialTypes": [
-					"block"
-				]
+				"ExcludeTrialTypes": ["block"]
 			}
 		],
-		"LogDirectory": ""
-	},
+      "LogDirectory": ""
+    },
 	"ROIExtractionOptions": {
 		"TargetDirectory": "",
 		"TargetSuffix": "",
 		"OutputDirectory": "",
-		"Atlases": [
-			"power"
-		],
+		"Atlases": ["power"],
 		"RequireMask": true,
 		"PropVoxels": 0.5,
-		"MemoryUsage": "20000",
-		"TimeUsage": "2:0:0",
-		"NThreads": "1",
-		"LogDirectory": ""
+        "MemoryUsage":"20000",
+        "TimeUsage": "2:0:0",
+        "NThreads": "1",
+        "LogDirectory": ""
 	},
 	"ReHoExtraction": {
 		"TargetDirectory": "",
 		"TargetSuffix": "",
 		"ExclusionFile": "",
-		"WorkingDirectory": "",
+		"WorkingDirectory":"",
 		"MaskDirectory": "",
-		"MaskSuffix": "space-MNI152NLin2009cAsym_desc-brain_mask.nii.gz",
+		"MaskSuffix":  "space-MNI152NLin2009cAsym_desc-brain_mask.nii.gz",
 		"MaskFileOverride": "",
 		"OutputDirectory": "",
 		"OutputSuffix": "",
@@ -658,9 +532,9 @@
 		"TargetDirectory": "",
 		"TargetSuffix": "",
 		"ExclusionFile": "",
-		"WorkingDirectory": "",
+		"WorkingDirectory":"",
 		"MaskDirectory": "",
-		"MaskSuffix": "space-MNI152NLin2009cAsym_desc-brain_mask.nii.gz",
+		"MaskSuffix":  "space-MNI152NLin2009cAsym_desc-brain_mask.nii.gz",
 		"MaskFileOverride": "",
 		"OutputDirectory": "",
 		"OutputSuffix": "",
