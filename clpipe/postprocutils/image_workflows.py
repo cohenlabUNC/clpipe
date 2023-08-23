@@ -34,7 +34,12 @@ from .nodes import (
     RegressAromaR,
     ImageSlice,
 )
-from .utils import scrub_image, get_scrub_vector_node, vector_to_txt
+from .utils import (
+    scrub_image,
+    get_scrub_vector_node,
+    vector_to_txt,
+    logical_or_across_lists,
+)
 from ..errors import ImplementationNotFoundError
 
 # TODO: Set these values up as hierarchical, maybe with enums
