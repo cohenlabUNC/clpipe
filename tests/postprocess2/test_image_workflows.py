@@ -401,11 +401,10 @@ def test_build_multiple_scrubbing_workflow(
     test_wf.run()
 
     # Write the workflow graph if needed
-    if write_graph:
-        test_wf.write_graph(
-            graph2use=write_graph,
-            dotfilename=os.path.join(test_path, "test_wf_graph.dot"),
-        )
+    test_wf.write_graph(
+        graph2use="colored",
+        dotfilename=os.path.join(test_path, "test_wf_graph.dot"),
+    )
 
     # Further validation can be added here, like checking the output files or their properties
 
