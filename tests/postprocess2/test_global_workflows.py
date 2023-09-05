@@ -3,6 +3,7 @@ import pytest
 from clpipe.postprocutils.image_workflows import *
 from clpipe.postprocutils.global_workflows import *
 
+
 def test_build_postprocessing_wf(
     artifact_dir,
     postprocessing_config,
@@ -30,9 +31,7 @@ def test_build_postprocessing_wf(
 
     wf.run()
 
-    wf.write_graph(
-        dotfilename=test_path / "workflow_graph", graph2use='colored'
-    )
+    wf.write_graph(dotfilename=test_path / "workflow_graph", graph2use="colored")
 
 
 def test_build_postprocessing_wf_no_mask(
@@ -66,11 +65,9 @@ def test_build_postprocessing_wf_no_mask(
 
     wf.run()
 
-    wf.write_graph(
-        dotfilename=test_path / "workflow_graph", graph2use='colored'
-    )
+    wf.write_graph(dotfilename=test_path / "workflow_graph", graph2use="colored")
 
-    
+
 def test_build_postprocessing_wf_2_steps(
     artifact_dir,
     postprocessing_config,
@@ -98,14 +95,12 @@ def test_build_postprocessing_wf_2_steps(
         confounds_file=sample_confounds_timeseries,
         confounds_export_path=confounds_out_path,
         base_dir=test_path,
-        crashdump_dir=test_path
+        crashdump_dir=test_path,
     )
 
     wf.run()
 
-    wf.write_graph(
-        dotfilename=test_path / "workflow_graph", graph2use='colored'
-    )
+    wf.write_graph(dotfilename=test_path / "workflow_graph", graph2use="colored")
 
     helpers.plot_4D_img_slice(out_path, "postprocessed.png")
 
@@ -134,14 +129,12 @@ def test_build_postprocessing_wf_1_step(
         confounds_file=sample_confounds_timeseries,
         confounds_export_path=confounds_out_path,
         base_dir=test_path,
-        crashdump_dir=test_path
+        crashdump_dir=test_path,
     )
 
     wf.run()
 
-    wf.write_graph(
-        dotfilename=test_path / "workflow_graph", graph2use='colored'
-    )
+    wf.write_graph(dotfilename=test_path / "workflow_graph", graph2use="colored")
 
 
 def test_postprocess2_wf_confound_regression_last(
@@ -171,14 +164,12 @@ def test_postprocess2_wf_confound_regression_last(
         confounds_file=sample_confounds_timeseries,
         confounds_export_path=confounds_out_path,
         base_dir=test_path,
-        crashdump_dir=test_path
+        crashdump_dir=test_path,
     )
 
     wf.run()
 
-    wf.write_graph(
-        dotfilename=test_path / "workflow_graph", graph2use='colored'
-    )
+    wf.write_graph(dotfilename=test_path / "workflow_graph", graph2use="colored")
 
 
 def test_postprocess2_wf_confound_regression_first(
@@ -208,14 +199,12 @@ def test_postprocess2_wf_confound_regression_first(
         confounds_file=sample_confounds_timeseries,
         confounds_export_path=confounds_out_path,
         base_dir=test_path,
-        crashdump_dir=test_path
+        crashdump_dir=test_path,
     )
 
     wf.run()
 
-    wf.write_graph(
-        dotfilename=test_path / "workflow_graph", graph2use='colored'
-    )
+    wf.write_graph(dotfilename=test_path / "workflow_graph", graph2use="colored")
 
 
 def test_postprocess2_wf_aroma(
@@ -250,14 +239,12 @@ def test_postprocess2_wf_aroma(
         mixing_file=sample_melodic_mixing,
         noise_file=sample_aroma_noise_ics,
         base_dir=test_path,
-        crashdump_dir=test_path
+        crashdump_dir=test_path,
     )
 
     wf.run()
 
-    wf.write_graph(
-        dotfilename=test_path / "workflow_graph", graph2use='colored'
-    )
+    wf.write_graph(dotfilename=test_path / "workflow_graph", graph2use="colored")
 
     helpers.plot_timeseries(out_path, sample_raw_image)
     helpers.plot_4D_img_slice(out_path, "postprocessed.png")
@@ -295,14 +282,12 @@ def test_postprocess2_wf_aroma_last(
         mixing_file=sample_melodic_mixing,
         noise_file=sample_aroma_noise_ics,
         base_dir=test_path,
-        crashdump_dir=test_path
+        crashdump_dir=test_path,
     )
 
     wf.run()
 
-    wf.write_graph(
-        dotfilename=test_path / "workflow_graph", graph2use='colored'
-    )
+    wf.write_graph(dotfilename=test_path / "workflow_graph", graph2use="colored")
 
     helpers.plot_timeseries(out_path, sample_raw_image)
     helpers.plot_4D_img_slice(out_path, "postprocessed.png")
@@ -326,8 +311,12 @@ def test_postprocess2_wf_scrubbing(
         "white_matter_derivative1",
     ]
     # Setup target & threshold to ensure some scrubbing happens
-    postprocessing_config["ProcessingStepOptions"]["ScrubTimepoints"]["TargetVariable"] = "csf"
-    postprocessing_config["ProcessingStepOptions"]["ScrubTimepoints"]["Threshold"] = 332.44
+    postprocessing_config["ProcessingStepOptions"]["ScrubTimepoints"][
+        "TargetVariable"
+    ] = "csf"
+    postprocessing_config["ProcessingStepOptions"]["ScrubTimepoints"][
+        "Threshold"
+    ] = 332.44
 
     test_path = helpers.create_test_dir(artifact_dir, request.node.name)
     out_path = test_path / "postprocessed_image.nii.gz"
@@ -342,14 +331,12 @@ def test_postprocess2_wf_scrubbing(
         confounds_file=sample_confounds_timeseries,
         confounds_export_path=confounds_out_path,
         base_dir=test_path,
-        crashdump_dir=test_path
+        crashdump_dir=test_path,
     )
 
     wf.run()
 
-    wf.write_graph(
-        dotfilename=test_path / "workflow_graph", graph2use='colored'
-    )
+    wf.write_graph(dotfilename=test_path / "workflow_graph", graph2use="colored")
 
     helpers.plot_timeseries(out_path, sample_raw_image)
     helpers.plot_4D_img_slice(out_path, "postprocessed.png")
@@ -374,8 +361,12 @@ def test_postprocess2_wf_scrubbing_aroma(
     ]
 
     # Setup target & threshold to ensure some scrubbing happens
-    postprocessing_config["ProcessingStepOptions"]["ScrubTimepoints"]["TargetVariable"] = "csf"
-    postprocessing_config["ProcessingStepOptions"]["ScrubTimepoints"]["Threshold"] = 332.44
+    postprocessing_config["ProcessingStepOptions"]["ScrubTimepoints"][
+        "TargetVariable"
+    ] = "csf"
+    postprocessing_config["ProcessingStepOptions"]["ScrubTimepoints"][
+        "Threshold"
+    ] = 332.44
 
     test_path = helpers.create_test_dir(artifact_dir, request.node.name)
     out_path = test_path / "postprocessed_image.nii.gz"
@@ -392,14 +383,12 @@ def test_postprocess2_wf_scrubbing_aroma(
         mixing_file=sample_melodic_mixing,
         noise_file=sample_aroma_noise_ics,
         base_dir=test_path,
-        crashdump_dir=test_path
+        crashdump_dir=test_path,
     )
 
     wf.run()
 
-    wf.write_graph(
-        dotfilename=test_path / "workflow_graph", graph2use='colored'
-    )
+    wf.write_graph(dotfilename=test_path / "workflow_graph", graph2use="colored")
 
     helpers.plot_timeseries(out_path, sample_raw_image)
     helpers.plot_4D_img_slice(out_path, "postprocessed.png")
@@ -423,8 +412,12 @@ def test_postprocess2_wf_scrubbing_confound_regression(
         "ScrubTimepoints",
     ]
     # Setup target & threshold to ensure some scrubbing happens
-    postprocessing_config["ProcessingStepOptions"]["ScrubTimepoints"]["TargetVariable"] = "csf"
-    postprocessing_config["ProcessingStepOptions"]["ScrubTimepoints"]["Threshold"] = 332.44
+    postprocessing_config["ProcessingStepOptions"]["ScrubTimepoints"][
+        "TargetVariable"
+    ] = "csf"
+    postprocessing_config["ProcessingStepOptions"]["ScrubTimepoints"][
+        "Threshold"
+    ] = 332.44
 
     test_path = helpers.create_test_dir(artifact_dir, request.node.name)
     out_path = test_path / "postprocessed_image.nii.gz"
@@ -441,14 +434,46 @@ def test_postprocess2_wf_scrubbing_confound_regression(
         mixing_file=sample_melodic_mixing,
         noise_file=sample_aroma_noise_ics,
         base_dir=test_path,
-        crashdump_dir=test_path
+        crashdump_dir=test_path,
     )
 
     wf.run()
 
-    wf.write_graph(
-        dotfilename=test_path / "workflow_graph", graph2use='colored'
-    )
+    wf.write_graph(dotfilename=test_path / "workflow_graph", graph2use="colored")
 
     helpers.plot_timeseries(out_path, sample_raw_image)
     helpers.plot_4D_img_slice(out_path, "postprocessed.png")
+
+
+def test_build_multiple_scrubbing_workflow(
+    sample_confounds_timeseries,
+    postprocessing_config,
+    helpers,
+    artifact_dir,
+    request,
+):
+    test_path = helpers.create_test_dir(artifact_dir, request.node.name)
+    postprocessing_config["ProcessingStepOptions"]["ScrubTimepoints"]["Columns"][1][
+        "Threshold"
+    ] = 0.13
+
+    test_wf = build_multiple_scrubbing_workflow(
+        scrub_configs=postprocessing_config["ProcessingStepOptions"]["ScrubTimepoints"][
+            "Columns"
+        ],
+    )
+
+    # Passing in the inputs externally
+    test_wf.inputs.inputnode.confounds_file = sample_confounds_timeseries
+
+    # Run the workflow
+    test_wf.base_dir = os.path.join(
+        test_path, "work_dir"
+    )  # specify the working directory for the workflow
+    test_wf.run()
+
+    # Write the workflow graph if needed
+    test_wf.write_graph(
+        graph2use="colored",
+        dotfilename=os.path.join(test_path, "test_wf_graph.dot"),
+    )

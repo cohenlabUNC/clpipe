@@ -203,17 +203,29 @@ ProcessingStepOptions Block:
 
 .. code-block:: json
 
-	"ScrubTimepoints": {
-		"TargetVariable": "framewise_displacement",
-		"Threshold": 0.9,
-		"ScrubAhead": 0,
-		"ScrubBehind": 0,
-		"ScrubContiguous": 0,
-		"InsertNA": true
-	}
+    "ScrubTimepoints": {
+        "InsertNA": true,
+        "Columns": [
+            {
+                "TargetVariable": "cosine01",
+                "Threshold": 100,
+                "ScrubAhead": 0,
+                "ScrubBehind": 0,
+                "ScrubContiguous": 0
+            },
+            {
+                "TargetVariable": "framewise_displacement",
+                "Threshold": 0.2,
+                "ScrubAhead": 1,
+                "ScrubBehind": 0,
+                "ScrubContiguous": 0
+            }
+        ]
+    }
 
 Definitions:
 
+* ``Columns:`` Contains a list of scrub variables for multiple target variables
 * ``TargetVariable:`` Which confound variable to use as a reference for scrubbing
 * ``Threshold:`` Any timepoint of the target variable exceeding this value will be scrubbed
 * ``ScrubAhead:`` Set the number of timepoints to scrub ahead of target timepoints
