@@ -55,19 +55,6 @@ def build_postprocessing_wf(
     if crashdump_dir is not None:
         postproc_wf.config["execution"]["crashdump_dir"] = crashdump_dir
 
-    input_node = pe.Node(
-        IdentityInterface(
-            fields=[
-                "in_file",
-                "confounds_file",
-                "image_export_path",
-                "confounds_export_path",
-            ],
-            mandatory_inputs=False,
-        ),
-        name="inputnode",
-    )
-
     output_node = pe.Node(
         IdentityInterface(
             fields=["out_file", "processed_confounds_file"], mandatory_inputs=False
