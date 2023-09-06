@@ -341,7 +341,7 @@ def expand_columns(tsv_file, column_names):
 def expand_scrub_dict(scrub_configs):
     # Expand the dictionary using expand_columns function
     expanded_columns = []
-    for column in scrub_configs["Columns"]:
+    for column in scrub_configs:
         target_var = column["TargetVariable"]
         if "*" in target_var:
             expanded_vars = expand_columns([target_var])
