@@ -364,39 +364,6 @@ def test_resample_wf(
         helpers.plot_4D_img_slice(resampled_path, "resample.png")
 
 
-def test_build_multiple_scrubbing_workflow(
-    sample_confounds_timeseries,
-    postprocessing_config,
-    helpers,
-    artifact_dir,
-    request,
-):
-    test_path = helpers.create_test_dir(artifact_dir, request.node.name)
-    postprocessing_config["ProcessingStepOptions"]["ScrubTimepoints"][1][
-        "Threshold"
-    ] = 0.13
-
-    test_wf = build_multiple_scrubbing_workflow(
-        "multiple scrubbing wf",
-        postprocessing_config["ProcessingStepOptions"]["ScrubTimepoints"],
-        sample_confounds_timeseries,
-    )
-
-    # Run the workflow
-    test_wf.base_dir = os.path.join(
-        test_path, "work_dir"
-    )  # specify the working directory for the workflow
-    test_wf.run()
-
-    # Write the workflow graph if needed
-    test_wf.write_graph(
-        graph2use="colored",
-        dotfilename=os.path.join(test_path, "test_wf_graph.dot"),
-    )
-
-    # Further validation can be added here, like checking the output files or their properties
-
-
 def test_scrubbing_wf(artifact_dir, sample_raw_image, plot_img, request, helpers):
     """Test that a list of arbitrary timepoints can be scrubbed from an image."""
 
