@@ -117,17 +117,17 @@ def build_postprocessing_wf(
             postprocessing_config["ProcessingStepOptions"]["ScrubTimepoints"][
                 "Columns"
             ],
-            confounds_file,
         )
+        mult_scrub_wf.get_node("inputnode").inputs.confounds_file = confounds_file
 
         if image_wf:
             postproc_wf.connect(
-                mult_scrub_wf, "scrub_vector", image_wf, "inputnode.scrub_vector"
+                mult_scrub_wf, "outputnode.out_file", image_wf, "inputnode.scrub_vector"
             )
         if confounds_wf:
             postproc_wf.connect(
                 mult_scrub_wf,
-                "scrub_vector",
+                "outputnode.out_file",
                 confounds_wf,
                 "inputnode.scrub_vector",
             )
