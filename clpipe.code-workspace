@@ -31,7 +31,11 @@
 		"editor.dropIntoEditor.enabled": false,
 		"githubPullRequests.ignoredPullRequestBranches": [
 			"master"
-		]
+		],
+		"[python]": {
+			"editor.defaultFormatter": "ms-python.black-formatter"
+		},
+		"python.formatting.provider": "none"
 	},
 	"launch": {
 		"version": "0.2.0",

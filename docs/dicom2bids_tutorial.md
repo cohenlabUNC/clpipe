@@ -1,8 +1,8 @@
 # BIDS Conversion
 
-The goal of this processing step is to convert "raw" DICOM format images into BIDS format. If your data is already in BIDS format, move on to the BIDS Validation step.
+The primary objective of this processing step is to transform DICOM format images into BIDS format. If your data is already in BIDS format, you can proceed directly to the BIDS Validation step.
 
-Due to the manual labeling necessary for DICOM to BIDS conversion, this is one of the most difficult parts of clpipe to setup - do not be discourged by this early step!
+Converting DICOM to BIDS involves manual labeling and can be one of the more challenging aspects of setting up clpipe. However, don't be disheartened by this initial step.
 
 > Note: This tutorial is a clpipe implmentation of the [dcm2bids](https://unfmontreal.github.io/Dcm2Bids/docs/tutorial/first-steps/) tutorial, which clpipe uses for dcm to BIDS conversion.
 
@@ -95,6 +95,17 @@ The "critera" item gives a list of critera by which to match DICOM images. The o
 
 More information on setting up clpipe for BIDS conversion can be found in the [clpipe documentation](https://clpipe.readthedocs.io/en/latest/dicom2bids.html#).
 
+!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!
+!!!!!!
+
+#TODO THIS LINK DOESN'T WORK RIGHT NOW
+
+!!!!!!
+!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!
 
 ## Setting up the Conversion File
 From here, follow the [Dcm2Bids tutorial](https://unfmontreal.github.io/Dcm2Bids/docs/2-tutorial/#dicom-to-nifti-conversion) and stop before the "Running dcm2bids" section - clpipe will handling running dcm2bids for you. The helper command `dcm2bids_helper` will be available to you via the clpipe installation, and should be used as indicated in the tutorial to help you get started. You should also skip the "Building the configuration file" step because, as shown above, clpipe has already created this file.

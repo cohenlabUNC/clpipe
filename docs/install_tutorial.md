@@ -15,7 +15,7 @@ mkdir clpipe_tutorial_project
 cd clpipe_tutorial_project
 ```
 
-Running project setup requires us to have a source data directory ready. Create an empty one for now
+To run the project setup, you need to have a source data directory prepared. For now, please create an empty one.
 
 ```
 mkdir data_DICOMs
@@ -53,7 +53,7 @@ If successful, your folder will now contain the following structure:
 └── scripts
 ```
 
-clpipe automatically creates many of the directories we will need in the future. For now, let's just familiarize ourself with the most import file, `clpipe_config.json`, which allows you to configure clpipe's core functionalities. Open `clpipe_config.json` with the editor of your choice.
+clpipe automatically creates many of the directories we will need in the future. For now, let's just familiarize ourselves with the most important file, `clpipe_config.json`, which allows you to configure clpipe's core functionalities. Open `clpipe_config.json` with the editor of your choice.
 
 ## Understanding the clpipe_config.json File
 
