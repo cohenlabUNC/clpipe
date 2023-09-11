@@ -207,7 +207,7 @@ ProcessingStepOptions Block:
         "InsertNA": true,
         "Columns": [
             {
-                "TargetVariable": "cosine01",
+                "TargetVariable": "cosine*",
                 "Threshold": 100,
                 "ScrubAhead": 0,
                 "ScrubBehind": 0,
@@ -226,7 +226,7 @@ ProcessingStepOptions Block:
 Definitions:
 
 * ``Columns:`` Contains a list of scrub variables for multiple target variables
-* ``TargetVariable:`` Which confound variable to use as a reference for scrubbing
+* ``TargetVariable:`` Which confound variable to use as a reference for scrubbing. May use wildcards to pick multiple columns with similar names.
 * ``Threshold:`` Any timepoint of the target variable exceeding this value will be scrubbed
 * ``ScrubAhead:`` Set the number of timepoints to scrub ahead of target timepoints
 * ``ScrubBehind:`` Set the number of timepoints to scrub behind target timepoints

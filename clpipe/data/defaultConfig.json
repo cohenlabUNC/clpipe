@@ -86,7 +86,7 @@
                 "InsertNA": true,
                 "Columns": [
                     {
-                        "TargetVariable": "cosine01",
+                        "TargetVariable": "cosine*",
                         "Threshold": 100,
                         "ScrubAhead": 0,
                         "ScrubBehind": 0,
