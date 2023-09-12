@@ -467,7 +467,7 @@ class ProjectOptions(Option):
     postprocessing: PostProcessingOptions = PostProcessingOptions()
     processing_streams: list = field(default_factory=list)
     roi_extraction: ROIExtractOptions = ROIExtractOptions()
-    batch_config_path: str = ""
+    batch_config_path: str = "slurmUNCConfig.json"
     clpipe_version: str = ""
 
     def get_logs_dir(self) -> str:
