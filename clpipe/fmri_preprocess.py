@@ -3,7 +3,7 @@ import sys
 from pathlib import Path
 
 from .batch_manager import BatchManager, Job
-from .config.options import load_project_config, ProjectOptions
+from .config.options import ProjectOptions
 from .utils import get_logger, add_file_handler
 from .status import needs_processing, write_record
 
@@ -38,10 +38,8 @@ def fmriprep_process(bids_dir=None, working_dir=None, output_dir=None,
     Specify subject IDs to run specific subjects. If left blank,
     runs all subjects.
     """
-    
-    config: ProjectOptions = load_project_config(config_file)
-    config = ClpipeConfigParser()
-    config.config_updater(config_file)
+    # os.makedirs(config.fmriprep.working_directory, exist_ok=True)
+    config: ProjectOptions = ProjectOptions.load(config_file)
     config.setup_fmriprep_directories(
         bids_dir, working_dir, output_dir, log_dir
     )

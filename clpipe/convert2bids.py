@@ -10,6 +10,7 @@ import logging
 
 from .utils import get_logger
 from .status import needs_processing, write_record
+from .project_setup import setup_convert2bids_directories
 
 # These imports are for the heudiconv converter
 from pkg_resources import resource_filename
@@ -30,30 +31,11 @@ def convert2bids(dicom_dir=None, dicom_dir_format=None, bids_dir=None,
                  dcm2bids=True, batch=False):
     
     config: ProjectOptions = ProjectOptions.load(config_file)
+    config.convert2bids.load_cli_args(dicom_dir, dicom_dir_format, conv_config_file, bids_dir, log_dir)
+
+    setup_convert2bids_directories(config)
 
     logger = get_logger(STEP_NAME, debug=debug, log_dir=Path(config.project_directory) / "logs")
-
-    dicom_dir = dicom_dir if dicom_dir else config.convert2bids.dicom_directory
-    dicom_dir_format = dicom_dir_format if dicom_dir_format else config.convert2bids.dicom_format_string
-    bids_dir = bids_dir if bids_dir else config.convert2bids.bids_directory
-    conv_config_file = conv_config_file if conv_config_file else config.convert2bids.conversion_config
-    log_dir = log_dir if log_dir else config.convert2bids.log_directory
-
-    if not dicom_dir:
-        logger.error('DICOM directory not specified.')
-        sys.exit(1)
-    if not bids_dir:
-        logger.error('BIDS directory not specified.')
-        sys.exit(1)
-    if not dicom_dir_format:
-        logger.error('Format string not specified.')
-        sys.exit(1)
-    if not log_dir:
-        logger.error('Log directory not specified.')
-        sys.exit(1)
-    if not conv_config_file:
-        logger.error("Conversion config file not specified")
-        sys.exit(1)
 
     batch_manager = BatchManager(config.batch_config_path, log_dir, debug=debug)
     batch_manager.create_submission_head()
@@ -61,21 +43,25 @@ def convert2bids(dicom_dir=None, dicom_dir_format=None, bids_dir=None,
     batch_manager.update_time(config.convert2bids.time_usage)
     batch_manager.update_nthreads(config.convert2bids.core_usage)
 
-    logger.info(f"Starting BIDS conversion targeting: {dicom_dir}")
+    logger.info(f"Starting BIDS conversion targeting: {config.convert2bids.dicom_directory}")
     logger.debug(f"Using config file: {config_file}")
 
     # Pack a single subject into list
     if subject and not subjects:
         subjects = [subject]
-        logger.warn("WARNING: The -subject option is deprecated. You can now pass an arbitrary number of subjects as command line arguments.")
+        logger.warn("WARNING: The -subject option is deprecated. "
+            "You can now pass an arbitrary number of subjects "
+            "as command line arguments.")
     
     if dcm2bids:
         logger.info("Using converter: dcm2bids")
 
         # move sub / session detection code to seperate function to try with heudiconv
         dcm2bids_wrapper(
-            dicom_dir=dicom_dir, dicom_dir_format=dicom_dir_format, 
-            bids_dir=bids_dir, conv_config=conv_config_file, 
+            dicom_dir=config.convert2bids.dicom_directory,
+            dicom_dir_format=config.convert2bids.dicom_format_string, 
+            bids_dir=config.convert2bids.bids_directory,
+            conv_config=config.convert2bids.conversion_config,
             overwrite=overwrite, subjects=subjects, session=session, 
             longitudinal=longitudinal, 
             submit=submit, status_cache=status_cache,
