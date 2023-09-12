@@ -14,6 +14,7 @@ sys.path = path1[1:]
 import nipype.interfaces.fsl as fsl  # fsl
 import nipype.pipeline.engine as pe  # pypeline engine
 from nipype.interfaces.utility import IdentityInterface
+from .config.options import ProjectOptions
 import nibabel as nib
 import pandas
 import re
@@ -25,10 +26,9 @@ DEPRECATION_MSG = "DEPRECATION WARNING: glm setup's processing functions are now
 
 def glm_setup(subjects = None, config_file=None, glm_config_file = None,
                      submit=False, batch=True, debug = False, drop_tps = None):
-    config = ClpipeConfigParser()
-    config.config_updater(config_file)
+    config = ProjectOptions(config_file)
 
-    logger = get_logger(STEP_NAME, debug=debug, log_dir=os.path.join(config.config["ProjectDirectory"], "logs"))
+    logger = get_logger(STEP_NAME, debug=debug, log_dir=os.path.join(config.get_logs_dir()))
 
     glm_config = GLMConfigParser(glm_config_file)
 
@@ -55,7 +55,7 @@ def glm_setup(subjects = None, config_file=None, glm_config_file = None,
     else:
         debug_string = ''
     if batch:
-        batch_manager = BatchManager(config.config['BatchConfig'], glm_config.config['GLMSetupOptions']['LogDirectory'])
+        batch_manager = BatchManager(config.batch_config_path, glm_config.config['GLMSetupOptions']['LogDirectory'])
         batch_manager.update_mem_usage(glm_config.config['GLMSetupOptions']['MemoryUsage'])
         batch_manager.update_time(glm_config.config['GLMSetupOptions']['TimeUsage'])
         batch_manager.update_nthreads(glm_config.config['GLMSetupOptions']['NThreads'])
