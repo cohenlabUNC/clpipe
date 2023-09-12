@@ -1,6 +1,6 @@
 from pathlib import Path
 from .batch_manager import BatchManager, Job
-from .config.project import load_project_config, ProjectOptions
+from .config.options import load_project_config, ProjectOptions
 import os
 import parse
 import glob

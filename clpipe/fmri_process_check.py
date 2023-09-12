@@ -3,7 +3,7 @@ import pandas as pd
 import os
 import glob
 from .utils import get_logger, add_file_handler, resolve_fmriprep_dir_new
-from .config.project import load_project_config
+from .config.options import load_project_config
 
 STEP_NAME = "fmri-process-check"
 

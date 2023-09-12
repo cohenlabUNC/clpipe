@@ -4,7 +4,7 @@ import yaml
 import os
 from pkg_resources import resource_stream
 
-from clpipe.config.project import *
+from clpipe.config.options import *
 
 """
 Removed tests for lack of fields and extra fields as this test will always pass

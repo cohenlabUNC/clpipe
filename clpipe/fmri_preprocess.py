@@ -3,7 +3,7 @@ import sys
 from pathlib import Path
 
 from .batch_manager import BatchManager, Job
-from .config.project import load_project_config, ProjectOptions
+from .config.options import load_project_config, ProjectOptions
 from .utils import get_logger, add_file_handler
 from .status import needs_processing, write_record
 

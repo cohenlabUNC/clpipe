@@ -12,7 +12,7 @@ from nilearn.image import load_img, index_img
 sys.path.append("../clpipe")
 from clpipe.project_setup import project_setup
 from clpipe.config_json_parser import ClpipeConfigParser, GLMConfigParser
-from clpipe.config.project import ProjectOptions, convert_project_config
+from clpipe.config.options import ProjectOptions, convert_project_config
 import utils
 
 PROJECT_TITLE = "test_project"

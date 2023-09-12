@@ -4,7 +4,7 @@
 import click
 import sys
 from .config.cli import *
-from .config.project import DEFAULT_PROCESSING_STREAM
+from .config.options import DEFAULT_PROCESSING_STREAM
 from .config.package import VERSION
 
 DEFAULT_HELP_PRIORITY = 5

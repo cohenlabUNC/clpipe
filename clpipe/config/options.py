@@ -16,6 +16,24 @@ class Option:
         ordered = True
         """Ensures config retains source order when dumped to file."""
 
+
+@dataclass
+class ProjectOptions(Option):
+    """Contains project-level configuration options."""
+
+    project_title: str = "A Neuroimaging Project"
+    """The title of your project."""
+
+    contributors: str = "SET CONTRIBUTORS"
+    """Members of the project team."""
+
+    root_directory: str = ""
+    """The root directory of your clpipe project."""
+
+    email_address: str = "SET EMAIL ADDRESS"
+    """Email address used for delivering batch job updates."""
+
+
 @dataclass
 class SourceOptions(Option):
     """Options for configuring sources of DICOM data."""
@@ -413,17 +431,14 @@ class ROIExtractOptions(Option):
 
 
 @dataclass
-class ProjectOptions(Option):
+class PipelineOptions(Option):
     """Contains metadata for your project and option blocks for each command."""
 
-    project_title: str = "A Neuroimaging Project"
+    name: str = "Base pipeline."
     """The title of your project."""
 
     contributors: str = "SET CONTRIBUTORS"
     """Members of the project team."""
-
-    project_directory: str = ""
-    """The root directory of your clpipe project."""
 
     email_address: str = "SET EMAIL ADDRESS"
     """Email address used for delivering batch job updates."""
@@ -435,7 +450,7 @@ class ProjectOptions(Option):
     postprocessing: PostProcessingOptions = PostProcessingOptions()
     processing_streams: list = field(default_factory=list)
     batch_config_path: str = ""
-    version: str = ""
+    clpipe_version: str = ""
 
     def to_dict(self):
         #Generate schema from given dataclasses
