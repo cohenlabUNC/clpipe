@@ -14,6 +14,7 @@ import nipype.pipeline.engine as pe
 
 from .image_workflows import build_image_postprocessing_workflow
 from .utils import get_scrub_vector_node, expand_columns
+from ..config.options import PostProcessingRunConfig
 
 # A list of the temporal-based processing steps applicable to confounds
 CONFOUND_STEPS = {
@@ -25,7 +26,7 @@ CONFOUND_STEPS = {
 
 
 def build_confounds_processing_workflow(
-    postprocessing_config: dict,
+    run_config: PostProcessingRunConfig,
     confounds_file: os.PathLike = None,
     scrub_vector: list = None,
     export_file: os.PathLike = None,
@@ -62,39 +63,23 @@ def build_confounds_processing_workflow(
     """
 
     if processing_steps is None:
-        processing_steps = postprocessing_config["ProcessingSteps"]
+        processing_steps = run_config.options.processing_steps
     if column_names is None:
-        column_names = postprocessing_config["ConfoundOptions"]["Columns"]
+        column_names = run_config.options.confound_options.columns
 
     # Force use of the R variant of fsl_regfilt for confounds
     if "AROMARegression" in processing_steps:
-        postprocessing_config = copy.deepcopy(postprocessing_config)
-        postprocessing_config["ProcessingStepOptions"]["AROMARegression"][
-            "Implementation"
-        ] = "fsl_regfilt_R"
+        run_config.options.processing_step_options.aroma_regression.implementation = "fsl_regfilt_R"
 
     # Gather motion outlier details if present
     motion_outliers = True
     try:
-        motion_outliers = postprocessing_config["ConfoundOptions"]["MotionOutliers"][
-            "Include"
-        ]
-
-        threshold = postprocessing_config["ConfoundOptions"]["MotionOutliers"][
-            "Threshold"
-        ]
-        scrub_var = postprocessing_config["ConfoundOptions"]["MotionOutliers"][
-            "ScrubVar"
-        ]
-        scrub_ahead = postprocessing_config["ConfoundOptions"]["MotionOutliers"][
-            "ScrubAhead"
-        ]
-        scrub_behind = postprocessing_config["ConfoundOptions"]["MotionOutliers"][
-            "ScrubBehind"
-        ]
-        scrub_contiguous = postprocessing_config["ConfoundOptions"]["MotionOutliers"][
-            "ScrubContiguous"
-        ]
+        motion_outliers = run_config.options.confound_options.motion_outliers.include
+        threshold = run_config.options.confound_options.motion_outliers.threshold
+        scrub_var = run_config.options.confound_options.motion_outliers.scrub_var
+        scrub_ahead = run_config.options.confound_options.motion_outliers.scrub_ahead
+        scrub_behind = run_config.options.confound_options.motion_outliers.scrub_behind
+        scrub_contiguous = run_config.options.confound_options.motion_outliers.scrub_contiguous
     except KeyError:
         motion_outliers = False
 
@@ -153,7 +138,7 @@ def build_confounds_processing_workflow(
     if confounds_processing_steps:
         prev_wf = current_wf
         current_wf = build_confounds_postprocessing_workflow(
-            postprocessing_config,
+            run_config,
             confounds_processing_steps,
             mixing_file,
             tr,
