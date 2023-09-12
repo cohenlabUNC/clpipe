@@ -403,7 +403,9 @@ class PostProcessingOptions(Option):
 
     batch_options: BatchOptions = BatchOptions()
     """Options for cluster resource usage."""
-    
+
+    log_directory: str = ""
+    """Log output location. Not normally changed from default."""
 
     def populate_project_paths(self, project_directory: os.PathLike):
         pass
