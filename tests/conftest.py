@@ -12,10 +12,11 @@ from nilearn.image import load_img, index_img
 sys.path.append("../clpipe")
 from clpipe.project_setup import project_setup
 from clpipe.config_json_parser import ClpipeConfigParser, GLMConfigParser
-from clpipe.config.options import ProjectOptions, convert_project_config
+from clpipe.config.options import convert_project_config
 import utils
 
 PROJECT_TITLE = "test_project"
+LEGACY_CONFIG_PATH = "tests/data/legacy_config.json"
 
 #################
 # Option Config #
@@ -453,7 +454,19 @@ def clpipe_config_default() -> dict:
 
 @pytest.fixture(scope="module")
 def legacy_config_path() -> Path:
-    return Path("tests/data/legacy_config.json")
+    return Path(LEGACY_CONFIG_PATH)
+
+@pytest.fixture(scope="function")
+def legacy_config_dir(tmp_path_factory) -> Path:
+    """A dir simply for holding a legacy config file for testing."""
+    temp_dir = tmp_path_factory.mktemp("legacy_config_dir")
+
+    temp_config_file = temp_dir / "clpipe_config.json"
+
+    import shutil
+    shutil.copy(LEGACY_CONFIG_PATH, temp_config_file)
+
+    return temp_dir
 
 @pytest.fixture(scope="session")
 def project_config(clpipe_config):

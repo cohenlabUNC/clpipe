@@ -2,6 +2,7 @@ import pytest
 import json
 import yaml
 import os
+from typing import Tuple
 from pkg_resources import resource_stream
 
 from clpipe.config.options import *
@@ -107,3 +108,27 @@ def test_dump_project_config_yaml(helpers, artifact_dir, request):
     config:ProjectOptions = ProjectOptions()
     config.populate_project_paths(test_dir, "test_source")
     config.dump(test_dir / 'test_project_options.yaml')
+
+def test_update_config_file_legacy(clpipe_dir_legacy_config):
+    """Test to ensure legacy config update to new format works."""
+    config_file = clpipe_dir_legacy_config / "clpipe_config.json"
+
+    update_config_file(config_file)
+
+def test_update_config_file_legacy_relative(clpipe_dir_legacy_config):
+    """Test to ensure legacy config update to new format works when using
+        just 'clpipe_config.json' within clpipe dir."""
+    os.chdir(clpipe_dir_legacy_config)
+    
+    update_config_file("clpipe_config.json")
+
+@pytest.fixture()
+def clpipe_dir_legacy_config(clpipe_dir: Path, legacy_config_path: Path) -> Path:
+    """Provides a clpipe dir with a legacy config file."""
+
+    config_path: Path = clpipe_dir / "clpipe_config.json"
+
+    import shutil
+    shutil.copy(legacy_config_path, config_path)
+
+    return clpipe_dir
