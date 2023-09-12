@@ -27,6 +27,10 @@ def config_json_parser(json_path):
 
 
 class ClpipeConfigParser:
+    """Legacy configuration class used for all modules in clpipe < 1.9.0
+    
+    Still used by some modules that haven't been converted to new config.
+    """
 
     def __init__(self, config_file:os.PathLike=None):
         if not config_file:

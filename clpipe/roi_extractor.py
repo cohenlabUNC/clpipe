@@ -10,16 +10,14 @@ with warnings.catch_warnings():
 import os
 
 import click
-from .config.options import ProjectOptions
-from .batch_manager import BatchManager, Job
 import json
-from pkg_resources import resource_stream, resource_filename
 import glob
 import shutil
-from .errors import MaskFileNotFoundError
-
-from .utils import get_logger, resolve_fmriprep_dir
 from .config.options import ProjectOptions
+from .batch_manager import BatchManager, Job
+from pkg_resources import resource_stream, resource_filename
+from .errors import MaskFileNotFoundError
+from .utils import get_logger, resolve_fmriprep_dir
 from pathlib import Path
 
 STEP_NAME = "roi_extraction"
@@ -45,7 +43,12 @@ def fmri_roi_extraction(
     overwrite=False,
 ):
     config = ProjectOptions.load(config_file)
-
+    config.load_cli_args(
+        target_directory=target_dir,
+        target_suffix=target_suffix,
+        output_directory=output_dir,
+        log_directory=log_output_dir
+    )
     setup_dirs(config)
 
     logger = get_logger(STEP_NAME, debug=debug, log_dir=config.get_logs_dir())
