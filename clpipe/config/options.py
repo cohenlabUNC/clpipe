@@ -408,7 +408,9 @@ class PostProcessingOptions(Option):
     """Log output location. Not normally changed from default."""
 
     def populate_project_paths(self, project_directory: os.PathLike):
-        pass
+        self.target_directory = os.path.join(project_directory, "data_fmriprep")
+        self.output_directory = os.path.join(project_directory, 'data_postprocess')
+        self.log_directory = os.path.join(project_directory, 'logs', 'postprocess_logs')
 
     def get_stream_dir(self, processing_stream: os.PathLike):
         """Combine output path and stream name to create stream out directory"""
@@ -548,6 +550,7 @@ class ProjectOptions(Option):
         self.bids_validation.populate_project_paths(project_dir)
         self.fmriprep.populate_project_paths(project_dir)
         self.roi_extraction.populate_project_paths(project_dir)
+        self.postprocessing.populate_project_paths(project_dir)
 
         
     @classmethod
