@@ -380,6 +380,7 @@ class ProcessingStepOptions(Option):
     aroma_regression: AROMARegression = field(default_factory=AROMARegression, metadata={"required": True})
     scrub_timepoints: ScrubTimepoints = field(default_factory=ScrubTimepoints, metadata={"required": True})
     resample: Resample = field(default_factory=Resample, metadata={"required": True})
+    confound_regression: ConfoundRegression= field(default_factory=ConfoundRegression, metadata={"required": True})
     trim_timepoints: TrimTimepoints = field(default_factory=TrimTimepoints, metadata={"required": True})
 
 @dataclass
