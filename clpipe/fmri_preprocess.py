@@ -3,7 +3,7 @@ import sys
 from pathlib import Path
 
 from .batch_manager import BatchManager, Job
-from .config_json_parser import ClpipeConfigParser
+from .config.project import load_project_config, ProjectOptions
 from .utils import get_logger, add_file_handler
 from .status import needs_processing, write_record
 
@@ -39,6 +39,7 @@ def fmriprep_process(bids_dir=None, working_dir=None, output_dir=None,
     runs all subjects.
     """
     
+    config: ProjectOptions = load_project_config(config_file)
     config = ClpipeConfigParser()
     config.config_updater(config_file)
     config.setup_fmriprep_directories(

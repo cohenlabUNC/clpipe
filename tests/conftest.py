@@ -486,11 +486,6 @@ def clpipe_config_default() -> dict:
     return ClpipeConfigParser().config
 
 @pytest.fixture(scope="session")
-def project_config_default():
-    """Provide the project config as populated by the project config class."""
-    return ProjectOptions()
-
-@pytest.fixture(scope="session")
 def project_config(clpipe_config):
     """Provide the project config as populated by default config file."""
 

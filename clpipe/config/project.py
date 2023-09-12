@@ -441,53 +441,54 @@ class ProjectOptions(Option):
         #Generate schema from given dataclasses
         ConfigSchema = marshmallow_dataclass.class_schema(self.__class__)
         return ConfigSchema().dump(self)
-    
-def load_project_config(json_file = None, yaml_file = None):
-    #Generate schema from given dataclasses
-    config_schema = marshmallow_dataclass.class_schema(ProjectOptions)
 
-    if(json_file == None and yaml_file == None):
-        # Load default config
-        with resource_stream(__name__, '../data/defaultConfig.json') as def_config:
-                config_dict = json.load(def_config)
-    else:
-        if(json_file == None and yaml_file):
-            with open(yaml_file) as f:
-                config_dict = yaml.safe_load(f)
+    def dump(self, outputdir, file_name="project_config", yaml_file = False):
+        outpath = Path(outputdir) / file_name
+
+        #Generate schema from given dataclasses
+        ConfigSchema = marshmallow_dataclass.class_schema(self.__class__)
+        config_dict = ConfigSchema().dump(self)
+
+        outpath_json = outpath.parent / (outpath.name + '.json')
+        
+        with open(outpath_json, 'w') as fp:
+            json.dump(config_dict, fp, indent="\t")
+
+        if(yaml_file):
+            outpath_yaml = outpath.parent / (outpath.name + '.yaml')
+            with open(outpath_json, 'r') as json_in:
+                conf = json.load(json_in)
+            with open(outpath_yaml, 'w') as yaml_out:
+                yaml.dump(conf, yaml_out, sort_keys=False)
+            os.remove(outpath_json)
+
+            return outpath_yaml
+        
+        return outpath_json
+    
+    @classmethod
+    def load(cls, json_file = None, yaml_file = None):
+        #Generate schema from given dataclasses
+        config_schema = marshmallow_dataclass.class_schema(cls)
+
+        if(json_file == None and yaml_file == None):
+            # Load default config
+            with resource_stream(__name__, '../data/defaultConfig.json') as def_config:
+                    config_dict = json.load(def_config)
         else:
-            with open(json_file) as f:
-                config_dict = json.load(f)
+            if(json_file == None and yaml_file):
+                with open(yaml_file) as f:
+                    config_dict = yaml.safe_load(f)
+            else:
+                with open(json_file) as f:
+                    config_dict = json.load(f)
 
-    if 'version' not in config_dict:
-        config_dict = convert_project_config(config_dict)    
-    
-    newNames = list(config_dict.keys())
-    config_dict = dict(zip(newNames, list(config_dict.values())))
-    return config_schema().load(config_dict)
-
-def dump_project_config(config, outputdir, file_name="project_config", yaml_file = False):
-    outpath = Path(outputdir) / file_name
-
-    #Generate schema from given dataclasses
-    ConfigSchema = marshmallow_dataclass.class_schema(ProjectOptions)
-    config_dict = ConfigSchema().dump(config)
-
-    outpath_json = outpath.parent / (outpath.name + '.json')
-    
-    with open(outpath_json, 'w') as fp:
-        json.dump(config_dict, fp, indent="\t")
-
-    if(yaml_file):
-        outpath_yaml = outpath.parent / (outpath.name + '.yaml')
-        with open(outpath_json, 'r') as json_in:
-            conf = json.load(json_in)
-        with open(outpath_yaml, 'w') as yaml_out:
-            yaml.dump(conf, yaml_out, sort_keys=False)
-        os.remove(outpath_json)
-
-        return outpath_yaml
-    
-    return outpath_json
+        if 'version' not in config_dict:
+            config_dict = convert_project_config(config_dict)    
+        
+        newNames = list(config_dict.keys())
+        config_dict = dict(zip(newNames, list(config_dict.values())))
+        return config_schema().load(config_dict)
 
 def convert_project_config(old_config, new_config=None):
     """
