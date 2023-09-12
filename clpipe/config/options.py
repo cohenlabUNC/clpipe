@@ -10,22 +10,8 @@ from .package import VERSION
 DEFAULT_CONFIG_FILE_NAME = 'clpipe_config.json'
 DEFAULT_PROCESSING_STREAM = "default"
 
-class Option:
-    """Parent option class for configuring global settings.
-    
-    Unfortunately, giving this class the @dataclass decorator does not seem to
-    pass functionality to child classes, even with super.init()
-    """
-    class Meta:
-        ordered = True
-        """Ensures config retains source order when dumped to file."""
-
-    def load_cli_args(self, **kwargs):
-        """Override class fields with inputted arguments if they aren't None"""
-
-        for arg_name, arg_value in kwargs.items():
-            if arg_value is not None:
-                setattr(self, arg_name, arg_value)
+class ClpipeData:
+    """Parent class for any structured clpipe data."""
 
     def dump(self, outpath):
         #Generate schema from given dataclasses
@@ -50,6 +36,69 @@ class Option:
         #Generate schema from given dataclasses
         config_schema = marshmallow_dataclass.class_schema(self.__class__)
         return config_schema().dump(self)
+
+    @classmethod
+    def load_file_to_dict(cls, options: os.PathLike):
+        """Handle file loading here. Can add other config file types here if needed."""
+        
+        extension = Path(options).suffix
+        
+        with open(options) as f:
+            if extension == '.yaml':
+                config_dict = yaml.safe_load(f)
+            elif extension == '.json':
+                config_dict = json.load(f)
+            else:
+                raise ValueError(f"Unsupported extension: {extension}")
+            
+            return config_dict
+        
+    @classmethod
+    def transform_dict(cls, config_dict: dict) -> dict:
+        """Override to customize file loaded dictionary before loading into schema."""
+        pass     
+
+    @classmethod
+    def load(cls, options: Union[os.PathLike, 'ClpipeData']) -> 'ClpipeData':
+        """Load an instance of the class from a file or, for idempotency in tests,
+            another instance of the class. 
+
+        This function is template style, with transform_dict() designed to be
+            overriden if needed.    
+        """
+
+        # Return if given ProjectOptions object for testing convenience
+        if isinstance(options, cls):
+            return options
+
+        # Generate schema from given dataclasses
+        config_schema = marshmallow_dataclass.class_schema(cls)
+
+        # Load in the options from file
+        config_dict = cls.load_file_to_dict(options)
+
+        # Transform dictionary if needed. Passes unless method overriden
+        config_dict = cls.transform_dict(config_dict)
+        
+        return config_schema().load(config_dict)
+
+    class Meta:
+        ordered = True
+        """Ensures config retains source order when dumped to file."""
+
+
+class Option(ClpipeData):
+    """Parent option class for configuring global settings.
+    
+    Unfortunately, giving this class the @dataclass decorator does not seem to
+    pass functionality to child classes, even with super.init()
+    """
+    def load_cli_args(self, **kwargs):
+        """Override class fields with inputted arguments if they aren't None"""
+
+        for arg_name, arg_value in kwargs.items():
+            if arg_value is not None:
+                setattr(self, arg_name, arg_value)
 
 
 @dataclass
@@ -467,14 +516,14 @@ class PostProcessingOptions(Option):
 
 
 @dataclass
-class PostProcessingRunConfiguration(Option):
+class PostProcessingRunConfig(ClpipeData):
     """Stores the configuration for a postprocessing run.
     
     Holds a copy of postprocessing options internally for reference. Values of this
     class hold variants of these values with the appropriate stream paths, as well
     as any other necessary values not in the options.
     """
-    processing_step_options: ProcessingStepOptions = field(default_factory=PostProcessingOptions)
+    options: PostProcessingOptions = field(default_factory=PostProcessingOptions)
     
     stream_working_dir: str = ""
     
@@ -485,11 +534,11 @@ class PostProcessingRunConfiguration(Option):
     pybids_db_path: str = ""
 
     @classmethod
-    def load(cls, config: Union[os.PathLike, 'PostProcessingRunConfiguration']):
+    def load(cls, config: Union[os.PathLike, 'PostProcessingRunConfig']):
         """Creates the process run configuration for storing state of postprocessing
         job."""
 
-        # Return if given PostProcessingRunConfiguration object for testing convenience
+        # Return if given PostProcessingRunConfig object for testing convenience
         if isinstance(config, cls):
             return config
 
@@ -614,32 +663,19 @@ class ProjectOptions(Option):
 
         # Try cls with ProjectOptions(project_direct = x, ...), and in children
 
-        
     @classmethod
-    def load(cls, options: Union[os.PathLike, 'ProjectOptions']):
-        # Return if given ProjectOptions object for testing convenience
-        if isinstance(options, cls):
-            return options
-
-        #Generate schema from given dataclasses
-        config_schema = marshmallow_dataclass.class_schema(cls)
-
-        extension = Path(options).suffix
-
-        with open(options) as f:
-            if extension == '.yaml':
-                config_dict = yaml.safe_load(f)
-            elif extension == '.json':
-                config_dict = json.load(f)
-            else:
-                raise ValueError(f"Unsupported extension: {extension}")
-
+    def transform_dict(cls, config_dict: dict) -> dict:
+        """ Modify the inherited ClpipeData load() to transform the file-loaded
+        dictionary in the case of an old config file.
+        """
+        
         if 'clpipe_version' not in config_dict:
             config_dict = convert_project_config(config_dict)    
         
         newNames = list(config_dict.keys())
         config_dict = dict(zip(newNames, list(config_dict.values())))
-        return config_schema().load(config_dict)
+        
+        return config_dict
     
 def update_config_file(config_file: os.PathLike, backup: bool = False) -> None:
     config_file = Path(config_file).resolve()
