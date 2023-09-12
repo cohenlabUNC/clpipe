@@ -1,7 +1,7 @@
 {
-	"ProjectTitle": "test_project",
+	"ProjectTitle": "A Neuroimaging Project",
 	"Authors/Contributors": "SET AUTHOR",
-	"ProjectDirectory": "/nas/longleaf/home/willasc/repos/clpipe/tests/temp/clpipe_dir0",
+	"ProjectDirectory": "",
 	"EmailAddress": "SET EMAIL ADDRESS",
 	"SourceOptions": {
 		"SourceURL": "fw://",
@@ -13,23 +13,23 @@
 		"CoreUsage": "1"
 	},
 	"DICOMToBIDSOptions": {
-		"DICOMDirectory": "/nas/longleaf/home/willasc/repos/clpipe/tests/temp/clpipe_dir0/data_DICOMs",
-		"BIDSDirectory": "/nas/longleaf/home/willasc/repos/clpipe/tests/temp/clpipe_dir0/data_BIDS",
-		"ConversionConfig": "/nas/longleaf/home/willasc/repos/clpipe/tests/temp/clpipe_dir0/conversion_config.json",
+		"DICOMDirectory": "",
+		"BIDSDirectory": "",
+		"ConversionConfig": "",
 		"DICOMFormatString": "",
 		"TimeUsage": "1:0:0",
 		"MemUsage": "5000",
-		"CoreUsage": "2",
-		"LogDirectory": "/nas/longleaf/home/willasc/repos/clpipe/tests/temp/clpipe_dir0/logs/DCM2BIDS_logs"
+        "CoreUsage": "2",
+        "LogDirectory": ""
 	},
 	"BIDSValidationOptions": {
 		"BIDSValidatorImage": "/proj/hng/singularity_imgs/validator.simg",
-		"LogDirectory": "/nas/longleaf/home/willasc/repos/clpipe/tests/temp/clpipe_dir0/logs/bids_validation_logs"
+		"LogDirectory": ""
 	},
 	"FMRIPrepOptions": {
-		"BIDSDirectory": "/nas/longleaf/home/willasc/repos/clpipe/tests/temp/clpipe_dir0/data_BIDS",
+		"BIDSDirectory": "",
 		"WorkingDirectory": "SET WORKING DIRECTORY",
-		"OutputDirectory": "/nas/longleaf/home/willasc/repos/clpipe/tests/temp/clpipe_dir0/data_fmriprep",
+		"OutputDirectory": "",
 		"FMRIPrepPath": "/proj/hng/singularity_imgs/fmriprep_22.1.1.sif",
 		"FreesurferLicensePath": "/proj/hng/singularity_imgs/license.txt",
 		"UseAROMA": false,
@@ -37,17 +37,17 @@
 		"TemplateFlowToggle": true,
 		"TemplateFlowPath": "/proj/hng/singularity_imgs/template_flow",
 		"TemplateFlowTemplates": [
-			"MNI152NLin2009cAsym",
-			"MNI152NLin6Asym",
-			"OASIS30ANTs",
-			"MNIPediatricAsym",
+			"MNI152NLin2009cAsym", 
+			"MNI152NLin6Asym", 
+			"OASIS30ANTs", 
+			"MNIPediatricAsym", 
 			"MNIInfant"
 		],
 		"FMapCleanupROIs": 3,
 		"FMRIPrepMemoryUsage": "50G",
 		"FMRIPrepTimeUsage": "16:0:0",
 		"NThreads": "12",
-		"LogDirectory": "/nas/longleaf/home/willasc/repos/clpipe/tests/temp/clpipe_dir0/logs/FMRIprep_logs",
+        "LogDirectory": "",
 		"DockerToggle": false,
 		"DockerFMRIPrepVersion": ""
 	},
@@ -67,22 +67,22 @@
 		],
 		"ProcessingStepOptions": {
 			"TemporalFiltering": {
-				"Implementation": "fslmaths",
+				"Implementation":"fslmaths",
 				"FilteringHighPass": 0.008,
 				"FilteringLowPass": -1,
 				"FilteringOrder": 2
-			},
+			}, 
 			"IntensityNormalization": {
 				"Implementation": "10000_GlobalMedian"
-			},
+			}, 
 			"SpatialSmoothing": {
 				"Implementation": "SUSAN",
-				"FWHM": 6
+      			"FWHM": 6
 			},
-			"AROMARegression": {
+			"AROMARegression":{
 				"Implementation": "fsl_regfilt"
 			},
-			"ScrubTimepoints": {
+			"ScrubTimepoints":{
 				"TargetVariable": "framewise_displacement",
 				"Threshold": 0.9,
 				"ScrubAhead": 0,
@@ -90,7 +90,7 @@
 				"ScrubContiguous": 0,
 				"InsertNA": true
 			},
-			"Resample": {
+			"Resample":{
 				"ReferenceImage": "SET REFERENCE IMAGE"
 			},
 			"TrimTimepoints": {
@@ -103,10 +103,8 @@
 		},
 		"ConfoundOptions": {
 			"Columns": [
-				"csf",
-				"csf_derivative1",
-				"white_matter",
-				"white_matter_derivative1"
+				"csf", "csf_derivative1", 
+				"white_matter", "white_matter_derivative1"
 			],
 			"MotionOutliers": {
 				"Include": true,
@@ -118,10 +116,10 @@
 			}
 		},
 		"BatchOptions": {
-			"MemoryUsage": "20000",
+			"MemoryUsage": "20G",
 			"TimeUsage": "2:0:0",
 			"NThreads": "1"
-		}
+		}	
 	},
 	"ProcessingStreams": [
 		{
@@ -162,19 +160,17 @@
 		}
 	],
 	"ROIExtractionOptions": {
-		"TargetDirectory": "/nas/longleaf/home/willasc/repos/clpipe/tests/temp/clpipe_dir0/data_postproc2/default",
-		"TargetSuffix": "desc-postproc_bold.nii.gz",
-		"OutputDirectory": "/nas/longleaf/home/willasc/repos/clpipe/tests/temp/clpipe_dir0/data_ROI_ts/postproc_default",
-		"Atlases": [
-			"power"
-		],
+		"TargetDirectory": "",
+		"TargetSuffix": "",
+		"OutputDirectory": "",
+		"Atlases": ["power"],
 		"RequireMask": true,
 		"PropVoxels": 0.5,
 		"OverlapOk": false,
-		"MemoryUsage": "20G",
-		"TimeUsage": "2:0:0",
-		"NThreads": "1",
-		"LogDirectory": "/nas/longleaf/home/willasc/repos/clpipe/tests/temp/clpipe_dir0/logs/ROI_extraction_logs"
+        "MemoryUsage":"20G",
+        "TimeUsage": "2:0:0",
+        "NThreads": "1",
+        "LogDirectory": ""
 	},
 	"RunLog": [],
 	"StatusCache": "",

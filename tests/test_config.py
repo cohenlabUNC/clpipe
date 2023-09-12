@@ -17,7 +17,7 @@ def test_json_load(config_file):
     
     options = ProjectOptions.load(config_file)
     assert options is not None
-    assert options.project_title == "A Neuroimaging Project"
+    assert options.project_title == "test_project"
     assert (
         options.postprocessing.processing_step_options.temporal_filtering.filtering_high_pass
         == 0.008
@@ -27,30 +27,27 @@ def test_json_load(config_file):
 def test_yaml_load(config_file, tmp_path):
     """Ensure that the config class loads from .yaml as expected."""
     
-    with open(config_file, "r") as json_file:
-        conf_json = json.load(json_file)
+    options = ProjectOptions.load(config_file)
+    options.dump(os.path.join(tmp_path, "config.yaml"))
+    options_yaml = ProjectOptions.load(os.path.join(tmp_path, "config.yaml"))
 
-    with open(os.path.join(tmp_path, "config.yaml"), "w") as yaml_file:
-        yaml.dump(conf_json, yaml_file, sort_keys=False)
-    options = ProjectOptions.load(os.path.join(tmp_path,'config.yaml'))
-    assert options is not None
-    assert options.project_title == "A Neuroimaging Project"
+    assert options_yaml.project_title == "test_project"
     assert (
-        options.postprocessing.processing_step_options.temporal_filtering.filtering_high_pass
+        options_yaml.postprocessing.processing_step_options.temporal_filtering.filtering_high_pass
         == 0.008
     )
 
 
-def test_default(legacy_config_path, clpipe_config_default):
+def test_default(legacy_config_path):
     """Ensure that data from the default config file (data/defaltConfig.json)
     is successfully loaded into the configuration object.
     """
     options = ProjectOptions.load(legacy_config_path)
-    assert options.project_title == clpipe_config_default["ProjectTitle"]
-    assert options.contributors == clpipe_config_default["Authors/Contributors"]
+    assert options.project_title == "test_project"
+    assert options.contributors == "SET AUTHOR"
     assert (
         options.source.mem_usage
-        == clpipe_config_default["SourceOptions"]["MemUsage"]
+        == "10G"
     )
 
 
@@ -75,13 +72,12 @@ def test_wrong_order(config_file, tmp_path):
     assert correctConfig == convertedConfig
 
 
-def test_author_contributor(config_file):
+def test_author_contributor(legacy_config_path):
     """Check that the conversion of the Authors/Contributors to just 'Contributors'
     works successfully.
     """
-    config = ProjectOptions.load(config_file)
-    assert config is not None
-    assert config.contributors == "SET CONTRIBUTORS"
+    config = ProjectOptions.load(legacy_config_path)
+    assert config.contributors == "SET AUTHOR"
 
 
 # Why is this getting setup options run?
