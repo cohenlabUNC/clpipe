@@ -42,8 +42,7 @@ def glm_prepare(glm_config_file: str=None, level: int=L1,
         task_name = glm_config.config['TaskName']
         reference_image = glm_config.config['ReferenceImage']
 
-    project_dir = glm_config.parent_options.project_directory
-    logger = get_logger(STEP_NAME, debug=debug, log_dir=os.path.join(project_dir, "logs"))
+    logger = get_logger(STEP_NAME, debug=debug, log_dir=glm_config.parent_options.get_logs_dir())
 
     if warn_deprecated:
         logger.warn(DEPRECATION_MSG)

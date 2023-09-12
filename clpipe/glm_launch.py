@@ -26,9 +26,8 @@ def glm_launch(glm_config_file: str=None, level: int=L1,
                           model: str=None, test_one: bool=False, 
                           submit: bool=False, debug: bool=False):
     glm_config = GLMOptions(glm_config_file)
-    project_dir = glm_config.parent_options.project_directory
     
-    logger = get_logger(STEP_NAME, debug=debug, log_dir=os.path.join(project_dir, "logs"))    
+    logger = get_logger(STEP_NAME, debug=debug, log_dir=glm_config.parent_options.get_logs_dir())    
 
     if level in VALID_L1:
         level = "L1"
