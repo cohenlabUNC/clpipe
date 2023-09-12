@@ -146,7 +146,6 @@ def _add_commands():
     bids_cli.add_command(bids_validate_cli)
 
     # setup command hidden due to deprecation
-    glm_cli.add_command(glm_setup_cli, help_priority=1, hidden=True)
     glm_cli.add_command(glm_prepare_cli, help_priority=3)
     glm_cli.add_command(glm_launch_cli, help_priority=4)
     glm_cli.add_command(glm_apply_mumford_workaround_cli, help_priority=5)
@@ -412,46 +411,6 @@ def postprocess_image_cli(config_file, image_path, bids_dir, fmriprep_dir,
         config_file, image_path, bids_dir, fmriprep_dir, index_dir, out_dir, 
         subject_out_dir, subject_working_dir, log_dir, 
         processing_stream=processing_stream, debug=debug)
-
-
-@click.command(GLM_SETUP_COMMAND_NAME, no_args_is_help=True)
-@click.argument('subjects', nargs=-1, required=False, default=None)
-@click.option('-config_file', '-c', type=click.Path(exists=True, dir_okay=False, file_okay=True), required=True,
-              help='Use a given configuration file.')
-@click.option('-glm_config_file', '-g', type=click.Path(exists=True, dir_okay=False, file_okay=True), default=None, required=True,
-              help='Use a given GLM configuration file.')
-@click.option('-drop_tps', type=click.Path(exists=True, dir_okay=False, file_okay=True), default=None, required=False,
-              help='Drop timepoints csv sheet')
-@click.option('-submit', '-s', is_flag=True, default=False, help='Flag to submit commands to the HPC.')
-@click.option('-batch/-single', default=True,
-              help='Submit to batch, or run in current session. Mainly used internally.')
-@click.option('-debug', '-d', is_flag=True, default=False,
-              help='Print detailed processing information and traceback for errors.')
-def glm_setup_cli(subjects, config_file, glm_config_file, submit, batch, debug, 
-                  drop_tps):
-    """
-    Additional preprocessing for GLM analysis.
-
-    Providing no SUBJECTS will default to all subjects.
-    List subject IDs in SUBJECTS to process specific subjects: 
-
-    > clpipe glm setup 123 124 125 ...
-
-    ******************************************
-
-    WARNING: This command has been deprecated, as its functionality has been
-    replicated and expanded on by the postprocess2 command.
-    If you ran setup with clpipe 1.8+, you will not be able to run this command
-    due to the removal of GLMSetupOptions from the default glm configuration file.
-    You may still run this command with a valid GLMSetupOptions block.
-
-    ******************************************
-    """
-    from .glm_setup import glm_setup
-    glm_setup(
-        subjects=subjects, config_file=config_file, 
-        glm_config_file=glm_config_file,
-        submit=submit, batch=batch, debug=debug, drop_tps=drop_tps)
 
 
 @click.command(GLM_PREPARE_COMMAND_NAME, no_args_is_help=True)
