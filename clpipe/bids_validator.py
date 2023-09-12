@@ -9,6 +9,7 @@ from .utils import get_logger
 STEP_NAME = "bids-validation"
 SINGULARITY_CMD_TEMPLATE = ('singularity run --cleanenv -B {bindPaths} '
                       '{validatorInstance} {bidsDir}')
+DEFAULT_MEMORY_USAGE = '3G'
 
 
 def bids_validate(bids_dir=None, config_file=None, log_dir=None, 
@@ -40,7 +41,7 @@ def bids_validate(bids_dir=None, config_file=None, log_dir=None,
         config.batch_config_path, 
         output_directory=log_dir,
         debug=debug)
-    batch_manager.update_mem_usage('3000')
+    batch_manager.update_mem_usage(DEFAULT_MEMORY_USAGE)
     
     config.bids_validation.bids_validator_image
 
