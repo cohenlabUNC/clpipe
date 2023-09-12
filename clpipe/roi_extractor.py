@@ -12,7 +12,6 @@ import os
 import click
 from .config.options import ProjectOptions
 from .batch_manager import BatchManager, Job
-from .config_json_parser import file_folder_generator
 import json
 from pkg_resources import resource_stream, resource_filename
 import glob
@@ -418,7 +417,7 @@ def _mask_finder(data, config: ProjectOptions, logger):
     """Search for a mask in the fmriprep output directory matching
     the name of the image targeted for roi_extraction"""
 
-    _, _, _, front_matter, type, path = file_folder_generator(
+    _, _, _, front_matter, type, path = _file_folder_generator(
         os.path.basename(data),
         "func",
         target_suffix=config.roi_extraction.target_suffix,
@@ -449,3 +448,36 @@ def _mask_finder(data, config: ProjectOptions, logger):
 def setup_dirs(config: ProjectOptions):
     os.makedirs(Path(config.roi_extraction.output_directory) / "postproc_default", exist_ok=True)
     os.makedirs(config.roi_extraction.log_directory, exist_ok=True)
+
+def _file_folder_generator(basename, modality, target_suffix = None):
+    """Function parses out a BIDS file name to find its sub-components.
+
+        TODO: this addresses a need that many other modules of clpipe use
+        as well, but in slightly different ways (see the GLM prepare functions).
+        This function is rather specific / hard-coded and
+            could use better generalization.
+        We should look to provide a utility function to replace where 
+        this logic is used in roi_extract, and others.
+    """
+    
+    if target_suffix is not None:
+        basename = basename.replace(target_suffix, "")
+
+    comps = basename.split("_")
+    if comps[-1] is "":
+        comps = comps[0:-1]
+    sub = comps[0]
+    ses = comps[1]
+    try:
+        # Try to grab 'space' if present
+        front_matter = '_'.join(comps[0:-1])
+    except IndexError:
+        front_matter = '_'.join(comps[0:-2])
+    type = comps[-1]
+    if 'ses-' in ses:
+        path = os.path.join(sub, ses, modality, front_matter)
+        return sub, ses, modality, front_matter, type, path
+    else:
+        ses = ''
+        path = os.path.join(sub, modality, front_matter)
+        return sub, ses, modality, front_matter, type, path
