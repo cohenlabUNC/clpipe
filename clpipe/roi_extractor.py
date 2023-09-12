@@ -10,8 +10,9 @@ with warnings.catch_warnings():
 import os
 
 import click
+from .config.options import ProjectOptions
 from .batch_manager import BatchManager, Job
-from .config_json_parser import ClpipeConfigParser, file_folder_generator
+from .config_json_parser import file_folder_generator
 import json
 from pkg_resources import resource_stream, resource_filename
 import glob
@@ -44,58 +45,26 @@ def fmri_roi_extraction(
     debug=False,
     overwrite=False,
 ):
-    config = ClpipeConfigParser()
-    config.config_updater(config_file)
-    if config_file is None:
-        config_file = "defaultConfig.json"
+    config = ProjectOptions.load(config_file)
 
-    config.setup_roiextract(target_dir, target_suffix, output_dir)
+    setup_dirs(config)
 
-    if not all(
-        [
-            config.config["ROIExtractionOptions"]["TargetDirectory"],
-            config.config["ROIExtractionOptions"]["OutputDirectory"],
-            config.config["ROIExtractionOptions"]["TargetSuffix"],
-        ]
-    ):
-        raise ValueError(
-            """Please make sure the BIDS, working and output 
-                         directories are specified in either the configfile or 
-                         in the command. At least one is not specified."""
-        )
-
-    if log_output_dir is not None:
-        if os.path.isdir(log_output_dir):
-            log_output_dir = os.path.abspath(log_output_dir)
-        else:
-            log_output_dir = os.path.abspath(log_output_dir)
-            os.makedirs(log_output_dir, exist_ok=True)
-    else:
-        log_output_dir = os.path.join(
-            config.config["ROIExtractionOptions"]["OutputDirectory"], "BatchOutput"
-        )
-        os.makedirs(log_output_dir, exist_ok=True)
-
-    logger = get_logger(
-        STEP_NAME, debug=debug, log_dir=Path(config.config["ProjectDirectory"]) / "logs"
-    )
+    logger = get_logger(STEP_NAME, debug=debug, log_dir=config.get_logs_dir())
 
     if not single:
-        config_string = config.config_json_dump(
-            config.config["ROIExtractionOptions"]["OutputDirectory"],
-            os.path.basename(config_file),
-        )
+        config_path = os.path.join(config.roi_extraction.output_directory, os.path.basename(config_file))
+        config.dump(config_path)
     else:
-        config_string = ""
+        config_path = ""
     if not subjects:
         sublist = [
             o.replace("sub-", "")
             for o in os.listdir(
-                config.config["ROIExtractionOptions"]["TargetDirectory"]
+                config.roi_extraction.target_directory
             )
             if os.path.isdir(
                 os.path.join(
-                    config.config["ROIExtractionOptions"]["TargetDirectory"], o
+                    config.roi_extraction.target_directory, o
                 )
             )
             and "sub-" in o
@@ -106,7 +75,7 @@ def fmri_roi_extraction(
     if atlas_name is not None:
         atlas_list = [atlas_name]
     else:
-        atlas_list = config.config["ROIExtractionOptions"]["Atlases"]
+        atlas_list = config.roi_extraction.atlases
 
     with resource_stream(__name__, "data/atlasLibrary.json") as at_lib:
         atlas_library = json.load(at_lib)
@@ -121,11 +90,11 @@ def fmri_roi_extraction(
         -atlas_name={atlas} -custom_atlas={custom_atlas} -custom_label={custom_labels} 
         -custom_type={custom_type} -single"""
 
-    batch_manager = BatchManager(config.config["BatchConfig"], log_output_dir)
-    batch_manager.update_mem_usage(config.config["ROIExtractionOptions"]["MemoryUsage"])
-    batch_manager.update_time(config.config["ROIExtractionOptions"]["TimeUsage"])
-    batch_manager.update_nthreads(config.config["ROIExtractionOptions"]["NThreads"])
-    batch_manager.update_email(config.config["EmailAddress"])
+    batch_manager = BatchManager(config.batch_config_path, log_output_dir)
+    batch_manager.update_mem_usage(config.roi_extraction.memory_usage)
+    batch_manager.update_time(config.roi_extraction.time_usage)
+    batch_manager.update_nthreads(config.roi_extraction.n_threads)
+    batch_manager.update_email(config.email_address)
     batch_manager.createsubmissionhead()
     for subject in sublist:
         logger.info(f"Starting ROI extraction for suject: {subject}")
@@ -183,7 +152,7 @@ def fmri_roi_extraction(
                         sphere_flag = True
             if custom_flag:
                 sub_string_temp = submission_string_custom.format(
-                    config=config_string,
+                    config=config_path,
                     atlas=atlas_name,
                     custom_atlas=atlas_filename,
                     custom_labels=atlas_labels,
@@ -191,14 +160,14 @@ def fmri_roi_extraction(
                 )
             else:
                 sub_string_temp = submission_string.format(
-                    config=config_string,
+                    config=config_path,
                     atlas=atlas_name,
                 )
             if sphere_flag:
                 sub_string_temp = sub_string_temp + " -radius=" + custom_radius
             if task is not None:
                 sub_string_temp = sub_string_temp + " -task=" + task
-            if overlap_ok or config.config["ROIExtractionOptions"]["OverlapOk"]:
+            if overlap_ok or config.roi_extraction.overlap_ok:
                 sub_string_temp = sub_string_temp + " -overlap_ok"
                 logger.debug("Overlap ok flag set")
 
@@ -239,7 +208,7 @@ def _fmri_roi_extract_subject(
     atlas_type,
     radius,
     custom_flag,
-    config,
+    config: ProjectOptions,
     overlap_ok,
     overwrite,
     logger,
@@ -263,10 +232,10 @@ def _fmri_roi_extract_subject(
 
     search_string = os.path.abspath(
         os.path.join(
-            config.config["ROIExtractionOptions"]["TargetDirectory"],
+            config.roi_extraction.target_directory,
             "sub-" + subject,
             "**",
-            "*" + config.config["ROIExtractionOptions"]["TargetSuffix"],
+            "*" + config.roi_extraction.target_suffix,
         )
     )
     logger.debug(search_string)
@@ -278,13 +247,13 @@ def _fmri_roi_extract_subject(
 
     os.makedirs(
         os.path.join(
-            config.config["ROIExtractionOptions"]["OutputDirectory"], atlas_name
+            config.roi_extraction.output_directory, atlas_name
         ),
         exist_ok=True,
     )
     if not Path(atlas_labelpath).exists():
         shutil.copy2(
-            atlas_labelpath, config.config["ROIExtractionOptions"]["OutputDirectory"]
+            atlas_labelpath, config.roi_extraction.output_directory
         )
 
     for file in subject_files:
@@ -303,7 +272,7 @@ def _fmri_roi_extract_subject(
 
 def fmri_roi_extract_image(
     file,
-    config,
+    config: ProjectOptions,
     atlas_name,
     atlas_path,
     atlas_type,
@@ -320,7 +289,7 @@ def fmri_roi_extract_image(
     if (
         os.path.exists(
             os.path.join(
-                config.config["ROIExtractionOptions"]["OutputDirectory"],
+                config.roi_extraction.output_directory,
                 atlas_name + "/" + file_outname + "_atlas-" + atlas_name + ".csv",
             )
         )
@@ -333,7 +302,7 @@ def fmri_roi_extract_image(
         # First, try to find this image's mask.
         mask_file = _mask_finder(file, config, logger)
     except MaskFileNotFoundError:
-        if config.config["ROIExtractionOptions"]["RequireMask"]:
+        if config.roi_extraction.require_mask:
             # If a mask is required, return here due to missing mask.
             logger.warning("Skipping this scan due to missing brain mask.")
             return
@@ -375,7 +344,7 @@ def fmri_roi_extract_image(
         to_remove = [
             ind
             for ind, prop in np.ndenumerate(mask_ROIs[0])
-            if prop < config.config["ROIExtractionOptions"]["PropVoxels"]
+            if prop < config.roi_extraction.prop_voxels
         ]
         logger.debug(to_remove)
         ROI_ts[:, to_remove] = np.nan
@@ -384,7 +353,7 @@ def fmri_roi_extract_image(
         np.savetxt(
             os.path.join(
                 os.path.join(
-                    config.config["ROIExtractionOptions"]["OutputDirectory"],
+                    config.roi_extraction.output_directory,
                     atlas_name,
                 ),
                 file_outname + "_atlas-" + atlas_name + "_voxel_prop.csv",
@@ -397,7 +366,7 @@ def fmri_roi_extract_image(
     np.savetxt(
         os.path.join(
             os.path.join(
-                config.config["ROIExtractionOptions"]["OutputDirectory"], atlas_name
+                config.roi_extraction.output_directory, atlas_name
             ),
             file_outname + "_atlas-" + atlas_name + ".csv",
         ),
@@ -445,20 +414,20 @@ def get_available_atlases():
         print("")
 
 
-def _mask_finder(data, config, logger):
+def _mask_finder(data, config: ProjectOptions, logger):
     """Search for a mask in the fmriprep output directory matching
     the name of the image targeted for roi_extraction"""
 
     _, _, _, front_matter, type, path = file_folder_generator(
         os.path.basename(data),
         "func",
-        target_suffix=config.config["ROIExtractionOptions"]["TargetSuffix"],
+        target_suffix=config.roi_extraction.target_suffix,
     )
-    logger.debug(f'Target suffix: {config.config["ROIExtractionOptions"]["TargetSuffix"]}')
+    logger.debug(f'Target suffix: {config.roi_extraction.target_suffix}')
     logger.debug(f"Image components (front_matter, type, path): {front_matter, type, path}")
 
     fmriprep_dir = resolve_fmriprep_dir(
-        config.config["FMRIPrepOptions"]["OutputDirectory"]
+        config.roi_extraction.target_directory
     )
     logger.debug(f"fMRIPrep dir: {fmriprep_dir}")
 
