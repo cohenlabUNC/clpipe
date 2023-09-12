@@ -71,10 +71,10 @@ def convert2bids(dicom_dir=None, dicom_dir_format=None, bids_dir=None,
         logger.info("Using converter: heudiconv")
 
         heudiconv_wrapper(
-            subjects=subjects, session=session, dicom_dir=dicom_dir, submit=submit,
-            output_directory=bids_dir, heuristic_file=conv_config_file,
+            subjects=subjects, session=session, dicom_dir=config.convert2bids.dicom_directory, submit=submit,
+            output_directory=config.convert2bids.bids_directory, heuristic_file=config.convert2bids.conversion_config,
             overwrite=overwrite, batch_manager=batch_manager, logger=logger,
-            dicom_dir_format=dicom_dir_format, clear_cache=clear_cache, 
+            dicom_dir_format=config.convert2bids.dicom_format_string, clear_cache=clear_cache, 
             clear_outputs=clear_outputs, longitudinal=longitudinal)
 
     else:
