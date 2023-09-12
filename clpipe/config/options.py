@@ -69,11 +69,11 @@ class Convert2BIDSOptions(Option):
 
 
     def load_cli_args(self, dicom_directory, dicom_format_string, conversion_config, bids_directory, log_directory):
-        self.dicom_directory = dicom_directory
-        self.dicom_format_string = dicom_format_string
-        self.conversion_config = conversion_config
-        self.bids_directory = bids_directory
-        self.log_directory = log_directory
+        self.dicom_directory = dicom_directory if dicom_directory is not None else self.dicom_directory
+        self.dicom_format_string = dicom_format_string if dicom_format_string is not None else self.dicom_format_string
+        self.conversion_config = conversion_config if conversion_config is not None else self.conversion_config
+        self.bids_directory = bids_directory if bids_directory is not None else self.bids_directory
+        self.log_directory = log_directory if log_directory is not None else self.log_directory
 
 
     def populate_project_paths(self, project_directory: os.PathLike, source_data: os.PathLike):
