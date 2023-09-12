@@ -18,23 +18,6 @@ class Option:
 
 
 @dataclass
-class ProjectOptions(Option):
-    """Contains project-level configuration options."""
-
-    project_title: str = "A Neuroimaging Project"
-    """The title of your project."""
-
-    contributors: str = "SET CONTRIBUTORS"
-    """Members of the project team."""
-
-    root_directory: str = ""
-    """The root directory of your clpipe project."""
-
-    email_address: str = "SET EMAIL ADDRESS"
-    """Email address used for delivering batch job updates."""
-
-
-@dataclass
 class SourceOptions(Option):
     """Options for configuring sources of DICOM data."""
 
@@ -431,14 +414,17 @@ class ROIExtractOptions(Option):
 
 
 @dataclass
-class PipelineOptions(Option):
+class ProjectOptions(Option):
     """Contains metadata for your project and option blocks for each command."""
 
-    name: str = "Base pipeline."
+    project_title: str = "A Neuroimaging Project"
     """The title of your project."""
 
     contributors: str = "SET CONTRIBUTORS"
     """Members of the project team."""
+
+    project_directory: str = ""
+    """The root directory of your clpipe project."""
 
     email_address: str = "SET EMAIL ADDRESS"
     """Email address used for delivering batch job updates."""
