@@ -478,5 +478,5 @@ def _mask_finder(data, config, logger):
 
 
 def setup_dirs(config: ProjectOptions):
-    os.makedirs(config.roi_extraction.output_directory, exist_ok=True)
+    os.makedirs(Path(config.roi_extraction.output_directory) / "postproc_default", exist_ok=True)
     os.makedirs(config.roi_extraction.log_directory, exist_ok=True)

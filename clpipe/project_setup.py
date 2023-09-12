@@ -8,6 +8,7 @@ from .convert2bids import setup_dirs as setup_convert2bids_dirs
 from .bids_validator import setup_dirs as setup_bids_validation_dirs
 from .fmri_preprocess import setup_dirs as setup_preprocess_dirs
 from .roi_extractor import setup_dirs as setup_roiextract_dirs
+from .config_json_parser import GLMConfigParser
 
 STEP_NAME = "project-setup"
 DEFAULT_DICOM_DIR = 'data_DICOMs'
@@ -58,7 +59,8 @@ def project_setup(project_title: str="A Neuroimaging Project", project_dir: os.P
     logger.info(f"Creating new clpipe project in directory: {project_dir}")
 
     config:ProjectOptions = ProjectOptions()
-    config.project_setup(project_title, project_dir, source_data)
+    config.populate_project_paths(project_dir, source_data)
+    config.project_title = project_title
 
     # Setup directories for the first few steps
     setup_convert2bids_dirs(config)
@@ -105,6 +107,16 @@ def project_setup(project_title: str="A Neuroimaging Project", project_dir: os.P
 
 
 def setup_glm_dirs(project_path):
+    from pkg_resources import resource_filename
+    import shutil
+
+    # Create a default glm_config file
+    glm_config = GLMConfigParser()
+    glm_config.config_json_dump(project_path, "glm_config.json")
+
+    # Copy over an example L2 csv
+    shutil.copyfile(resource_filename('clpipe', 'data/l2_sublist.csv'), os.path.join(project_path, "l2_sublist.csv"))
+
     os.mkdir(os.path.join(project_path, "l1_fsfs"))
     os.mkdir(os.path.join(project_path, "data_onsets"))
     os.mkdir(os.path.join(project_path, "l1_feat_folders"))

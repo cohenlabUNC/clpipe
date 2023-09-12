@@ -76,7 +76,7 @@ class Convert2BIDSOptions(Option):
         self.log_directory = log_directory
 
 
-    def project_setup(self, project_directory: os.PathLike, source_data: os.PathLike):
+    def populate_project_paths(self, project_directory: os.PathLike, source_data: os.PathLike):
         self.dicom_directory = os.path.abspath(source_data)
         self.conversion_config = os.path.join(project_directory, 'conversion_config.json')
         self.bids_directory = os.path.join(project_directory, 'data_BIDS')
@@ -92,8 +92,8 @@ class BIDSValidatorOptions(Option):
     
     log_directory: str = ""
 
-    def setup(self, project_directory: os.PathLike):
-        self.log_directory = os.path.join(project_directory, "bids_validation_logs")
+    def populate_project_paths(self, project_directory: os.PathLike):
+        self.log_directory = os.path.join(project_directory, "logs", "bids_validation_logs")
 
 
 @dataclass
@@ -163,6 +163,11 @@ class FMRIPrepOptions(Option):
     
     docker_fmriprep_version: str = ""
     """Path to your fMRIPrep Docker image."""
+
+    def populate_project_paths(self, project_directory: os.PathLike):
+        self.bids_directory = os.path.join(project_directory, "data_BIDS")
+        self.output_directory = os.path.join(project_directory, 'data_fmriprep')
+        self.log_directory = os.path.join(project_directory, 'logs', 'FMRIprep_logs')
 
 
 @dataclass
@@ -394,6 +399,9 @@ class PostProcessingOptions(Option):
     confound_options: ConfoundOptions = ConfoundOptions()
     batch_options: BatchOptions = BatchOptions()
 
+    def populate_project_paths(self, project_directory: os.PathLike):
+        pass
+
 
 @dataclass
 class ROIExtractOptions(Option):
@@ -429,6 +437,11 @@ class ROIExtractOptions(Option):
     time_usage: str = "2:0:0"
     n_threads: str = "1"
     log_directory: str = ""
+
+    def populate_project_paths(self, project_directory: os.PathLike):
+        self.target_directory = os.path.join(project_directory, "data_postproc")
+        self.output_directory = os.path.join(project_directory, 'data_ROI_ts')
+        self.log_directory = os.path.join(project_directory, 'logs', 'ROI_extraction_logs')
 
 
 @dataclass
@@ -487,12 +500,19 @@ class ProjectOptions(Option):
             os.remove("temp_yaml_to_json")
     
 
-    def project_setup(self, project_title: str, project_dir: os.PathLike, source_data: os.PathLike):
-        self.project_title = project_title
+    def populate_project_paths(self, project_dir: os.PathLike, source_data: os.PathLike):
+        """Sets all project paths relative to a given project directory.
+
+        Args:
+            project_dir (os.PathLike): Root directory of the project.
+            source_data (os.PathLike): Directory pointing to the source DICOM data.
+        """
         self.project_directory = os.path.abspath(project_dir)
 
-        self.convert2bids.project_setup(project_dir, source_data)
-        #self.bids_validation.setup(project_dir)
+        self.convert2bids.populate_project_paths(project_dir, source_data)
+        self.bids_validation.populate_project_paths(project_dir)
+        self.fmriprep.populate_project_paths(project_dir)
+        self.roi_extraction.populate_project_paths(project_dir)
 
         
     @classmethod
