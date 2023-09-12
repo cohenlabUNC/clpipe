@@ -1,6 +1,6 @@
 from pathlib import Path
 from .batch_manager import BatchManager, Job
-from .config.options import load_project_config, ProjectOptions
+from .config.options import ProjectOptions
 import os
 import parse
 import glob
@@ -8,7 +8,7 @@ import sys
 import click
 import logging
 
-from .utils import get_logger, add_file_handler
+from .utils import get_logger
 from .status import needs_processing, write_record
 
 # These imports are for the heudiconv converter
@@ -29,10 +29,9 @@ def convert2bids(dicom_dir=None, dicom_dir_format=None, bids_dir=None,
                  longitudinal=False, status_cache=None, submit=False, debug=False, 
                  dcm2bids=True, batch=False):
     
-    config: ProjectOptions = load_project_config(config_file)
+    config: ProjectOptions = ProjectOptions.load(config_file)
 
-    add_file_handler(os.path.join(config.project_directory, "logs"))
-    logger = get_logger(STEP_NAME, debug=debug)
+    logger = get_logger(STEP_NAME, debug=debug, log_dir=Path(config.project_directory) / "logs")
 
     dicom_dir = dicom_dir if dicom_dir else config.convert2bids.dicom_directory
     dicom_dir_format = dicom_dir_format if dicom_dir_format else config.convert2bids.dicom_format_string

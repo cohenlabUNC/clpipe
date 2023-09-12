@@ -522,7 +522,7 @@ def convert_project_config(old_config, new_config=None):
     return new_config
 
 KEY_MAP = {
-    "version": "version",
+    "clpipe_version": "clpipe_version",
     "project_title": "ProjectTitle",
     "contributors": "Authors/Contributors",
     "project_directory": "ProjectDirectory",

@@ -70,8 +70,8 @@ def test_wrong_order(config_file, tmp_path):
     with open(os.path.join(tmp_path,'convertedConfig.json'), 'w') as f:
         json.dump(convertedConfig, f)
 
-    convertedConfig = ProjectOptions.get(json_file=os.path.join(tmp_path,'convertedConfig.json'))
-    correctConfig = ProjectOptions.get()
+    convertedConfig = ProjectOptions.load(json_file=os.path.join(tmp_path,'convertedConfig.json'))
+    correctConfig = ProjectOptions.load()
     assert correctConfig == convertedConfig
 
 
@@ -79,7 +79,7 @@ def test_author_contributor(config_file):
     """Check that the conversion of the Authors/Contributors to just 'Contributors'
     works successfully.
     """
-    config = ProjectOptions.get(json_file=config_file)
+    config = ProjectOptions.load(json_file=config_file)
     assert config is not None
     assert config.contributors == "SET AUTHOR"
 
