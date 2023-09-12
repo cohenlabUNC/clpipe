@@ -85,7 +85,7 @@ class Convert2BIDSOptions(Option):
     @validates("conversion_config")
     def validate_conversion_config(self, value):
         suffix = Path(value).suffix
-        if suffix != ".py" or suffix != ".json":
+        if (suffix != ".py") and (suffix != ".json"):
             raise ValidationError("Must be type '.py' or '.json'")
 
     def populate_project_paths(self, project_directory: os.PathLike, source_data: os.PathLike):
