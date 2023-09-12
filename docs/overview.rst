@@ -27,16 +27,17 @@ Running this command on its own will show you a subset of clpipe's processing co
         -help          Show this message and exit.
 
     Commands:
-        project_setup  Initialize a clpipe project.
-        convert2bids   Convert DICOM files to BIDS format.
-        bids_validate  Validate if a directory BIDS standard.
-        preprocess     Submit BIDS-formatted images to fMRIPrep.
-        postprocess    Additional processing for connectivity analysis.
-        postprocess2   Additional processing for GLM or connectivity analysis.
-        glm            General Linear Model (GLM) Commands.
-        roi            Region of Interest (ROI) Commands.
-        flywheel_sync  Sync your DICOM data with Flywheel.
-        reports        Generate reports for your project.
+        project_setup       Initialize a clpipe project.
+        convert2bids        Convert DICOM files to BIDS format.
+        bids_validate       Validate if a directory BIDS standard.
+        templateflow_setup  Installs the templates for preprocessing listed in...
+        preprocess          Submit BIDS-formatted images to fMRIPrep.
+        postprocess         Additional processing for GLM or connectivity...
+        glm                 General Linear Model (GLM) Commands.
+        roi                 Region of Interest (ROI) Commands.
+        flywheel_sync       Sync your DICOM data with Flywheel.
+        reports             Generate reports for your project.
+        config              Configuration-related commands.
 
 clpipe commands can be called with the following format: ``clpipe <command>```
 To see the documentation for a particular command, include the ``-help`` option:
@@ -103,11 +104,11 @@ Most commands in clpipe require a configuration file path
 via their '-config_file' option. These configuration files are JSONs that contain 
 all aspects of the preprocessing and postprocessing streams that 
 you want applied to your dataset. 
-To create a configuration file for your dataset use the following command:
+clpipe provides you with a default configuration file after using the `project_setup`
+command. To create addition configuration files for your dataset, use the following command:
 
-.. code-block:: console
-
-    get_config_file -outputFile <adirectory/yourfilename>.json
+.. click:: clpipe.cli:get_config_file
+	:prog: clpipe config get
 
 This command will create a default configuration file with whatever name you specified. 
 The top of the default configuration file looks like this:
@@ -128,6 +129,7 @@ be reasonable defaults for processing.
 Additionally, users at UNC-CH on the Longleaf cluster with access to the 
 HNG group should be able to use the default options with no change. 
 Other users will have to modify several fields. 
-We describe the various sections of the config now.
+
+Described here are the project-level meta fields of the configuration file:
 
 .. autoclass:: clpipe.config.project.ProjectOptions

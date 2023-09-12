@@ -7,10 +7,7 @@ import click
 from pkg_resources import resource_stream, resource_filename
 import shutil
 
-@click.command()
-@click.option('-config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True),
-              default=None, required = True,
-              help='Configuration file to update.')
+
 def update_config_file(config_file=None):
     '''Updates an existing configuration file with any new fields. Does not modify existing fields.'''
     new_config = config_json_parser(config_file)

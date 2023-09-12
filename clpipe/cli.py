@@ -126,13 +126,19 @@ def reports_cli():
     Please choose one of the commands below for more information.
     """
 
+@click.group("config", cls=OrderedHelpGroup)
+def config_cli():
+    """Configuration-related commands."""
+
 def _add_commands():
     cli.add_command(project_setup_cli, help_priority=0)
     cli.add_command(convert2bids_cli, help_priority=10)
     cli.add_command(bids_validate_cli, help_priority=15)
+    cli.add_command(templateflow_setup_cli, help_priority=17)
     cli.add_command(fmriprep_process_cli, help_priority=20)
     cli.add_command(postprocess_cli, help_priority=35)
     cli.add_command(flywheel_sync_cli, help_priority=55)
+    cli.add_command(config_cli, help_priority=95)
 
     dicom_cli.add_command(flywheel_sync_cli)
     dicom_cli.add_command(convert2bids_cli)
@@ -146,11 +152,15 @@ def _add_commands():
     glm_cli.add_command(glm_apply_mumford_workaround_cli, help_priority=5)
     glm_cli.add_command(fsl_onset_extract_cli, help_priority=2)
     glm_cli.add_command(report_outliers_cli, help_priority=7)
+    glm_cli.add_command(get_glm_config_cli, help_priority=20)
 
     roi_cli.add_command(get_available_atlases_cli, help_priority=1)
     roi_cli.add_command(fmri_roi_extraction_cli, help_priority=2)
 
     reports_cli.add_command(get_fmriprep_reports_cli)
+
+    config_cli.add_command(get_config_cli)
+    config_cli.add_command(update_config_cli)
 
     cli.add_command(bids_cli, help_priority=11, hidden=True)
     cli.add_command(dicom_cli, help_priority=5, hidden=True)
@@ -708,5 +718,46 @@ def flywheel_sync_cli(config_file, source_url, dropoff_dir, submit, debug):
                   source_url=source_url, dropoff_dir=dropoff_dir, 
                   submit=submit, debug=debug)
 
+
+@click.command("get_default", no_args_is_help=True)
+@click.option('-outputFile', default='AConfigFile.json', help ='Filepath for the outputted configuration file.')
+def get_config_cli(output_file):
+    """Generates a default configuration file for your project."""
+    from .grab_config_file import get_config_file
+
+    get_config_file(output_file)
+
+
+@click.command("get_default_config", no_args_is_help=True)
+@click.option('-outputFile', default='AGLMConfigFile.json', help='Filepath for the outputted configuration file.')
+def get_glm_config_cli(output_file):
+    """Generates a default GLM configuration file for your project."""
+    from .grab_config_file import get_glm_config_file
+
+    get_glm_config_file(output_file)
+
+
+@click.command("update", no_args_is_help=True)
+@click.option('-config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True),
+              default=None, required = True,
+              help='Configuration file to update.')
+def update_config_cli(config_file):
+    """Updates an existing configuration file with any new fields. Does not modify existing fields."""
+    from .config_json_parser import update_config_file
+
+    update_config_file(config_file)
+
+
+@click.command("templateflow_setup")
+@click.option('-config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True), default=None,
+              help='Use a given configuration file. If left blank, uses the default config file, requiring definition of BIDS, working and output directories.')
+@click.option('-debug', is_flag=True, help='Flag to enable detailed error messages and traceback')
+def templateflow_setup_cli(config_file, debug):
+    """Installs the templates for preprocessing listed in TemplateFlowTemplates.
+    If you don't run this, fMRIPrep defaults to MNI152NLin2009cAsym. If you do,
+    fMRIPrep will create a copy of each image in every space listed."""
+    from .template_flow import templateflow_setup
+
+    templateflow_setup(config_file, debug)
 
 _add_commands()
