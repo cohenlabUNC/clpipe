@@ -41,7 +41,7 @@ from .utils import (
     logical_or_across_lists,
 )
 from ..errors import ImplementationNotFoundError
-from ..config.options import PostProcessingRunConfig
+from ..config.options import PostProcessingOptions
 
 # TODO: Set these values up as hierarchical, maybe with enums
 
@@ -72,7 +72,7 @@ STEP_SCRUB_TIMEPOINTS = "ScrubTimepoints"
 
 
 def build_image_postprocessing_workflow(
-    run_config: PostProcessingRunConfig,
+    processing_options: PostProcessingOptions,
     in_file: os.PathLike = None,
     export_path: os.PathLike = None,
     name: str = "Postprocessing_Pipeline",
@@ -92,7 +92,7 @@ def build_image_postprocessing_workflow(
         postproc_wf.config["execution"]["crashdump_dir"] = crashdump_dir
 
     if processing_steps is None:
-        processing_steps = run_config.options.processing_steps
+        processing_steps = processing_options.processing_steps
     step_count = len(processing_steps)
 
     if step_count < 1:
@@ -147,10 +147,10 @@ def build_image_postprocessing_workflow(
         if step == STEP_TEMPORAL_FILTERING:
             if not tr:
                 raise ValueError(f"Missing TR corresponding to image: {in_file}")
-            hp = run_config.options.processing_step_options.temporal_filtering.filtering_high_pass
-            lp = run_config.options.processing_step_options.temporal_filtering.filtering_low_pass
-            order = run_config.options.processing_step_options.temporal_filtering.filtering_order
-            implementation_name = run_config.options.processing_step_options.temporal_filtering.implementation
+            hp = processing_options.processing_step_options.temporal_filtering.filtering_high_pass
+            lp = processing_options.processing_step_options.temporal_filtering.filtering_low_pass
+            order = processing_options.processing_step_options.temporal_filtering.filtering_order
+            implementation_name = processing_options.processing_step_options.temporal_filtering.implementation
 
             current_wf = build_temporal_filter_workflow(
                 implementation_name,
@@ -164,7 +164,7 @@ def build_image_postprocessing_workflow(
             )
 
         elif step == STEP_INTENSITY_NORMALIZATION:
-            implementation_name = run_config.options.processing_step_options.intensity_normalization.implementation
+            implementation_name = processing_options.processing_step_options.intensity_normalization.implementation
 
             intensity_normalization_implementation = (
                 _getIntensityNormalizationImplementation(implementation_name)
@@ -177,8 +177,8 @@ def build_image_postprocessing_workflow(
             )
 
         elif step == STEP_SPATIAL_SMOOTHING:
-            fwhm_mm = run_config.options.processing_step_options.spatial_smoothing.fwhm
-            implementation_name = run_config.options.processing_step_options.spatial_smoothing.implementation
+            fwhm_mm = processing_options.processing_step_options.spatial_smoothing.fwhm
+            implementation_name = processing_options.processing_step_options.spatial_smoothing.implementation
 
             spatial_smoothing_implementation = _getSpatialSmoothingImplementation(
                 implementation_name
@@ -192,7 +192,7 @@ def build_image_postprocessing_workflow(
             )
 
         elif step == STEP_AROMA_REGRESSION:
-            implementation_name = run_config.options.processing_step_options.aroma_regression.implementation
+            implementation_name = processing_options.processing_step_options.aroma_regression.implementation
 
             apply_aroma_implementation = _getAROMARegressionImplementation(
                 implementation_name
@@ -207,7 +207,7 @@ def build_image_postprocessing_workflow(
             )
 
         elif step == STEP_CONFOUND_REGRESSION:
-            implementation_name = run_config.options.processing_step_options.confound_regression.implementation
+            implementation_name = processing_options.processing_step_options.confound_regression.implementation
 
             confound_regression_implementation = _getConfoundRegressionImplementation(
                 implementation_name
@@ -233,8 +233,8 @@ def build_image_postprocessing_workflow(
             )
 
         elif step == STEP_TRIM_TIMEPOINTS:
-            trim_from_beginning = run_config.options.processing_step_options.trim_timepoints.from_beginning
-            trim_from_end = run_config.options.processing_step_options.trim_timepoints.from_end
+            trim_from_beginning = processing_options.processing_step_options.trim_timepoints.from_beginning
+            trim_from_end = processing_options.processing_step_options.trim_timepoints.from_end
 
             current_wf = build_trim_timepoints_workflow(
                 trim_from_beginning=trim_from_beginning,
@@ -244,7 +244,7 @@ def build_image_postprocessing_workflow(
             )
 
         elif step == STEP_RESAMPLE:
-            reference_image = run_config.options.processing_step_options.resample.reference_image
+            reference_image = processing_options.processing_step_options.resample.reference_image
             if reference_image == "SET REFERENCE IMAGE":
                 raise ValueError(
                     "No reference image provided. Please set a path to reference in clpipe_config.json"
@@ -257,7 +257,7 @@ def build_image_postprocessing_workflow(
             )
 
         elif step == STEP_SCRUB_TIMEPOINTS:
-            insert_na = run_config.options.processing_step_options.scrub_timepoints.insert_na
+            insert_na = processing_options.processing_step_options.scrub_timepoints.insert_na
 
             current_wf = build_scrubbing_workflow(
                 insert_na=insert_na,

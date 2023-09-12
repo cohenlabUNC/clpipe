@@ -233,7 +233,7 @@ def draw_graph(
     graph_style: str = DEFAULT_GRAPH_STYLE,
     logger: logging.Logger = None,
 ):
-    graph_image_path = out_dir / f"{graph_name}.dot"
+    graph_image_path = Path(out_dir) / f"{graph_name}.dot"
     if logger:
         logger.info(f"Drawing confounds workflow graph: {graph_image_path}")
 

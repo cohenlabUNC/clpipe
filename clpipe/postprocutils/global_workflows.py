@@ -11,11 +11,11 @@ from .image_workflows import (
 )
 from .confounds_workflows import build_confounds_processing_workflow
 from ..utils import get_logger
-from ..config.options import PostProcessingRunConfig
+from ..config.options import PostProcessingOptions
 
 
 def build_postprocessing_wf(
-    run_config: PostProcessingRunConfig,
+    processing_options: PostProcessingOptions,
     tr: int,
     name: str = "postprocessing_wf",
     image_file: os.PathLike = None,
@@ -49,7 +49,7 @@ def build_postprocessing_wf(
     # Needs to propogate down through sub-workflows as well.
 
     logger = get_logger("postprocessing_wf_builder")
-    processing_steps = run_config.options.processing_steps
+    processing_steps = processing_options.processing_steps
 
     # Create the global postprocessing workflow
     postproc_wf = pe.Workflow(name=name, base_dir=base_dir)
@@ -67,7 +67,7 @@ def build_postprocessing_wf(
     confounds_wf = None
     if confounds_file:
         confounds_wf = build_confounds_processing_workflow(
-            run_config,
+            processing_options,
             confounds_file=confounds_file,
             export_file=confounds_export_path,
             tr=tr,
@@ -83,7 +83,7 @@ def build_postprocessing_wf(
     if image_file:
         logger.info(f"Building postprocessing workflow for: {name}")
         image_wf = build_image_postprocessing_workflow(
-            run_config,
+            processing_options,
             in_file=image_file,
             export_path=image_export_path,
             name=f"image_wf",
@@ -115,7 +115,7 @@ def build_postprocessing_wf(
     if STEP_SCRUB_TIMEPOINTS in processing_steps:
         mult_scrub_wf = build_multiple_scrubbing_workflow(
             "multiple_scrubbing_wf",
-            run_config.options.processing_step_options.scrub_timepoints.scrub_columns
+            processing_options.processing_step_options.scrub_timepoints.scrub_columns
         )
         mult_scrub_wf.get_node("inputnode").inputs.confounds_file = confounds_file
 
