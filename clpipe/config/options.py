@@ -27,6 +27,30 @@ class Option:
             if arg_value is not None:
                 setattr(self, arg_name, arg_value)
 
+    def dump(self, outpath):
+        #Generate schema from given dataclasses
+        config_schema = marshmallow_dataclass.class_schema(self.__class__)
+        config_dict = config_schema().dump(self)
+
+        suffix = Path(outpath).suffix
+
+        with open(outpath, 'w') as fp:
+            json.dump(config_dict, fp, indent="\t")
+
+        # .json --> .yaml necessary to get the .yaml to format correctly
+        if(suffix) == '.yaml':
+            os.rename(outpath, "temp_yaml_to_json")
+            with open("temp_yaml_to_json", 'r') as json_in:
+                conf = json.load(json_in)
+            with open(outpath, 'w') as yaml_out:
+                yaml.dump(conf, yaml_out, sort_keys=False)
+            os.remove("temp_yaml_to_json")
+
+    def to_dict(self):
+        #Generate schema from given dataclasses
+        config_schema = marshmallow_dataclass.class_schema(self.__class__)
+        return config_schema().dump(self)
+
 
 @dataclass
 class SourceOptions(Option):
@@ -459,6 +483,23 @@ class PostProcessingRunConfiguration(Option):
     stream_output_dir: str = ""
     
     pybids_db_path: str = ""
+
+    @classmethod
+    def load(cls, config: Union[os.PathLike, 'PostProcessingRunConfiguration']):
+        """Creates the process run configuration for storing state of postprocessing
+        job."""
+
+        # Return if given PostProcessingRunConfiguration object for testing convenience
+        if isinstance(config, cls):
+            return config
+
+        #Generate schema from given dataclasses
+        config_schema = marshmallow_dataclass.class_schema(cls)
+
+        with open(config) as f:
+            config_dict = json.load(f)
+         
+        return config_schema().load(config_dict)
     
 
 
@@ -554,30 +595,6 @@ class ProjectOptions(Option):
         """Get the project's top level log directory."""
 
         return os.path.join(self.project_directory, "logs")
-
-    def to_dict(self):
-        #Generate schema from given dataclasses
-        config_schema = marshmallow_dataclass.class_schema(self.__class__)
-        return config_schema().dump(self)
-
-    def dump(self, outpath):
-        #Generate schema from given dataclasses
-        config_schema = marshmallow_dataclass.class_schema(self.__class__)
-        config_dict = config_schema().dump(self)
-
-        suffix = Path(outpath).suffix
-
-        with open(outpath, 'w') as fp:
-            json.dump(config_dict, fp, indent="\t")
-
-        # .json --> .yaml necessary to get the .yaml to format correctly
-        if(suffix) == '.yaml':
-            os.rename(outpath, "temp_yaml_to_json")
-            with open("temp_yaml_to_json", 'r') as json_in:
-                conf = json.load(json_in)
-            with open(outpath, 'w') as yaml_out:
-                yaml.dump(conf, yaml_out, sort_keys=False)
-            os.remove("temp_yaml_to_json")
     
 
     def populate_project_paths(self, project_dir: os.PathLike, source_data: os.PathLike):
