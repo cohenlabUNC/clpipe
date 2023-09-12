@@ -1,10 +1,10 @@
 import os, stat
-from .config_json_parser import ClpipeConfigParser
-from pkg_resources import resource_stream
+
 import json
 from pathlib import Path
 
 from .utils import get_logger, add_file_handler
+from .config.options import ProjectOptions
 
 STEP_NAME = "project-setup"
 DEFAULT_DICOM_DIR = 'data_DICOMs'
@@ -16,18 +16,22 @@ DEFAULT_CONFIG_FILE_NAME = 'clpipe_config.json'
 class SourceDataError(ValueError):
     pass
 
-def project_setup(project_title=None, project_dir=None, 
+def project_setup(project_title: str="A Neuroimaging Project", project_dir: os.PathLike=os.getcwd(), 
                   source_data=None, move_source_data=False,
                   symlink_source_data=False, debug=False):
+    """Initialize a clpipe project.
 
-    config_parser = ClpipeConfigParser()
+    No values can come in as None except source_data.
 
-    project_dir = Path(project_dir).resolve()
-    logs_dir = project_dir / "logs"
+    Args documented in corresponding CLI function.
 
+    Raises:
+        SourceDataError: Invalid source data was provided.
+        NotImplementedError: Option requested is not implemented.
+    """
     logger = get_logger(STEP_NAME, debug=debug)
 
-    default_dicom_dir = project_dir / DEFAULT_DICOM_DIR
+    default_dicom_dir = os.path.join(project_dir, DEFAULT_DICOM_DIR)
     
     if symlink_source_data and move_source_data:
         raise SourceDataError("Cannot choose to both move and symlink the source data.")
@@ -41,27 +45,25 @@ def project_setup(project_title=None, project_dir=None,
     else:
         logger.info(f"No source data specified. Defaulting to: {default_dicom_dir}")
         source_data = default_dicom_dir
-        source_data.mkdir(exist_ok=False)
+        Path(source_data).mkdir(exist_ok=False)
     
     logger.info(f"Starting project setup with title: {project_title}")
 
-    logger.info(f"Creating new clpipe project in directory: {str(project_dir)}")
-    config_parser.setup_project(project_title, str(project_dir), source_data)
-    config = config_parser.config
+    logger.info(f"Creating new clpipe project in directory: {project_dir}")
 
-    setup_dcm2bids_directories(config)
-    setup_bids_validation_directories(config)
-    setup_fmriprep_directories(config)
-    setup_roiextract_directories(config)
-    setup_glm_directories(config['ProjectDirectory'])
+    config:ProjectOptions = ProjectOptions()
+    config.project_setup(project_title, project_dir, source_data)
 
-    add_file_handler(logs_dir)
+    setup_convert2bids_directories(config)
+    #setup_bids_validation_directories(config)
+    #setup_fmriprep_directories(config)
+    #setup_roiextract_directories(config)
+    #setup_glm_directories(config['ProjectDirectory'])
+
+    add_file_handler(config.get_logs_dir())
     # Set permissions to clpipe.log file to allow for group write
-    os.chmod(logs_dir / "clpipe.log", 
+    os.chmod(os.path.join(config.get_logs_dir(), "clpipe.log"), 
              stat.S_IREAD | stat.S_IWRITE | stat.S_IRGRP | stat.S_IWGRP)
-
-    bids_dir = config['DICOMToBIDSOptions']['BIDSDirectory']
-    conv_config_path = config['DICOMToBIDSOptions']['ConversionConfig']
 
     if symlink_source_data:
         logger.info(f'Creating SymLink for source data to {default_dicom_dir}')
@@ -73,38 +75,41 @@ def project_setup(project_title=None, project_dir=None,
         raise NotImplementedError("Option -move_source_data is not yet implemented.")
     
     # Create an empty BIDS directory
-    os.system(DCM2BIDS_SCAFFOLD_TEMPLATE.format(bids_dir))
-    logger.debug(f"Created empty BIDS directory at: {bids_dir}")
+    os.system(DCM2BIDS_SCAFFOLD_TEMPLATE.format(config.convert2bids.bids_directory))
+    logger.debug(f"Created empty BIDS directory at: {config.convert2bids.bids_directory}")
 
     logger.debug('Creating JSON config file')
 
-    config_parser.config_json_dump(str(project_dir), DEFAULT_CONFIG_FILE_NAME)
+    config.dump(os.path.join(project_dir, DEFAULT_CONFIG_FILE_NAME))
 
-    with resource_stream(__name__, DEFAULT_CONFIG_PATH) as def_conv_config:
-        conv_config = json.load(def_conv_config)
-        logger.debug('Default conversion config loaded')
-
-    with open(conv_config_path, 'w') as fp:
-        json.dump(conv_config, fp, indent='\t')
-        logger.debug(f'Created default conversion config file: {conv_config_path}')
-
-    analyses_dir = project_dir / 'analyses'
-    analyses_dir.mkdir(exist_ok=True)
+    analyses_dir = os.path.join(project_dir, 'analyses')
+    os.makedirs(analyses_dir, exist_ok=True)
     logger.debug(f'Created empty analyses directory: {analyses_dir}')
 
-    script_dir = project_dir / 'scripts'
-    script_dir.mkdir(exist_ok=True)
+    script_dir = os.path.join(project_dir, 'scripts')
+    os.makedirs(script_dir, exist_ok=True)
     logger.debug(f'Created empty scripts directory: {script_dir}')
 
     logger.info('Completed project setup')
 
-def setup_dcm2bids_directories(config):
-    if(config['DICOMToBIDSOptions']['BIDSDirectory'] != ""):
-        os.makedirs(config['DICOMToBIDSOptions']['BIDSDirectory'], exist_ok=True)
-    os.makedirs(config['DICOMToBIDSOptions']['LogDirectory'], exist_ok=True)
 
+def setup_convert2bids_directories(config):
+    from pkg_resources import resource_stream
+
+    # Create the step's core directories
+    os.makedirs(config.convert2bids.bids_directory, exist_ok=True)
+    os.makedirs(config.convert2bids.log_directory, exist_ok=True)
+
+    # Create the default conversion config file
+    if not os.path.exists(config.convert2bids.conversion_config):
+        with resource_stream(__name__, DEFAULT_CONFIG_PATH) as def_conv_config:
+            conv_config = json.load(def_conv_config)
+        
+        with open(config.convert2bids.conversion_config, 'w') as fp:
+            json.dump(conv_config, fp, indent='\t')
+        
     # Create a default .bidsignore file
-    bids_ignore_path = os.path.join(config['DICOMToBIDSOptions']['BIDSDirectory'], ".bidsignore")
+    bids_ignore_path = os.path.join(config.convert2bids.bids_directory, ".bidsignore")
     if not os.path.exists(bids_ignore_path):
         with open(bids_ignore_path, 'w') as bids_ignore_file:
             # Ignore dcm2bid's auto-generated directory
@@ -112,24 +117,20 @@ def setup_dcm2bids_directories(config):
             # Ignore heudiconv's auto-generated scan file
             bids_ignore_file.write("scans.json\n")
 
-def setup_bids_validation_directories(config):
-    os.makedirs(config['BIDSValidationOptions']['LogDirectory'], exist_ok=True)
 
-def setup_fmriprep_directories(config):
-    if not os.path.isdir(config['FMRIPrepOptions']['BIDSDirectory']):
-        raise ValueError('BIDS Directory does not exist')
-    
-    if(config['FMRIPrepOptions']['WorkingDirectory'] != "SET WORKING DIRECTORY"):
-        os.makedirs(config['FMRIPrepOptions']['WorkingDirectory'], exist_ok=True)
-    if(config['FMRIPrepOptions']['OutputDirectory'] != ""):
-        os.makedirs(config['FMRIPrepOptions']['OutputDirectory'], exist_ok=True)
-    if(config['FMRIPrepOptions']['LogDirectory'] != ""):
-        os.makedirs(config['FMRIPrepOptions']['LogDirectory'], exist_ok=True)
+def setup_bids_validation_directories(config: ProjectOptions):
+    os.makedirs(config.bids_validation.log_directory, exist_ok=True)
 
-def setup_roiextract_directories(config):
-    if(config['ROIExtractionOptions']['OutputDirectory'] != ""):
-        os.makedirs(config['ROIExtractionOptions']['OutputDirectory'], exist_ok=True)
-    os.makedirs(config['ROIExtractionOptions']['LogDirectory'], exist_ok=True)
+
+def setup_fmriprep_directories(config: ProjectOptions):
+    os.makedirs(config.fmriprep.output_directory, exist_ok=True)
+    os.makedirs(config.fmriprep.log_directory, exist_ok=True)
+
+
+def setup_roiextract_directories(config: ProjectOptions):
+    os.makedirs(config.roi_extraction.output_directory, exist_ok=True)
+    os.makedirs(config.roi_extraction.log_directory, exist_ok=True)
+
 
 def setup_glm_directories(project_path):
     os.mkdir(os.path.join(project_path, "l1_fsfs"))
