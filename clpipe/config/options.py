@@ -68,6 +68,21 @@ class Convert2BIDSOptions(Option):
     log_directory: str = ""
 
 
+    def load_cli_args(self, dicom_directory, dicom_format_string, conversion_config, bids_directory, log_directory):
+        self.dicom_directory = dicom_directory
+        self.dicom_format_string = dicom_format_string
+        self.conversion_config = conversion_config
+        self.bids_directory = bids_directory
+        self.log_directory = log_directory
+
+
+    def project_setup(self, project_directory: os.PathLike, source_data: os.PathLike):
+        self.dicom_directory = os.path.abspath(source_data)
+        self.conversion_config = os.path.join(project_directory, 'conversion_config.json')
+        self.bids_directory = os.path.join(project_directory, 'data_BIDS')
+        self.log_directory = os.path.join(project_directory, "logs", "DCM2BIDS_logs")
+
+
 @dataclass
 class BIDSValidatorOptions(Option):
     """Options for validating your BIDS directory."""
@@ -76,6 +91,9 @@ class BIDSValidatorOptions(Option):
     """Path to your BIDS validator image."""
     
     log_directory: str = ""
+
+    def setup(self, project_directory: os.PathLike):
+        self.log_directory = os.path.join(project_directory, "bids_validation_logs")
 
 
 @dataclass
@@ -155,13 +173,13 @@ class TemporalFiltering(Option):
     implementation: str = "fslmaths"
     """Available implementations: fslmaths, 3dTProject"""
 
-    filtering_high_pass: float = 0.0
+    filtering_high_pass: float = 0.008
     """Values below this threshold are filtered. Defaults to .08 Hz. Set to -1 to disable."""
 
-    filtering_low_pass: int = 0
+    filtering_low_pass: int = -1
     """Values above this threshold are filtered. Disabled by default (-1)."""
     
-    filtering_order: int = 0
+    filtering_order: int = 2
     """Order of the filter. Defaults to 2."""
 
 
@@ -435,54 +453,62 @@ class ProjectOptions(Option):
     fmriprep: FMRIPrepOptions = FMRIPrepOptions()
     postprocessing: PostProcessingOptions = PostProcessingOptions()
     processing_streams: list = field(default_factory=list)
+    roi_extraction: ROIExtractOptions = ROIExtractOptions()
     batch_config_path: str = ""
     clpipe_version: str = ""
 
+    def get_logs_dir(self) -> str:
+        """Get the project's top level log directory."""
+
+        return os.path.join(self.project_directory, "logs")
+
     def to_dict(self):
         #Generate schema from given dataclasses
-        ConfigSchema = marshmallow_dataclass.class_schema(self.__class__)
-        return ConfigSchema().dump(self)
+        config_schema = marshmallow_dataclass.class_schema(self.__class__)
+        return config_schema().dump(self)
 
-    def dump(self, outputdir, file_name="project_config", yaml_file = False):
-        outpath = Path(outputdir) / file_name
-
+    def dump(self, outpath):
         #Generate schema from given dataclasses
-        ConfigSchema = marshmallow_dataclass.class_schema(self.__class__)
-        config_dict = ConfigSchema().dump(self)
+        config_schema = marshmallow_dataclass.class_schema(self.__class__)
+        config_dict = config_schema().dump(self)
 
-        outpath_json = outpath.parent / (outpath.name + '.json')
-        
-        with open(outpath_json, 'w') as fp:
+        suffix = Path(outpath).suffix
+
+        with open(outpath, 'w') as fp:
             json.dump(config_dict, fp, indent="\t")
 
-        if(yaml_file):
-            outpath_yaml = outpath.parent / (outpath.name + '.yaml')
-            with open(outpath_json, 'r') as json_in:
+        # .json --> .yaml necessary to get the .yaml to format correctly
+        if(suffix) == '.yaml':
+            os.rename(outpath, "temp_yaml_to_json")
+            with open("temp_yaml_to_json", 'r') as json_in:
                 conf = json.load(json_in)
-            with open(outpath_yaml, 'w') as yaml_out:
+            with open(outpath, 'w') as yaml_out:
                 yaml.dump(conf, yaml_out, sort_keys=False)
-            os.remove(outpath_json)
-
-            return outpath_yaml
-        
-        return outpath_json
+            os.remove("temp_yaml_to_json")
     
+
+    def project_setup(self, project_title: str, project_dir: os.PathLike, source_data: os.PathLike):
+        self.project_title = project_title
+        self.project_directory = os.path.abspath(project_dir)
+
+        self.convert2bids.project_setup(project_dir, source_data)
+        #self.bids_validation.setup(project_dir)
+
+        
     @classmethod
-    def load(cls, json_file = None, yaml_file = None):
+    def load(cls, file):
         #Generate schema from given dataclasses
         config_schema = marshmallow_dataclass.class_schema(cls)
 
-        if(json_file == None and yaml_file == None):
-            # Load default config
-            with resource_stream(__name__, '../data/defaultConfig.json') as def_config:
-                    config_dict = json.load(def_config)
-        else:
-            if(json_file == None and yaml_file):
-                with open(yaml_file) as f:
-                    config_dict = yaml.safe_load(f)
+        extension = Path(file).suffix
+
+        with open(file) as f:
+            if extension == '.yaml':
+                config_dict = yaml.safe_load(f)
+            elif extension == '.json':
+                config_dict = json.load(f)
             else:
-                with open(json_file) as f:
-                    config_dict = json.load(f)
+                raise ValueError(f"Unsupported extension: {extension}")
 
         if 'version' not in config_dict:
             config_dict = convert_project_config(config_dict)    
@@ -490,6 +516,7 @@ class ProjectOptions(Option):
         newNames = list(config_dict.keys())
         config_dict = dict(zip(newNames, list(config_dict.values())))
         return config_schema().load(config_dict)
+    
 
 def convert_project_config(old_config, new_config=None):
     """
@@ -607,7 +634,7 @@ KEY_MAP = {
     "exclude_trial_types": "ExcludeTrialTypes",
     "processing_streams": "ProcessingStreams",
     "processing_stream": "ProcessingStream",
-    "roi_extract": "ROIExtractionOptions",
+    "roi_extraction": "ROIExtractionOptions",
     "atlases": "Atlases",
     "require_mask": "RequireMask",
     "prop_voxels": "PropVoxels",
