@@ -148,98 +148,120 @@ class FMRIPrepOptions(Option):
 
 @dataclass
 class TemporalFiltering(Option):
-    """"""
+    """This step removes signals from an image's timeseries based on cutoff thresholds.
+    Also applied to confounds."""
 
-    implementation: str = ""
-    """"""
+    implementation: str = "fslmaths"
+    """Available implementations: fslmaths, 3dTProject"""
 
     filtering_high_pass: float = 0.0
-    """"""
+    """Values below this threshold are filtered. Defaults to .08 Hz. Set to -1 to disable."""
 
     filtering_low_pass: int = 0
-    """"""
+    """Values above this threshold are filtered. Disabled by default (-1)."""
     
     filtering_order: int = 0
-    """"""
+    """Order of the filter. Defaults to 2."""
 
 
 @dataclass
 class IntensityNormalization(Option):
-    """"""
+    """Normalize the intensity of the image data."""
 
-    implementation: str = ""
-    """"""
+    implementation: str = "10000_GlobalMedian"
+    """Currently limited to '10000_GlobalMedian'"""
 
 
 @dataclass
 class SpatialSmoothing(Option):
-    """"""
+    """Apply spatial smoothing to the image data."""
 
-    implementation: str = ""
-    """"""
-    fwhm: int = 0
-    """"""
+    implementation: str = "SUSAN"
+    """Currently limited to 'SUSAN'"""
+    fwhm: int = 6
+    """The size of the smoothing kernel.
+    Specifically the full width half max of the Gaussian kernel.
+    Scaled in millimeters."""
 
 
 @dataclass
 class AROMARegression(Option):
-    """"""
-    implementation: str = ""
+    """Regress out automatically classified noise artifacts from the image data
+    using AROMA. Also applied to confounds."""
+    implementation: str = "fsl_regfilt"
 
 
 @dataclass
 class ScrubTimepoints(Option):
-    """"""
+    """This step can be used to remove timepoints from the image timeseries
+    based on a target variable from that image's confounds file. Timepoints scrubbed
+    from an image's timeseries are also removed its respective confound file."""
 
-    target_variable: str = ""
-    """"""
+    insert_na: bool = True
+    """Set true to replace scrubbed timepoints with NA. False removes the timepoints completely."""
 
-    threshold: float = 0.0
-    """"""
+    scrub_columns: list = field(
+        default_factory=lambda: [
+            ScrubColumn(target_variable="cosine*", threshold=100.0, scrub_ahead=0, scrub_behind=0, scrub_contiguous=0),
+            ScrubColumn(target_variable="framewise_displacement", threshold=0.2, scrub_ahead=0, scrub_behind=0, scrub_contiguous=0)
+            ]
+        )
+    """A list of columns to be scrubbed."""
+
+
+@dataclass 
+class ScrubColumn(Option):
+    """A definition for a single column to be scrubbed."""
+
+    target_variable: str = "framewise_displacement"
+    """Which confound variable to use as a reference for scrubbing. May use wildcard (*) to select multiple similar columns."""
+
+    threshold: float = 0.9
+    """Any timepoint of the target variable exceeding this value will be scrubbed"""
 
     scrub_ahead: int = 0
-    """"""
+    """Set the number of timepoints to scrub ahead of target timepoints"""
 
     scrub_behind: int = 0
-    """"""
+    """Set the number of timepoints to scrub behind target timepoints"""
 
     scrub_contiguous: int = 0
-    """"""
-
-    insert_na: bool = False
-    """"""
+    """Scrub everything between scrub targets up to this far apart"""
 
 
 @dataclass
 class Resample(Option):
-    """"""
+    """Resample your image to a new space."""
     
-    reference_image: str = ""
-    """"""
+    reference_image: str = "SET REFERENCE IMAGE"
+    """Path to an image against which to resample - often a template"""
 
 
 @dataclass
 class TrimTimepoints(Option):
-    """"""
+    """Trim timepoints from the beginning or end of an image.
+    Also applied to confounds."""
 
     from_end: int = 0
-    """"""
+    """Number of timepoints to trim from the end of each image."""
 
     from_beginning: int = 0
-    """"""
+    """Number of timepoints to trim from the beginning of each image."""
 
 
 @dataclass
 class ConfoundRegression(Option):
-    """"""
+    """Regress out the confound file values from your image. 
+    If any other processing steps are relevant to the confounds,
+    they will be applied first."""
 
-    implementation: str = ""
-    """"""
+    implementation: str = "afni_3dTproject"
+    """Currently limited to "afni_3dTproject"""
 
 
 @dataclass
 class ProcessingStepOptions(Option):
-    """"""
+    """The default processing options for each step."""
 
     temporal_filtering: TemporalFiltering = TemporalFiltering()
     intensity_normalization: IntensityNormalization = IntensityNormalization()
@@ -253,78 +275,102 @@ class ProcessingStepOptions(Option):
 
 @dataclass
 class MotionOutliers(Option):
-    """"""
+    """These options control the construction of spike regressor columns based on 
+    a particular confound column (usually framewise_displacement)
+    and a threshold. For each timepoint of the chosen variable that exceeds
+    the threshold, a new column of all 0s and a single '1' at that timepoint is
+    added to the end of the confounds file to serve as a spike regressor for GLM analysis."""
 
     include: bool = False
-    """"""
+    """Set 'true' to add motion outlier spike regressors to each confound file."""
 
     scrub_var: str = "framewise_displacement"
-    """"""
+    """Which variable in the confounds file should be used to calculate motion outliers."""
 
-    threshold: float = 0.0
-    """"""
+    threshold: float = 0.9
+    """Threshold at which to flag a timepoint as a motion outlier."""
 
     scrub_ahead: int = 0
-    """"""
+    """How many time points ahead of a flagged time point should be flagged also."""
 
     scrub_behind: int = 0
-    """"""
+    """If a timepoint is scrubbed, how many points before to remove."""
 
     scrub_contiguous: int = 0
-    """"""
+    """How many good contiguous timepoints need to exist."""
 
 
 @dataclass
 class ConfoundOptions(Option):
-    """"""
+    """The default options to apply to the confounds files."""
 
-    columns: list = field(default_factory=list)
-    """"""
+    columns: list = field(
+        default_factory=lambda: [
+            "csf", "csf_derivative1", 
+			"white_matter", "white_matter_derivative1"]
+        )
+    """A list containing a subset of confound file columns to use
+    from each image's confound file. You may use the wildcard '*' operator
+    to select groups of columns, such as 'csf*'"""
 
     motion_outliers: MotionOutliers = MotionOutliers()
-    """"""
+    """Options specific to motion outliers."""
 
 
 @dataclass
 class BatchOptions(Option):
-    """"""
+    """The batch settings for postprocessing."""
 
-    memory_usage: str = ""
-    """"""
+    memory_usage: str = "20G"
+    """How much memory to allocate per job."""
 
-    time_usage: str = ""
-    """"""
+    time_usage: str = "2:0:0"
+    """How much time to allocate per job."""
 
-    n_threads: str = ""
-    """"""
+    n_threads: str = "1"
+    """How many threads to allocate per job."""
 
 
 @dataclass
 class PostProcessingOptions(Option):
-    """"""
+    """Options for additional processing after fMRIPrep's preprocessing."""
 
     working_directory: str = ""
-    """"""
+    """Directory for caching intermediary processing files."""
 
     write_process_graph: bool = True
-    """"""
+    """Set 'true' to write a processing graph alongside your output."""
 
     target_directory: str = ""
-    """"""
+    """Which directory to process - leave empty to use your config's fMRIPrep output
+    directory."""
 
-    target_image_space: str = ""
-    """"""
+    target_image_space: str = "MNI152NLin2009cAsym"
+    """Which space to use from your fmriprep output.
+    This is the value that follows "space-" in the image file names."""
 
     target_tasks: list = field(default_factory=list)
-    """"""
+    """Which tasks to use from your fmriprep output. 
+    This is the value that follows "task-" in the image file names.
+    Leave blank to target all tasks."""
 
     target_acquisitions: list = field(default_factory=list)
-    """"""
+    """Which acquisitions to use from your fmriprep output. 
+    This is the value that follows "acq-" in the image file names.
+    Leave blank to target all acquisitions."""
 
     output_directory: str = field(default_factory=list)
-    """"""
+    """Path to save your postprocessing data. Defaults to data_postproc."""
     
-    processing_steps: list = field(default_factory=list)
+    processing_steps: list = field(
+        default_factory=lambda: [
+            "SpatialSmoothing",
+			"TemporalFiltering",
+			"IntensityNormalization",
+			"ApplyMask"]
+        )
+    """Your list of processing steps to use, in order."""
+
     processing_step_options: ProcessingStepOptions = ProcessingStepOptions()
     confound_options: ConfoundOptions = ConfoundOptions()
     batch_options: BatchOptions = BatchOptions()
@@ -574,4 +620,5 @@ KEY_MAP = {
     "batch_config_path": "BatchConfig",
     "target_variable": "TargetVariable",
     "insert_na": "InsertNA",
+    "scrub_columns": ""
 }

@@ -90,57 +90,8 @@ Configuration Block
     	}	
 	}
 
-Configuration Definitions
--------------------
-
-    * ``WorkingDirectory:`` Directory for caching intermediary processing files.
-    * ``WriteProcessGraph:`` Set 'true' to write a processing graph alongside your output.
-    * ``TargetImageSpace:`` Which space to use from your fmriprep output. This is the value that follows "space-" in the image file names.
-    * ``TargetTasks:`` Which tasks to use from your fmriprep output. This is the value that follows "task-" in the image file names. Leave blank to target all tasks.
-    * ``TargetAcquisitions:`` Which acquisitions to use from your fmriprep output. This is the value that follows "acq-" in the image file names. Leave blank to target all acquisitions.
-    * ``ProcessingSteps:`` The default list of processing steps to use. Processing will follow the order of this list.
-    * ``ProcessingStepOptions:`` The default processing options for each step.
-
-        * ``TemporalFiltering:`` Apply temporal filtering to the image data. Also be applied to confounds.
-
-			* ``Implementation:`` Currently limited to "fslmaths"
-			* ``FilteringHighPass:`` High pass frequency for filtering. Defaults to .08 Hz. Set to -1 to remove high pass filtering.
-			* ``FilteringLowPass:`` Low pass frequency for filtering. Defaults to no filter (-1). Set to -1 to remove low pass filtering.
-			* ``FilteringOrder:`` Order of filter. Defaults to 2.
-        * ``IntensityNormalization:`` Apply intensity normalization to the image data.
-
-			* ``Implementation:`` Currently limited to "10000_GlobalMedian"
-        * ``SpatialSmoothing:`` Apply spatial smoothing to the image data.
-
-			* ``Implementation:`` Currently limited to "SUSAN"
-			* ``FWHM:`` The size of the smoothing kernel. Specifically the full width half max of the Gaussian kernel. Scaled in millimeters.
-        * ``AROMARegression:`` Regress out AROMA artifacts from the image data. Also be applied to confounds.
-
-			* ``Implementation:`` Currently limited to "fsl_regfilt_R"
-        * ``Resample:`` Resample the image into a new space.
-        * ``TrimTimepoints:`` Trim timepoints from the beginning or end of an image. Also be applied to confounds.
-
-			* ``FromEnd:`` Number of timepoints to trim from the end of each image.
-			* ``FromBeginning:`` Number of timepoints to trim from the beginning of each image.
-        * ``ConfoundRegression:`` Regress out the confound file values from your image. If any other processing steps are relevant to the confounds, they will be applied first.
-
-			* ``Implementation:`` Currently limited to "afni_3dTproject"
-    * ``ConfoundOptions:`` The default options to apply to the confounds files.
-	
-		* ``Columns:`` A list containing a subset of confound file columns to use from each image's confound file.
-		* ``MotionOutliers:`` Options specific to motion outliers.
-
-			* ``Include:`` Set 'true' to add motion outlier spike regressors to each confound file.
-			* ``ScrubVar:`` Which variable in the confounds file should be used to calculate motion outliers, defaults to framewise displacement.
-			* ``Threshold:`` Threshold at which to flag a timepoint as a motion outlier, defaults to .9
-			* ``ScrubAhead:`` How many time points ahead of a flagged time point should be flagged also, defaults to 0.
-			* ``ScrubBehind:`` If a timepoint is scrubbed, how many points before to remove. Defaults to 0.
-			* ``ScrubContiguous:`` How many good contiguous timepoints need to exist. Defaults to 0.
-    * ``BatchOptions:`` The batch settings for postprocessing.
-
-        * ``MemoryUsage:`` How much memory to allocate per job.
-        * ``TimeUsage:`` How much time to allocate per job.
-        * ``NThreads:`` How many threads to allocate per job.
+.. autoclass:: clpipe.config.project.PostProcessingOptions
+	:members:
 
 
 Processing Step Options
@@ -164,10 +115,7 @@ This step removes signals from an image's timeseries based on cutoff thresholds.
 
 **Definitions:**
 
-* ``Implementation:`` fslmaths, 3dTProject
-* ``FilteringHighPass:`` Values below this threshold are filtered. Defaults to .08 Hz. Set to -1 to disable.
-* ``FilteringLowPass:`` Values above this threshold are filtered. Disabled by default (-1).
-* ``FilteringOrder:`` Order of the filter. Defaults to 2.
+.. autoclass:: clpipe.config.project.TemporalFiltering
 
 **Special Case: Filtering with Scrubbed Timepoints**
 
@@ -190,6 +138,21 @@ were interpolated to improve the performance of the filter.
 *Warning*: To achieve interpolation, this special case always uses the 3dTproject
 implementation, regardless of the implementation requested.
 
+Intensity Normalization
+--------------------
+.. autoclass:: clpipe.config.project.IntensityNormalization
+
+Spatial Smoothing
+--------------------
+.. autoclass:: clpipe.config.project.SpatialSmoothing
+
+AROMA Regression
+--------------------
+.. autoclass:: clpipe.config.project.AROMARegression
+
+Confound Regression
+--------------------
+.. autoclass:: clpipe.config.project.ConfoundRegression
 
 
 Scrub Timepoints
@@ -225,15 +188,35 @@ ProcessingStepOptions Block:
 
 Definitions:
 
-* ``Columns:`` Contains a list of scrub variables for multiple target variables
-* ``TargetVariable:`` Which confound variable to use as a reference for scrubbing. May use wildcards to pick multiple columns with similar names.
-* ``Threshold:`` Any timepoint of the target variable exceeding this value will be scrubbed
-* ``ScrubAhead:`` Set the number of timepoints to scrub ahead of target timepoints
-* ``ScrubBehind:`` Set the number of timepoints to scrub behind target timepoints
-* ``ScrubContiguous:`` Scrub everything between scrub targets up to this far apart
-* ``InsertNA:`` Set true to replace scrubbed timepoints with NA. False removes the timepoints completely.
+.. autoclass:: clpipe.config.project.ScrubTimepoints
 
+.. autoclass:: clpipe.config.project.ScrubColumn
 
+Resample
+--------------------
+.. autoclass:: clpipe.config.project.Resample
+
+Trim Timepoints
+--------------------
+.. autoclass:: clpipe.config.project.TrimTimepoints
+
+Confounds Options
+===================
+.. autoclass:: clpipe.config.project.ConfoundOptions
+
+.. autoclass:: clpipe.config.project.ScrubTimepoints
+
+Resample
+--------------------
+.. autoclass:: clpipe.config.project.Resample
+
+Trim Timepoints
+--------------------
+.. autoclass:: clpipe.config.project.TrimTimepoints
+
+Batch Options
+===================
+.. autoclass:: clpipe.config.project.BatchOptions
 
 Processing Streams Setup
 ===================
