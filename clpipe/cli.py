@@ -170,7 +170,7 @@ def _add_commands():
 
 
 @click.command(SETUP_COMMAND_NAME, no_args_is_help=True)
-@click.option('-project_title', required=True, default=None, help=PROJECT_TITLE_HELP)
+@click.option('-project_title', required=False, default=None, help=PROJECT_TITLE_HELP)
 @click.option('-project_dir', required=True ,type=CLICK_DIR_TYPE_NOT_EXIST,
               default=None, help=PROJECT_DIR_HELP)
 @click.option('-source_data', type=CLICK_DIR_TYPE_EXISTS,
@@ -183,6 +183,11 @@ def _add_commands():
 def project_setup_cli(project_title=None, project_dir=None, source_data=None, 
                       move_source_data=None, symlink_source_data=None,
                       debug=False):
+    # TODO: add prompts for more things like contributors, email, etc.
+    if project_title is None:
+        project_title = click.prompt('Please enter a name for your project:', type=str)
+
+
     """Initialize a clpipe project."""
     from .project_setup import project_setup
     project_setup(

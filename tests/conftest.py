@@ -264,7 +264,13 @@ def source_data(tmp_path_factory):
 # Project Dir Fixtures #
 ########################
 
+@pytest.fixture(scope="function")
+def scatch_dir(tmp_path_factory):
+    """Fixture which provides a temporary folder."""
 
+    scratch_dir = tmp_path_factory.mktemp("scratch")
+    return scratch_dir
+     
 @pytest.fixture(scope="session")
 def clpipe_dir(tmp_path_factory):
     """Fixture which provides a temporary clpipe project folder."""

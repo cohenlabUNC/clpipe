@@ -14,6 +14,14 @@ def test_cli():
 
     assert e.value.code == 0
 
+def test_project_setup_cli(scatch_dir: Path):
+    """Check basic functionality."""
+    
+    runner = CliRunner()
+    result = runner.invoke(project_setup_cli, ["-project_dir", str(scatch_dir)], input="prompt-created project title")
+    print(result.output)
+    assert result.exit_code == 0
+
 
 def test_glm_l1_launch_cli(glm_config_file: Path):
     """Test that 'classic' style glm_l1_launch_cli launch command works"""
