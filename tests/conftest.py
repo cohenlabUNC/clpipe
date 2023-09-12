@@ -297,7 +297,7 @@ def clpipe_bids_dir(tmp_path_factory, sample_raw_image):
 
 
 @pytest.fixture(scope="session")
-def clpipe_postproc2_dir(
+def clpipe_postproc_dir(
     tmp_path_factory,
     sample_raw_image,
     sample_raw_image_mask,
@@ -306,10 +306,10 @@ def clpipe_postproc2_dir(
     sample_aroma_noise_ics,
     sample_fmriprep_dataset_description,
 ) -> Path:
-    """Fixture which adds postproc2 subject folders and mock
-    postproc2 output data to data_postproc2 directory of clpipe project.
+    """Fixture which adds postproc subject folders and mock
+    postproc output data to data_postproc directory of clpipe project.
     """
-    project_dir = tmp_path_factory.mktemp("clpipe_bids_fmriprep_postproc2_dir")
+    project_dir = tmp_path_factory.mktemp("clpipe_bids_fmriprep_postproc_dir")
     project_setup(project_title=PROJECT_TITLE, project_dir=str(project_dir))
 
     utils.populate_with_BIDS(project_dir, sample_raw_image)
@@ -323,7 +323,7 @@ def clpipe_postproc2_dir(
         sample_fmriprep_dataset_description,
         legacy=False,
     )
-    utils.populate_with_postproc2(
+    utils.populate_with_postproc(
         project_dir, sample_raw_image, sample_confounds_timeseries
     )
 
@@ -331,7 +331,7 @@ def clpipe_postproc2_dir(
 
 
 @pytest.fixture(scope="session")
-def clpipe_postproc2_legacy_fmriprep_dir(
+def clpipe_postproc_legacy_fmriprep_dir(
     tmp_path_factory,
     sample_raw_image,
     sample_raw_image_mask,
@@ -340,11 +340,11 @@ def clpipe_postproc2_legacy_fmriprep_dir(
     sample_aroma_noise_ics,
     sample_fmriprep_dataset_description,
 ) -> Path:
-    """Same as clpipe_postproc2_dir but uses legacy fmriprep.
+    """Same as clpipe_postproc_dir but uses legacy fmriprep.
     Ideally that function would be parameterized with legacy=True/False,
         but have not figured out how to do this with fixtures yet #TODO
     """
-    project_dir = tmp_path_factory.mktemp("clpipe_bids_fmriprep_postproc2_dir")
+    project_dir = tmp_path_factory.mktemp("clpipe_bids_fmriprep_postproc_dir")
     project_setup(project_title=PROJECT_TITLE, project_dir=str(project_dir))
 
     utils.populate_with_BIDS(project_dir, sample_raw_image)
@@ -358,7 +358,7 @@ def clpipe_postproc2_legacy_fmriprep_dir(
         sample_fmriprep_dataset_description,
         legacy=True,
     )
-    utils.populate_with_postproc2(
+    utils.populate_with_postproc(
         project_dir, sample_raw_image, sample_confounds_timeseries
     )
 
@@ -428,40 +428,6 @@ def clpipe_legacy_fmriprep_dir(
 
     return project_dir
 
-
-@pytest.fixture(scope="session")
-def clpipe_dir_old_glm_config(
-    tmp_path_factory,
-    sample_raw_image,
-    sample_raw_image_mask,
-    sample_confounds_timeseries,
-    sample_melodic_mixing,
-    sample_aroma_noise_ics,
-    sample_fmriprep_dataset_description,
-):
-    """Fixture which provides a project using the old glm config."""
-
-    project_dir = tmp_path_factory.mktemp("clpipe_old_glm_dir")
-
-    # Monkeypatch setup_glm to use the old method
-    ClpipeConfigParser.setup_glm = utils.old_setup_glm
-
-    GLMConfigParser.__init__ = utils.old_GLMConfigParser_init
-
-    project_setup(project_title=PROJECT_TITLE, project_dir=project_dir)
-    utils.populate_with_BIDS(project_dir, sample_raw_image)
-    utils.populate_with_fmriprep(
-        project_dir,
-        sample_raw_image,
-        sample_raw_image_mask,
-        sample_confounds_timeseries,
-        sample_melodic_mixing,
-        sample_aroma_noise_ics,
-        sample_fmriprep_dataset_description,
-        legacy=True,
-    )
-
-    return project_dir
 
 
 ##################################
@@ -552,16 +518,16 @@ def config_file_fmriprep(clpipe_fmriprep_dir: Path):
 
 
 @pytest.fixture(scope="module")
-def config_file_postproc2(clpipe_postproc2_dir: Path):
-    """Return config file from the test postproc2 directory."""
+def config_file_postproc(clpipe_postproc_dir: Path):
+    """Return config file from the test postproc directory."""
 
-    return clpipe_postproc2_dir / "clpipe_config.json"
+    return clpipe_postproc_dir / "clpipe_config.json"
 
 @pytest.fixture(scope="module")
-def config_file_postproc2_legacy_fmriprep(clpipe_postproc2_legacy_fmriprep_dir: Path):
-    """Same as config_file_postproc2 but with legacy fmriprep dir."""
+def config_file_postproc_legacy_fmriprep(clpipe_postproc_legacy_fmriprep_dir: Path):
+    """Same as config_file_postproc but with legacy fmriprep dir."""
 
-    return clpipe_postproc2_legacy_fmriprep_dir / "clpipe_config.json"
+    return clpipe_postproc_legacy_fmriprep_dir / "clpipe_config.json"
 
 
 @pytest.fixture(scope="session")
