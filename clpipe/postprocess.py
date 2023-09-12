@@ -48,11 +48,6 @@ IMAGE_SUBMISSION_STRING_TEMPLATE = (
     "{subject_out_dir} {processing_stream} {subject_working_dir} {log_dir} "
     "{debug}"
 )
-SUBJECT_SUBMISSION_STRING_TEMPLATE = (
-    "postprocess_subject {subject_id} {bids_dir} {fmriprep_dir} {output_dir} "
-    "{processing_stream} {config_file} {index_dir} {log_dir} {batch} {submit} "
-    "{debug}"
-)
 BIDS_INDEX_NAME = "bids_index"
 """This is the location of the pybids-generated index"""
 
@@ -272,38 +267,24 @@ def postprocess_subject(
 
 
 def postprocess_image(
-    config_file,
-    image_path,
-    bids_dir,
-    fmriprep_dir,
-    pybids_db_path,
-    out_dir,
-    subject_out_dir,
-    subject_working_dir,
-    log_dir,
-    processing_stream=DEFAULT_PROCESSING_STREAM,
+    run_config_file: os.PathLike,
+    image_path: os.PathLike,
+    subject_out_dir: os.PathLike,
+    subject_working_dir: os.PathLike,
+    subject_log_dir: os.PathLike,
     confounds_only=False,
     debug=False,
 ):
     """
     Setup the workflows specified in the postprocessing configuration.
     """
+    image_short_name = f"{str(Path(image_path).stem)}"
 
-    logger = get_logger("postprocess_image", debug=debug)
+    run_config: PostProcessingRunConfig = PostProcessingRunConfig.load(run_config_file)
+
+    logger = get_logger(image_short_name, log_dir=subject_log_dir, f_name=f"{image_short_name}.log", debug=debug)
     logger.info(f"Processing image: {image_path}")
 
-    config = _parse_config(config_file)
-    config_file = Path(config_file)
-
-    stream_output_dir = Path(out_dir) / processing_stream
-    postprocessing_config = _fetch_postprocessing_stream_config(
-        config, stream_output_dir, processing_stream=processing_stream
-    )
-
-    image_path = Path(image_path)
-    subject_working_dir = Path(subject_working_dir)
-    log_dir = Path(log_dir)
-    subject_out_dir = Path(subject_out_dir)
 
     # Grab only the image file name in a way that works
     #   on both .nii and .nii.gz
@@ -316,7 +297,7 @@ def postprocess_image(
     pipeline_name = file_name_no_modality.replace("-", "_")
 
     bids: BIDSLayout = get_bids(
-        bids_dir, database_path=pybids_db_path, fmriprep_dir=fmriprep_dir
+        run_config.bids_directory, database_path=run_config.pybids_db_path, fmriprep_dir=run_config.target_directory
     )
     # Lookup the BIDSFile with the image path
     bids_image: BIDSFile = bids.get_file(image_path)
@@ -333,7 +314,7 @@ def postprocess_image(
     non_image_query_params.pop("space")
 
     mixing_file, noise_file = None, None
-    if "AROMARegression" in postprocessing_config["ProcessingSteps"]:
+    if "AROMARegression" in run_config.options.processing_steps:
         try:
             # TODO: update these for image entities
             mixing_file = get_mixing_file(bids, non_image_query_params, logger)
@@ -357,7 +338,7 @@ def postprocess_image(
     if confounds_path is not None:
         try:
             confounds_export_path = build_export_path(
-                confounds_path, query_params["subject"], fmriprep_dir, subject_out_dir
+                confounds_path, query_params["subject"], run_config.target_directory, subject_out_dir
             )
         except ValueError as ve:
             logger.warn(ve)
@@ -367,12 +348,12 @@ def postprocess_image(
     image_export_path = None
     if not confounds_only:
         image_export_path = build_export_path(
-            image_path, query_params["subject"], fmriprep_dir, subject_out_dir
+            image_path, query_params["subject"], run_config.target_directory, subject_out_dir
         )
 
     # Build the global postprocessing workflow
     postproc_wf: pe.Workflow = build_postprocessing_wf(
-        postprocessing_config,
+        run_config.options,
         tr,
         name=pipeline_name,
         image_file=bids_image,
@@ -384,11 +365,11 @@ def postprocess_image(
         mixing_file=mixing_file,
         noise_file=noise_file,
         base_dir=subject_working_dir,
-        crashdump_dir=log_dir,
+        crashdump_dir=subject_working_dir,
     )
 
-    if postprocessing_config["WriteProcessGraph"]:
-        draw_graph(postproc_wf, "processing_graph", stream_output_dir, logger=logger)
+    if run_config.options.write_process_graph:
+        draw_graph(postproc_wf, "processing_graph", run_config.stream_output_directory, logger=logger)
 
     postproc_wf.run()
     sys.exit(0)

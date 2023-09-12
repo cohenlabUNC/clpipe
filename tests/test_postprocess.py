@@ -39,32 +39,25 @@ def test_postprocess_subjects_dir_invalid_subject(
         )
 
 
-@pytest.mark.skip(reason="Need BIDS db fixture.")
 def test_postprocess_image(
-    artifact_dir,
-    config,
-    request,
-    sample_raw_image,
-    sample_raw_image_mask,
-    sample_confounds_timeseries,
-    helpers,
+    config_dir_fmriprep_indexed
 ):
-    test_path = helpers.create_test_dir(artifact_dir, request.node.name)
-    out_path = test_path / "postprocessed_image.nii.gz"
-    confounds_out_path = test_path / "postprocessed_confounds.tsv"
+    run_config_file = config_dir_fmriprep_indexed / "data_working" / "default" / "run_config.json"
+    run_config: PostProcessingRunConfig = PostProcessingRunConfig.load(run_config_file)
 
-    with pytest.raises(SystemExit):
+
+    with pytest.raises(SystemExit) as e:
         postprocess_image(
-            config_file,
-            image_path,
-            bids_dir,
-            fmriprep_dir,
-            pybids_db_path,
-            out_dir,
-            subject_out_dir,
-            subject_working_dir,
-            log_dir,
+            run_config_file=run_config,
+            image_path=config_dir_fmriprep_indexed / "data_fmriprep/sub-0/func/sub-0_task-gonogo_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz",
+            subject_out_dir=config_dir_fmriprep_indexed / "data_postprocess/default/sub-0",
+            subject_working_dir=config_dir_fmriprep_indexed / "data_working/default/sub-0",
+            subject_log_dir=config_dir_fmriprep_indexed / "logs/postprocess_logs/default/sub-0",
+            confounds_only=False,
+            debug=False,
         )
+
+    assert e.value.code == 0
 
 
 def test_build_export_path_image(clpipe_fmriprep_dir: Path):
