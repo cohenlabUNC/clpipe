@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Union
 from .package import VERSION
 
+DEFAULT_CONFIG_FILE_NAME = 'clpipe_config.json'
 DEFAULT_PROCESSING_STREAM = "default"
 
 class Option:
