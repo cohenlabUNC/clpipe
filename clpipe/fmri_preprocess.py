@@ -40,9 +40,7 @@ def fmriprep_process(bids_dir=None, working_dir=None, output_dir=None,
     """
     # os.makedirs(config.fmriprep.working_directory, exist_ok=True)
     config: ProjectOptions = ProjectOptions.load(config_file)
-    config.setup_fmriprep_directories(
-        bids_dir, working_dir, output_dir, log_dir
-    )
+    setup_dirs(config)
 
     config = config.config
     project_dir = config["ProjectDirectory"]
@@ -195,3 +193,8 @@ def fmriprep_process(bids_dir=None, working_dir=None, output_dir=None,
     else:
         batch_manager.print_jobs()
     sys.exit(0)
+
+
+def setup_dirs(config: ProjectOptions):
+    os.makedirs(config.fmriprep.output_directory, exist_ok=True)
+    os.makedirs(config.fmriprep.log_directory, exist_ok=True)

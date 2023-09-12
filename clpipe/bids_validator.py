@@ -20,6 +20,7 @@ def bids_validate(bids_dir=None, config_file=None, log_dir=None,
     you do not need to provide a BIDS directory in the command.
     """
     config: ProjectOptions = ProjectOptions.load(config_file)
+    setup_dirs(config)
 
     logger = get_logger(STEP_NAME, debug=debug, log_dir=Path(config.project_directory) / "logs")
 
@@ -65,3 +66,7 @@ def bids_validate(bids_dir=None, config_file=None, log_dir=None,
             logger.info(f"Check {log_dir} for results.")
         else:
             batch_manager.print_jobs()
+
+
+def setup_dirs(config: ProjectOptions):
+    os.makedirs(config.bids_validation.log_directory, exist_ok=True)

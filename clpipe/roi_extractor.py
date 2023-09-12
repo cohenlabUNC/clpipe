@@ -19,6 +19,7 @@ import shutil
 from .errors import MaskFileNotFoundError
 
 from .utils import get_logger, resolve_fmriprep_dir
+from .config.options import ProjectOptions
 from pathlib import Path
 
 STEP_NAME = "roi_extraction"
@@ -474,3 +475,8 @@ def _mask_finder(data, config, logger):
             raise MaskFileNotFoundError(f"No mask found on path: {target_mask}")
     logger.debug(f"Found matching mask: {target_mask}")
     return target_mask
+
+
+def setup_dirs(config: ProjectOptions):
+    os.makedirs(config.roi_extraction.output_directory, exist_ok=True)
+    os.makedirs(config.roi_extraction.log_directory, exist_ok=True)

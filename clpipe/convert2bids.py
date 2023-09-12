@@ -4,13 +4,11 @@ from .config.options import ProjectOptions
 import os
 import parse
 import glob
-import sys
 import click
 import logging
 
 from .utils import get_logger
 from .status import needs_processing, write_record
-from .project_setup import setup_convert2bids_directories
 
 # These imports are for the heudiconv converter
 from pkg_resources import resource_filename
@@ -21,6 +19,8 @@ BASE_CMD = ("dcm2bids -d {subject_dicom_dir} -o {bids_dir} "
             "-p {subject} -c {conv_config_file}")
 HEUDICONV_BASE_CMD = '''heudiconv --files {subject_dicom_dir} -s {subject} '''\
         '''-f {heuristic} -o {output_directory} -b'''
+DEFAULT_CONV_CONFIG_PATH = "data/default_conv_config.json"
+
 
 
 def convert2bids(dicom_dir=None, dicom_dir_format=None, bids_dir=None, 
@@ -33,7 +33,7 @@ def convert2bids(dicom_dir=None, dicom_dir_format=None, bids_dir=None,
     config: ProjectOptions = ProjectOptions.load(config_file)
     config.convert2bids.load_cli_args(dicom_dir, dicom_dir_format, conv_config_file, bids_dir, log_dir)
 
-    setup_convert2bids_directories(config)
+    setup_dirs(config)
 
     logger = get_logger(STEP_NAME, debug=debug, log_dir=Path(config.project_directory) / "logs")
 
@@ -292,7 +292,33 @@ def _get_sub_session_list(dicom_dir, dicom_dir_format, logger, subjects=None, se
     sub_sess_list = [sub_sess_list[i] for i in sub_sess_inds]
 
     return sub_sess_list, folders
-    
+
+
+def setup_dirs(config):
+    from pkg_resources import resource_stream
+    import json
+
+    # Create the step's core directories
+    os.makedirs(config.convert2bids.bids_directory, exist_ok=True)
+    os.makedirs(config.convert2bids.log_directory, exist_ok=True)
+
+    # Create the default conversion config file
+    if not os.path.exists(config.convert2bids.conversion_config):
+        with resource_stream(__name__, DEFAULT_CONV_CONFIG_PATH) as def_conv_config:
+            conv_config = json.load(def_conv_config)
+        
+            with open(config.convert2bids.conversion_config, 'w') as fp:
+                json.dump(conv_config, fp, indent='\t')
+        
+    # Create a default .bidsignore file
+    bids_ignore_path = os.path.join(config.convert2bids.bids_directory, ".bidsignore")
+    if not os.path.exists(bids_ignore_path):
+        with open(bids_ignore_path, 'w') as bids_ignore_file:
+            # Ignore dcm2bid's auto-generated directory
+            bids_ignore_file.write("tmp_dcm2bids\n")
+            # Ignore heudiconv's auto-generated scan file
+            bids_ignore_file.write("scans.json\n")
+
 
 @click.command(INFO_COMMAND_NAME)
 @click.option('-config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True), default = None, help = 'The configuration file for the study, use if you have a custom batch configuration.')
