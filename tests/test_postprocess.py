@@ -14,20 +14,8 @@ def test_postprocess_subjects(clpipe_fmriprep_dir):
     options.postprocessing.working_directory = clpipe_fmriprep_dir / "data_working"
 
     postprocess_subjects(
-        config_file=options
-    )
-
-def test_postprocess_subject(config_dir_fmriprep_indexed):
-
-    run_config = PostProcessingRunConfig.load(config_dir_fmriprep_indexed / "data_working" / "default" / "run_config.json")
-
-    postprocess_subject(
-        subject_id="1",
-        run_config_file=run_config,
-        batch=True,
-        submit=False,
-        processing_stream="default",
-        debug=False
+        config_file=options,
+        batch=True
     )
 
 

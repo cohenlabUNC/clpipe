@@ -112,7 +112,8 @@ def postprocess_subjects(
     setup_dirs(run_config)
 
     # Save the run configuration for use downstream
-    run_config.dump(Path(run_config.stream_working_directory) / RUN_CONFIG_FILE_NAME)
+    stream_run_config_path = Path(run_config.stream_working_directory) / RUN_CONFIG_FILE_NAME
+    run_config.dump(stream_run_config_path)
 
     # Setup Logging
     logger= get_logger(STEP_NAME, debug=debug, log_dir=options.get_logs_dir())
@@ -128,18 +129,6 @@ def postprocess_subjects(
     if options.postprocessing.working_directory == ProjectOptions().postprocessing.working_directory:
         logger.error("A working directory for this step must be provided in your config file.")
         sys.exit(1)
-
-    # Setup batch jobs if indicated
-    batch_manager = None
-    if batch:
-        slurm_log_dir = log_dir / SUBJECT_LOG_DIR
-        slurm_log_dir = os.path.join(
-            log_dir, SUBJECT_LOG_DIR
-        )
-        os.makedirs(slurm_log_dir, exist_ok=True)
-    
-        batch_manager: BatchManager = _setup_batch_manager(run_config, slurm_log_dir, non_processing=True)
-
     
 
     # Create jobs based on subjects given for processing
@@ -158,31 +147,17 @@ def postprocess_subjects(
         )
         time.sleep(0.5)
 
-        logger.info("Creating submission string(s)")
-        submission_strings = {}
-        time.sleep(0.5)
-
-        batch_flag = "" if batch_manager else "-no-batch"
-        submit_flag = "-submit" if submit else ""
-        debug_flag = "-debug" if debug else ""
-
         for subject in subjects_to_process:
-            key = "Postprocessing_sub-" + subject
-            submission_strings[key] = SUBJECT_SUBMISSION_STRING_TEMPLATE.format(
+            postprocess_subject(
                 subject_id=subject,
-                bids_dir=options.fmriprep.bids_directory,
-                fmriprep_dir=options.postprocessing.target_directory,
-                config_file=config_file,
-                index_dir=run_config.pybids_db_path,
-                output_dir=options.postprocessing.target_directory,
-                processing_stream=processing_stream,
-                log_dir=options.postprocessing.log_directory,
-                batch=batch_flag,
-                submit=submit_flag,
-                debug=debug_flag,
+                run_config=run_config,
+                run_config_path=stream_run_config_path,
+                bids=bids,
+                batch=batch,
+                submit=submit,
+                debug=debug
             )
-
-        _submit_jobs(batch_manager, submission_strings, logger, submit=submit)
+            
     except NoSubjectsFoundError as nsfe:
         logger.error(nsfe)
         sys.exit(1)
@@ -190,14 +165,18 @@ def postprocess_subjects(
         logger.error(fnfe)
         sys.exit(1)
 
+
 def setup_dirs(run_config: PostProcessingRunConfig):
     os.makedirs(run_config.stream_output_directory, exist_ok=True)
     os.makedirs(run_config.stream_working_directory, exist_ok=True)
     os.makedirs(run_config.stream_log_directory, exist_ok=True)
 
+
 def postprocess_subject(
     subject_id: str,
-    run_config_file: os.PathLike,
+    run_config: PostProcessingRunConfig,
+    run_config_path: str,
+    bids: BIDSLayout,
     batch: bool=False,
     submit: bool=False,
     processing_stream:str=DEFAULT_PROCESSING_STREAM,
@@ -207,8 +186,6 @@ def postprocess_subject(
     Parse configuration and (TODO) sanitize inputs for image job distribution.
     """
 
-    run_config = PostProcessingRunConfig.load(run_config_file)
-
     sub_with_id = "sub-" + subject_id
     
     # Create a postprocessing logging directory for this subject,
@@ -216,18 +193,17 @@ def postprocess_subject(
     subject_log_dir: Path = Path(run_config.stream_log_directory) / sub_with_id
     subject_log_dir.mkdir(exist_ok=True)
 
-    logger = get_logger("postprocess_subject", log_dir=subject_log_dir, f_name=f"{sub_with_id}.log", debug=debug)
+    logger = get_logger(f"postprocess_{sub_with_id}", log_dir=subject_log_dir, f_name=f"{sub_with_id}.log", debug=debug)
     logger.info(f"Processing subject: {subject_id}")
 
 
     batch_manager = None
     if batch:
-        batch_manager = _setup_batch_manager(run_config, subject_log_dir)
+        subject_slurm_log_dir = subject_log_dir / "slurm_out"
+        subject_slurm_log_dir.mkdir(exist_ok=True)
+        batch_manager = _setup_batch_manager(run_config, subject_slurm_log_dir)
 
     try:
-        bids: BIDSLayout = get_bids(
-            run_config.bids_directory, database_path=run_config.pybids_db_path, fmriprep_dir=run_config.target_directory
-        )
         validate_subject_exists(bids, subject_id, logger)
 
         try:
@@ -280,7 +256,7 @@ def postprocess_subject(
             subject_out_dir,
             processing_stream,
             subject_working_dir,
-            run_config_file,
+            run_config_path,
             subject_log_dir,
             debug,
             logger,
@@ -289,15 +265,10 @@ def postprocess_subject(
         _submit_jobs(batch_manager, submission_strings, logger, submit=submit)
     except SubjectNotFoundError as snfe:
         logger.error(snfe)
-        sys.exit()
     except ValueError as ve:
         logger.error(ve)
-        sys.exit()
     except FileNotFoundError as fnfe:
         logger.error(fnfe)
-        sys.exit()
-
-    sys.exit()
 
 
 def postprocess_image(
