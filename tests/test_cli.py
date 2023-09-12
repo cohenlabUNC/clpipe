@@ -33,10 +33,10 @@ def test_glm_l2_launch_cli(glm_config_file: Path):
         )
     assert e.value.code == 0
 
-def test_update_config_cli(legacy_config_path: Path):
+def test_update_config_cli(legacy_config_dir: Path):
     """Check that legacy config update works as intended."""
     with pytest.raises(SystemExit) as e:
         update_config_cli(
-            ["-config_file", str(legacy_config_path)]
+            ["-config_file", str(legacy_config_dir / "clpipe_config.json")]
         )
     assert e.value.code == 0

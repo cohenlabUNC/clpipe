@@ -679,16 +679,16 @@ def flywheel_sync_cli(config_file, source_url, dropoff_dir, submit, debug):
 
 
 @click.command("get_default", no_args_is_help=True)
-@click.option('-outputFile', default='AConfigFile.json', help ='Filepath for the outputted configuration file.')
+@click.option('-outputFile', '-o', default='clpipe_config_DEFAULT.json', help ='Filepath for the outputted configuration file.')
 def get_config_cli(output_file):
     """Generates a default configuration file for your project."""
-    from .grab_config_file import get_config_file
+    from .config.options import get_config_file
 
     get_config_file(output_file)
 
 
 @click.command("get_default_config", no_args_is_help=True)
-@click.option('-outputFile', default='AGLMConfigFile.json', help='Filepath for the outputted configuration file.')
+@click.option('-outputFile', '-o', default='AGLMConfigFile.json', help='Filepath for the outputted configuration file.')
 def get_glm_config_cli(output_file):
     """Generates a default GLM configuration file for your project."""
     from .grab_config_file import get_glm_config_file
@@ -697,15 +697,15 @@ def get_glm_config_cli(output_file):
 
 
 @click.command("update", no_args_is_help=True)
-@click.option('-config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True),
+@click.option('-config_file', '-c', type=click.Path(exists=True, dir_okay=False, file_okay=True),
               default=None, required = True,
               help='Configuration file to update.')
 def update_config_cli(config_file):
     """Updates an existing configuration file with any new fields. Does not modify existing fields."""
-    from .config_json_parser import update_config_file
+    from .config.options import update_config_file
 
     update_config_file(config_file)
-
+    
 
 @click.command("templateflow_setup")
 @click.option('-config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True), default=None,
