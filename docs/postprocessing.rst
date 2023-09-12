@@ -20,18 +20,6 @@ new parameters.
 This command will also output a detailed processing graph
 for each processing stream.
 
-Available processing steps:
-
-	- **Temporal Filtering**
-	- **Intensity Normalization**
-	- **Spatial Smoothing**
-	- **AROMA Regression**
-	- **Confound Regression**
-	- **Apply Mask**
-	- **Scrub Timepoints**
-	- **Resample**
-	- **Trim Timepoints**
-
 **Example Pipeline**
 
 .. image:: resources/example_pipeline.png
@@ -57,6 +45,7 @@ Step Options section for more information about configuring this section.
 ``BatchOptions`` contains settings for job submission.
 
 **Option Block**
+
 .. code-block:: json
 
 	"PostProcessingOptions2": {

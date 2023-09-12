@@ -2,6 +2,9 @@
 ROI Extraction
 =======================
 
+*****************
+Overview
+*****************
 
 clpipe comes with a variety of functional and anatomical atlases, 
 which can be used to extract ROI time series data from functional scans.
@@ -14,19 +17,21 @@ be extracted without respect to the brain mask, and then ROIs with
 fewer than "PropVoxels" voxels will be set to "nan". This is a workaround for 
 the limitations on Nilearn's ROI extractor functions.
 
-ROI Extraction Options
-----------------
+To view the available built-in atlases, you can use the ``roi atlases`` 
+command.
+
+*****************
+Configuration
+*****************
 
 .. autoclass:: clpipe.config.project.ROIExtractOptions
 
+*****************
+Commands
+*****************
+
 .. click:: clpipe.cli:fmri_roi_extraction_cli
 	:prog: clpipe roi extract
-
-Viewing Available Atlases
-----------------
-
-To view the available built-in atlases, you can use the ``get_available_atlases`` 
-command.
 
 .. click:: clpipe.cli:get_available_atlases_cli
 	:prog: clpipe roi atlases

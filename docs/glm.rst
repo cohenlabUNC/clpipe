@@ -2,9 +2,9 @@
 GLM Analysis
 ==================================
 
--------------------------------
+****************
 Overview
--------------------------------
+****************
 
 clpipe includes functions to help you set up and run general linear models 
 (GLM) on your neuroimaging data. It uses FSL's implementation of GLM (FEAT), 
@@ -44,16 +44,17 @@ Currently, clpipe includes the following commands:
 	the ``glm_l2_preparefsfs`` command.
 
 
--------------------------------
-Configuration Files
--------------------------------
+****************
+Configuration
+****************
 
-In clpipe, a GLM configuration file describes the L1 and L2 setup for a 
+clipe's GLM commands are all driven by a GLM configuration that is seperate from
+the main configuration file of a project. A GLM configuration file describes the L1 and L2 setup for a 
 single task. It is structured as follows:
 
 
 Preamble
-========
+#####################
 
 * ``GLMName``: Descriptive Name
 * ``Authors``: Author List
@@ -95,7 +96,7 @@ Preamble
     * ``LogDirectory``: Log directory, defaults to ``glm_setup_logs`` in the project logs directory.
 
 Level 1 Onsets
-==============
+#####################
 
 The entry ``Level1Onsets`` contains the specification for extracting the onset timing files and transforming them into FSL three column format EV files.
 
@@ -107,7 +108,7 @@ The entry ``Level1Onsets`` contains the specification for extracting the onset t
 * ``EVDirectory``: What directory to output the EV files to.
 
 Level 1 Setups
-==============
+#####################
 
 The entry ``Level1Setups`` contains a list of Level 1 specifications of the following form:
 
@@ -126,13 +127,13 @@ The entry ``Level1Setups`` contains a list of Level 1 specifications of the foll
 
 
 Filenames for EV Onset Files
-============================
+#####################
 
 Event Onset files must be in the FSL 3 column format. Additionally, the file names for the onset files must be of the following form: filename of image - target suffix + EV file suffix. For example. If the image filename was "sub-1001_ses-01_task-gng_run-01_bold.nii.gz", the target suffix was "_bold.nii.gz" and a EV suffix was "_hit.txt", then the EV file should be named: "sub-1001_ses-01_task-gng_run-01_hit.txt``.
 
 
 Level 2 Setups
-==============
+#####################
 
 The entry ``Level2Setups`` contains a list of Level 2 specifications of the following form:
 
@@ -144,7 +145,7 @@ The entry ``Level2Setups`` contains a list of Level 2 specifications of the foll
 
 
 Subject File Formatting
-=======================
+#####################
 
 The L2 subject file maps each image onto a specific L2 model setup entry and 
 onto a specific L2 model (i.e. assigns a subject's images to that subject.) 
@@ -156,9 +157,9 @@ the ``L2_name`` column contains which ``ModelName`` corresponds to a given
 image. For an example, see the ``l2_sublist.csv`` file generated when you 
 run the ``project_setup`` function.
 
--------------------------------
+****************
 Commands
--------------------------------
+****************
 
 .. click:: clpipe.cli:fsl_onset_extract_cli
 	:prog: clpipe glm fsl_onset_extract
@@ -172,9 +173,8 @@ Commands
 .. click:: clpipe.cli:fsl_onset_extract_cli
 	:prog: clpipe glm fsl_onset_extract
 
--------------------------------
 Legacy Commands
--------------------------------
+#####################
 
 .. click:: clpipe.cli:glm_l1_preparefsf_cli
 	:prog: glm_l1_preparefsf

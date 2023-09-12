@@ -2,27 +2,23 @@
 DICOM to BIDs Conversion
 ========================
 
---------------------
+*****************
 Overview
---------------------
+*****************
 
 clpipe's `convert2bids` commands facilitates the conversion of DICOM files into BIDS
 format, using either dcm2bids or heudiconv as your underlying converter.
 
-Command
--------------------
+*****************
+Configuration
+*****************
 
-.. click:: clpipe.cli:convert2bids_cli
-	:prog: clpipe convert2bids
-
-
-Configuration Options
--------------------
+**Definitions**
 
 .. autoclass:: clpipe.config.project.Convert2BIDSOptions
 
 The DICOM format string
----------------------
+#################
 
 One important thing to note about using the main command is the need for 
 a specifically formatted `dicom_dir_format` option. This is to appropriately map your 
@@ -66,9 +62,8 @@ For example, `Subject-{subject}/` used on a dataset with `Subject-01` as a
 folder will determine the subject id to be `01` not `Subject-01`. 
 Note that in all examples, there is a trailing forward slash.
 
---------------------
 dcm2bids configuration
---------------------
+#################
 
 `dcm2bids <https://github.com/UNFmontreal/Dcm2Bids>`_ is a JSON-driven tool for converting DICOM files. 
 While not as flexible as heudiconv, dcm2bids is easier to learn and has a
@@ -120,9 +115,8 @@ create a temporary directory containing all the converted files,
 and, more importantly, the sidecar JSONs. These JSONs contain the information needed 
 to update the conversion configuration file.
 
---------------------
 heudiconv configuration
---------------------
+#################
 
 `heudiconv <https://heudiconv.readthedocs.io/en/latest/usage.html>`_ is another tool for converting
 DICOM files to BIDS format. This tool is a bit trickier to use than dcm2bids, because
@@ -155,4 +149,14 @@ And when running convert2bids, include the `-heudiconv` flag:
 .. code-block:: console
 
     clpipe convert2bids -heudiconv -c config_file.json
+
+
+*****************
+Command
+*****************
+
+.. click:: clpipe.cli:convert2bids_cli
+	:prog: clpipe convert2bids
+
+
 

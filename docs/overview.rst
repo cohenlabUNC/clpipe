@@ -2,8 +2,47 @@
 Overview
 ===================
 
+*****************
+Configuration Files
+*****************
+
+clpipe is driven by configuration files, and most commands in clpipe require a configuration file path
+via their '-config_file' option. These configuration files are JSONs that contain 
+all aspects of the preprocessing and postprocessing streams that 
+you want applied to your dataset. 
+clpipe provides you with a default configuration file after using the `project_setup`
+command. To create addition configuration files for your dataset, use the following command:
+
+.. click:: clpipe.cli:get_config_file
+	:prog: clpipe config get
+
+This command will create a default configuration file with whatever name you specified. 
+The top of the default configuration file looks like this:
+
+.. literalinclude:: ../clpipe/data/defaultConfig.json
+   :language: json
+   :lines: 1-20
+
+The configuration file consists of some project-level metadata, such as "ProjectTitle",
+and a set of Option blocks that contain their own sub-settings. Each Option block
+corresponds to a clpipe command, and controls the input parameters for that step.
+For example, "DICOMtoBIDSOptions" corresponds to the convert2bids command. You can
+find explanations for each specific Option block on the documenation page for its
+corresponding command.
+
+All of these fields have what the designers of clpipe consider to 
+be reasonable defaults for processing. 
+Additionally, users at UNC-CH on the Longleaf cluster with access to the 
+HNG group should be able to use the default options with no change. 
+Other users will have to modify several fields. 
+
+Described here are the project-level meta fields of the configuration file:
+
+.. autoclass:: clpipe.config.project.ProjectOptions
+
+*****************
 The Command Line Interface
-------------------
+*****************
 
 clpipe provides a unifed command line interface (CLI) under the ``clpipe`` command.
 
@@ -95,41 +134,3 @@ These commands contain their own help dialogue as well:
         -debug, -d                 Flag to enable detailed error messages and
                                     traceback.
         -help                      Show this message and exit.
-
-
-Configuration Files
---------------------
-
-Most commands in clpipe require a configuration file path
-via their '-config_file' option. These configuration files are JSONs that contain 
-all aspects of the preprocessing and postprocessing streams that 
-you want applied to your dataset. 
-clpipe provides you with a default configuration file after using the `project_setup`
-command. To create addition configuration files for your dataset, use the following command:
-
-.. click:: clpipe.cli:get_config_file
-	:prog: clpipe config get
-
-This command will create a default configuration file with whatever name you specified. 
-The top of the default configuration file looks like this:
-
-.. literalinclude:: ../clpipe/data/defaultConfig.json
-   :language: json
-   :lines: 1-20
-
-The configuration file consists of some project-level metadata, such as "ProjectTitle",
-and a set of Option blocks that contain their own sub-settings. Each Option block
-corresponds to a clpipe command, and controls the input parameters for that step.
-For example, "DICOMtoBIDSOptions" corresponds to the convert2bids command. You can
-find explanations for each specific Option block on the documenation page for its
-corresponding command.
-
-All of these fields have what the designers of clpipe consider to 
-be reasonable defaults for processing. 
-Additionally, users at UNC-CH on the Longleaf cluster with access to the 
-HNG group should be able to use the default options with no change. 
-Other users will have to modify several fields. 
-
-Described here are the project-level meta fields of the configuration file:
-
-.. autoclass:: clpipe.config.project.ProjectOptions
