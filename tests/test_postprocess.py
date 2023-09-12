@@ -5,7 +5,7 @@ from clpipe.postprocess import *
 from pathlib import Path
 
 
-def test_postprocess_subjects_dir(clpipe_fmriprep_dir, artifact_dir, helpers, request):
+def test_postprocess_subjects(clpipe_fmriprep_dir, artifact_dir, helpers, request):
     fmriprep_dir = clpipe_fmriprep_dir / "data_fmriprep" / "fmriprep"
     config = clpipe_fmriprep_dir / "clpipe_config.json"
     bids_dir = clpipe_fmriprep_dir / "data_BIDS"
@@ -14,14 +14,16 @@ def test_postprocess_subjects_dir(clpipe_fmriprep_dir, artifact_dir, helpers, re
     log_dir = Path(test_dir / "logs" / "postproc_logs")
     log_dir.mkdir(parents=True, exist_ok=True)
 
-    with pytest.raises(SystemExit):
-        postprocess_subjects(
-            config_file=config,
-            fmriprep_dir=fmriprep_dir,
-            bids_dir=bids_dir,
-            output_dir=postproc_dir,
-            log_dir=log_dir,
-        )
+    options = ProjectOptions.load(config)
+    options.postprocessing.working_directory = str(fmriprep_dir / "working")
+
+    postprocess_subjects(
+        config_file=options,
+        fmriprep_dir=fmriprep_dir,
+        bids_dir=bids_dir,
+        output_dir=postproc_dir,
+        log_dir=log_dir,
+    )
 
 
 @pytest.mark.skip(reason="Test hangs")

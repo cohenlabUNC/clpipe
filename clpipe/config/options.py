@@ -3,6 +3,7 @@ from typing import List
 import marshmallow_dataclass
 import json, yaml, os
 from pathlib import Path
+from typing import Union
 from .package import VERSION
 
 DEFAULT_PROCESSING_STREAM = "default"
@@ -359,6 +360,9 @@ class BatchOptions(Option):
 class PostProcessingOptions(Option):
     """Options for additional processing after fMRIPrep's preprocessing."""
 
+    stream_name: str = "default"
+    """Name of the processing stream to use. 'default' uses no stream."""
+
     working_directory: str = "SET WORKING DIRECTORY"
     """Directory for caching intermediary processing files."""
 
@@ -412,9 +416,22 @@ class PostProcessingOptions(Option):
         self.output_directory = os.path.join(project_directory, 'data_postprocess')
         self.log_directory = os.path.join(project_directory, 'logs', 'postprocess_logs')
 
-    def get_stream_dir(self, processing_stream: os.PathLike):
-        """Combine output path and stream name to create stream out directory"""
+    
+    def get_stream_working_dir(self, processing_stream:str):
+        """Get the working directory relative to the processing stream."""
+        return os.path.join(self.working_directory, processing_stream)
+
+    def get_stream_output_dir(self, processing_stream:str):
+        """Get the output directory relative to the processing stream."""
         return os.path.join(self.output_directory, processing_stream)
+
+    def get_stream_log_dir(self, processing_stream:str):
+        """Get the log directory relative to the processing stream."""
+        return os.path.join(self.log_directory, processing_stream)
+
+    def get_pybids_db_path(self, index_name: str):
+        """Get the path to the pybids index relative to the stream working dir."""
+        return os.path.join(index_name, self.get_stream_working_dir())
 
 
 @dataclass
@@ -554,13 +571,17 @@ class ProjectOptions(Option):
 
         
     @classmethod
-    def load(cls, file):
+    def load(cls, options: Union[os.PathLike, 'ProjectOptions']):
+        # Return if given ProjectOptions object for testing convenience
+        if isinstance(options, cls):
+            return options
+
         #Generate schema from given dataclasses
         config_schema = marshmallow_dataclass.class_schema(cls)
 
-        extension = Path(file).suffix
+        extension = Path(options).suffix
 
-        with open(file) as f:
+        with open(options) as f:
             if extension == '.yaml':
                 config_dict = yaml.safe_load(f)
             elif extension == '.json':
