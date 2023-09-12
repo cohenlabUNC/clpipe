@@ -121,3 +121,10 @@ def test_update_config_file_legacy_relative(legacy_config_dir):
     os.chdir(legacy_config_dir)
     
     update_config_file("clpipe_config.json")
+
+def test_update_config_file_legacy_backup(legacy_config_dir):
+    """Test to ensure legacy config update to new format works when using
+        just 'clpipe_config.json' within clpipe dir."""
+    config_file = legacy_config_dir / "clpipe_config.json"
+    
+    update_config_file(config_file, backup=True)

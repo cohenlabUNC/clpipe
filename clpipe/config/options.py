@@ -605,11 +605,19 @@ class ProjectOptions(Option):
         config_dict = dict(zip(newNames, list(config_dict.values())))
         return config_schema().load(config_dict)
     
-def update_config_file(config_file: os.PathLike) -> None:
+def update_config_file(config_file: os.PathLike, backup: bool = False) -> None:
     config_file = Path(config_file).resolve()
 
+    if backup:
+        import shutil
+        backup_path = config_file.parent / f"{config_file.stem}_OLD{config_file.suffix}"
+        print(f'Backup config file created: {str(backup_path.name)}')
+        shutil.copy(config_file, backup_path)
+
+    # TODO: can actually check the version of the config file and check if update needed
     old_options = ProjectOptions.load(config_file)
     old_options.dump(config_file)
+    print(f'Config file {config_file.name} updated.')
 
 def get_config_file(output_file="clpipe_config_DEFAULT.json"):
     """This commands generates a default configuration file for further modification."""

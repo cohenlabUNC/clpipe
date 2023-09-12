@@ -700,11 +700,15 @@ def get_glm_config_cli(output_file):
 @click.option('-config_file', '-c', type=click.Path(exists=True, dir_okay=False, file_okay=True),
               default=None, required = True,
               help='Configuration file to update.')
-def update_config_cli(config_file):
+@click.option('-backup', is_flag=True, default=False, help='Automatically backup the previous configuration file')
+def update_config_cli(config_file, backup):
     """Updates an existing configuration file with any new fields. Does not modify existing fields."""
     from .config.options import update_config_file
-
-    update_config_file(config_file)
+    
+    if not backup:
+        if click.confirm("Previous config file will be OVERWRITTEN. Would you like to back up your config file before updating?"):
+            backup = True
+    update_config_file(config_file, backup)
     
 
 @click.command("templateflow_setup")
