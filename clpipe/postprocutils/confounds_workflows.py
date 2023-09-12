@@ -500,10 +500,10 @@ def build_confounds_add_motion_outliers_workflow(
 
 def _construct_motion_outliers(scrub_vector: list):
     from pathlib import Path
-    from clpipe.glm_setup import _construct_motion_outliers
+    from .utils import construct_motion_outliers
 
     # Create outlier columns
-    mot_outliers = _construct_motion_outliers(scrub_vector)
+    mot_outliers = construct_motion_outliers(scrub_vector)
     # Give the outlier columns names
     mot_outliers.columns = [
         f"motion_outlier_{i}" for i in range(1, len(mot_outliers.columns) + 1)
