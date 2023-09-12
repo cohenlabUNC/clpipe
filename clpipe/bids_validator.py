@@ -20,9 +20,13 @@ def bids_validate(bids_dir=None, config_file=None, log_dir=None,
     you do not need to provide a BIDS directory in the command.
     """
     config: ProjectOptions = ProjectOptions.load(config_file)
+    config.bids_validation.load_cli_args(
+        bids_directory = bids_dir,
+        log_directory = log_dir
+    )
     setup_dirs(config)
 
-    logger = get_logger(STEP_NAME, debug=debug, log_dir=Path(config.project_directory) / "logs")
+    logger = get_logger(STEP_NAME, debug=debug, log_dir=config.get_logs_dir())
 
     logger.info(f"Starting BIDS validation targeting: {bids_dir}")
     logger.debug(f"Using config file: {config_file}")

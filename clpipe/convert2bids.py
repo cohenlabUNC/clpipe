@@ -41,7 +41,7 @@ def convert2bids(dicom_dir=None, dicom_dir_format=None, bids_dir=None,
 
     setup_dirs(config)
 
-    logger = get_logger(STEP_NAME, debug=debug, log_dir=Path(config.project_directory) / "logs")
+    logger = get_logger(STEP_NAME, debug=debug, log_dir=config.get_logs_dir())
 
     batch_manager = BatchManager(config.batch_config_path, log_dir, debug=debug)
     batch_manager.create_submission_head()
