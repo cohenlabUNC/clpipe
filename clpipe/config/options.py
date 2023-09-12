@@ -529,7 +529,7 @@ class ProjectOptions(Option):
             else:
                 raise ValueError(f"Unsupported extension: {extension}")
 
-        if 'version' not in config_dict:
+        if 'clpipe_version' not in config_dict:
             config_dict = convert_project_config(config_dict)    
         
         newNames = list(config_dict.keys())
