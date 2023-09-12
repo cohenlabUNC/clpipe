@@ -14,6 +14,27 @@ def test_postprocess_subjects(clpipe_fmriprep_dir):
     options.postprocessing.working_directory = clpipe_fmriprep_dir / "data_working"
 
     postprocess_subjects(
+        subject_id="01",
+        bids_dir=clpipe_fmriprep_dir / "data_BIDS",
+        fmriprep_dir=clpipe_fmriprep_dir / "data_fmriprep",
+        output_dir=clpipe_fmriprep_dir / "data_postprocessed",
+        config_file=config,
+        index_dir=clpipe_fmriprep_dir / "data_working" / "default" / "bids_index",
+        batch=True,
+        submit=False,
+        log_dir=clpipe_fmriprep_dir / "logs" / "postprocess_logs" / "default",
+        processing_stream="default",
+        debug=False
+    )
+
+def test_postprocess_subject(config_file_fmriprep_indexed):
+
+    config = config_file_fmriprep_indexed / "clpipe_config.json"
+
+    options = ProjectOptions.load(config)
+    options.postprocessing.working_directory = config_file_fmriprep_indexed / "data_working"
+
+    postprocess_subject(
         config_file=options
     )
 
