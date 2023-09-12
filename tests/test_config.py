@@ -101,7 +101,7 @@ def test_dump_project_config_json(helpers, artifact_dir, request):
     test_dir = helpers.create_test_dir(artifact_dir, request.node.name)
 
     config:ProjectOptions = ProjectOptions()
-    config.project_setup("test_project", test_dir, "test_source")
+    config.populate_project_paths(test_dir, "test_source")
     config.dump(test_dir / 'test_project_options.json')
 
 
@@ -109,5 +109,5 @@ def test_dump_project_config_yaml(helpers, artifact_dir, request):
     test_dir = helpers.create_test_dir(artifact_dir, request.node.name)
 
     config:ProjectOptions = ProjectOptions()
-    config.project_setup("test_project", test_dir, "test_source")
+    config.populate_project_paths(test_dir, "test_source")
     config.dump(test_dir / 'test_project_options.yaml')
