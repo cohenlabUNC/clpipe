@@ -437,9 +437,9 @@ class PostProcessingOptions(Option):
         """Get the log directory relative to the processing stream."""
         return os.path.join(self.log_directory, processing_stream)
 
-    def get_pybids_db_path(self, index_name: str):
+    def get_pybids_db_path(self, processing_stream: str, index_name: str):
         """Get the path to the pybids index relative to the stream working dir."""
-        return os.path.join(index_name, self.get_stream_working_dir())
+        return os.path.join(self.get_stream_working_dir(processing_stream), index_name)
 
 
 

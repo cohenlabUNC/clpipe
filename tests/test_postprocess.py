@@ -5,33 +5,17 @@ from clpipe.postprocess import *
 from pathlib import Path
 
 
-def test_postprocess_subjects(clpipe_fmriprep_dir, artifact_dir, helpers, request):
-    fmriprep_dir = clpipe_fmriprep_dir / "data_fmriprep" / "fmriprep"
+def test_postprocess_subjects(clpipe_fmriprep_dir):
+    """Run the subjects setup of postprocessing. Builds output directories, including
+    the BIDS index."""
     config = clpipe_fmriprep_dir / "clpipe_config.json"
-    bids_dir = clpipe_fmriprep_dir / "data_BIDS"
-    test_dir = helpers.create_test_dir(artifact_dir, request.node.name)
-    postproc_dir = Path(test_dir / "data_postprocessed")
-    log_dir = Path(test_dir / "logs" / "postproc_logs")
-    log_dir.mkdir(parents=True, exist_ok=True)
 
     options = ProjectOptions.load(config)
-    options.postprocessing.working_directory = str(fmriprep_dir / "working")
+    options.postprocessing.working_directory = clpipe_fmriprep_dir / "data_working"
 
     postprocess_subjects(
-        config_file=options,
-        fmriprep_dir=fmriprep_dir,
-        bids_dir=bids_dir,
-        output_dir=postproc_dir,
-        log_dir=log_dir,
+        config_file=options
     )
-
-
-@pytest.mark.skip(reason="Test hangs")
-def test_postprocess_subjects_dir_config_only(clpipe_fmriprep_dir):
-    config = clpipe_fmriprep_dir / "clpipe_config.json"
-
-    with pytest.raises(SystemExit):
-        postprocess_subjects(config_file=config, submit=True, batch=False)
 
 
 def test_postprocess_subjects_dir_invalid_subject(

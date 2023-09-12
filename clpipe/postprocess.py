@@ -91,8 +91,8 @@ def postprocess_subjects(
     setup_dirs(config, processing_stream)
 
 
-    pybids_db_path = os.path.join(config.postprocessing.working_directory, BIDS_INDEX_NAME)
-    os.makedirs(pybids_db_path, exist_ok=True)
+    pybids_db_path = config.postprocessing.get_pybids_db_path(processing_stream, BIDS_INDEX_NAME)
+    #os.makedirs(pybids_db_path, exist_ok=True)
 
     # Setup Logging
     logger= get_logger(STEP_NAME, debug=debug, log_dir=config.get_logs_dir())
@@ -154,7 +154,7 @@ def postprocess_subjects(
                 index_dir=pybids_db_path,
                 output_dir=config.postprocessing.target_directory,
                 processing_stream=processing_stream,
-                log_dir=config.postprocessing.log_dir,
+                log_dir=config.postprocessing.log_directory,
                 batch=batch_flag,
                 submit=submit_flag,
                 debug=debug_flag,
