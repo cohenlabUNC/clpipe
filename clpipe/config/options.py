@@ -605,6 +605,18 @@ class ProjectOptions(Option):
         config_dict = dict(zip(newNames, list(config_dict.values())))
         return config_schema().load(config_dict)
     
+def update_config_file(config_file: os.PathLike) -> None:
+    config_file = Path(config_file).resolve()
+
+    old_options = ProjectOptions.load(config_file)
+    old_options.dump(config_file)
+
+def get_config_file(output_file="clpipe_config_DEFAULT.json"):
+    """This commands generates a default configuration file for further modification."""
+
+    config = ProjectOptions.load()
+    config.dump(output_file)
+    print('Config file created at '+ output_file)
 
 def convert_project_config(old_config, new_config=None):
     """
