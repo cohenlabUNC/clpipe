@@ -86,7 +86,7 @@ class Convert2BIDSOptions(Option):
     def validate_conversion_config(self, value):
         suffix = Path(value).suffix
         if suffix != ".py" or suffix != ".json":
-            raise ValidationError("Must be type '.py' or .json'")
+            raise ValidationError("Must be type '.py' or '.json'")
 
     def populate_project_paths(self, project_directory: os.PathLike, source_data: os.PathLike):
         # create as alt constructor?
@@ -736,5 +736,6 @@ KEY_MAP = {
     "batch_config_path": "BatchConfig",
     "target_variable": "TargetVariable",
     "insert_na": "InsertNA",
-    "scrub_columns": ""
+    "scrub_columns": "",
+    "stream_name": "",
 }
