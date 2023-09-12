@@ -442,6 +442,25 @@ class PostProcessingOptions(Option):
         return os.path.join(self.get_stream_working_dir(processing_stream), index_name)
 
 
+@dataclass
+class PostProcessingRunConfiguration(Option):
+    """Stores the configuration for a postprocessing run.
+    
+    Holds a copy of postprocessing options internally for reference. Values of this
+    class hold variants of these values with the appropriate stream paths, as well
+    as any other necessary values not in the options.
+    """
+    processing_step_options: ProcessingStepOptions = field(default_factory=PostProcessingOptions)
+    
+    stream_working_dir: str = ""
+    
+    stream_log_dir: str = ""
+    
+    stream_output_dir: str = ""
+    
+    pybids_db_path: str = ""
+    
+
 
 @dataclass
 class ROIExtractOptions(Option):
