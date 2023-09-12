@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+from typing import List
 import marshmallow_dataclass
 import json, yaml, os
 from pathlib import Path
@@ -465,7 +466,30 @@ class ProjectOptions(Option):
     bids_validation: BIDSValidatorOptions = BIDSValidatorOptions()
     fmriprep: FMRIPrepOptions = FMRIPrepOptions()
     postprocessing: PostProcessingOptions = PostProcessingOptions()
-    processing_streams: list = field(default_factory=list)
+    processing_streams: List[dict] = field(
+        default_factory=lambda: [
+            {
+                "name": "GLM_default",
+                "postprocessing_options": {
+                    "processing_steps": [
+                        "SpatialSmoothing",
+                        "AROMARegression",
+                        "TemporalFiltering",
+                        "IntensityNormalization"
+                    ]
+                }
+			},
+            {
+                "name": "functional_connectivity_default",
+                "postprocessing_options": {
+                    "processing_steps": [
+                        "TemporalFiltering",
+                        "ConfoundRegression"
+                    ]
+                }
+            }
+        ]
+    )
     roi_extraction: ROIExtractOptions = ROIExtractOptions()
     batch_config_path: str = "slurmUNCConfig.json"
     clpipe_version: str = VERSION
