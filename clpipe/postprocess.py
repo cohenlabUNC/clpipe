@@ -58,7 +58,7 @@ BIDS_INDEX_NAME = "bids_index"
 
 SUBJECT_LOG_DIR = "distributor"
 """Where to save batch files, within the postprocessing log folder, for subject-level batch logs"""
-
+RUN_CONFIG_FILE_NAME = "run_config.json"
 
 def postprocess_subjects(
     subjects=None,
@@ -88,7 +88,6 @@ def postprocess_subjects(
         output_directory = output_dir,
         target_directory = fmriprep_dir
     )
-    setup_dirs(options, processing_stream)
 
     # Initialize the run config
     run_config: PostProcessingRunConfig = PostProcessingRunConfig(
@@ -98,6 +97,12 @@ def postprocess_subjects(
         stream_output_dir = options.postprocessing.get_stream_output_dir(processing_stream),
         pybids_db_path = options.postprocessing.get_pybids_db_path(processing_stream, BIDS_INDEX_NAME)
     )
+    run_config.load_cli_args(
+        pybids_db_path = pybids_db_path
+    )
+
+    setup_dirs(run_config)
+    run_config.dump(Path(run_config.stream_working_dir) / RUN_CONFIG_FILE_NAME)
 
     # Setup Logging
     logger= get_logger(STEP_NAME, debug=debug, log_dir=options.get_logs_dir())
@@ -175,10 +180,10 @@ def postprocess_subjects(
         logger.error(fnfe)
         sys.exit(1)
 
-def setup_dirs(config: ProjectOptions, processing_stream: str):
-    os.makedirs(config.postprocessing.get_stream_output_dir(processing_stream), exist_ok=True)
-    os.makedirs(config.postprocessing.get_stream_working_dir(processing_stream), exist_ok=True)
-    os.makedirs(config.postprocessing.get_stream_log_dir(processing_stream), exist_ok=True)
+def setup_dirs(run_config: PostProcessingRunConfig):
+    os.makedirs(run_config.stream_output_dir, exist_ok=True)
+    os.makedirs(run_config.stream_working_dir, exist_ok=True)
+    os.makedirs(run_config.stream_log_dir, exist_ok=True)
 
 def postprocess_subject(
     subject_id,

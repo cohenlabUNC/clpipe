@@ -36,6 +36,13 @@ class ClpipeData:
         #Generate schema from given dataclasses
         config_schema = marshmallow_dataclass.class_schema(self.__class__)
         return config_schema().dump(self)
+    
+    def load_cli_args(self, **kwargs):
+        """Override class fields with inputted arguments if they aren't None"""
+
+        for arg_name, arg_value in kwargs.items():
+            if arg_value is not None:
+                setattr(self, arg_name, arg_value)
 
     @classmethod
     def load_file_to_dict(cls, options: os.PathLike):
@@ -93,12 +100,7 @@ class Option(ClpipeData):
     Unfortunately, giving this class the @dataclass decorator does not seem to
     pass functionality to child classes, even with super.init()
     """
-    def load_cli_args(self, **kwargs):
-        """Override class fields with inputted arguments if they aren't None"""
-
-        for arg_name, arg_value in kwargs.items():
-            if arg_value is not None:
-                setattr(self, arg_name, arg_value)
+    pass
 
 
 @dataclass
