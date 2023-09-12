@@ -3,6 +3,7 @@ import marshmallow_dataclass
 import json, yaml, os
 from pathlib import Path
 from pkg_resources import resource_stream
+from .package import VERSION
 
 DEFAULT_PROCESSING_STREAM = "default"
 
@@ -467,7 +468,7 @@ class ProjectOptions(Option):
     processing_streams: list = field(default_factory=list)
     roi_extraction: ROIExtractOptions = ROIExtractOptions()
     batch_config_path: str = "slurmUNCConfig.json"
-    clpipe_version: str = ""
+    clpipe_version: str = VERSION
 
     def get_logs_dir(self) -> str:
         """Get the project's top level log directory."""
