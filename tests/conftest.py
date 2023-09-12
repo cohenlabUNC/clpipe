@@ -485,6 +485,10 @@ def clpipe_config(config_file) -> dict:
 def clpipe_config_default() -> dict:
     return ClpipeConfigParser().config
 
+@pytest.fixture(scope="module")
+def legacy_config_path() -> Path:
+    return Path("tests/data/legacy_config.json")
+
 @pytest.fixture(scope="session")
 def project_config(clpipe_config):
     """Provide the project config as populated by default config file."""

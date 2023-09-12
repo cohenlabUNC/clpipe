@@ -15,9 +15,9 @@ because we will always load the config object from the new config file only
 def test_json_load(config_file):
     """ Ensure that the config class loads in .json data as expected. """
     
-    options = ProjectOptions.load(json_file=config_file)
+    options = ProjectOptions.load(config_file)
     assert options is not None
-    assert options.project_title == "test_project"
+    assert options.project_title == "A Neuroimaging Project"
     assert (
         options.postprocessing.processing_step_options.temporal_filtering.filtering_high_pass
         == 0.008
@@ -32,20 +32,20 @@ def test_yaml_load(config_file, tmp_path):
 
     with open(os.path.join(tmp_path, "config.yaml"), "w") as yaml_file:
         yaml.dump(conf_json, yaml_file, sort_keys=False)
-    options = ProjectOptions.load(yaml_file=os.path.join(tmp_path,'config.yaml'))
+    options = ProjectOptions.load(os.path.join(tmp_path,'config.yaml'))
     assert options is not None
-    assert options.project_title == "test_project"
+    assert options.project_title == "A Neuroimaging Project"
     assert (
         options.postprocessing.processing_step_options.temporal_filtering.filtering_high_pass
         == 0.008
     )
 
 
-def test_default(clpipe_config_default):
+def test_default(legacy_config_path, clpipe_config_default):
     """Ensure that data from the default config file (data/defaltConfig.json)
     is successfully loaded into the configuration object.
     """
-    options = ProjectOptions.load()
+    options = ProjectOptions.load(legacy_config_path)
     assert options.project_title == clpipe_config_default["ProjectTitle"]
     assert options.contributors == clpipe_config_default["Authors/Contributors"]
     assert (
@@ -70,7 +70,7 @@ def test_wrong_order(config_file, tmp_path):
     with open(os.path.join(tmp_path,'convertedConfig.json'), 'w') as f:
         json.dump(convertedConfig, f)
 
-    convertedConfig = ProjectOptions.load(json_file=os.path.join(tmp_path,'convertedConfig.json'))
+    convertedConfig = ProjectOptions.load(os.path.join(tmp_path,'convertedConfig.json'))
     correctConfig = ProjectOptions.load()
     assert correctConfig == convertedConfig
 
@@ -79,25 +79,35 @@ def test_author_contributor(config_file):
     """Check that the conversion of the Authors/Contributors to just 'Contributors'
     works successfully.
     """
-    config = ProjectOptions.load(json_file=config_file)
+    config = ProjectOptions.load(config_file)
     assert config is not None
-    assert config.contributors == "SET AUTHOR"
+    assert config.contributors == "SET CONTRIBUTORS"
 
 
+# Why is this getting setup options run?
 def test_dump_project_config_yaml_default(helpers, artifact_dir, request):
     test_dir = helpers.create_test_dir(artifact_dir, request.node.name)
 
-    ProjectOptions().dump(test_dir, 'test_project_options', yaml_file=True)
+    ProjectOptions().dump(test_dir / 'test_project_options.yaml')
 
 
 def test_dump_project_config_json_default(helpers, artifact_dir, request):
     test_dir = helpers.create_test_dir(artifact_dir, request.node.name)
 
-    ProjectOptions().dump(test_dir, 'test_project_options')
+    ProjectOptions().dump(test_dir / 'test_project_options.json')
 
 
-@pytest.mark.skip(reason="Not yet implemented.")
+def test_dump_project_config_json(helpers, artifact_dir, request):
+    test_dir = helpers.create_test_dir(artifact_dir, request.node.name)
+
+    config:ProjectOptions = ProjectOptions()
+    config.project_setup("test_project", test_dir, "test_source")
+    config.dump(test_dir / 'test_project_options.json')
+
+
 def test_dump_project_config_yaml(helpers, artifact_dir, request):
     test_dir = helpers.create_test_dir(artifact_dir, request.node.name)
 
-    ProjectOptions().load().dump(test_dir, 'test_project_options', yaml_file=True)
+    config:ProjectOptions = ProjectOptions()
+    config.project_setup("test_project", test_dir, "test_source")
+    config.dump(test_dir / 'test_project_options.yaml')
