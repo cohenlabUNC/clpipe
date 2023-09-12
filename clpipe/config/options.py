@@ -3,7 +3,6 @@ from typing import List
 import marshmallow_dataclass
 import json, yaml, os
 from pathlib import Path
-from pkg_resources import resource_stream
 from .package import VERSION
 
 DEFAULT_PROCESSING_STREAM = "default"
@@ -360,7 +359,7 @@ class BatchOptions(Option):
 class PostProcessingOptions(Option):
     """Options for additional processing after fMRIPrep's preprocessing."""
 
-    working_directory: str = ""
+    working_directory: str = "SET WORKING DIRECTORY"
     """Directory for caching intermediary processing files."""
 
     write_process_graph: bool = True
@@ -397,11 +396,21 @@ class PostProcessingOptions(Option):
     """Your list of processing steps to use, in order."""
 
     processing_step_options: ProcessingStepOptions = ProcessingStepOptions()
+    """Configuration for each processing step."""
+
     confound_options: ConfoundOptions = ConfoundOptions()
+    """Options related to the outputted confounds file."""
+
     batch_options: BatchOptions = BatchOptions()
+    """Options for cluster resource usage."""
+    
 
     def populate_project_paths(self, project_directory: os.PathLike):
         pass
+
+    def get_stream_dir(self, processing_stream: os.PathLike):
+        """Combine output path and stream name to create stream out directory"""
+        return os.path.join(self.output_directory, processing_stream)
 
 
 @dataclass
