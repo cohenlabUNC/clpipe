@@ -304,24 +304,6 @@ class AROMARegression(Option):
     implementation: str = field(default="fsl_regfilt", metadata={"required": True})
 
 
-@dataclass
-class ScrubTimepoints(Option):
-    """This step can be used to remove timepoints from the image timeseries
-    based on a target variable from that image's confounds file. Timepoints scrubbed
-    from an image's timeseries are also removed its respective confound file."""
-
-    insert_na: bool = field(default=True, metadata={"required": True})
-    """Set true to replace scrubbed timepoints with NA. False removes the timepoints completely."""
-
-    scrub_columns: list = field(
-        default_factory=lambda: [
-            ScrubColumn(target_variable="cosine*", threshold=100.0, scrub_ahead=0, scrub_behind=0, scrub_contiguous=0),
-            ScrubColumn(target_variable="framewise_displacement", threshold=0.2, scrub_ahead=0, scrub_behind=0, scrub_contiguous=0)
-            ]
-        )
-    """A list of columns to be scrubbed."""
-
-
 @dataclass 
 class ScrubColumn(Option):
     """A definition for a single column to be scrubbed."""
@@ -340,6 +322,26 @@ class ScrubColumn(Option):
 
     scrub_contiguous: int = field(default=0, metadata={"required": True})
     """Scrub everything between scrub targets up to this far apart"""
+
+@dataclass
+class ScrubTimepoints(Option):
+    """This step can be used to remove timepoints from the image timeseries
+    based on a target variable from that image's confounds file. Timepoints scrubbed
+    from an image's timeseries are also removed its respective confound file."""
+
+    insert_na: bool = field(default=True, metadata={"required": True})
+    """Set true to replace scrubbed timepoints with NA. False removes the timepoints completely."""
+
+    scrub_columns: List[ScrubColumn] = field(
+        default_factory=lambda: [
+            ScrubColumn(target_variable="cosine*", threshold=100.0, scrub_ahead=0, scrub_behind=0, scrub_contiguous=0),
+            ScrubColumn(target_variable="framewise_displacement", threshold=0.2, scrub_ahead=0, scrub_behind=0, scrub_contiguous=0)
+            ]
+        )
+    """A list of columns to be scrubbed."""
+
+
+
 
 
 @dataclass
