@@ -3,7 +3,8 @@ import sys
 from pathlib import Path
 
 from .config.glm import *
-from .config_json_parser import GLMConfigParser, ClpipeConfigParser
+from .config_json_parser import GLMConfigParser
+from .config.options import ProjectOptions
 from .batch_manager import BatchManager, Job, DEFAULT_BATCH_CONFIG_PATH
 from .utils import get_logger
 
@@ -39,10 +40,9 @@ def glm_launch(glm_config_file: str=None, level: int=L1,
     except KeyError:
         parent_config = glm_config["ParentClpipeConfig"]
 
-    config = ClpipeConfigParser()
-    config.config_updater(parent_config)
-
-    project_dir = config.config["ProjectDirectory"]
+    config = ProjectOptions(parent_config)
+    project_dir = config.project_directory
+    
     logger = get_logger(STEP_NAME, debug=debug, log_dir=os.path.join(project_dir, "logs"))
 
     if warn_deprecated:

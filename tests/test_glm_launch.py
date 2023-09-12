@@ -17,7 +17,7 @@ def test_glm_launch_controller_L2(glm_config_file: Path):
     """Check running glm_launch controller."""
 
     with pytest.raises(SystemExit) as e:
-.        glm_launch(glm_config_file=glm_config_file, level="L2", model="example")
+        glm_launch(glm_config_file=glm_config_file, level="L2", model="example")
 
     assert e.value.code == 0
 
