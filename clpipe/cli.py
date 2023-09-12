@@ -385,7 +385,7 @@ def postprocess_image_cli(run_config_file, image_file, subject_out_dir, subject_
     """Used to distribute postprocessing jobs for individual images.
     Not intended for direct use by user - this is called by the main postprocess
     command."""
-    from postprocess import postprocess_image
+    from .postprocess import postprocess_image
     postprocess_image(
         run_config_file, image_file, subject_out_dir, subject_working_dir, 
         subject_log_dir, debug=debug

@@ -103,16 +103,14 @@ def get_images_to_process(subject_id, image_space, bids, logger,
             f"No preproc BOLD image for subject {subject_id} found.")
 
 
-def validate_subject_exists(bids, subject_id, logger):
+def validate_subject_exists(bids, subject_id):
     # Open the bids dir and validate that it contains the subject
-    logger.info(f"Checking for requested subject in fmriprep output")
     if len(bids.get(subject=subject_id, scope="derivatives")) == 0:
         snfe = (
             f"Subject {subject_id} was not found in fmriprep output. "
             "You may need to add the option '-refresh_index' if this "
             "is a new subject."
         )
-        logger.error(snfe)
         raise SubjectNotFoundError(snfe)
 
 

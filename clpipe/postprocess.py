@@ -31,7 +31,7 @@ with warnings.catch_warnings():
     from bids import BIDSLayout
     from bids.layout import BIDSFile
 
-from .config.options import PostProcessingOptions, ProjectOptions, PostProcessingRunConfig
+from .config.options import ProjectOptions, PostProcessingRunConfig
 from .config.options import DEFAULT_PROCESSING_STREAM
 from .batch_manager import BatchManager, Job
 from .postprocutils.global_workflows import build_postprocessing_wf
@@ -80,7 +80,8 @@ def postprocess_subjects(
     )
     options.postprocessing.load_cli_args(
         output_directory = output_dir,
-        target_directory = fmriprep_dir
+        target_directory = fmriprep_dir,
+        log_directory = log_dir
     )
 
     # Initialize the run config
@@ -173,11 +174,10 @@ def postprocess_subject(
     bids: BIDSLayout,
     batch: bool=False,
     submit: bool=False,
-    processing_stream:str=DEFAULT_PROCESSING_STREAM,
     debug=False,
 ):
     """
-    Parse configuration and (TODO) sanitize inputs for image job distribution.
+    Handle postprocessing for a single subject.
     """
 
     sub_with_id = "sub-" + subject_id
@@ -198,7 +198,8 @@ def postprocess_subject(
         batch_manager = _setup_batch_manager(run_config, subject_slurm_log_dir)
 
     try:
-        validate_subject_exists(bids, subject_id, logger)
+        logger.info(f"Checking for requested subject in fmriprep output")
+        validate_subject_exists(bids, subject_id)
 
         try:
             tasks = run_config.options.target_tasks
@@ -272,11 +273,12 @@ def postprocess_image(
     """
     Setup the workflows specified in the postprocessing configuration.
     """
+    image_path = Path(image_path)
     image_short_name = f"{str(Path(image_path).stem)}"
 
     run_config: PostProcessingRunConfig = PostProcessingRunConfig.load(run_config_file)
 
-    logger = get_logger(image_short_name, log_dir=subject_log_dir, f_name=f"{image_short_name}.log", debug=debug)
+    logger = get_logger("postprocess_image", log_dir=subject_log_dir, f_name=f"{image_short_name}.log", debug=debug)
     logger.info(f"Processing image: {image_path}")
 
 
@@ -521,14 +523,14 @@ def _create_image_submission_strings(
 
     logger.info("Creating submission string(s)")
     for image in images_to_process:
-        key = f"{str(Path(image.path).stem)}"
+        key = f"{Path(image.path).stem}"
 
         submission_strings[key] = IMAGE_SUBMISSION_STRING_TEMPLATE.format(
-            run_config_file = run_config_file,
-            image_file = image,
-            subject_out_dir = subject_out_dir,
-            subject_working_dir = subject_working_dir,
-            subject_log_dir = subject_log_dir,
+            run_config_file = str(run_config_file),
+            image_file = image.path,
+            subject_out_dir = str(subject_out_dir),
+            subject_working_dir = str(subject_working_dir),
+            subject_log_dir = str(subject_log_dir),
             debug=debug_flag,
         )
         logger.debug(submission_strings[key])
