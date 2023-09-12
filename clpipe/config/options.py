@@ -16,6 +16,13 @@ class Option:
         ordered = True
         """Ensures config retains source order when dumped to file."""
 
+    def load_cli_args(self, **kwargs):
+        """Override class fields with inputted arguments if they aren't None"""
+
+        for arg_name, arg_value in kwargs.items():
+            if arg_value is not None:
+                setattr(self, arg_name, arg_value)
+
 
 @dataclass
 class SourceOptions(Option):
@@ -66,14 +73,6 @@ class Convert2BIDSOptions(Option):
     mem_usage: str = "5000"
     core_usage: str = "2"
     log_directory: str = ""
-
-
-    def load_cli_args(self, dicom_directory, dicom_format_string, conversion_config, bids_directory, log_directory):
-        self.dicom_directory = dicom_directory if dicom_directory is not None else self.dicom_directory
-        self.dicom_format_string = dicom_format_string if dicom_format_string is not None else self.dicom_format_string
-        self.conversion_config = conversion_config if conversion_config is not None else self.conversion_config
-        self.bids_directory = bids_directory if bids_directory is not None else self.bids_directory
-        self.log_directory = log_directory if log_directory is not None else self.log_directory
 
 
     def populate_project_paths(self, project_directory: os.PathLike, source_data: os.PathLike):

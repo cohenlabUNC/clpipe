@@ -31,7 +31,13 @@ def convert2bids(dicom_dir=None, dicom_dir_format=None, bids_dir=None,
                  dcm2bids=True, batch=False):
     
     config: ProjectOptions = ProjectOptions.load(config_file)
-    config.convert2bids.load_cli_args(dicom_dir, dicom_dir_format, conv_config_file, bids_dir, log_dir)
+    config.convert2bids.load_cli_args(
+        dicom_directory = dicom_dir,
+        dicom_format_string = dicom_dir_format,
+        conversion_config = conv_config_file,
+        bids_directory = bids_dir,
+        log_directory = log_dir
+    )
 
     setup_dirs(config)
 
