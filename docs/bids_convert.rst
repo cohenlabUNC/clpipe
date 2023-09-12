@@ -15,7 +15,7 @@ Configuration
 
 **Definitions**
 
-.. autoclass:: clpipe.config.project.Convert2BIDSOptions
+.. autoclass:: clpipe.config.options.Convert2BIDSOptions
 
 The DICOM format string
 #################

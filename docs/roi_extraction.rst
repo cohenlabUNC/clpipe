@@ -24,7 +24,7 @@ command.
 Configuration
 *****************
 
-.. autoclass:: clpipe.config.project.ROIExtractOptions
+.. autoclass:: clpipe.config.options.ROIExtractOptions
 
 *****************
 Commands

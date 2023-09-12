@@ -22,7 +22,7 @@ use the following command:
 Configuration
 *****************
 
-.. autoclass:: clpipe.config.project.FMRIPrepOptions
+.. autoclass:: clpipe.config.options.FMRIPrepOptions
 	:members:
 
 *****************

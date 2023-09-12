@@ -23,7 +23,7 @@ Configuration
 
 **Definitions**
 
-.. autoclass:: clpipe.config.project.BIDSValidatorOptions
+.. autoclass:: clpipe.config.options.BIDSValidatorOptions
 
 *****************
 Command

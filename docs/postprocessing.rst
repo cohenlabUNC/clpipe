@@ -90,7 +90,7 @@ Step Options section for more information about configuring this section.
 	}
 
 **Top-Level Definitions**
-.. autoclass:: clpipe.config.project.PostProcessingOptions
+.. autoclass:: clpipe.config.options.PostProcessingOptions
 	:members:
 
 
@@ -116,7 +116,7 @@ transformation is also applied to your confounds.
 
 **Definitions:**
 
-.. autoclass:: clpipe.config.project.TemporalFiltering
+.. autoclass:: clpipe.config.options.TemporalFiltering
 
 **Special Case: Filtering with Scrubbed Timepoints**
 
@@ -155,7 +155,7 @@ is important for accurate group-level statistics.
 
 **Definitions**
 
-.. autoclass:: clpipe.config.project.IntensityNormalization
+.. autoclass:: clpipe.config.options.IntensityNormalization
 
 Spatial Smoothing
 --------------------
@@ -188,7 +188,7 @@ editing tool.
 
 **Definitions**
 
-.. autoclass:: clpipe.config.project.SpatialSmoothing
+.. autoclass:: clpipe.config.options.SpatialSmoothing
 
 AROMA Regression
 --------------------
@@ -213,7 +213,7 @@ Also applies to confounds.
 
 **Definitions**
 
-.. autoclass:: clpipe.config.project.AROMARegression
+.. autoclass:: clpipe.config.options.AROMARegression
 
 Confound Regression
 --------------------
@@ -236,7 +236,7 @@ these confounds through there inclusion in the model as nuisance regressors.
 
 **Definitions**
 
-.. autoclass:: clpipe.config.project.ConfoundRegression
+.. autoclass:: clpipe.config.options.ConfoundRegression
 
 
 Scrub Timepoints
@@ -272,9 +272,9 @@ from an image's timeseries are also removed its respective confound file.
 
 **Definitions**
 
-.. autoclass:: clpipe.config.project.ScrubTimepoints
+.. autoclass:: clpipe.config.options.ScrubTimepoints
 
-.. autoclass:: clpipe.config.project.ScrubColumn
+.. autoclass:: clpipe.config.options.ScrubColumn
 
 Resample
 --------------------
@@ -293,7 +293,7 @@ to an image with a lower resolution.
 
 **Definitions**
 
-.. autoclass:: clpipe.config.project.Resample
+.. autoclass:: clpipe.config.options.Resample
 
 Trim Timepoints
 --------------------
@@ -312,7 +312,7 @@ your timeseries with no other logic. Also applies to your confounds.
 
 **Definitions**
 
-.. autoclass:: clpipe.config.project.TrimTimepoints
+.. autoclass:: clpipe.config.options.TrimTimepoints
 
 
 Apply Mask
@@ -348,9 +348,9 @@ while this step adds a variable number of columns to your confounds.
 
 **Definitions**
 
-.. autoclass:: clpipe.config.project.ConfoundOptions
+.. autoclass:: clpipe.config.options.ConfoundOptions
 
-.. autoclass:: clpipe.config.project.ScrubTimepoints
+.. autoclass:: clpipe.config.options.MotionOutliers
 
 Resample
 --------------------
@@ -367,7 +367,7 @@ default values are usually sufficient to process the data.
 
 **Definitions**
 
-.. autoclass:: clpipe.config.project.BatchOptions
+.. autoclass:: clpipe.config.options.BatchOptions
 
 Processing Streams Setup
 #################

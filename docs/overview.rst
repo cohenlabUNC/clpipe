@@ -38,7 +38,7 @@ Other users will have to modify several fields.
 
 Described here are the project-level meta fields of the configuration file:
 
-.. autoclass:: clpipe.config.project.ProjectOptions
+.. autoclass:: clpipe.config.options.ProjectOptions
 
 *****************
 The Command Line Interface

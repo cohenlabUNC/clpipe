@@ -99,7 +99,7 @@ Configuration
 
 **Definitions**
 
-.. autoclass:: clpipe.config.project.SourceOptions
+.. autoclass:: clpipe.config.options.SourceOptions
 
 *****************
 Command
