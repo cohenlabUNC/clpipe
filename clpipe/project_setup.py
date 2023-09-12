@@ -3,18 +3,20 @@ import os, stat
 from pathlib import Path
 
 from .utils import get_logger, add_file_handler
-from .config.options import ProjectOptions
+from .config.options import ProjectOptions, DEFAULT_CONFIG_FILE_NAME
+from .config.glm import GLMOptions
 from .convert2bids import setup_dirs as setup_convert2bids_dirs
 from .bids_validator import setup_dirs as setup_bids_validation_dirs
 from .fmri_preprocess import setup_dirs as setup_preprocess_dirs
 from .roi_extractor import setup_dirs as setup_roiextract_dirs
-from .config_json_parser import GLMConfigParser
+from .glm_prepare import setup_dirs as setup_glm_dirs
 
 STEP_NAME = "project-setup"
 DEFAULT_DICOM_DIR = 'data_DICOMs'
 DCM2BIDS_SCAFFOLD_TEMPLATE = 'dcm2bids_scaffold -o {}'
 
-DEFAULT_CONFIG_FILE_NAME = 'clpipe_config.json'
+
+DEFAULT_GLM_CONFIG_FILE_NAME = "glm_config.json"
 
 class SourceDataError(ValueError):
     pass
@@ -68,8 +70,11 @@ def project_setup(project_title: str="A Neuroimaging Project", project_dir: os.P
     setup_preprocess_dirs(config)
     setup_roiextract_dirs(config)
 
-    # TODO: Perhaps move this to glm prepare
-    setup_glm_dirs(config.project_directory)
+    # Setup GLM config and directories
+    glm_config: GLMOptions = GLMOptions(config)
+    glm_config.populate_project_paths(project_dir)
+    setup_glm_dirs(glm_config)
+    glm_config.config_json_dump(config.project_directory, DEFAULT_GLM_CONFIG_FILE_NAME)
 
     # Add file output for logging
     add_file_handler(config.get_logs_dir())
@@ -104,23 +109,3 @@ def project_setup(project_title: str="A Neuroimaging Project", project_dir: os.P
     logger.debug(f'Created empty scripts directory: {script_dir}')
 
     logger.info('Completed project setup')
-
-
-def setup_glm_dirs(project_path):
-    from pkg_resources import resource_filename
-    import shutil
-
-    # Create a default glm_config file
-    glm_config = GLMConfigParser()
-    glm_config.config_json_dump(project_path, "glm_config.json")
-
-    # Copy over an example L2 csv
-    shutil.copyfile(resource_filename('clpipe', 'data/l2_sublist.csv'), os.path.join(project_path, "l2_sublist.csv"))
-
-    os.mkdir(os.path.join(project_path, "l1_fsfs"))
-    os.mkdir(os.path.join(project_path, "data_onsets"))
-    os.mkdir(os.path.join(project_path, "l1_feat_folders"))
-    os.mkdir(os.path.join(project_path, "l2_fsfs"))
-    os.mkdir(os.path.join(project_path, "l2_gfeat_folders"))
-    os.makedirs(os.path.join(project_path, "logs", "glm_logs", "L1_launch"))
-    os.mkdir(os.path.join(project_path, "logs", "glm_logs", "L2_launch"))

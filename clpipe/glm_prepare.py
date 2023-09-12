@@ -24,6 +24,8 @@ from .errors import *
 STEP_NAME = "prepare"
 APPLY_MUMFORD_STEP_NAME = "apply_mumford"
 DEPRECATION_MSG = "WARNING: Using deprecated GLM setup file."
+L2_SUBLIST_CSV_FILE_NAME = "l2_sublist.csv"
+L2_SUBLIST_CSV_PATH = f'data/{L2_SUBLIST_CSV_FILE_NAME}'
 
 def glm_prepare(glm_config_file: str=None, level: int=L1,
                 model: str=None, debug: bool=False):
@@ -343,4 +345,19 @@ def _apply_mumford_workaround(l1_feat_folder, logger, remove_reg_standard=False)
         print(e, "- skipping")
 
 
+def setup_dirs(glm_config: GLMOptions):
+    """Populates the GLM config file with resource paths based on project root dir."""
+    from pkg_resources import resource_filename
+    import shutil
 
+    # Copy over an example L2 csv
+    shutil.copyfile(resource_filename('clpipe', L2_SUBLIST_CSV_PATH), os.path.join(glm_config.config['ParentClpipeConfig'], L2_SUBLIST_CSV_FILE_NAME))
+
+    # Create default directories
+    os.mkdir(glm_config.config['Level1Setups'][0]['FSFDir'])
+    os.mkdir(glm_config.config['Level1Setups'][0]['EVDirectory'])
+    os.mkdir(glm_config.config['Level1Setups'][0]['OutputDir'])
+    os.mkdir(glm_config.config['Level2Setups'][0]['FSFDir'])
+    os.mkdir(glm_config.config['Level2Setups'][0]['OutputDir'])
+    os.makedirs(glm_config.config['Level1Setups'][0]['LogDir'])
+    os.mkdir(glm_config.config['Level2Setups'][0]['LogDir'])
