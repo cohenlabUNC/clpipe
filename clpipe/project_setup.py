@@ -63,6 +63,10 @@ def project_setup(project_title: str="A Neuroimaging Project", project_dir: os.P
     config:ProjectOptions = ProjectOptions()
     config.populate_project_paths(project_dir, source_data)
     config.project_title = project_title
+    # Dump the now-populated config file
+    config_file_path = os.path.join(project_dir, DEFAULT_CONFIG_FILE_NAME)
+    logger.debug('Creating JSON config file')
+    config.dump(config_file_path)
 
     # Setup directories for the first few steps
     setup_convert2bids_dirs(config)
@@ -71,8 +75,8 @@ def project_setup(project_title: str="A Neuroimaging Project", project_dir: os.P
     setup_roiextract_dirs(config)
 
     # Setup GLM config and directories
-    glm_config: GLMOptions = GLMOptions(config)
-    glm_config.populate_project_paths(project_dir)
+    glm_config: GLMOptions = GLMOptions()
+    glm_config.populate_project_paths(config_file_path)
     setup_glm_dirs(glm_config)
     glm_config.config_json_dump(config.project_directory, DEFAULT_GLM_CONFIG_FILE_NAME)
 
@@ -94,10 +98,6 @@ def project_setup(project_title: str="A Neuroimaging Project", project_dir: os.P
     # Create an empty BIDS directory
     os.system(DCM2BIDS_SCAFFOLD_TEMPLATE.format(config.convert2bids.bids_directory))
     logger.debug(f"Created empty BIDS directory at: {config.convert2bids.bids_directory}")
-
-    # Dump the now-populated config file
-    logger.debug('Creating JSON config file')
-    config.dump(os.path.join(project_dir, DEFAULT_CONFIG_FILE_NAME))
 
     # Setup empty filler directories for analyses & scripting
     analyses_dir = os.path.join(project_dir, 'analyses')
