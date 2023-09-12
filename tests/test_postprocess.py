@@ -8,34 +8,34 @@ from pathlib import Path
 def test_postprocess_subjects(clpipe_fmriprep_dir):
     """Run the subjects setup of postprocessing. Builds output directories, including
     the BIDS index."""
-    config = clpipe_fmriprep_dir / "clpipe_config.json"
+    config_file = clpipe_fmriprep_dir / "clpipe_config.json"
 
-    options = ProjectOptions.load(config)
+    options = ProjectOptions.load(config_file)
     options.postprocessing.working_directory = clpipe_fmriprep_dir / "data_working"
 
     postprocess_subjects(
-        subject_id="01",
-        bids_dir=clpipe_fmriprep_dir / "data_BIDS",
-        fmriprep_dir=clpipe_fmriprep_dir / "data_fmriprep",
-        output_dir=clpipe_fmriprep_dir / "data_postprocessed",
-        config_file=config,
-        index_dir=clpipe_fmriprep_dir / "data_working" / "default" / "bids_index",
-        batch=True,
-        submit=False,
-        log_dir=clpipe_fmriprep_dir / "logs" / "postprocess_logs" / "default",
-        processing_stream="default",
-        debug=False
+        config_file=options
     )
 
 def test_postprocess_subject(config_file_fmriprep_indexed):
 
-    config = config_file_fmriprep_indexed / "clpipe_config.json"
+    config_file = config_file_fmriprep_indexed / "clpipe_config.json"
 
-    options = ProjectOptions.load(config)
+    options = ProjectOptions.load(config_file)
     options.postprocessing.working_directory = config_file_fmriprep_indexed / "data_working"
 
     postprocess_subject(
-        config_file=options
+        subject_id="01",
+        bids_dir=config_file_fmriprep_indexed / "data_BIDS",
+        fmriprep_dir=config_file_fmriprep_indexed / "data_fmriprep",
+        output_dir=config_file_fmriprep_indexed / "data_postprocessed",
+        config_file=options,
+        index_dir=config_file_fmriprep_indexed / "data_working" / "default" / "bids_index",
+        batch=True,
+        submit=False,
+        log_dir=config_file_fmriprep_indexed / "logs" / "postprocess_logs" / "default",
+        processing_stream="default",
+        debug=False
     )
 
 

@@ -31,7 +31,7 @@ with warnings.catch_warnings():
     from bids import BIDSLayout
     from bids.layout import BIDSFile
 
-from .config.options import ProjectOptions
+from .config.options import ProjectOptions, PostProcessingRunConfig
 from .config.options import DEFAULT_PROCESSING_STREAM
 from .batch_manager import BatchManager, Job
 from .postprocutils.global_workflows import build_postprocessing_wf
@@ -80,32 +80,37 @@ def postprocess_subjects(
         subject job distribution.
     """
 
-    config: ProjectOptions = ProjectOptions.load(config_file)
-    config.fmriprep.load_cli_args(
+    options: ProjectOptions = ProjectOptions.load(config_file)
+    options.fmriprep.load_cli_args(
         bids_directory = bids_dir,
     )
-    config.postprocessing.load_cli_args(
+    options.postprocessing.load_cli_args(
         output_directory = output_dir,
         target_directory = fmriprep_dir
     )
-    setup_dirs(config, processing_stream)
+    setup_dirs(options, processing_stream)
 
-
-    pybids_db_path = config.postprocessing.get_pybids_db_path(processing_stream, BIDS_INDEX_NAME)
-    #os.makedirs(pybids_db_path, exist_ok=True)
+    # Initialize the run config
+    run_config: PostProcessingRunConfig = PostProcessingRunConfig(
+        options = options.postprocessing,
+        stream_working_dir = options.postprocessing.get_stream_working_dir(processing_stream),
+        stream_log_dir = options.postprocessing.get_stream_log_dir(processing_stream),
+        stream_output_dir = options.postprocessing.get_stream_output_dir(processing_stream),
+        pybids_db_path = options.postprocessing.get_pybids_db_path(processing_stream, BIDS_INDEX_NAME)
+    )
 
     # Setup Logging
-    logger= get_logger(STEP_NAME, debug=debug, log_dir=config.get_logs_dir())
+    logger= get_logger(STEP_NAME, debug=debug, log_dir=options.get_logs_dir())
 
-    config.postprocessing.target_directory = resolve_fmriprep_dir(config.postprocessing.target_directory)
-    logger.info(f"Preparing postprocessing job targeting: {config.postprocessing.target_directory}")
+    options.postprocessing.target_directory = resolve_fmriprep_dir(options.postprocessing.target_directory)
+    logger.info(f"Preparing postprocessing job targeting: {options.postprocessing.target_directory}")
     
     time.sleep(0.5)
 
-    logger.info(f"Output directory: {config.postprocessing.output_directory}")
+    logger.info(f"Output directory: {options.postprocessing.output_directory}")
 
     # Check to make sure working directory has been changed from the default
-    if config.postprocessing.working_directory == ProjectOptions().postprocessing.working_directory:
+    if options.postprocessing.working_directory == ProjectOptions().postprocessing.working_directory:
         logger.error("A working directory for this step must be provided in your config file.")
         sys.exit(1)
 
@@ -118,15 +123,17 @@ def postprocess_subjects(
         )
         os.makedirs(slurm_log_dir, exist_ok=True)
     
-        batch_manager: BatchManager = _setup_batch_manager(config, non_processing=True)
+        batch_manager: BatchManager = _setup_batch_manager(options, non_processing=True)
+
+    
 
     # Create jobs based on subjects given for processing
     try:
         bids: BIDSLayout = get_bids(
-            config.fmriprep.bids_directory,
-            database_path=pybids_db_path,
+            options.fmriprep.bids_directory,
+            database_path=run_config.pybids_db_path,
             logger=logger,
-            fmriprep_dir=config.postprocessing.target_directory,
+            fmriprep_dir=options.postprocessing.target_directory,
             refresh=refresh_index,
         )
 
@@ -148,13 +155,13 @@ def postprocess_subjects(
             key = "Postprocessing_sub-" + subject
             submission_strings[key] = SUBJECT_SUBMISSION_STRING_TEMPLATE.format(
                 subject_id=subject,
-                bids_dir=config.fmriprep.bids_directory,
-                fmriprep_dir=config.postprocessing.target_directory,
+                bids_dir=options.fmriprep.bids_directory,
+                fmriprep_dir=options.postprocessing.target_directory,
                 config_file=config_file,
-                index_dir=pybids_db_path,
-                output_dir=config.postprocessing.target_directory,
+                index_dir=run_config.pybids_db_path,
+                output_dir=options.postprocessing.target_directory,
                 processing_stream=processing_stream,
-                log_dir=config.postprocessing.log_directory,
+                log_dir=options.postprocessing.log_directory,
                 batch=batch_flag,
                 submit=submit_flag,
                 debug=debug_flag,
