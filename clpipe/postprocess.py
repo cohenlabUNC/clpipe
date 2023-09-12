@@ -43,9 +43,8 @@ STEP_NAME = "postprocess"
 PROCESSING_DESCRIPTION_FILE_NAME = "processing_description.json"
 IMAGE_TIME_DIMENSION_INDEX = 3
 IMAGE_SUBMISSION_STRING_TEMPLATE = (
-    "postprocess_image {config_file} "
-    "{image_path} {bids_dir} {fmriprep_dir} {pybids_db_path} {out_dir} "
-    "{subject_out_dir} {processing_stream} {subject_working_dir} {log_dir} "
+    "postprocess_image {run_config_file} "
+    "{image_file} {subject_out_dir} {subject_working_dir} {subject_log_dir} "
     "{debug}"
 )
 BIDS_INDEX_NAME = "bids_index"
@@ -243,15 +242,10 @@ def postprocess_subject(
             subject_working_dir.mkdir(parents=True, exist_ok=False)
 
         submission_strings = _create_image_submission_strings(
-            images_to_process,
-            run_config.bids_directory,
-            run_config.target_directory,
-            run_config.pybids_db_path,
-            run_config.stream_output_directory,
-            subject_out_dir,
-            processing_stream,
-            subject_working_dir,
             run_config_path,
+            images_to_process,
+            subject_out_dir,
+            subject_working_dir,
             subject_log_dir,
             debug,
             logger,
@@ -510,16 +504,11 @@ def _submit_jobs(batch_manager, submission_strings, logger, submit=True):
 
 
 def _create_image_submission_strings(
+    run_config_file,
     images_to_process,
-    bids_dir,
-    fmriprep_dir,
-    pybids_db_path,
-    out_dir,
     subject_out_dir,
-    processing_stream,
     subject_working_dir,
-    config_file,
-    log_dir,
+    subject_log_dir,
     debug,
     logger,
 ):
@@ -535,16 +524,11 @@ def _create_image_submission_strings(
         key = f"{str(Path(image.path).stem)}"
 
         submission_strings[key] = IMAGE_SUBMISSION_STRING_TEMPLATE.format(
-            config_file=config_file,
-            image_path=image.path,
-            bids_dir=bids_dir,
-            fmriprep_dir=fmriprep_dir,
-            pybids_db_path=pybids_db_path,
-            out_dir=out_dir,
-            subject_out_dir=subject_out_dir,
-            processing_stream=processing_stream,
-            subject_working_dir=subject_working_dir,
-            log_dir=log_dir,
+            run_config_file = run_config_file,
+            image_file = image,
+            subject_out_dir = subject_out_dir,
+            subject_working_dir = subject_working_dir,
+            subject_log_dir = subject_log_dir,
             debug=debug_flag,
         )
         logger.debug(submission_strings[key])

@@ -55,7 +55,6 @@ ENTRY_POINTS = '''
       fmriprep_process=clpipe.cli:fmriprep_process_cli
       fmri_postprocess=clpipe.cli:fmri_postprocess_cli
       fmri_postprocess2=clpipe.cli:fmri_postprocess2_cli
-      postprocess_subject=clpipe.cli:postprocess_subject_cli
       postprocess_image=clpipe.cli:postprocess_image_cli
       glm_l1_preparefsf=clpipe.cli:glm_l1_preparefsf_cli
       glm_l1_launch=clpipe.cli:glm_l1_launch_cli
