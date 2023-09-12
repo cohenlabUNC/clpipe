@@ -29,6 +29,7 @@ L2_SUBLIST_CSV_PATH = f'data/{L2_SUBLIST_CSV_FILE_NAME}'
 def glm_prepare(glm_config_file: str=None, level: int=L1,
                 model: str=None, debug: bool=False):
     glm_config = GLMOptions(glm_config_file)
+    setup_dirs(glm_config)
 
     warn_deprecated = False
     try:
@@ -343,13 +344,15 @@ def setup_dirs(glm_config: GLMOptions):
     import shutil
 
     # Copy over an example L2 csv
-    shutil.copyfile(resource_filename('clpipe', L2_SUBLIST_CSV_PATH), os.path.join(glm_config.parent_options.project_directory, L2_SUBLIST_CSV_FILE_NAME))
+    l2_csv = os.path.join(glm_config.parent_options.project_directory, L2_SUBLIST_CSV_FILE_NAME)
+    if not os.path.exists(l2_csv):
+        shutil.copyfile(resource_filename('clpipe', L2_SUBLIST_CSV_PATH), l2_csv)
 
     # Create default directories
-    os.mkdir(glm_config.config['Level1Setups'][0]['FSFDir'])
-    os.mkdir(glm_config.config['Level1Setups'][0]['EVDirectory'])
-    os.mkdir(glm_config.config['Level1Setups'][0]['OutputDir'])
-    os.mkdir(glm_config.config['Level2Setups'][0]['FSFDir'])
-    os.mkdir(glm_config.config['Level2Setups'][0]['OutputDir'])
-    os.makedirs(glm_config.config['Level1Setups'][0]['LogDir'])
-    os.mkdir(glm_config.config['Level2Setups'][0]['LogDir'])
+    os.makedirs(glm_config.config['Level1Setups'][0]['FSFDir'], exist_ok=True)
+    os.makedirs(glm_config.config['Level1Setups'][0]['EVDirectory'], exist_ok=True)
+    os.makedirs(glm_config.config['Level1Setups'][0]['OutputDir'], exist_ok=True)
+    os.makedirs(glm_config.config['Level2Setups'][0]['FSFDir'], exist_ok=True)
+    os.makedirs(glm_config.config['Level2Setups'][0]['OutputDir'], exist_ok=True)
+    os.makedirs(glm_config.config['Level1Setups'][0]['LogDir'], exist_ok=True)
+    os.makedirs(glm_config.config['Level2Setups'][0]['LogDir'], exist_ok=True)
