@@ -2,11 +2,24 @@
 DICOM to BIDs Conversion
 ========================
 
-clpipe has several commands to facilitate the conversion of DICOM files into NiFTI 
-files all in BIDS format. We use `dcm2bids <https://github.com/UNFmontreal/Dcm2Bids>`_, 
-which is a flexible system for converting DICOM files. 
-It does require the creation of a configuration file, 
-a JSON that directs the conversion.
+--------------------
+Overview
+--------------------
+
+clpipe's `convert2bids` commands facilitates the conversion of DICOM files into BIDS
+format, using either dcm2bids or heudiconv as your underlying converter.
+
+Command
+-------------------
+
+.. click:: clpipe.cli:convert2bids_cli
+	:prog: clpipe convert2bids
+
+
+Configuration Options
+-------------------
+
+.. autoclass:: clpipe.config.project.Convert2BIDSOptions
 
 The DICOM format string
 ---------------------
@@ -53,126 +66,37 @@ For example, `Subject-{subject}/` used on a dataset with `Subject-01` as a
 folder will determine the subject id to be `01` not `Subject-01`. 
 Note that in all examples, there is a trailing forward slash.
 
-Finally, instead of using the command line option, 
-is  DICOM format string can be specified in the clpipe configuration JSON.
+--------------------
+dcm2bids configuration
+--------------------
 
-Setting Up the Conversion Config File
+`dcm2bids <https://github.com/UNFmontreal/Dcm2Bids>`_ is a JSON-driven tool for converting DICOM files. 
+While not as flexible as heudiconv, dcm2bids is easier to learn and has a
+conversion configuration that is simpler to setup and 
+modify for users less familiar with programming.
+
+This documentation contains a tutorial for setting up a dcm2bids conversion on the
+`Tutorials/BIDS Conversion` page. You can also refer to 
+`dcm2bids' tutorial <https://unfmontreal.github.io/Dcm2Bids/3.0.1/tutorial/first-steps>`_ 
+for futher help.
+
+
+The Conversion Config File
 ---------------------
 
-The other important ingredient in converting your DICOMs to BIDS format is 
-the conversion configuration. An example file is generated when you use the 
-project_setup command. Below is a brief example:
+dcm2bids is driven by a JSON configuration file. clpipe helps you out with this by
+generating a starter file for you when you use the project_setup command:
 
-.. code-block:: json
+.. literalinclude:: ../clpipe/data/defaultConvConfig.json
+   :language: json
 
-   {
-	"descriptions": [
-		{
-			"dataType": "anat",
-			"modalityLabel": "T1w",
-			"customLabels": "",
-			"criteria": {
-				"SeriesDescription": "T1w_MPRAGE",
-				"ImageType": ["ORIGINAL", "PRIMARY", "M", "ND", "NORM"]
-			}
-		},
-		{
-			"dataType": "anat",
-			"modalityLabel": "T2w",
-			"customLabels": "",
-			"criteria": {
-				"SeriesDescription": "T2_AX_struct"
-			}
-		},
-		{
-			"dataType": "func",
-			"modalityLabel": "bold",
-			"customLabels": "task-rest",
-            "sidecarChanges": {
-                "TaskName": "Resting State"
-            },
-			"criteria": {
-				"SeriesDescription": "*_resting_AP_*"
-			}
-		},
-		{
-			"dataType": "func",
-			"modalityLabel": "bold",
-			"customLabels": "task-gngreg",
-			"criteria": {
-				"SeriesDescription": "*_GNGregular*"
-			}
-		},
-		{
-			"dataType": "func",
-			"modalityLabel": "bold",
-			"customLabels": "task-gngrew",
-			"criteria": {
-				"SeriesDescription": "*_GNGreward*"
-			}
-		},
-		{
-			"dataType": "dwi",
-			"modalityLabel": "dwi",
-			"customLabels": "acq-APref",
-			"criteria": {
-				"SeriesDescription": "*p2_AP_TRACEW*"
-			}
-		},
-		{
-			"dataType": "dwi",
-			"modalityLabel": "dwi",
-			"customLabels": "acq-PAref",
-			"criteria": {
-				"SeriesDescription": "*p2_PA"
-			}
-		},
-		{
-			"dataType": "dwi",
-			"modalityLabel": "dwi",
-			"customLabels": "acq-AP",
-			"criteria": {
-				"SeriesDescription": "*p2_AP"
-			}
-		},
-        	{
-            		"dataType": "fmap",
-            		"modalityLabel": "epi",
-            		"criteria":{
-                		"SeriesDescription": "*_resting_PA*"
-            	},
-            		"intendedFor": [2,3]
-        	}
-		
-		]
-	}
+The starter demonstrates one anatomical and one functional image conversion configuration,
+as well one field map, which references the functional image.
 
-This configuration file looks for all scans that have "_srt" anywhere in the 
-SeriesDescription field of the header, converts them into NIFTI, 
-labels them in the BIDS standards, and adds the custom label of `task-srt`. 
-It does the same for anatomical scans with "MPRAGE" contained in the series description. 
-Any header field in the dicoms can be used as criteria. 
-If multiple scans meet the criteria, then they will be labeled `run-1, run-2, ...` 
-in order of acquisition.
-
-Note that for fieldmaps, one can use the "intendedFor" option to specify which BOLD 
-images a fieldmap should be used for. There are two important points here. 
-The first is that the "intendedFor" field is 0-indexed, in that 0 corresponds 
-to the first entry in the converstion config, 1 corresponds to the second entry, 
-etc, etc. In the example above, the fieldmap is intended for the resting state 
-scan and the GNG regular scan. Additionally, the intended for field is not sensitive 
-to multiple runs. For example, if there are 2 resting state scans, and therefore the 
-file names look like "sub-9999_task-rest_run-01_bold.nii.gz" and 
-"sub-9999_task-rest_run-02_bold.nii.gz" after conversion, the IntendedFor 
-field in the fieldmap's JSON will list "sub-9999_task-rest_bold.nii.gz" 
-This is due to an issue with the dcm2bids package, and will result in the 
-fieldmaps not being used. The workaround is to list each run explicitly in your 
-conversion configuration, or to modify each fieldmap JSON after it is generated.
-
-Finally, there are several varieties of fieldmaps allowable in the BIDS format, 
-each needing a different set of conversion config entries. For a detailed 
-look at these types, please see 
-`the BIDS Specification <https://bids-specification.readthedocs.io/en/stable/04-modality-specific-files/01-magnetic-resonance-imaging-data.html#fieldmap-data>`_.
+The dcm2niix options are included to allow dcm2bids' search depth to be expanded enough
+to work with Flywheel's default file structure when syncing. You can ignore it, but
+it serves as a useful place to configure any other dcm2niix options you may need
+to specify. dcm2niix is the tool used by dcm2bids to perform DICOM to nifti conversion.
 
 
 dcm2bids_helper
@@ -196,12 +120,39 @@ create a temporary directory containing all the converted files,
 and, more importantly, the sidecar JSONs. These JSONs contain the information needed 
 to update the conversion configuration file.
 
-Conversion Command
----------------------
+--------------------
+heudiconv configuration
+--------------------
 
-Once you have updated your conversion configuration file, you can convert your entire dataset with:
+`heudiconv <https://heudiconv.readthedocs.io/en/latest/usage.html>`_ is another tool for converting
+DICOM files to BIDS format. This tool is a bit trickier to use than dcm2bids, because
+its configuration is driven by a python file instead of json. However, it allows for
+more control over conversion than what dcm2bids can provide, allowing you to handle
+datasets with more variation or difficult edge cases.
 
+See one of these various `walkthroughs <https://heudiconv.readthedocs.io/en/latest/tutorials.html>`_
+for instructions on setting up and using heudiconv.
 
-.. click:: clpipe.cli:convert2bids_cli
-   :prog: clpipe convert2bids
-   :nested: full
+clpipe does not currently provide a default heuristic file - run heudiconv on
+your dataset with the converter set to "None" to generate a `.heuristic` folder,
+and copy a heuristic file from one of the subject folders to the root of your clpipe
+directory. clpipe comes with heudionv installed as a Python library,
+so you should be able to use the `heudiconv` command directly 
+on the command line if you're in the same virtual environment where you installed clpipe.
+
+To use heudiconv, provide a heuristic file as your conversion config file:
+
+.. code-block:: json
+	
+	"DICOMToBIDSOptions": {
+		"DICOMDirectory": "...<clpipe_project>/data_DICOMs",
+		"BIDSDirectory": "...<clpipe_project>/clpipe/data_BIDS",
+		"ConversionConfig": "...<clpipe_project>/heuristic.py",
+		"DICOMFormatString": "{subject}",
+
+And when running convert2bids, include the `-heudiconv` flag:
+
+.. code-block:: console
+
+    clpipe convert2bids -heudiconv -c config_file.json
+
