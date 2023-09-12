@@ -170,7 +170,6 @@ def postprocess_subjects(
 
 def setup_dirs(config: ProjectOptions, processing_stream: str):
     os.makedirs(config.postprocessing.get_stream_output_dir(processing_stream), exist_ok=True)
-    os.makedirs(config.postprocessing.get_stream_dir(processing_stream), exist_ok=True)
     os.makedirs(config.postprocessing.get_stream_working_dir(processing_stream), exist_ok=True)
     os.makedirs(config.postprocessing.get_stream_log_dir(processing_stream), exist_ok=True)
 
