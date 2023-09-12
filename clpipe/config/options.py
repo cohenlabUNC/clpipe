@@ -89,6 +89,8 @@ class Convert2BIDSOptions(Option):
             raise ValidationError("Must be type '.py' or .json'")
 
     def populate_project_paths(self, project_directory: os.PathLike, source_data: os.PathLike):
+        # create as alt constructor?
+
         self.dicom_directory = os.path.abspath(source_data)
         self.conversion_config = os.path.join(project_directory, 'conversion_config.json')
         self.bids_directory = os.path.join(project_directory, 'data_BIDS')
@@ -149,7 +151,7 @@ class FMRIPrepOptions(Option):
             "MNI152NLin6Asym", 
             "OASIS30ANTs", 
             "MNIPediatricAsym", 
-            "MNIInfant"]
+            "MNIInfant"], metadata={"required": True}
         )
     """Which templates (standard spaces) should clpipe download for use in templateflow?"""
 
@@ -187,44 +189,43 @@ class TemporalFiltering(Option):
     """This step removes signals from an image's timeseries based on cutoff thresholds.
     Also applied to confounds."""
 
-    implementation: str = "fslmaths"
+    implementation: str = field(default="fslmaths", metadata={"required": True})
     """Available implementations: fslmaths, 3dTProject"""
 
-    filtering_high_pass: float = 0.008
+    filtering_high_pass: float = field(default=0.008, metadata={"required": True})
     """Values below this threshold are filtered. Defaults to .08 Hz. Set to -1 to disable."""
 
-    filtering_low_pass: int = -1
+    filtering_low_pass: int = field(default=-1, metadata={"required": True})
     """Values above this threshold are filtered. Disabled by default (-1)."""
-    
-    filtering_order: int = 2
-    """Order of the filter. Defaults to 2."""
 
+    filtering_order: int = field(default=2, metadata={"required": True})
+    """Order of the filter. Defaults to 2."""
 
 @dataclass
 class IntensityNormalization(Option):
     """Normalize the intensity of the image data."""
 
-    implementation: str = "10000_GlobalMedian"
+    implementation: str = field(default="10000_GlobalMedian", metadata={"required": True})
     """Currently limited to '10000_GlobalMedian'"""
-
 
 @dataclass
 class SpatialSmoothing(Option):
     """Apply spatial smoothing to the image data."""
 
-    implementation: str = "SUSAN"
+    implementation: str = field(default="SUSAN", metadata={"required": True})
     """Currently limited to 'SUSAN'"""
-    fwhm: int = 6
+
+    fwhm: int = field(default=6, metadata={"required": True})
     """The size of the smoothing kernel.
     Specifically the full width half max of the Gaussian kernel.
     Scaled in millimeters."""
-
 
 @dataclass
 class AROMARegression(Option):
     """Regress out automatically classified noise artifacts from the image data
     using AROMA. Also applied to confounds."""
-    implementation: str = "fsl_regfilt"
+
+    implementation: str = field(default="fsl_regfilt", metadata={"required": True})
 
 
 @dataclass
@@ -233,7 +234,7 @@ class ScrubTimepoints(Option):
     based on a target variable from that image's confounds file. Timepoints scrubbed
     from an image's timeseries are also removed its respective confound file."""
 
-    insert_na: bool = True
+    insert_na: bool = field(default=True, metadata={"required": True})
     """Set true to replace scrubbed timepoints with NA. False removes the timepoints completely."""
 
     scrub_columns: list = field(
@@ -248,20 +249,20 @@ class ScrubTimepoints(Option):
 @dataclass 
 class ScrubColumn(Option):
     """A definition for a single column to be scrubbed."""
-
-    target_variable: str = "framewise_displacement"
+    
+    target_variable: str = field(default="framewise_displacement", metadata={"required": True})
     """Which confound variable to use as a reference for scrubbing. May use wildcard (*) to select multiple similar columns."""
 
-    threshold: float = 0.9
+    threshold: float = field(default=0.9, metadata={"required": True})
     """Any timepoint of the target variable exceeding this value will be scrubbed"""
 
-    scrub_ahead: int = 0
+    scrub_ahead: int = field(default=0, metadata={"required": True})
     """Set the number of timepoints to scrub ahead of target timepoints"""
 
-    scrub_behind: int = 0
+    scrub_behind: int = field(default=0, metadata={"required": True})
     """Set the number of timepoints to scrub behind target timepoints"""
 
-    scrub_contiguous: int = 0
+    scrub_contiguous: int = field(default=0, metadata={"required": True})
     """Scrub everything between scrub targets up to this far apart"""
 
 
@@ -269,21 +270,19 @@ class ScrubColumn(Option):
 class Resample(Option):
     """Resample your image to a new space."""
     
-    reference_image: str = "SET REFERENCE IMAGE"
+    reference_image: str = field(default="SET REFERENCE IMAGE", metadata={"required": True})
     """Path to an image against which to resample - often a template"""
-
 
 @dataclass
 class TrimTimepoints(Option):
     """Trim timepoints from the beginning or end of an image.
     Also applied to confounds."""
 
-    from_end: int = 0
+    from_end: int = field(default=0, metadata={"required": True})
     """Number of timepoints to trim from the end of each image."""
 
-    from_beginning: int = 0
+    from_beginning: int = field(default=0, metadata={"required": True})
     """Number of timepoints to trim from the beginning of each image."""
-
 
 @dataclass
 class ConfoundRegression(Option):
@@ -291,7 +290,7 @@ class ConfoundRegression(Option):
     If any other processing steps are relevant to the confounds,
     they will be applied first."""
 
-    implementation: str = "afni_3dTproject"
+    implementation: str = field(default="afni_3dTproject", metadata={"required": True})
     """Currently limited to "afni_3dTproject"""
 
 
@@ -299,15 +298,13 @@ class ConfoundRegression(Option):
 class ProcessingStepOptions(Option):
     """The default processing options for each step."""
 
-    temporal_filtering: TemporalFiltering = TemporalFiltering()
-    intensity_normalization: IntensityNormalization = IntensityNormalization()
-    spatial_smoothing: SpatialSmoothing = SpatialSmoothing()
-    aroma_regression: AROMARegression = AROMARegression()
-    scrub_timepoints: ScrubTimepoints = ScrubTimepoints()
-    resample: Resample = Resample()
-    trim_timepoints: TrimTimepoints = TrimTimepoints()
-    confound_regression: ConfoundRegression = ConfoundRegression()
-
+    temporal_filtering: TemporalFiltering = field(default_factory=TemporalFiltering, metadata={"required": True})
+    intensity_normalization: IntensityNormalization = field(default_factory=IntensityNormalization, metadata={"required": True})
+    spatial_smoothing: SpatialSmoothing = field(default_factory=SpatialSmoothing, metadata={"required": True})
+    aroma_regression: AROMARegression = field(default_factory=AROMARegression, metadata={"required": True})
+    scrub_timepoints: ScrubTimepoints = field(default_factory=ScrubTimepoints, metadata={"required": True})
+    resample: Resample = field(default_factory=Resample, metadata={"required": True})
+    trim_timepoints: TrimTimepoints = field(default_factory=TrimTimepoints, metadata={"required": True})
 
 @dataclass
 class MotionOutliers(Option):
@@ -317,24 +314,23 @@ class MotionOutliers(Option):
     the threshold, a new column of all 0s and a single '1' at that timepoint is
     added to the end of the confounds file to serve as a spike regressor for GLM analysis."""
 
-    include: bool = False
+    include: bool = field(default=False, metadata={"required": True})
     """Set 'true' to add motion outlier spike regressors to each confound file."""
 
-    scrub_var: str = "framewise_displacement"
+    scrub_var: str = field(default="framewise_displacement", metadata={"required": True})
     """Which variable in the confounds file should be used to calculate motion outliers."""
 
-    threshold: float = 0.9
+    threshold: float = field(default=0.9, metadata={"required": True})
     """Threshold at which to flag a timepoint as a motion outlier."""
 
-    scrub_ahead: int = 0
+    scrub_ahead: int = field(default=0, metadata={"required": True})
     """How many time points ahead of a flagged time point should be flagged also."""
 
-    scrub_behind: int = 0
+    scrub_behind: int = field(default=0, metadata={"required": True})
     """If a timepoint is scrubbed, how many points before to remove."""
 
-    scrub_contiguous: int = 0
+    scrub_contiguous: int = field(default=0, metadata={"required": True})
     """How many good contiguous timepoints need to exist."""
-
 
 @dataclass
 class ConfoundOptions(Option):
@@ -343,83 +339,83 @@ class ConfoundOptions(Option):
     columns: list = field(
         default_factory=lambda: [
             "csf", "csf_derivative1", 
-			"white_matter", "white_matter_derivative1"]
+			"white_matter", "white_matter_derivative1"],
+        metadata={"required": True}
         )
     """A list containing a subset of confound file columns to use
     from each image's confound file. You may use the wildcard '*' operator
     to select groups of columns, such as 'csf*'"""
 
-    motion_outliers: MotionOutliers = MotionOutliers()
+    motion_outliers: MotionOutliers = field(default_factory=MotionOutliers, metadata={"required": True})
     """Options specific to motion outliers."""
-
 
 @dataclass
 class BatchOptions(Option):
     """The batch settings for postprocessing."""
 
-    memory_usage: str = "20G"
+    memory_usage: str = field(default="20G", metadata={"required": True})
     """How much memory to allocate per job."""
 
-    time_usage: str = "2:0:0"
+    time_usage: str = field(default="2:0:0", metadata={"required": True})
     """How much time to allocate per job."""
 
-    n_threads: str = "1"
+    n_threads: str = field(default="1", metadata={"required": True})
     """How many threads to allocate per job."""
-
 
 @dataclass
 class PostProcessingOptions(Option):
     """Options for additional processing after fMRIPrep's preprocessing."""
 
-    stream_name: str = "default"
+    stream_name: str = field(default="default", metadata={"required": True})
     """Name of the processing stream to use. 'default' uses no stream."""
 
-    working_directory: str = "SET WORKING DIRECTORY"
+    working_directory: str = field(default="SET WORKING DIRECTORY", metadata={"required": True})
     """Directory for caching intermediary processing files."""
 
-    write_process_graph: bool = True
+    write_process_graph: bool = field(default=True, metadata={"required": True})
     """Set 'true' to write a processing graph alongside your output."""
 
-    target_directory: str = ""
+    target_directory: str = field(default="", metadata={"required": True})
     """Which directory to process - leave empty to use your config's fMRIPrep output
     directory."""
 
-    target_image_space: str = "MNI152NLin2009cAsym"
+    target_image_space: str = field(default="MNI152NLin2009cAsym", metadata={"required": True})
     """Which space to use from your fmriprep output.
     This is the value that follows "space-" in the image file names."""
 
-    target_tasks: list = field(default_factory=list)
+    target_tasks: list = field(default_factory=list, metadata={"required": True})
     """Which tasks to use from your fmriprep output. 
     This is the value that follows "task-" in the image file names.
     Leave blank to target all tasks."""
 
-    target_acquisitions: list = field(default_factory=list)
+    target_acquisitions: list = field(default_factory=list, metadata={"required": True})
     """Which acquisitions to use from your fmriprep output. 
     This is the value that follows "acq-" in the image file names.
     Leave blank to target all acquisitions."""
 
-    output_directory: str = field(default_factory=list)
+    output_directory: str = field(default="data_postprocess", metadata={"required": True})
     """Path to save your postprocessing data. Defaults to data_postproc."""
     
     processing_steps: list = field(
         default_factory=lambda: [
             "SpatialSmoothing",
-			"TemporalFiltering",
-			"IntensityNormalization",
-			"ApplyMask"]
-        )
+            "TemporalFiltering",
+            "IntensityNormalization",
+            "ApplyMask"],
+        metadata={"required": True}
+    )
     """Your list of processing steps to use, in order."""
 
-    processing_step_options: ProcessingStepOptions = ProcessingStepOptions()
+    processing_step_options: ProcessingStepOptions = field(default_factory=ProcessingStepOptions, metadata={"required": True})
     """Configuration for each processing step."""
 
-    confound_options: ConfoundOptions = ConfoundOptions()
+    confound_options: ConfoundOptions = field(default_factory=ConfoundOptions, metadata={"required": True})
     """Options related to the outputted confounds file."""
 
-    batch_options: BatchOptions = BatchOptions()
+    batch_options: BatchOptions = field(default_factory=BatchOptions, metadata={"required": True})
     """Options for cluster resource usage."""
 
-    log_directory: str = ""
+    log_directory: str = field(default="", metadata={"required": True})
     """Log output location. Not normally changed from default."""
 
     def populate_project_paths(self, project_directory: os.PathLike):
@@ -445,40 +441,39 @@ class PostProcessingOptions(Option):
         return os.path.join(index_name, self.get_stream_working_dir())
 
 
+
 @dataclass
 class ROIExtractOptions(Option):
-    """"""
+    """Options for ROI extraction."""
 
-    target_directory: str = ""
+    target_directory: str = field(default="", metadata={"required": True})
     """Target folder for processing - usually an fMRIPrep output directory."""
 
-    target_suffix: str = "desc-postproc_bold.nii.gz"
+    target_suffix: str = field(default="desc-postproc_bold.nii.gz", metadata={"required": True})
     """Narrow down the images to use by specifying the path's suffix. Use 
     'desc-preproc_bold.nii.gz' if targeting the fMRIPrep dir."""
 
-    output_directory: str = ""
+    output_directory: str = field(default="data_ROI_ts", metadata={"required": True})
     """Location of this command's output. Defaults to data_ROI_ts."""
     
-    atlases: list = field(
-        default_factory=lambda: ["power"]
-        )
+    atlases: list = field(default_factory=lambda: ["power"], metadata={"required": True})
     """List of atlases to use. Use 'clpipe roi atlases' to show available atlases."""
     
-    require_mask: bool = True
+    require_mask: bool = field(default=True, metadata={"required": True})
     """Choose whether or not an accompanying mask for each image is required in the 
     target directory."""
     
-    prop_voxels: float = 0.5
+    prop_voxels: float = field(default=0.5, metadata={"required": True})
     """ROIs with less than this proportion of voxels within the mask area are
     set to nan."""
 
-    overlap_ok: bool = False
+    overlap_ok: bool = field(default=False, metadata={"required": True})
     """Are overlapping ROIs allowed?"""
-    
-    memory_usage: str = "20G"
-    time_usage: str = "2:0:0"
-    n_threads: str = "1"
-    log_directory: str = ""
+
+    memory_usage: str = field(default="20G", metadata={"required": True})
+    time_usage: str = field(default="2:0:0", metadata={"required": True})
+    n_threads: str = field(default="1", metadata={"required": True})
+    log_directory: str = field(default="", metadata={"required": True})
 
     def populate_project_paths(self, project_directory: os.PathLike):
         self.target_directory = os.path.join(project_directory, "data_postproc")
@@ -490,23 +485,23 @@ class ROIExtractOptions(Option):
 class ProjectOptions(Option):
     """Contains metadata for your project and option blocks for each command."""
 
-    project_title: str = "A Neuroimaging Project"
+    project_title: str = field(default="A Neuroimaging Project", metadata={"required": True})
     """The title of your project."""
 
-    contributors: str = "SET CONTRIBUTORS"
+    contributors: str = field(default="SET CONTRIBUTORS", metadata={"required": True})
     """Members of the project team."""
 
-    project_directory: str = ""
+    project_directory: str = field(default="", metadata={"required": True})
     """The root directory of your clpipe project."""
 
-    email_address: str = "SET EMAIL ADDRESS"
+    email_address: str = field(default="SET EMAIL ADDRESS", metadata={"required": True})
     """Email address used for delivering batch job updates."""
 
-    source: SourceOptions = SourceOptions()
-    convert2bids: Convert2BIDSOptions = Convert2BIDSOptions()
-    bids_validation: BIDSValidatorOptions = BIDSValidatorOptions()
-    fmriprep: FMRIPrepOptions = FMRIPrepOptions()
-    postprocessing: PostProcessingOptions = PostProcessingOptions()
+    source: SourceOptions = field(default_factory=SourceOptions, metadata={"required": True})
+    convert2bids: Convert2BIDSOptions = field(default_factory=Convert2BIDSOptions, metadata={"required": True})
+    bids_validation: BIDSValidatorOptions = field(default_factory=BIDSValidatorOptions, metadata={"required": True})
+    fmriprep: FMRIPrepOptions = field(default_factory=FMRIPrepOptions, metadata={"required": True})
+    postprocessing: PostProcessingOptions = field(default_factory=PostProcessingOptions, metadata={"required": True})
     processing_streams: List[dict] = field(
         default_factory=lambda: [
             {
@@ -529,11 +524,11 @@ class ProjectOptions(Option):
                     ]
                 }
             }
-        ]
+        ], metadata={"required": True}
     )
-    roi_extraction: ROIExtractOptions = ROIExtractOptions()
-    batch_config_path: str = "slurmUNCConfig.json"
-    clpipe_version: str = VERSION
+    roi_extraction: ROIExtractOptions = field(default_factory=ROIExtractOptions, metadata={"required": True})
+    batch_config_path: str = field(default="slurmUNCConfig.json", metadata={"required": True})
+    clpipe_version: str = field(default=VERSION, metadata={"required": True})
 
     def get_logs_dir(self) -> str:
         """Get the project's top level log directory."""
@@ -579,6 +574,8 @@ class ProjectOptions(Option):
         self.fmriprep.populate_project_paths(project_dir)
         self.roi_extraction.populate_project_paths(project_dir)
         self.postprocessing.populate_project_paths(project_dir)
+
+        # Try cls with ProjectOptions(project_direct = x, ...), and in children
 
         
     @classmethod
