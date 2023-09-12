@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
 from typing import List
 import marshmallow_dataclass
+from marshmallow import validates, ValidationError
 import json, yaml, os
 from pathlib import Path
 from typing import Union
@@ -30,52 +31,62 @@ class Option:
 class SourceOptions(Option):
     """Options for configuring sources of DICOM data."""
 
-    source_url: str = "fw://"
+    source_url: str = field(default="fw://", metadata={"required": True})
     """The URL to your source data - for Flywheel this should start with fw: 
     and point to a project. You can use fw ls to browse your fw project space 
     to find the right path."""
 
    
-    dropoff_directory: str = ""
+    dropoff_directory: str = field(default="", metadata={"required": True})
     """A destination for your synced data - usually this will be data_DICOMs"""
     
-    temp_directory: str = ""
+    temp_directory: str = field(default="", metadata={"required": True})
     """A location for Flywheel to store its temporary files - 
     necessary on shared compute, because Flywheel will use system 
     level tmp space by default, which can cause issues."""
     
-    commandline_opts: str = "-y"
+    commandline_opts: str = field(default="-y", metadata={"required": True})
     """Any additional options you may need to include - 
     you can browse Flywheel syncs other options with fw sync -help"""
 
-    time_usage: str = "1:0:0"
-    mem_usage: str = "10G"
-    core_usage: str = "1"
+    time_usage: str = field(default="1:0:0", metadata={"required": True})
+    mem_usage: str = field(default="10G", metadata={"required": True})
+    core_usage: str = field(default="2", metadata={"required": True})
+
+    @validates("source_url")
+    def validate_(self, value):
+        if not value.startswith("fw://"):
+            raise ValidationError("source_url must start with prefix: fw://")
 
 
 @dataclass
 class Convert2BIDSOptions(Option):
     """Options for converting DICOM files to BIDS format."""
     
-    dicom_directory: str = ""
+    dicom_directory: str = field(default="", metadata={"required": True})
     """Path to your source DICOM directory to be converted."""
 
-    bids_directory: str = ""
+    bids_directory: str = field(default="", metadata={"required": True})
     """Output directory where your BIDS data will be saved."""
 
-    conversion_config: str = ""
+    conversion_config: str = field(default="", metadata={"required": True})
     """The path to your conversion configuration file - either a
     conversion_config.json file for dcm2bids, or heuristic.py for heudiconv."""
 
-    dicom_format_string: str = ""
+    dicom_format_string: str = field(default="", metadata={"required": True})
     """Used to tell clpipe where to find subject and session level folders in you
     DICOM directory."""
 
-    time_usage: str = "1:0:0"
-    mem_usage: str = "5000"
-    core_usage: str = "2"
-    log_directory: str = ""
+    time_usage: str = field(default="1:0:0", metadata={"required": True})
+    mem_usage: str = field(default="5000", metadata={"required": True})
+    core_usage: str = field(default="2", metadata={"required": True})
+    log_directory: str = field(default="", metadata={"required": True})
 
+    @validates("conversion_config")
+    def validate_conversion_config(self, value):
+        suffix = Path(value).suffix
+        if suffix != ".py" or suffix != ".json":
+            raise ValidationError("Must be type '.py' or .json'")
 
     def populate_project_paths(self, project_directory: os.PathLike, source_data: os.PathLike):
         self.dicom_directory = os.path.abspath(source_data)
@@ -88,10 +99,10 @@ class Convert2BIDSOptions(Option):
 class BIDSValidatorOptions(Option):
     """Options for validating your BIDS directory."""
 
-    bids_validator_image: str = "/proj/hng/singularity_imgs/validator.simg"
+    bids_validator_image: str = field(default="/proj/hng/singularity_imgs/validator.simg", metadata={"required": True})
     """Path to your BIDS validator image."""
     
-    log_directory: str = ""
+    log_directory: str = field(default="", metadata={"required": True})
 
     def populate_project_paths(self, project_directory: os.PathLike):
         self.log_directory = os.path.join(project_directory, "logs", "bids_validation_logs")
@@ -101,35 +112,35 @@ class BIDSValidatorOptions(Option):
 class FMRIPrepOptions(Option):
     """Options for configuring fMRIPrep."""
 
-    bids_directory: str = "" 
+    bids_directory: str = field(default="", metadata={"required": True}) 
     """Your BIDs formatted raw data directory."""
 
-    working_directory: str = "SET WORKING DIRECTORY"
+    working_directory: str = field(default="SET WORKING DIRECTORY", metadata={"required": True})
     """Storage location for intermediary fMRIPrep files. Takes up a large
     amount of space - Longleaf users should use their /work folder."""
 
     
-    output_directory: str = "" 
+    output_directory: str = field(default="", metadata={"required": True}) 
     """ Where to save your preprocessed images. """
 
-    fmriprep_path: str = "/proj/hng/singularity_imgs/fmriprep_22.1.1.sif"
+    fmriprep_path: str = field(default="/proj/hng/singularity_imgs/fmriprep_22.1.1.sif", metadata={"required": True}) 
     """Path to your fMRIPrep Singularity image."""
     
-    freesurfer_license_path: str = "/proj/hng/singularity_imgs/license.txt"
+    freesurfer_license_path: str = field(default="/proj/hng/singularity_imgs/license.txt", metadata={"required": True}) 
     """Path to your Freesurfer license .txt file."""
     
-    use_aroma: bool = False
+    use_aroma: bool = field(default=False, metadata={"required": True}) 
     """Set True to generate AROMA artifacts. Significantly increases run
     time and memory usage."""
     
-    commandline_opts: str = ""
+    commandline_opts: str = field(default="", metadata={"required": True})
     """Any additional arguments to pass to FMRIprep."""
     
-    templateflow_toggle: bool = True
+    templateflow_toggle: bool = field(default=True, metadata={"required": True})
     """Set True to activate to use templateflow, which allows you to
     generate multiple template variantions for the same outputs."""
     
-    templateflow_path: str = "/proj/hng/singularity_imgs/template_flow"
+    templateflow_path: str = field(default="/proj/hng/singularity_imgs/template_flow", metadata={"required": True})
     """The path to your templateflow directory."""
 
     templateflow_templates: list = field(
@@ -142,27 +153,27 @@ class FMRIPrepOptions(Option):
         )
     """Which templates (standard spaces) should clpipe download for use in templateflow?"""
 
-    fmap_roi_cleanup: int = 3
+    fmap_roi_cleanup: int = field(default=3, metadata={"required": False})
     """How many timepoints should the fmap_cleanup function extract from 
     blip-up/blip-down field maps, set to -1 to disable."""
     
-    fmriprep_memory_usage: str = "50G"
+    fmriprep_memory_usage: str = field(default="50G", metadata={"required": True})
     """How much memory in RAM each subject's preprocessing will use."""
 
-    fmriprep_time_usage: str = "16:0:0"
+    fmriprep_time_usage: str = field(default="16:0:0", metadata={"required": True})
     """How much time on the cluster fMRIPrep is allowed to use."""
     
-    n_threads: str = "12"
+    n_threads: str = field(default="12", metadata={"required": True})
     """How many threads to use in each job."""
 
-    log_directory: str = ""
+    log_directory: str = field(default="", metadata={"required": True})
     """Path to your logging directory for fMRIPrep outputs.
     Not generally changed from default."""
 
-    docker_toggle: bool = False
+    docker_toggle: bool = field(default=False, metadata={"required": True})
     """Set True to use a Docker image."""
     
-    docker_fmriprep_version: str = ""
+    docker_fmriprep_version: str = field(default="", metadata={"required": True})
     """Path to your fMRIPrep Docker image."""
 
     def populate_project_paths(self, project_directory: os.PathLike):
