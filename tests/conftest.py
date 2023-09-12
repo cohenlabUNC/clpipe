@@ -403,6 +403,26 @@ def clpipe_fmriprep_dir(
 
     return project_dir
 
+@pytest.fixture(scope="session")
+def config_dir_fmriprep_indexed(clpipe_fmriprep_dir: Path):
+    """Uses postprocess_subjects from postprocessing to setup a BIDS index.
+    This essentially borrows the basic postprocess_subjects test and uses it as
+    a fixture because it builds the BIDS index in a simple way."""
+
+    from clpipe.config.options import ProjectOptions
+    from clpipe.postprocess import postprocess_subjects
+
+    config = clpipe_fmriprep_dir / "clpipe_config.json"
+
+    options = ProjectOptions.load(config)
+    options.postprocessing.working_directory = clpipe_fmriprep_dir / "data_working"
+
+    postprocess_subjects(
+        config_file=options
+    )
+
+    return clpipe_fmriprep_dir
+
 
 # TODO: seperate AROMA into its own type of fmriprep dir
 @pytest.fixture(scope="session")
@@ -532,27 +552,6 @@ def config_file_aroma_confounds(clpipe_config_default, config_file):
 @pytest.fixture(scope="session")
 def config_file_fmriprep(clpipe_fmriprep_dir: Path):
     """Return config file from the test fmriprep directory."""
-
-    return clpipe_fmriprep_dir / "clpipe_config.json"
-
-
-@pytest.fixture(scope="session")
-def config_file_fmriprep_indexed(clpipe_fmriprep_dir: Path):
-    """Uses postprocess_subjects from postprocessing to setup a BIDS index.
-    This essentially borrows the basic postprocess_subjects test and uses it as
-    a fixture because it builds the BIDS index in a simple way."""
-    
-    from clpipe.config.options import ProjectOptions
-    from clpipe.postprocess import postprocess_subjects
-
-    config = clpipe_fmriprep_dir / "clpipe_config.json"
-
-    options = ProjectOptions.load(config)
-    options.postprocessing.working_directory = clpipe_fmriprep_dir / "data_working"
-
-    postprocess_subjects(
-        config_file=options
-    )
 
     return clpipe_fmriprep_dir / "clpipe_config.json"
 

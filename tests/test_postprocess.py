@@ -17,23 +17,15 @@ def test_postprocess_subjects(clpipe_fmriprep_dir):
         config_file=options
     )
 
-def test_postprocess_subject(config_file_fmriprep_indexed):
+def test_postprocess_subject(config_dir_fmriprep_indexed):
 
-    config_file = config_file_fmriprep_indexed / "clpipe_config.json"
-
-    options = ProjectOptions.load(config_file)
-    options.postprocessing.working_directory = config_file_fmriprep_indexed / "data_working"
+    run_config = PostProcessingRunConfig.load(config_dir_fmriprep_indexed / "data_working" / "default" / "run_config.json")
 
     postprocess_subject(
-        subject_id="01",
-        bids_dir=config_file_fmriprep_indexed / "data_BIDS",
-        fmriprep_dir=config_file_fmriprep_indexed / "data_fmriprep",
-        output_dir=config_file_fmriprep_indexed / "data_postprocessed",
-        config_file=options,
-        index_dir=config_file_fmriprep_indexed / "data_working" / "default" / "bids_index",
+        subject_id="1",
+        run_config_file=run_config,
         batch=True,
         submit=False,
-        log_dir=config_file_fmriprep_indexed / "logs" / "postprocess_logs" / "default",
         processing_stream="default",
         debug=False
     )

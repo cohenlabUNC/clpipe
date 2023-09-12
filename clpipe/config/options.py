@@ -526,14 +526,24 @@ class PostProcessingRunConfig(ClpipeData):
     as any other necessary values not in the options.
     """
     options: PostProcessingOptions = field(default_factory=PostProcessingOptions)
+
+    target_directory: str = ""
+
+    bids_directory: str = ""
+
+    batch_config_file: str = ""
+
+    email_address: str = ""
     
-    stream_working_dir: str = ""
+    stream_working_directory: str = ""
     
-    stream_log_dir: str = ""
+    stream_log_directory: str = ""
     
-    stream_output_dir: str = ""
+    stream_output_directory: str = ""
     
     pybids_db_path: str = ""
+
+    #subjects_to_process: list = field(default_factory=list)
 
     @classmethod
     def load(cls, config: Union[os.PathLike, 'PostProcessingRunConfig']):
