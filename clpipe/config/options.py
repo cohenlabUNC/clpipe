@@ -564,8 +564,28 @@ class PostProcessingRunConfig(ClpipeData):
             config_dict = json.load(f)
          
         return config_schema().load(config_dict)
-    
 
+@dataclass
+class ProcessingStream(Option):
+    """Stores the name of a stream and a subset of postprocessing
+    options for overriding Postprocessing options."""
+
+    stream_name: str = field(default="", metadata={"required": True})
+    "Used to specify this stream when using the postprocessing command."
+
+    postprocessing_options: PostProcessingOptions = field(
+        default_factory= PostProcessingOptions(
+            processing_steps=[
+                "SpatialSmoothing",
+                "AROMARegression",
+                "TemporalFiltering",
+                "IntensityNormalization"
+            ],
+        ),
+        metadata={"required":True, "partial": True}
+    )
+    """A subset of postprocessing options that will be used to update
+    the main postprocessing options when this stream is specified."""
 
 @dataclass
 class ROIExtractOptions(Option):
@@ -623,34 +643,48 @@ class ProjectOptions(Option):
     """Email address used for delivering batch job updates."""
 
     source: SourceOptions = field(default_factory=SourceOptions, metadata={"required": True})
+    """Options for the flywheel_sync command."""
+    
     convert2bids: Convert2BIDSOptions = field(default_factory=Convert2BIDSOptions, metadata={"required": True})
+    """Options for the convert2bids command."""
+    
     bids_validation: BIDSValidatorOptions = field(default_factory=BIDSValidatorOptions, metadata={"required": True})
+    """Options for the bids_validation command."""
+    
     fmriprep: FMRIPrepOptions = field(default_factory=FMRIPrepOptions, metadata={"required": True})
+    """Options for the preprocessing command."""
+    
     postprocessing: PostProcessingOptions = field(default_factory=PostProcessingOptions, metadata={"required": True})
-    processing_streams: List[dict] = field(
+    """Options for the postprocessing command."""
+    
+    processing_streams: List[ProcessingStream] = field(
         default_factory=lambda: [
-            {
-                "name": "GLM_default",
-                "postprocessing_options": {
-                    "processing_steps": [
+            ProcessingStream(
+                stream_name="GLM_default",
+                postprocessing_options=PostProcessingOptions(
+                    processing_steps=[
                         "SpatialSmoothing",
                         "AROMARegression",
                         "TemporalFiltering",
                         "IntensityNormalization"
                     ]
-                }
-			},
-            {
-                "name": "functional_connectivity_default",
-                "postprocessing_options": {
-                    "processing_steps": [
+                )
+            ),
+            ProcessingStream(
+                stream_name="functional_connectivity_default",
+                postprocessing_options=PostProcessingOptions(
+                    processing_steps=[
                         "TemporalFiltering",
                         "ConfoundRegression"
                     ]
-                }
-            }
-        ], metadata={"required": True}
+                )
+            )
+        ],
+        metadata={"required": True, "partial":True}
     )
+    """Stores a list of postprocessing streams to be selected by name
+    when using the postprocessing command."""
+
     roi_extraction: ROIExtractOptions = field(default_factory=ROIExtractOptions, metadata={"required": True})
     batch_config_path: str = field(default="slurmUNCConfig.json", metadata={"required": True})
     clpipe_version: str = field(default=VERSION, metadata={"required": True})
@@ -845,5 +879,7 @@ KEY_MAP = {
     "target_variable": "TargetVariable",
     "insert_na": "InsertNA",
     "scrub_columns": "",
-    "stream_name": "",
+    "stream_name": "ProcessingStream",
+    "processing_stream_options": "ProcessingStreamOptions",
+    "postprocessing_options": "PostProcessingOptions",
 }
