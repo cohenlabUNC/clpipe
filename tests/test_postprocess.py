@@ -40,19 +40,19 @@ def test_postprocess_subjects_dir_invalid_subject(
 
 
 def test_postprocess_image(
-    config_dir_fmriprep_indexed
+    clpipe_postprocess_subjects
 ):
-    run_config_file = config_dir_fmriprep_indexed / "data_working" / "default" / "run_config.json"
+    run_config_file = clpipe_postprocess_subjects / "data_working" / "default" / "run_config.json"
     run_config: PostProcessingRunConfig = PostProcessingRunConfig.load(run_config_file)
 
 
     with pytest.raises(SystemExit) as e:
         postprocess_image(
             run_config_file=run_config,
-            image_path=config_dir_fmriprep_indexed / "data_fmriprep/sub-0/func/sub-0_task-gonogo_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz",
-            subject_out_dir=config_dir_fmriprep_indexed / "data_postprocess/default/sub-0",
-            subject_working_dir=config_dir_fmriprep_indexed / "data_working/default/sub-0",
-            subject_log_dir=config_dir_fmriprep_indexed / "logs/postprocess_logs/default/sub-0",
+            image_path=clpipe_postprocess_subjects / "data_fmriprep/sub-0/func/sub-0_task-gonogo_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz",
+            subject_out_dir=clpipe_postprocess_subjects / "data_postprocess/default/sub-0",
+            subject_working_dir=clpipe_postprocess_subjects / "data_working/default/sub-0",
+            subject_log_dir=clpipe_postprocess_subjects / "logs/postprocess_logs/default/sub-0",
             confounds_only=False,
             debug=False,
         )
