@@ -1,3 +1,4 @@
+import collections.abc
 from dataclasses import dataclass, field
 from typing import List
 import marshmallow_dataclass
@@ -719,7 +720,7 @@ class ProjectOptions(Option):
         """
         
         if 'clpipe_version' not in config_dict:
-            config_dict = convert_project_config(config_dict)    
+            config_dict = convert_project_options(config_dict)    
         
         newNames = list(config_dict.keys())
         config_dict = dict(zip(newNames, list(config_dict.values())))
@@ -747,35 +748,31 @@ def get_config_file(output_file="clpipe_config_DEFAULT.json"):
     config.dump(output_file)
     print('Config file created at '+ output_file)
 
-def convert_project_config(old_config, new_config=None):
+def convert_project_options(old_options: dict, new_options: dict):
     """
-    Old Config:
+    Old options:
         - Wrong Order - FIXED
         - Extra Fields - FIXED - Needs to be dealt with by user
         - Lack of Fields - FIXED
-        - Wrong datatype in value - NOT FIXED
+        - Wrong datatype in value - NOT FIXED∏
         - Different name for keys - Maybe use fuzzy string matching? Might not be worth it tho
         - Nested Fields - FIXED - Some nested fields are lists of dictionaries. 
             This wont get sorted. Can maybe try coding it
     """
-    if not new_config:
-        new_config = ProjectOptions().to_dict()
-    schema_keys = list(new_config.keys())
+    for new_key, new_value in new_options.items():
+        old_key = KEY_MAP[new_key]
 
-    for key in schema_keys:
-        if(old_config.get(KEY_MAP[key]) != None):
-            if(isinstance(new_config[key], dict)):
-                old_config[KEY_MAP[key]] = convert_project_config(old_config[KEY_MAP[key]], new_config[key])
-                del old_config[KEY_MAP[key]]
-                continue
+        if(old_options[old_key] != None):
+            if(isinstance(new_value, dict)):
+                new_options[new_key] = convert_project_options(old_options[old_key], new_value)
+            elif(isinstance(new_value, list)):
+                new_list = []
+                for index, new_value_, in enumerate(new_value):
+                    new_value = convert_project_options(old_options[old_key][index], item)
             else:
-                new_config[key] = old_config[KEY_MAP[key]]
-                del old_config[KEY_MAP[key]]
-                continue
-        else:
-            #If old config doesnt have key, then just continue because new config will have default value
-            continue
-    return new_config
+                new_options[new_key] = old_options[old_key]
+
+    return new_options
 
 KEY_MAP = {
     "clpipe_version": "clpipe_version",
