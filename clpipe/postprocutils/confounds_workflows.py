@@ -265,11 +265,11 @@ def build_confounds_prep_workflow(
             name="get_scrub_vector",
         )
         scrub_dict = {
-            "TargetVariable": scrub_target_variable,
-            "Threshold": scrub_threshold,
-            "ScrubAhead": scrub_ahead,
-            "ScrubBehind": scrub_behind,
-            "ScrubContiguous": scrub_contiguous,
+            "target_variable": scrub_target_variable,
+            "threshold": scrub_threshold,
+            "scrub_ahead": scrub_ahead,
+            "scrub_behind": scrub_behind,
+            "scrub_contiguous": scrub_contiguous,
         }
 
         # Setup scrub inputs

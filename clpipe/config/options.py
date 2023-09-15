@@ -341,6 +341,15 @@ class ScrubTimepoints(Option):
         )
     """A list of columns to be scrubbed."""
 
+    def __iter__(self):
+        return iter(self.scrub_columns)
+    
+    def __next__(self):
+        try:
+            return next(self.scrub_columns)
+        except StopIteration:
+            raise StopIteration
+
 
 
 
@@ -669,8 +678,10 @@ class ProjectOptions(Option):
                 stream_name="functional_connectivity_default",
                 postprocessing_options={
                     "processing_steps": [
+                        "SpatialSmoothing",
+                        "AROMARegression",
                         "TemporalFiltering",
-                        "ConfoundRegression"
+                        "IntensityNormalization"
                     ],
                     "confound_options": {
                         "motion_outliers": {

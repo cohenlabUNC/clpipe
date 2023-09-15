@@ -318,12 +318,16 @@ def test_postprocess2_wf_scrubbing(
     postprocessing_config.processing_steps = ["TemporalFiltering", "ScrubTimepoints"]
 
     # Setup target & threshold to ensure some scrubbing happens
-    postprocessing_config.processing_step_options.scrub_timepoints = ScrubTimepoints(
+    postprocessing_config.processing_step_options.scrub_timepoints.scrub_columns = [
         ScrubColumn(
             target_variable="csf",
             threshold=332.44
+        ),
+        ScrubColumn(
+            target_variable="trans_y*",
+            threshold=0.1
         )
-    )
+    ]
 
     test_path = helpers.create_test_dir(artifact_dir, request.node.name)
     out_path = test_path / "postprocessed_image.nii.gz"

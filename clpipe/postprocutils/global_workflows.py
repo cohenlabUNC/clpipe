@@ -114,8 +114,8 @@ def build_postprocessing_wf(
     # Setup scrub target if needed
     if STEP_SCRUB_TIMEPOINTS in processing_steps:
         mult_scrub_wf = build_multiple_scrubbing_workflow(
-            "multiple_scrubbing_wf",
-            processing_options.processing_step_options.scrub_timepoints.scrub_columns
+            processing_options.processing_step_options.scrub_timepoints.scrub_columns,
+            confounds_file
         )
         mult_scrub_wf.get_node("inputnode").inputs.confounds_file = confounds_file
 
@@ -136,7 +136,8 @@ def build_postprocessing_wf(
 
 def build_multiple_scrubbing_workflow(
     scrub_configs: list,
-    name: str = "Get_Scrub_Vector",
+    confounds_file: os.PathLike,
+    name: str = "multiple_scrubbing_workflow",
     base_dir: os.PathLike = None,
     crashdump_dir: os.PathLike = None,
 ):
@@ -163,11 +164,12 @@ def build_multiple_scrubbing_workflow(
 
     # Feed the scrub config list of dicts into the mapper via the workflow inputnode
     input_node.inputs.scrub_configs = scrub_configs
+    input_node.inputs.tsv_file = confounds_file
 
     # Expanding Dict using Wildcard node
     expand_node = pe.Node(
         Function(
-            input_names=["scrub_configs"],
+            input_names=["tsv_file", "scrub_configs"],
             output_names=["scrub_configs"],
             function=expand_scrub_dict,
         ),
@@ -204,6 +206,7 @@ def build_multiple_scrubbing_workflow(
         [input_node, expand_node, scrub_target_node, reduce_node, output_node]
     )
 
+    mult_scrub_wf.connect(input_node, "tsv_file", expand_node, "tsv_file")
     mult_scrub_wf.connect(input_node, "scrub_configs", expand_node, "scrub_configs")
     mult_scrub_wf.connect(
         expand_node, "scrub_configs", scrub_target_node, "scrub_configs"
