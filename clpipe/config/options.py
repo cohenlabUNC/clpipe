@@ -574,17 +574,14 @@ class ProcessingStream(Option):
     stream_name: str = field(default="", metadata={"required": True})
     "Used to specify this stream when using the postprocessing command."
 
-    postprocessing_options: PostProcessingOptions = field(
-        default_factory= PostProcessingOptions(
-            processing_steps=[
-                "SpatialSmoothing",
-                "AROMARegression",
-                "TemporalFiltering",
-                "IntensityNormalization"
-            ],
-        ),
-        metadata={"required":True, "partial": True}
-    )
+    postprocessing_options: dict = field(default_factory=lambda: {
+        "processing_steps": [
+            "SpatialSmoothing",
+            "AROMARegression",
+            "TemporalFiltering",
+            "IntensityNormalization"
+        ]
+    }, metadata={"required":True, "partial": True})
     """A subset of postprocessing options that will be used to update
     the main postprocessing options when this stream is specified."""
 
@@ -662,23 +659,23 @@ class ProjectOptions(Option):
         default_factory=lambda: [
             ProcessingStream(
                 stream_name="GLM_default",
-                postprocessing_options=PostProcessingOptions(
-                    processing_steps=[
+                postprocessing_options={
+                    "processing_steps": [
                         "SpatialSmoothing",
                         "AROMARegression",
                         "TemporalFiltering",
                         "IntensityNormalization"
                     ]
-                )
+                }
             ),
             ProcessingStream(
                 stream_name="functional_connectivity_default",
-                postprocessing_options=PostProcessingOptions(
-                    processing_steps=[
+                postprocessing_options={
+                    "processing_steps": [
                         "TemporalFiltering",
                         "ConfoundRegression"
                     ]
-                )
+                }
             )
         ],
         metadata={"required": True, "partial":True}
