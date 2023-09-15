@@ -446,7 +446,7 @@ class BatchOptions(Option):
 class PostProcessingOptions(Option):
     """Options for additional processing after fMRIPrep's preprocessing."""
 
-    stream_name: str = field(default="default", metadata={"required": True})
+    processing_stream: str = field(default="default", metadata={"required": True})
     """Name of the processing stream to use. 'default' uses no stream."""
 
     working_directory: str = field(default="SET WORKING DIRECTORY", metadata={"required": True})
@@ -720,7 +720,9 @@ class ProjectOptions(Option):
         """
         
         if 'clpipe_version' not in config_dict:
-            config_dict = convert_project_options(config_dict)    
+            # Case of old config file - convert to new format
+            new_dict = ProjectOptions().to_dict()
+            config_dict = convert_project_options(config_dict, new_dict)    
         
         newNames = list(config_dict.keys())
         config_dict = dict(zip(newNames, list(config_dict.values())))
@@ -748,27 +750,30 @@ def get_config_file(output_file="clpipe_config_DEFAULT.json"):
     config.dump(output_file)
     print('Config file created at '+ output_file)
 
-def convert_project_options(old_options: dict, new_options: dict):
+def convert_project_options(old_options, new_options):
     """
-    Old options:
-        - Wrong Order - FIXED
-        - Extra Fields - FIXED - Needs to be dealt with by user
-        - Lack of Fields - FIXED
-        - Wrong datatype in value - NOT FIXED∏
-        - Different name for keys - Maybe use fuzzy string matching? Might not be worth it tho
-        - Nested Fields - FIXED - Some nested fields are lists of dictionaries. 
-            This wont get sorted. Can maybe try coding it
     """
+    if not isinstance(old_options, dict):
+        return old_options
+
     for new_key, new_value in new_options.items():
         old_key = KEY_MAP[new_key]
 
+        # Skip loop if there is no old_key for new_key, or old_key value is None
+        if not old_options.get(old_key) or old_options[old_key] == None:
+            continue
+
         if(old_options[old_key] != None):
+            # Case that the value is another dict, to be recursed
             if(isinstance(new_value, dict)):
                 new_options[new_key] = convert_project_options(old_options[old_key], new_value)
+            # Case that the value is a list, to be recursed
             elif(isinstance(new_value, list)):
+                # Make a new list
                 new_list = []
-                for index, new_value_, in enumerate(new_value):
-                    new_value = convert_project_options(old_options[old_key][index], item)
+                # Go through each item in the list and recurse on it to get the sub values
+                for index, item, in enumerate(new_value):
+                    new_list.append(convert_project_options(old_options[old_key][index], item))
             else:
                 new_options[new_key] = old_options[old_key]
 
@@ -859,7 +864,6 @@ KEY_MAP = {
     "exclude_column_info": "ExcludeColumnInfo",
     "exclude_trial_types": "ExcludeTrialTypes",
     "processing_streams": "ProcessingStreams",
-    "processing_stream": "ProcessingStream",
     "roi_extraction": "ROIExtractionOptions",
     "atlases": "Atlases",
     "require_mask": "RequireMask",
@@ -875,8 +879,9 @@ KEY_MAP = {
     "batch_config_path": "BatchConfig",
     "target_variable": "TargetVariable",
     "insert_na": "InsertNA",
-    "scrub_columns": "",
+    "scrub_columns": "scrub_columns",
     "stream_name": "ProcessingStream",
     "processing_stream_options": "ProcessingStreamOptions",
     "postprocessing_options": "PostProcessingOptions",
+    "processing_stream": "processing_stream"
 }

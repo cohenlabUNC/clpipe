@@ -12,7 +12,7 @@ from nilearn.image import load_img, index_img
 sys.path.append("../clpipe")
 from clpipe.project_setup import project_setup
 from clpipe.config_json_parser import ClpipeConfigParser, GLMConfigParser
-from clpipe.config.options import convert_project_config
+from clpipe.config.options import convert_project_options
 import utils
 
 PROJECT_TITLE = "test_project"
@@ -497,7 +497,7 @@ def legacy_config_dir(tmp_path_factory) -> Path:
 def project_config(clpipe_config):
     """Provide the project config as populated by default config file."""
 
-    return convert_project_config(clpipe_config)
+    return convert_project_options(clpipe_config)
 
 @pytest.fixture(scope="session")
 def postproc_config(project_config):
