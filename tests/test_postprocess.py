@@ -1,4 +1,5 @@
 import pytest
+from clpipe.config.options import ProcessingStream
 
 from clpipe.postprocutils.image_workflows import *
 from clpipe.postprocess import *
@@ -17,6 +18,60 @@ def test_postprocess_subjects(clpipe_fmriprep_dir):
         config_file=options,
         batch=True
     )
+
+def test_postprocess_subjects_stream(clpipe_fmriprep_dir):
+    """Run postprocess subjects using a stream."""
+    config_file = clpipe_fmriprep_dir / "clpipe_config.json"
+
+    options = ProjectOptions.load(config_file)
+    options.postprocessing.working_directory = clpipe_fmriprep_dir / "data_working"
+
+    postprocess_subjects(
+        config_file=options,
+        batch=True,
+        processing_stream="functional_connectivity_default"
+    )
+
+def test_apply_stream(artifact_dir, helpers, request):
+    """Test that stream updates postprocessing config as expected."""
+
+    options: ProjectOptions = ProjectOptions()
+
+    test_dir = helpers.create_test_dir(artifact_dir, request.node.name)
+
+    options = apply_stream(options, "functional_connectivity_default")
+
+    options.dump(test_dir / "clpipe_config_stream_applied.json")
+
+def test_apply_nested_items(artifact_dir, helpers, request):
+    """Test that stream updates postprocessing config as expected."""
+
+    options: ProjectOptions = ProjectOptions()
+    options.processing_streams.append(
+        ProcessingStream(
+            stream_name = "nested_items",
+            postprocessing_options = {
+                "processing_step_options": {
+                    "spatial_smoothing": {
+                        "fwhm": 8
+                    }
+                },
+                "confound_options": {
+                    "columns": [
+                        "csf*",
+                        "white_matter*"
+                    ],
+                }
+            }
+        )
+    )
+
+    test_dir = helpers.create_test_dir(artifact_dir, request.node.name)
+
+    options = apply_stream(options, "nested_items")
+
+    options.dump(test_dir / "clpipe_config_stream_applied.json")
+
 
 
 def test_postprocess_subjects_dir_invalid_subject(

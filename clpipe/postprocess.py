@@ -23,7 +23,6 @@ from .bids import (
     validate_subject_exists,
 )
 import nipype.pipeline.engine as pe
-import pydantic
 
 # This hides a pybids future warning
 with warnings.catch_warnings():
@@ -83,6 +82,9 @@ def postprocess_subjects(
         target_directory = fmriprep_dir,
         log_directory = log_dir
     )
+    if processing_stream is not DEFAULT_PROCESSING_STREAM:
+        options.postprocessing = apply_stream(options, processing_stream)
+    
 
     # Initialize the run config
     # TODO: The getters here are still a bit confusing and could be moved to run_config,
@@ -165,6 +167,18 @@ def setup_dirs(run_config: PostProcessingRunConfig):
     os.makedirs(run_config.stream_output_directory, exist_ok=True)
     os.makedirs(run_config.stream_working_directory, exist_ok=True)
     os.makedirs(run_config.stream_log_directory, exist_ok=True)
+
+
+def apply_stream(options, processing_stream):
+    from dataclasses import replace
+
+    stream_options = None
+    for stream in options.processing_streams:
+        if stream.stream_name == processing_stream:
+            stream_options = stream.postprocessing_options
+            break
+
+    return replace(options.postprocessing, **stream_options)
 
 
 def postprocess_subject(
@@ -401,34 +415,6 @@ def build_export_path(
     return export_path
 
 
-def _fetch_postprocessing_stream_config(
-    config: dict,
-    stream_output_dir: os.PathLike,
-    processing_stream: str = DEFAULT_PROCESSING_STREAM,
-):
-    """
-    The postprocessing stream config is a subset of the main
-    configuration's postprocessing config, based on
-    selections made in the processing streams config.
-
-    This stream postprocessing config is saved as a seperate configuration
-    file at the level of the output folder / stream folder and
-    is referred to by the workflow builders.
-    """
-
-    postprocessing_description_file = (
-        Path(stream_output_dir) / PROCESSING_DESCRIPTION_FILE_NAME
-    )
-    postprocessing_config = _postprocessing_config_apply_processing_stream(
-        config, processing_stream=processing_stream
-    )
-    _write_processing_description_file(
-        postprocessing_config, postprocessing_description_file
-    )
-
-    return postprocessing_config
-
-
 def _list_available_streams(postprocessing_config: dict):
     return postprocessing_config.keys()
 
@@ -451,40 +437,9 @@ def _write_processing_description_file(
         json.dump(postprocessing_config, file_to_write, indent=4)
 
 
-def _postprocessing_config_apply_processing_stream(
-    config: dict, processing_stream: str = DEFAULT_PROCESSING_STREAM
-):
-    postprocessing_config = _get_postprocessing_config(config)
-    processing_streams = _get_processing_streams(config)
-
-    # If using the default stream, no need to update postprocessing config
-    if processing_stream == DEFAULT_PROCESSING_STREAM:
-        return postprocessing_config
-
-    # Iterate through the available processing streams and see
-    #   if one matches the one requested
-    # The default processing stream name won't be in this list -
-    #   it refers to the base PostProcessingOptions
-    for stream in processing_streams:
-        stream_options = stream["PostProcessingOptions"]
-
-        if stream["ProcessingStream"] == processing_stream:
-            # Use deep update to impart the processing stream options
-            #   into the postprocessing config
-            postprocessing_config = pydantic.utils.deep_update(
-                postprocessing_config, stream_options
-            )
-            return postprocessing_config
-
-    raise ValueError(f"No stream found in configuration with name: {processing_stream}")
-
-
-def _get_postprocessing_config(config: dict):
-    return config["PostProcessingOptions2"]
-
-
-def _get_processing_streams(config: dict):
-    return config["ProcessingStreams"]
+def _get_processing_streams(options: ProjectOptions):
+    # TODO: possible support for command showing processing streams
+    pass
 
 
 def _submit_jobs(batch_manager, submission_strings, logger, submit=True):

@@ -446,9 +446,6 @@ class BatchOptions(Option):
 class PostProcessingOptions(Option):
     """Options for additional processing after fMRIPrep's preprocessing."""
 
-    processing_stream: str = field(default="default", metadata={"required": True})
-    """Name of the processing stream to use. 'default' uses no stream."""
-
     working_directory: str = field(default="SET WORKING DIRECTORY", metadata={"required": True})
     """Directory for caching intermediary processing files."""
 
