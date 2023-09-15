@@ -1,4 +1,5 @@
 import pytest
+from clpipe.config.options import ProjectOptions, ScrubColumn, ScrubTimepoints
 
 from clpipe.postprocutils.image_workflows import *
 from clpipe.postprocutils.global_workflows import *
@@ -6,7 +7,6 @@ from clpipe.postprocutils.global_workflows import *
 
 def test_build_postprocessing_wf(
     artifact_dir,
-    postprocessing_config,
     request,
     sample_raw_image,
     sample_raw_image_mask,
@@ -16,6 +16,8 @@ def test_build_postprocessing_wf(
     test_path = helpers.create_test_dir(artifact_dir, request.node.name)
     out_path = test_path / "postprocessed_image.nii.gz"
     confounds_out_path = test_path / "postprocessed_confounds.tsv"
+
+    postprocessing_config = ProjectOptions().postprocessing
 
     wf = build_postprocessing_wf(
         postprocessing_config,
@@ -36,16 +38,16 @@ def test_build_postprocessing_wf(
 
 def test_build_postprocessing_wf_no_mask(
     artifact_dir,
-    postprocessing_config,
     request,
     sample_raw_image,
     sample_confounds_timeseries,
     helpers,
 ):
-    postprocessing_config["ProcessingSteps"] = [
+    postprocessing_config = ProjectOptions().postprocessing
+    postprocessing_config.processing_steps = [
         "IntensityNormalization",
         "TemporalFiltering",
-        "SpatialSmoothing",
+        "SpatialSmoothing"
     ]
 
     test_path = helpers.create_test_dir(artifact_dir, request.node.name)
@@ -70,14 +72,15 @@ def test_build_postprocessing_wf_no_mask(
 
 def test_build_postprocessing_wf_2_steps(
     artifact_dir,
-    postprocessing_config,
     request,
     sample_raw_image,
     sample_raw_image_mask,
     sample_confounds_timeseries,
     helpers,
 ):
-    postprocessing_config["ProcessingSteps"] = [
+    
+    postprocessing_config = ProjectOptions().postprocessing
+    postprocessing_config.processing_steps = [
         "SpatialSmoothing",
         "TemporalFiltering",
     ]
@@ -107,14 +110,16 @@ def test_build_postprocessing_wf_2_steps(
 
 def test_build_postprocessing_wf_1_step(
     artifact_dir,
-    postprocessing_config,
     request,
     sample_raw_image,
     sample_raw_image_mask,
     sample_confounds_timeseries,
     helpers,
 ):
-    postprocessing_config["ProcessingSteps"] = ["TemporalFiltering"]
+    postprocessing_config = ProjectOptions().postprocessing
+    postprocessing_config.processing_steps = [
+        "TemporalFiltering",
+    ]
 
     test_path = helpers.create_test_dir(artifact_dir, request.node.name)
     out_path = test_path / "postprocessed_image.nii.gz"
@@ -139,14 +144,14 @@ def test_build_postprocessing_wf_1_step(
 
 def test_postprocess2_wf_confound_regression_last(
     artifact_dir,
-    postprocessing_config,
     request,
     sample_raw_image,
     sample_raw_image_mask,
     sample_confounds_timeseries,
     helpers,
 ):
-    postprocessing_config["ProcessingSteps"] = [
+    postprocessing_config = ProjectOptions().postprocessing
+    postprocessing_config.processing_steps = [
         "TemporalFiltering",
         "ConfoundRegression",
     ]
@@ -174,14 +179,14 @@ def test_postprocess2_wf_confound_regression_last(
 
 def test_postprocess2_wf_confound_regression_first(
     artifact_dir,
-    postprocessing_config,
     request,
     sample_raw_image,
     sample_raw_image_mask,
     sample_confounds_timeseries,
     helpers,
 ):
-    postprocessing_config["ProcessingSteps"] = [
+    postprocessing_config = ProjectOptions().postprocessing
+    postprocessing_config.processing_steps = [
         "ConfoundRegression",
         "TemporalFiltering",
     ]
@@ -209,7 +214,6 @@ def test_postprocess2_wf_confound_regression_first(
 
 def test_postprocess2_wf_aroma(
     artifact_dir,
-    postprocessing_config,
     request,
     sample_raw_image,
     sample_raw_image_mask,
@@ -218,7 +222,8 @@ def test_postprocess2_wf_aroma(
     sample_aroma_noise_ics,
     helpers,
 ):
-    postprocessing_config["ProcessingSteps"] = [
+    postprocessing_config = ProjectOptions().postprocessing
+    postprocessing_config.processing_steps = [
         "AROMARegression",
         "TemporalFiltering",
         "SpatialSmoothing",
@@ -252,7 +257,6 @@ def test_postprocess2_wf_aroma(
 
 def test_postprocess2_wf_aroma_last(
     artifact_dir,
-    postprocessing_config,
     request,
     sample_raw_image,
     sample_raw_image_mask,
@@ -261,11 +265,13 @@ def test_postprocess2_wf_aroma_last(
     sample_aroma_noise_ics,
     helpers,
 ):
-    postprocessing_config["ProcessingSteps"] = [
+    postprocessing_config = ProjectOptions().postprocessing
+    postprocessing_config.processing_steps = [
         "TemporalFiltering",
         "SpatialSmoothing",
         "AROMARegression",
     ]
+    
 
     test_path = helpers.create_test_dir(artifact_dir, request.node.name)
     out_path = test_path / "postprocessed_image.nii.gz"
@@ -295,28 +301,29 @@ def test_postprocess2_wf_aroma_last(
 
 def test_postprocess2_wf_scrubbing(
     artifact_dir,
-    postprocessing_config,
     request,
     sample_raw_image,
     sample_raw_image_mask,
     sample_confounds_timeseries,
     helpers,
 ):
-    postprocessing_config["ProcessingSteps"] = ["TemporalFiltering", "ScrubTimepoints"]
-    postprocessing_config["ConfoundOptions"]["Columns"] = [
+    postprocessing_config = ProjectOptions().postprocessing
+    postprocessing_config.confound_options.columns = [
         "framewise_displacement",
         "csf",
         "csf_derivative1",
         "white_matter",
         "white_matter_derivative1",
     ]
+    postprocessing_config.processing_steps = ["TemporalFiltering", "ScrubTimepoints"]
+
     # Setup target & threshold to ensure some scrubbing happens
-    postprocessing_config["ProcessingStepOptions"]["ScrubTimepoints"][
-        "TargetVariable"
-    ] = "csf"
-    postprocessing_config["ProcessingStepOptions"]["ScrubTimepoints"][
-        "Threshold"
-    ] = 332.44
+    postprocessing_config.processing_step_options.scrub_timepoints = ScrubTimepoints(
+        ScrubColumn(
+            target_variable="csf",
+            threshold=332.44
+        )
+    )
 
     test_path = helpers.create_test_dir(artifact_dir, request.node.name)
     out_path = test_path / "postprocessed_image.nii.gz"
@@ -344,7 +351,6 @@ def test_postprocess2_wf_scrubbing(
 
 def test_postprocess2_wf_scrubbing_aroma(
     artifact_dir,
-    postprocessing_config,
     request,
     sample_raw_image,
     sample_raw_image_mask,
@@ -353,7 +359,15 @@ def test_postprocess2_wf_scrubbing_aroma(
     sample_aroma_noise_ics,
     helpers,
 ):
-    postprocessing_config["ProcessingSteps"] = [
+    postprocessing_config = ProjectOptions().postprocessing
+    postprocessing_config.confound_options.columns = [
+        "framewise_displacement",
+        "csf",
+        "csf_derivative1",
+        "white_matter",
+        "white_matter_derivative1",
+    ]
+    postprocessing_config.processing_steps = [
         "TemporalFiltering",
         "SpatialSmoothing",
         "AROMARegression",
@@ -361,12 +375,18 @@ def test_postprocess2_wf_scrubbing_aroma(
     ]
 
     # Setup target & threshold to ensure some scrubbing happens
-    postprocessing_config["ProcessingStepOptions"]["ScrubTimepoints"][
-        "TargetVariable"
-    ] = "csf"
-    postprocessing_config["ProcessingStepOptions"]["ScrubTimepoints"][
-        "Threshold"
-    ] = 332.44
+    postprocessing_config.processing_step_options.scrub_timepoints = {
+        "insert_na": True,
+        "scrub_columns": [
+            {
+                "target_variable": "csf",
+                "threshold": 332.44,
+                "scrub_ahead": 0,
+                "scrub_behind": 0,
+                "scrub_contiguous": 0
+            },
+        ]
+    }
 
     test_path = helpers.create_test_dir(artifact_dir, request.node.name)
     out_path = test_path / "postprocessed_image.nii.gz"
@@ -396,7 +416,6 @@ def test_postprocess2_wf_scrubbing_aroma(
 
 def test_postprocess2_wf_scrubbing_confound_regression(
     artifact_dir,
-    postprocessing_config,
     request,
     sample_raw_image,
     sample_raw_image_mask,
@@ -405,19 +424,34 @@ def test_postprocess2_wf_scrubbing_confound_regression(
     sample_aroma_noise_ics,
     helpers,
 ):
-    postprocessing_config["ProcessingSteps"] = [
+    postprocessing_config = ProjectOptions().postprocessing
+    postprocessing_config.confound_options.columns = [
+        "framewise_displacement",
+        "csf",
+        "csf_derivative1",
+        "white_matter",
+        "white_matter_derivative1",
+    ]
+    postprocessing_config.processing_steps = [
         "TemporalFiltering",
         "SpatialSmoothing",
         "ConfoundRegression",
         "ScrubTimepoints",
     ]
+
     # Setup target & threshold to ensure some scrubbing happens
-    postprocessing_config["ProcessingStepOptions"]["ScrubTimepoints"][
-        "TargetVariable"
-    ] = "csf"
-    postprocessing_config["ProcessingStepOptions"]["ScrubTimepoints"][
-        "Threshold"
-    ] = 332.44
+    postprocessing_config.processing_step_options.scrub_timepoints = {
+        "insert_na": True,
+        "scrub_columns": [
+            {
+                "target_variable": "csf",
+                "threshold": 332.44,
+                "scrub_ahead": 0,
+                "scrub_behind": 0,
+                "scrub_contiguous": 0
+            },
+        ]
+    }
 
     test_path = helpers.create_test_dir(artifact_dir, request.node.name)
     out_path = test_path / "postprocessed_image.nii.gz"
@@ -447,20 +481,18 @@ def test_postprocess2_wf_scrubbing_confound_regression(
 
 def test_build_multiple_scrubbing_workflow(
     sample_confounds_timeseries,
-    postprocessing_config,
     helpers,
     artifact_dir,
     request,
 ):
     test_path = helpers.create_test_dir(artifact_dir, request.node.name)
-    postprocessing_config["ProcessingStepOptions"]["ScrubTimepoints"]["Columns"][1][
-        "Threshold"
-    ] = 0.13
+
+    postprocessing_config = ProjectOptions().postprocessing
+    
+    postprocessing_config.processing_step_options.scrub_timepoints.scrub_columns[1] = 0.13
 
     test_wf = build_multiple_scrubbing_workflow(
-        scrub_configs=postprocessing_config["ProcessingStepOptions"]["ScrubTimepoints"][
-            "Columns"
-        ],
+        postprocessing_config.processing_step_options.scrub_timepoints.scrub_columns
     )
 
     # Passing in the inputs externally
