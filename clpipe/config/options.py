@@ -671,7 +671,12 @@ class ProjectOptions(Option):
                     "processing_steps": [
                         "TemporalFiltering",
                         "ConfoundRegression"
-                    ]
+                    ],
+                    "confound_options": {
+                        "motion_outliers": {
+                            "include": False
+                        },
+                    }
                 }
             )
         ],
