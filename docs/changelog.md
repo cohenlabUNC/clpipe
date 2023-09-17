@@ -15,6 +15,8 @@
 - `glm` - GLM setup command now completely removed, in favor of using the GLM postprocessing stream
 - `documentation` - Expanded documentation for Postprocessing section
 - `documentation` - Sections reorganized and made more consistent with each other.
+- `project_setup` - Now prompts for name of project if not given.
+- `config update` - Converts config to new format and offers to backup old version
 
 
 ### Bug Fixes
