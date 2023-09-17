@@ -764,31 +764,40 @@ def get_config_file(output_file="clpipe_config_DEFAULT.json"):
 def convert_project_options(old_options, new_options):
     """
     """
-    if not isinstance(old_options, dict):
+
+    # If working with a dictionary, we want the new dictionary style, filled in with old
+    #   options
+    if isinstance(new_options, dict):
+        for new_key, new_value in new_options.items():
+            old_key = KEY_MAP[new_key]
+
+            # Skip loop if there is no old_key for new_key, or old_key value is None
+            if not old_options.get(old_key) or old_options[old_key] == None:
+                continue
+
+            if(old_options[old_key] != None):
+                # Case that the value is another dict, to be recursed
+                if(isinstance(new_value, dict)):
+                    new_options[new_key] = convert_project_options(old_options[old_key], new_value)
+                # Case that the value is a list, make a new list and recurse
+                #   to populate it
+                elif(isinstance(new_value, list)):
+                    # Make a new list
+                    old_list = []
+                    # Go through each item in the list and recurse on it to get the sub values
+                    for index, item, in enumerate(new_value):
+                        try:
+                            old_list.append(convert_project_options(old_options[old_key][index], item))
+                        except IndexError:
+                            continue
+                    new_options[new_key] = old_list
+                # Otherwise assign old value to slot in new options
+                else:
+                    new_options[new_key] = old_options[old_key]
+        return new_options
+    # If not a dict, we just want the value
+    else:
         return old_options
-
-    for new_key, new_value in new_options.items():
-        old_key = KEY_MAP[new_key]
-
-        # Skip loop if there is no old_key for new_key, or old_key value is None
-        if not old_options.get(old_key) or old_options[old_key] == None:
-            continue
-
-        if(old_options[old_key] != None):
-            # Case that the value is another dict, to be recursed
-            if(isinstance(new_value, dict)):
-                new_options[new_key] = convert_project_options(old_options[old_key], new_value)
-            # Case that the value is a list, to be recursed
-            elif(isinstance(new_value, list)):
-                # Make a new list
-                new_list = []
-                # Go through each item in the list and recurse on it to get the sub values
-                for index, item, in enumerate(new_value):
-                    new_list.append(convert_project_options(old_options[old_key][index], item))
-            else:
-                new_options[new_key] = old_options[old_key]
-
-    return new_options
 
 KEY_MAP = {
     "clpipe_version": "clpipe_version",
