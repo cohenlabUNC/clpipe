@@ -30,7 +30,7 @@ with warnings.catch_warnings():
     from bids import BIDSLayout
     from bids.layout import BIDSFile
 
-from .config.options import ProjectOptions, PostProcessingRunConfig
+from .config.options import ProjectOptions, PostProcessingRunConfig, DEFAULT_WORKING_DIRECTORY
 from .config.options import DEFAULT_PROCESSING_STREAM
 from .batch_manager import BatchManager, Job
 from .postprocutils.global_workflows import build_postprocessing_wf
@@ -82,6 +82,8 @@ def postprocess_subjects(
         target_directory = fmriprep_dir,
         log_directory = log_dir
     )
+    if options.postprocessing.working_directory is DEFAULT_WORKING_DIRECTORY:
+        raise ValueError("No working directory specified.")
     if processing_stream is not DEFAULT_PROCESSING_STREAM:
         options.postprocessing = apply_stream(options, processing_stream)
     

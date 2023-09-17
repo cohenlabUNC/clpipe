@@ -10,6 +10,7 @@ from .package import VERSION
 
 DEFAULT_CONFIG_FILE_NAME = 'clpipe_config.json'
 DEFAULT_PROCESSING_STREAM = "default"
+DEFAULT_WORKING_DIRECTORY = "SET WORKING DIRECTORY"
 
 class ClpipeData:
     """Parent class for any structured clpipe data."""
@@ -455,7 +456,7 @@ class BatchOptions(Option):
 class PostProcessingOptions(Option):
     """Options for additional processing after fMRIPrep's preprocessing."""
 
-    working_directory: str = field(default="SET WORKING DIRECTORY", metadata={"required": True})
+    working_directory: str = field(default=DEFAULT_WORKING_DIRECTORY, metadata={"required": True})
     """Directory for caching intermediary processing files."""
 
     write_process_graph: bool = field(default=True, metadata={"required": True})
