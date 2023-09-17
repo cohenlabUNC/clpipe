@@ -118,9 +118,13 @@ def test_update_config_file_legacy(legacy_config_dir):
 def test_update_config_file_legacy_relative(legacy_config_dir):
     """Test to ensure legacy config update to new format works when using
         just 'clpipe_config.json' within clpipe dir."""
+    original_dir = os.getcwd()
     os.chdir(legacy_config_dir)
     
     update_config_file("clpipe_config.json")
+
+    # Make sure to reset to original directory to not mess up other tests.
+    os.chdir(original_dir)
 
 def test_update_config_file_legacy_backup(legacy_config_dir):
     """Test to ensure legacy config update to new format works when using
