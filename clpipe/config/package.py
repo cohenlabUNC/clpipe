@@ -5,7 +5,7 @@ DESCRIPTION = 'clpipe: MRI processing pipeline for high performance clusters'
 REPO_URL = 'https://github.com/cohenlabUNC/clpipe'
 AUTHORS = (
       'Author/Maintainer: Teague Henry, Maintainer: Will Asciutto, '
-      'Contributor: Bhvaith Manapoty, Contributor: Deepak Melwani'
+      'Contributor: Bhvaith Manapoty, Contributor: Yuvraj Jain, Contributor: Deepak Melwani'
 )
 AUTHOR_EMAIL = 'ycp6wm@virginia.edu'
 LICENSE = 'MIT'
