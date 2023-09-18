@@ -52,6 +52,9 @@
 		"DockerFMRIPrepVersion": ""
 	},
 	"PostProcessingOptions": {
+		"WorkingDirectory": "SET WORKING DIRECTORY"
+	},
+	"PostProcessingOptions2": {
 		"WorkingDirectory": "",
 		"WriteProcessGraph": true,
 		"TargetDirectory": "",

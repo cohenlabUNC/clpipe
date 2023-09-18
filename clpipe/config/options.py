@@ -836,7 +836,7 @@ KEY_MAP = {
     "n_threads": "NThreads",
     "docker_toggle": "DockerToggle",
     "docker_fmriprep_version": "DockerFMRIPrepVersion",
-    "postprocessing": "PostProcessingOptions",
+    "postprocessing": "PostProcessingOptions2",
     "write_process_graph": "WriteProcessGraph",
     "target_directory": "TargetDirectory",
     "target_image_space": "TargetImageSpace",
