@@ -108,7 +108,7 @@ More information on setting up clpipe for BIDS conversion can be found in the [c
 !!!!!!!!!!!!!!!!!!!!!!!!
 
 ## Setting up the Conversion File
-From here, follow the [Dcm2Bids tutorial](https://unfmontreal.github.io/Dcm2Bids/docs/2-tutorial/#dicom-to-nifti-conversion) and stop before the "Running dcm2bids" section - clpipe will handling running dcm2bids for you. The helper command `dcm2bids_helper` will be available to you via the clpipe installation, and should be used as indicated in the tutorial to help you get started. You should also skip the "Building the configuration file" step because, as shown above, clpipe has already created this file.
+From here, follow the [Dcm2Bids tutorial](https://unfmontreal.github.io/Dcm2Bids/3.0.2/tutorial/first-steps/#setting-up-the-configuration-file) and stop before the "Running dcm2bids" section - clpipe will handling running dcm2bids for you. The helper command `dcm2bids_helper` will be available to you via the clpipe installation, and should be used as indicated in the tutorial to help you get started. You should also skip the "Building the configuration file" step because, as shown above, clpipe has already created this file.
 
 You can find a supplentary explanation and another example of a conversion_config.json file in the [clpipe documentation](https://clpipe.readthedocs.io/en/latest/dicom2bids.html#)
 
