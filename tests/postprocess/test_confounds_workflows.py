@@ -196,10 +196,8 @@ def test_prepare_confounds(
     cf_workflow.run()
 
 
-@pytest.mark.skip(reason="Test hangs")
 def test_prepare_confounds_aroma(
     sample_confounds_timeseries,
-    postprocessing_config,
     sample_melodic_mixing,
     sample_aroma_noise_ics,
     artifact_dir,
@@ -209,7 +207,8 @@ def test_prepare_confounds_aroma(
     test_path = helpers.create_test_dir(artifact_dir, request.node.name)
     out_path = test_path / "new_confounds.tsv"
 
-    postprocessing_config["ProcessingSteps"] = [
+    postprocessing_config = ProjectOptions().postprocessing
+    postprocessing_config.processing_steps = [
         "AROMARegression",
         "TemporalFiltering",
         "IntensityNormalization",
