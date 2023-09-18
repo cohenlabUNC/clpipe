@@ -31,9 +31,8 @@ def test_build_postprocessing_wf(
         crashdump_dir=test_path,
     )
 
-    wf.run()
-
     wf.write_graph(dotfilename=test_path / "workflow_graph", graph2use="colored")
+    wf.run()
 
 
 def test_build_postprocessing_wf_no_mask(
@@ -65,9 +64,8 @@ def test_build_postprocessing_wf_no_mask(
         crashdump_dir=test_path,
     )
 
-    wf.run()
-
     wf.write_graph(dotfilename=test_path / "workflow_graph", graph2use="colored")
+    wf.run()
 
 
 def test_build_postprocessing_wf_2_steps(
@@ -101,9 +99,8 @@ def test_build_postprocessing_wf_2_steps(
         crashdump_dir=test_path,
     )
 
-    wf.run()
-
     wf.write_graph(dotfilename=test_path / "workflow_graph", graph2use="colored")
+    wf.run()
 
     helpers.plot_4D_img_slice(out_path, "postprocessed.png")
 
@@ -137,11 +134,10 @@ def test_build_postprocessing_wf_1_step(
         crashdump_dir=test_path,
     )
 
+    wf.write_graph(dotfilename=test_path / "workflow_graph", graph2use="colored")
     wf.run()
 
-    wf.write_graph(dotfilename=test_path / "workflow_graph", graph2use="colored")
-
-
+    
 def test_postprocess2_wf_confound_regression_last(
     artifact_dir,
     request,
@@ -172,9 +168,8 @@ def test_postprocess2_wf_confound_regression_last(
         crashdump_dir=test_path,
     )
 
-    wf.run()
-
     wf.write_graph(dotfilename=test_path / "workflow_graph", graph2use="colored")
+    wf.run()
 
 
 def test_postprocess2_wf_confound_regression_first(
@@ -207,11 +202,10 @@ def test_postprocess2_wf_confound_regression_first(
         crashdump_dir=test_path,
     )
 
+    wf.write_graph(dotfilename=test_path / "workflow_graph", graph2use="colored")
     wf.run()
 
-    wf.write_graph(dotfilename=test_path / "workflow_graph", graph2use="colored")
-
-@pytest.mark.skip(reason="Test hangs")
+@pytest.mark.skip(reason="Test runs long")
 def test_postprocess2_wf_aroma(
     artifact_dir,
     request,
@@ -247,9 +241,8 @@ def test_postprocess2_wf_aroma(
         crashdump_dir=test_path,
     )
 
-    wf.run()
-
     wf.write_graph(dotfilename=test_path / "workflow_graph", graph2use="colored")
+    wf.run()
 
     helpers.plot_timeseries(out_path, sample_raw_image)
     helpers.plot_4D_img_slice(out_path, "postprocessed.png")
@@ -291,9 +284,8 @@ def test_postprocess2_wf_aroma_last(
         crashdump_dir=test_path,
     )
 
-    wf.run()
-
     wf.write_graph(dotfilename=test_path / "workflow_graph", graph2use="colored")
+    wf.run()
 
     helpers.plot_timeseries(out_path, sample_raw_image)
     helpers.plot_4D_img_slice(out_path, "postprocessed.png")
@@ -345,9 +337,8 @@ def test_postprocess2_wf_scrubbing(
         crashdump_dir=test_path,
     )
 
-    wf.run()
-
     wf.write_graph(dotfilename=test_path / "workflow_graph", graph2use="colored")
+    wf.run()
 
     helpers.plot_timeseries(out_path, sample_raw_image)
     helpers.plot_4D_img_slice(out_path, "postprocessed.png")
@@ -408,9 +399,8 @@ def test_postprocess2_wf_scrubbing_aroma(
         crashdump_dir=test_path,
     )
 
-    wf.run()
-
     wf.write_graph(dotfilename=test_path / "workflow_graph", graph2use="colored")
+    wf.run()
 
     helpers.plot_timeseries(out_path, sample_raw_image)
     helpers.plot_4D_img_slice(out_path, "postprocessed.png")
@@ -472,9 +462,9 @@ def test_postprocess2_wf_scrubbing_confound_regression(
         crashdump_dir=test_path,
     )
 
+    wf.write_graph(dotfilename=test_path / "workflow_graph", graph2use="colored")
     wf.run()
 
-    wf.write_graph(dotfilename=test_path / "workflow_graph", graph2use="colored")
 
     helpers.plot_timeseries(out_path, sample_raw_image)
     helpers.plot_4D_img_slice(out_path, "postprocessed.png")
@@ -512,14 +502,14 @@ def test_build_multiple_scrubbing_workflow(
     # Passing in the inputs externally
     test_wf.inputs.inputnode.confounds_file = sample_confounds_timeseries
 
+    # Write the workflow graph
+    test_wf.write_graph(
+        graph2use="colored",
+        dotfilename=os.path.join(test_path, "test_wf_graph.dot"),
+    )
+
     # Run the workflow
     test_wf.base_dir = os.path.join(
         test_path, "work_dir"
     )  # specify the working directory for the workflow
     test_wf.run()
-
-    # Write the workflow graph if needed
-    test_wf.write_graph(
-        graph2use="colored",
-        dotfilename=os.path.join(test_path, "test_wf_graph.dot"),
-    )
