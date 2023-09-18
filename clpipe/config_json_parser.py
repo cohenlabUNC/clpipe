@@ -7,10 +7,7 @@ import click
 from pkg_resources import resource_stream, resource_filename
 import shutil
 
-@click.command()
-@click.option('-config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True),
-              default=None, required = True,
-              help='Configuration file to update.')
+
 def update_config_file(config_file=None):
     '''Updates an existing configuration file with any new fields. Does not modify existing fields.'''
     new_config = config_json_parser(config_file)
@@ -30,6 +27,10 @@ def config_json_parser(json_path):
 
 
 class ClpipeConfigParser:
+    """Legacy configuration class used for all modules in clpipe < 1.9.0
+    
+    Still used by some modules that haven't been converted to new config.
+    """
 
     def __init__(self, config_file:os.PathLike=None):
         if not config_file:
@@ -199,39 +200,6 @@ class GLMConfigParser:
             json.dump(self.config, fp, indent="\t")
         return(outpath)
 
-
-def file_folder_generator(basename, modality, target_suffix = None):
-    """Function parses out a BIDS file name to find its sub-components.
-
-        TODO: this addresses a need that many other modules of clpipe use
-        as well, but in slightly different ways (see the GLM prepare functions).
-        This function is rather specific / hard-coded and
-            could use better generalization.
-        We should look to provide a utility function to replace where 
-        this logic is used in roi_extract, and others.
-    """
-    
-    if target_suffix is not None:
-        basename = basename.replace(target_suffix, "")
-
-    comps = basename.split("_")
-    if comps[-1] is "":
-        comps = comps[0:-1]
-    sub = comps[0]
-    ses = comps[1]
-    try:
-        # Try to grab 'space' if present
-        front_matter = '_'.join(comps[0:-1])
-    except IndexError:
-        front_matter = '_'.join(comps[0:-2])
-    type = comps[-1]
-    if 'ses-' in ses:
-        path = os.path.join(sub, ses, modality, front_matter)
-        return sub, ses, modality, front_matter, type, path
-    else:
-        ses = ''
-        path = os.path.join(sub, modality, front_matter)
-        return sub, ses, modality, front_matter, type, path
 
 def update(d, u):
     for k, v in u.items():

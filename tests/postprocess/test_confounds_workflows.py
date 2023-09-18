@@ -1,4 +1,5 @@
 import pytest
+from clpipe.config.options import ProjectOptions, ScrubColumn, ScrubTimepoints
 
 from clpipe.postprocutils.image_workflows import *
 from clpipe.postprocutils.confounds_workflows import *
@@ -6,18 +7,31 @@ from clpipe.postprocutils.confounds_workflows import *
 
 def test_build_confounds_processing_workflow_2_steps(
     artifact_dir,
-    postprocessing_config,
     sample_confounds_timeseries,
     helpers,
     request,
 ):
     """Check that confounds processing works with IN and TF."""
 
-    postprocessing_config["ProcessingSteps"] = [
+    postprocessing_config = ProjectOptions().postprocessing
+    postprocessing_config.processing_steps = [
         "IntensityNormalization",
         "TemporalFiltering",
     ]
-    postprocessing_config["ConfoundOptions"]["MotionOutliers"]["Threshold"] = 0.13
+    postprocessing_config.processing_step_options.scrub_timepoints = \
+        ScrubTimepoints(
+            insert_na=True,
+            scrub_columns=[
+                ScrubColumn(
+                    target_variable="csf",
+                    threshold=332.44
+                ),
+                ScrubColumn(
+                    target_variable="framewise_displacement",
+                    threshold=0.13
+                )
+            ]
+        )
 
     test_path = helpers.create_test_dir(artifact_dir, request.node.name)
     out_path = test_path / "postprocessed.tsv"
@@ -38,7 +52,6 @@ def test_build_confounds_processing_workflow_2_steps(
 
 def test_build_confounds_processing_workflow_aroma_regression(
     artifact_dir,
-    postprocessing_config,
     sample_confounds_timeseries,
     sample_melodic_mixing,
     sample_aroma_noise_ics,
@@ -47,7 +60,10 @@ def test_build_confounds_processing_workflow_aroma_regression(
 ):
     """Check that confounds processing works with IN and TF."""
 
-    postprocessing_config["ProcessingSteps"] = ["AROMARegression"]
+    postprocessing_config = ProjectOptions().postprocessing
+    postprocessing_config.processing_steps = [
+        "AROMARegression"
+    ]
 
     test_path = helpers.create_test_dir(artifact_dir, request.node.name)
     out_path = test_path / "postprocessed.tsv"
@@ -70,18 +86,18 @@ def test_build_confounds_processing_workflow_aroma_regression(
 
 def test_build_confounds_processing_workflow_2_steps_no_scrub(
     artifact_dir,
-    postprocessing_config,
     sample_confounds_timeseries,
     helpers,
     request,
 ):
     """Check that confounds generated without scrubbing works properly."""
 
-    postprocessing_config["ProcessingSteps"] = [
+    postprocessing_config = ProjectOptions().postprocessing
+    postprocessing_config.processing_steps = [
         "IntensityNormalization",
         "TemporalFiltering",
     ]
-    postprocessing_config["ConfoundOptions"]["MotionOutliers"]["Include"] = False
+    postprocessing_config.confound_options.motion_outliers.include = False
 
     test_path = helpers.create_test_dir(artifact_dir, request.node.name)
     out_path = test_path / "postprocessed.tsv"
@@ -161,10 +177,12 @@ def test_build_confounds_prep_workflow_no_scrubs(
 
 
 def test_prepare_confounds(
-    sample_confounds_timeseries, postprocessing_config, artifact_dir, helpers, request
+    sample_confounds_timeseries, artifact_dir, helpers, request
 ):
     test_path = helpers.create_test_dir(artifact_dir, request.node.name)
     out_path = test_path / "new_confounds.tsv"
+
+    postprocessing_config = ProjectOptions().postprocessing
 
     cf_workflow = build_confounds_processing_workflow(
         postprocessing_config,
@@ -180,7 +198,6 @@ def test_prepare_confounds(
 
 def test_prepare_confounds_aroma(
     sample_confounds_timeseries,
-    postprocessing_config,
     sample_melodic_mixing,
     sample_aroma_noise_ics,
     artifact_dir,
@@ -190,7 +207,8 @@ def test_prepare_confounds_aroma(
     test_path = helpers.create_test_dir(artifact_dir, request.node.name)
     out_path = test_path / "new_confounds.tsv"
 
-    postprocessing_config["ProcessingSteps"] = [
+    postprocessing_config = ProjectOptions().postprocessing
+    postprocessing_config.processing_steps = [
         "AROMARegression",
         "TemporalFiltering",
         "IntensityNormalization",

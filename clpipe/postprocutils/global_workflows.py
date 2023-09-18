@@ -11,10 +11,11 @@ from .image_workflows import (
 )
 from .confounds_workflows import build_confounds_processing_workflow
 from ..utils import get_logger
+from ..config.options import PostProcessingOptions
 
 
 def build_postprocessing_wf(
-    postprocessing_config: dict,
+    processing_options: PostProcessingOptions,
     tr: int,
     name: str = "postprocessing_wf",
     image_file: os.PathLike = None,
@@ -48,7 +49,7 @@ def build_postprocessing_wf(
     # Needs to propogate down through sub-workflows as well.
 
     logger = get_logger("postprocessing_wf_builder")
-    processing_steps = postprocessing_config["ProcessingSteps"]
+    processing_steps = processing_options.processing_steps
 
     # Create the global postprocessing workflow
     postproc_wf = pe.Workflow(name=name, base_dir=base_dir)
@@ -66,7 +67,7 @@ def build_postprocessing_wf(
     confounds_wf = None
     if confounds_file:
         confounds_wf = build_confounds_processing_workflow(
-            postprocessing_config,
+            processing_options,
             confounds_file=confounds_file,
             export_file=confounds_export_path,
             tr=tr,
@@ -82,7 +83,7 @@ def build_postprocessing_wf(
     if image_file:
         logger.info(f"Building postprocessing workflow for: {name}")
         image_wf = build_image_postprocessing_workflow(
-            postprocessing_config,
+            processing_options,
             in_file=image_file,
             export_path=image_export_path,
             name=f"image_wf",
@@ -113,10 +114,8 @@ def build_postprocessing_wf(
     # Setup scrub target if needed
     if STEP_SCRUB_TIMEPOINTS in processing_steps:
         mult_scrub_wf = build_multiple_scrubbing_workflow(
-            "multiple_scrubbing_wf",
-            postprocessing_config["ProcessingStepOptions"]["ScrubTimepoints"][
-                "Columns"
-            ],
+            processing_options.processing_step_options.scrub_timepoints.scrub_columns,
+            confounds_file
         )
         mult_scrub_wf.get_node("inputnode").inputs.confounds_file = confounds_file
 
@@ -136,16 +135,17 @@ def build_postprocessing_wf(
 
 
 def build_multiple_scrubbing_workflow(
-    name: str = "Get_Scrub_Vector",
-    scrub_configs: dict = None,
+    scrub_configs: list,
+    confounds_file: os.PathLike,
+    name: str = "multiple_scrubbing_workflow",
     base_dir: os.PathLike = None,
     crashdump_dir: os.PathLike = None,
 ):
     """Creates a multiple scrubbing workflow which scrubs multiple columns based on target variables defined in the config file.
 
     Args:
+        scrub_configs (list): The level for the config file that contains information about which columns to scrub.
         name (str, optional): The name for the constructed workflow. Defaults to "Postprocessing_Pipeline".
-        scrub_configs (dict, optional): The level for the config file that contains information about which columns to scrub.
 
     Returns:
         pe.Workflow: A workflow for scrubbing multiple columns.
@@ -159,13 +159,17 @@ def build_multiple_scrubbing_workflow(
     # Define the output node for the workflow
     output_node = pe.Node(IdentityInterface(fields=["out_file"]), name="outputnode")
 
+    # Convert list of ScrubColumns to list of dicts
+    scrub_configs = [scrub_config.to_dict() for scrub_config in scrub_configs]
+
     # Feed the scrub config list of dicts into the mapper via the workflow inputnode
     input_node.inputs.scrub_configs = scrub_configs
+    input_node.inputs.tsv_file = confounds_file
 
     # Expanding Dict using Wildcard node
     expand_node = pe.Node(
         Function(
-            input_names=["scrub_configs"],
+            input_names=["tsv_file", "scrub_configs"],
             output_names=["scrub_configs"],
             function=expand_scrub_dict,
         ),
@@ -202,6 +206,7 @@ def build_multiple_scrubbing_workflow(
         [input_node, expand_node, scrub_target_node, reduce_node, output_node]
     )
 
+    mult_scrub_wf.connect(input_node, "tsv_file", expand_node, "tsv_file")
     mult_scrub_wf.connect(input_node, "scrub_configs", expand_node, "scrub_configs")
     mult_scrub_wf.connect(
         expand_node, "scrub_configs", scrub_target_node, "scrub_configs"

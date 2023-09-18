@@ -6,10 +6,6 @@ from .config_json_parser import ClpipeConfigParser
 from .error_handler import exception_handler
 from templateflow import api
 
-@click.command()
-@click.option('-config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True), default=None,
-              help='Use a given configuration file. If left blank, uses the default config file, requiring definition of BIDS, working and output directories.')
-@click.option('-debug', is_flag=True, help='Flag to enable detailed error messages and traceback')
 def templateflow_setup(config_file=None, debug=False):
     _templateflow_setup(config_file, debug)
 

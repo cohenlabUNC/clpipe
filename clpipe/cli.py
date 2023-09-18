@@ -4,7 +4,7 @@
 import click
 import sys
 from .config.cli import *
-from .config.project import DEFAULT_PROCESSING_STREAM
+from .config.options import DEFAULT_PROCESSING_STREAM
 from .config.package import VERSION
 
 DEFAULT_HELP_PRIORITY = 5
@@ -126,13 +126,19 @@ def reports_cli():
     Please choose one of the commands below for more information.
     """
 
+@click.group("config", cls=OrderedHelpGroup)
+def config_cli():
+    """Configuration-related commands."""
+
 def _add_commands():
     cli.add_command(project_setup_cli, help_priority=0)
     cli.add_command(convert2bids_cli, help_priority=10)
     cli.add_command(bids_validate_cli, help_priority=15)
+    cli.add_command(templateflow_setup_cli, help_priority=17)
     cli.add_command(fmriprep_process_cli, help_priority=20)
     cli.add_command(postprocess_cli, help_priority=35)
     cli.add_command(flywheel_sync_cli, help_priority=55)
+    cli.add_command(config_cli, help_priority=95)
 
     dicom_cli.add_command(flywheel_sync_cli)
     dicom_cli.add_command(convert2bids_cli)
@@ -140,17 +146,20 @@ def _add_commands():
     bids_cli.add_command(bids_validate_cli)
 
     # setup command hidden due to deprecation
-    glm_cli.add_command(glm_setup_cli, help_priority=1, hidden=True)
     glm_cli.add_command(glm_prepare_cli, help_priority=3)
     glm_cli.add_command(glm_launch_cli, help_priority=4)
     glm_cli.add_command(glm_apply_mumford_workaround_cli, help_priority=5)
     glm_cli.add_command(fsl_onset_extract_cli, help_priority=2)
     glm_cli.add_command(report_outliers_cli, help_priority=7)
+    glm_cli.add_command(get_glm_config_cli, help_priority=20)
 
     roi_cli.add_command(get_available_atlases_cli, help_priority=1)
     roi_cli.add_command(fmri_roi_extraction_cli, help_priority=2)
 
     reports_cli.add_command(get_fmriprep_reports_cli)
+
+    config_cli.add_command(get_config_cli)
+    config_cli.add_command(update_config_cli)
 
     cli.add_command(bids_cli, help_priority=11, hidden=True)
     cli.add_command(dicom_cli, help_priority=5, hidden=True)
@@ -161,7 +170,7 @@ def _add_commands():
 
 
 @click.command(SETUP_COMMAND_NAME, no_args_is_help=True)
-@click.option('-project_title', required=True, default=None, help=PROJECT_TITLE_HELP)
+@click.option('-project_title', required=False, default=None, help=PROJECT_TITLE_HELP)
 @click.option('-project_dir', required=True ,type=CLICK_DIR_TYPE_NOT_EXIST,
               default=None, help=PROJECT_DIR_HELP)
 @click.option('-source_data', type=CLICK_DIR_TYPE_EXISTS,
@@ -174,6 +183,11 @@ def _add_commands():
 def project_setup_cli(project_title=None, project_dir=None, source_data=None, 
                       move_source_data=None, symlink_source_data=None,
                       debug=False):
+    # TODO: add prompts for more things like contributors, email, etc.
+    if project_title is None:
+        project_title = click.prompt('Please enter a name for your project:', type=str)
+
+
     """Initialize a clpipe project."""
     from .project_setup import project_setup
     project_setup(
@@ -357,91 +371,25 @@ def postprocess_cli(subjects, config_file, fmriprep_dir, output_dir,
         output_dir=output_dir, processing_stream=processing_stream,
         batch=batch, submit=submit, log_dir=log_dir, pybids_db_path=index_dir,
         refresh_index=refresh_index, debug=debug, cache=cache)
-    
-
-@click.command()
-@click.argument('subject_id')
-@click.argument('bids_dir', type=click.Path(dir_okay=True, file_okay=False))
-@click.argument('fmriprep_dir', type=CLICK_DIR_TYPE)
-@click.argument('output_dir', type=click.Path(dir_okay=True, file_okay=False))
-@click.argument('processing_stream', default=DEFAULT_PROCESSING_STREAM)
-@click.argument('config_file', type=click.Path(dir_okay=False, file_okay=True))
-@click.argument('index_dir', type=click.Path(dir_okay=True, file_okay=False))
-@click.argument('log_dir', type=click.Path(dir_okay=True, file_okay=False))
-@click.option('-batch/-no-batch', is_flag = True, default=True, 
-              help=BATCH_HELP)
-@click.option('-submit', is_flag = True, default=False, help=SUBMIT_HELP)
-@click.option('-debug', is_flag = True, default=False, help=DEBUG_HELP)
-def postprocess_subject_cli(subject_id, bids_dir, fmriprep_dir, output_dir, 
-                            processing_stream, config_file, index_dir, 
-                            batch, submit, log_dir, debug):
-    from .postprocess import postprocess_subject
-    postprocess_subject(
-        subject_id, bids_dir, fmriprep_dir, output_dir, config_file, index_dir, 
-        batch, submit, log_dir, processing_stream=processing_stream,
-        debug=debug)
 
 
 @click.command()
-@click.argument('config_file', type=click.Path(dir_okay=False, file_okay=True))
-@click.argument('image_path', type=click.Path(dir_okay=False, file_okay=True))
-@click.argument('bids_dir', type=click.Path(dir_okay=True, file_okay=False))
-@click.argument('fmriprep_dir', type=CLICK_DIR_TYPE)
-@click.argument('index_dir', type=click.Path(dir_okay=True, file_okay=False))
-@click.argument('out_dir', type=click.Path(dir_okay=True, file_okay=False))
+@click.argument('run_config_file', type=CLICK_FILE_TYPE)
+@click.argument('image_file', type=CLICK_FILE_TYPE)
 @click.argument('subject_out_dir', type=CLICK_DIR_TYPE)
-@click.argument('processing_stream', default=DEFAULT_PROCESSING_STREAM)
 @click.argument('subject_working_dir', type=CLICK_DIR_TYPE)
-@click.argument('log_dir', type=click.Path(dir_okay=True, file_okay=False))
+@click.argument('subject_log_dir', type=CLICK_DIR_TYPE)
 @click.option('-debug', is_flag = True, default=False, help=DEBUG_HELP)
-def postprocess_image_cli(config_file, image_path, bids_dir, fmriprep_dir, 
-                          index_dir, out_dir, subject_out_dir, debug,
-                          processing_stream, subject_working_dir, log_dir):
-    from postprocess import postprocess_image
+def postprocess_image_cli(run_config_file, image_file, subject_out_dir, subject_working_dir, 
+                          subject_log_dir, debug):
+    """Used to distribute postprocessing jobs for individual images.
+    Not intended for direct use by user - this is called by the main postprocess
+    command."""
+    from .postprocess import postprocess_image
     postprocess_image(
-        config_file, image_path, bids_dir, fmriprep_dir, index_dir, out_dir, 
-        subject_out_dir, subject_working_dir, log_dir, 
-        processing_stream=processing_stream, debug=debug)
-
-
-@click.command(GLM_SETUP_COMMAND_NAME, no_args_is_help=True)
-@click.argument('subjects', nargs=-1, required=False, default=None)
-@click.option('-config_file', '-c', type=click.Path(exists=True, dir_okay=False, file_okay=True), required=True,
-              help='Use a given configuration file.')
-@click.option('-glm_config_file', '-g', type=click.Path(exists=True, dir_okay=False, file_okay=True), default=None, required=True,
-              help='Use a given GLM configuration file.')
-@click.option('-drop_tps', type=click.Path(exists=True, dir_okay=False, file_okay=True), default=None, required=False,
-              help='Drop timepoints csv sheet')
-@click.option('-submit', '-s', is_flag=True, default=False, help='Flag to submit commands to the HPC.')
-@click.option('-batch/-single', default=True,
-              help='Submit to batch, or run in current session. Mainly used internally.')
-@click.option('-debug', '-d', is_flag=True, default=False,
-              help='Print detailed processing information and traceback for errors.')
-def glm_setup_cli(subjects, config_file, glm_config_file, submit, batch, debug, 
-                  drop_tps):
-    """
-    Additional preprocessing for GLM analysis.
-
-    Providing no SUBJECTS will default to all subjects.
-    List subject IDs in SUBJECTS to process specific subjects: 
-
-    > clpipe glm setup 123 124 125 ...
-
-    ******************************************
-
-    WARNING: This command has been deprecated, as its functionality has been
-    replicated and expanded on by the postprocess2 command.
-    If you ran setup with clpipe 1.8+, you will not be able to run this command
-    due to the removal of GLMSetupOptions from the default glm configuration file.
-    You may still run this command with a valid GLMSetupOptions block.
-
-    ******************************************
-    """
-    from .glm_setup import glm_setup
-    glm_setup(
-        subjects=subjects, config_file=config_file, 
-        glm_config_file=glm_config_file,
-        submit=submit, batch=batch, debug=debug, drop_tps=drop_tps)
+        run_config_file, image_file, subject_out_dir, subject_working_dir, 
+        subject_log_dir, debug=debug
+    )
 
 
 @click.command(GLM_PREPARE_COMMAND_NAME, no_args_is_help=True)
@@ -708,5 +656,50 @@ def flywheel_sync_cli(config_file, source_url, dropoff_dir, submit, debug):
                   source_url=source_url, dropoff_dir=dropoff_dir, 
                   submit=submit, debug=debug)
 
+
+@click.command("get_default", no_args_is_help=True)
+@click.option('-outputFile', '-o', default='clpipe_config_DEFAULT.json', help ='Filepath for the outputted configuration file.')
+def get_config_cli(output_file):
+    """Generates a default configuration file for your project."""
+    from .config.options import get_config_file
+
+    get_config_file(output_file)
+
+
+@click.command("get_default_config", no_args_is_help=True)
+@click.option('-outputFile', '-o', default='AGLMConfigFile.json', help='Filepath for the outputted configuration file.')
+def get_glm_config_cli(output_file):
+    """Generates a default GLM configuration file for your project."""
+    from .grab_config_file import get_glm_config_file
+
+    get_glm_config_file(output_file)
+
+
+@click.command("update", no_args_is_help=True)
+@click.option('-config_file', '-c', type=click.Path(exists=True, dir_okay=False, file_okay=True),
+              default=None, required = True,
+              help='Configuration file to update.')
+@click.option('-backup', is_flag=True, default=False, help='Automatically backup the previous configuration file')
+def update_config_cli(config_file, backup):
+    """Updates an existing configuration file with any new fields. Does not modify existing fields."""
+    from .config.options import update_config_file
+    
+    if not backup:
+        if click.confirm("Previous config file will be OVERWRITTEN. Would you like to back up your config file before updating?"):
+            backup = True
+    update_config_file(config_file, backup)
+    
+
+@click.command("templateflow_setup")
+@click.option('-config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True), default=None,
+              help='Use a given configuration file. If left blank, uses the default config file, requiring definition of BIDS, working and output directories.')
+@click.option('-debug', is_flag=True, help='Flag to enable detailed error messages and traceback')
+def templateflow_setup_cli(config_file, debug):
+    """Installs the templates for preprocessing listed in TemplateFlowTemplates.
+    If you don't run this, fMRIPrep defaults to MNI152NLin2009cAsym. If you do,
+    fMRIPrep will create a copy of each image in every space listed."""
+    from .template_flow import templateflow_setup
+
+    templateflow_setup(config_file, debug)
 
 _add_commands()

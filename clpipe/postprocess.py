@@ -23,7 +23,6 @@ from .bids import (
     validate_subject_exists,
 )
 import nipype.pipeline.engine as pe
-import pydantic
 
 # This hides a pybids future warning
 with warnings.catch_warnings():
@@ -31,30 +30,28 @@ with warnings.catch_warnings():
     from bids import BIDSLayout
     from bids.layout import BIDSFile
 
-from .config_json_parser import ClpipeConfigParser
-from .config.project import DEFAULT_PROCESSING_STREAM
+from .config.options import ProjectOptions, PostProcessingRunConfig, DEFAULT_WORKING_DIRECTORY
+from .config.options import DEFAULT_PROCESSING_STREAM
 from .batch_manager import BatchManager, Job
 from .postprocutils.global_workflows import build_postprocessing_wf
-from .postprocutils.confounds_workflows import build_confounds_processing_workflow
 from .postprocutils.utils import draw_graph
-from .utils import add_file_handler, get_logger, resolve_fmriprep_dir
+from .utils import get_logger, resolve_fmriprep_dir
 from .errors import *
 
-STEP_NAME = "postprocess2"
+STEP_NAME = "postprocess"
 PROCESSING_DESCRIPTION_FILE_NAME = "processing_description.json"
 IMAGE_TIME_DIMENSION_INDEX = 3
 IMAGE_SUBMISSION_STRING_TEMPLATE = (
-    "postprocess_image {config_file} "
-    "{image_path} {bids_dir} {fmriprep_dir} {pybids_db_path} {out_dir} "
-    "{subject_out_dir} {processing_stream} {subject_working_dir} {log_dir} "
+    "postprocess_image {run_config_file} "
+    "{image_file} {subject_out_dir} {subject_working_dir} {subject_log_dir} "
     "{debug}"
 )
-SUBJECT_SUBMISSION_STRING_TEMPLATE = (
-    "postprocess_subject {subject_id} {bids_dir} {fmriprep_dir} {output_dir} "
-    "{processing_stream} {config_file} {index_dir} {log_dir} {batch} {submit} "
-    "{debug}"
-)
+BIDS_INDEX_NAME = "bids_index"
+"""This is the location of the pybids-generated index"""
 
+SUBJECT_LOG_DIR = "distributor"
+"""Where to save batch files, within the postprocessing log folder, for subject-level batch logs"""
+RUN_CONFIG_FILE_NAME = "run_config.json"
 
 def postprocess_subjects(
     subjects=None,
@@ -76,85 +73,70 @@ def postprocess_subjects(
         subject job distribution.
     """
 
-    config = _parse_config(config_file)
-    config_file = Path(config_file)
+    options: ProjectOptions = ProjectOptions.load(config_file)
+    options.fmriprep.load_cli_args(
+        bids_directory = bids_dir,
+    )
+    options.postprocessing.load_cli_args(
+        output_directory = output_dir,
+        target_directory = fmriprep_dir,
+        log_directory = log_dir
+    )
+    if options.postprocessing.working_directory is DEFAULT_WORKING_DIRECTORY:
+        raise ValueError("No working directory specified.")
+    if processing_stream is not DEFAULT_PROCESSING_STREAM:
+        options.postprocessing = apply_stream(options, processing_stream)
+    
 
-    project_dir = config["ProjectDirectory"]
-    project_dir = Path(project_dir)
+    # Initialize the run config
+    # TODO: The getters here are still a bit confusing and could be moved to run_config,
+    #   handled internally
+    run_config: PostProcessingRunConfig = PostProcessingRunConfig(
+        options = options.postprocessing,
+        target_directory = options.postprocessing.target_directory,
+        bids_directory= options.fmriprep.bids_directory,
+        batch_config_file=options.batch_config_path,
+        email_address=options.email_address,
+        stream_working_directory = options.postprocessing.get_stream_working_dir(processing_stream),
+        stream_log_directory = options.postprocessing.get_stream_log_dir(processing_stream),
+        stream_output_directory = options.postprocessing.get_stream_output_dir(processing_stream),
+        pybids_db_path = options.postprocessing.get_pybids_db_path(processing_stream, BIDS_INDEX_NAME)
+    )
+    # This is the only run-related attribute that can be set by the CLI right now
+    run_config.load_cli_args(
+        pybids_db_path = pybids_db_path
+    )
+
+    # Setup top-level directories
+    setup_dirs(run_config)
+
+    # Save the run configuration for use downstream
+    stream_run_config_path = Path(run_config.stream_working_directory) / RUN_CONFIG_FILE_NAME
+    run_config.dump(stream_run_config_path)
 
     # Setup Logging
-    clpipe_logs = project_dir / "logs"
-    logger = get_logger(STEP_NAME, debug=debug)
-    add_file_handler(clpipe_logs)
+    logger= get_logger(STEP_NAME, debug=debug, log_dir=options.get_logs_dir())
 
-    if not fmriprep_dir:
-        # Look for a target dir configuration - if empty or not present,
-        # assume the fmriprep dir
-        default_path = resolve_fmriprep_dir(
-            config["FMRIPrepOptions"]["OutputDirectory"]
-        )
-        try:
-            fmriprep_dir = config["PostProcessingOptions2"]["TargetDirectory"]
-            if fmriprep_dir == "":
-                fmriprep_dir = default_path
-        except KeyError:
-            fmriprep_dir = default_path
-    fmriprep_dir = Path(fmriprep_dir)
-    logger.info(f"Preparing postprocessing job targeting: {str(fmriprep_dir)}")
+    options.postprocessing.target_directory = resolve_fmriprep_dir(options.postprocessing.target_directory)
+    logger.info(f"Preparing postprocessing job targeting: {options.postprocessing.target_directory}")
+    
     time.sleep(0.5)
 
-    if not bids_dir:
-        bids_dir = Path(config["FMRIPrepOptions"]["BIDSDirectory"])
-    bids_dir = Path(bids_dir)
+    logger.info(f"Output directory: {options.postprocessing.output_directory}")
 
-    if not output_dir:
-        default_path = Path(project_dir) / "data_postproc2"
-        try:
-            output_dir = config["PostProcessingOptions2"]["OutputDirectory"]
-            if output_dir == "":
-                output_dir = default_path
-        except KeyError:
-            output_dir = default_path
-
-    output_dir = Path(output_dir)
-    logger.info(f"Output directory: {output_dir}")
-
-    working_dir = config["PostProcessingOptions"]["WorkingDirectory"]
-    if working_dir == "":
-        logger.warn("Working directory not set, defaulting to output directory.")
-    else:
-        logger.info(f"Using working directory: {working_dir}")
-
-    stream_output_dir = output_dir / processing_stream
-    if not stream_output_dir.exists():
-        stream_output_dir.mkdir(parents=True)
-
-    if not log_dir:
-        log_dir = Path(project_dir) / "logs" / "postproc2_logs"
-    log_dir = Path(log_dir)
-    logger.debug(f"Using log directory: {log_dir}")
-
-    if not pybids_db_path:
-        pybids_db_path = Path(project_dir) / "bids_index"
-    pybids_db_path = Path(pybids_db_path)
-
-    # Setup batch jobs if indicated
-    batch_manager = None
-    if batch:
-        slurm_log_dir = log_dir / "distributor"
-        if not slurm_log_dir.exists():
-            logger.info(f"Creating slurm log directory: {slurm_log_dir}")
-            slurm_log_dir.mkdir(exist_ok=True, parents=True)
-        batch_manager = _setup_batch_manager(config, slurm_log_dir, non_processing=True)
+    # Check to make sure working directory has been changed from the default
+    if options.postprocessing.working_directory == ProjectOptions().postprocessing.working_directory:
+        logger.error("A working directory for this step must be provided in your config file.")
+        sys.exit(1)
+    
 
     # Create jobs based on subjects given for processing
-    # TODO: PYBIDS_DB_PATH should have config arg
     try:
         bids: BIDSLayout = get_bids(
-            bids_dir,
-            database_path=pybids_db_path,
+            options.fmriprep.bids_directory,
+            database_path=run_config.pybids_db_path,
             logger=logger,
-            fmriprep_dir=fmriprep_dir,
+            fmriprep_dir=options.postprocessing.target_directory,
             refresh=refresh_index,
         )
 
@@ -164,89 +146,79 @@ def postprocess_subjects(
         )
         time.sleep(0.5)
 
-        logger.info("Creating submission string(s)")
-        submission_strings = {}
-        time.sleep(0.5)
-
-        batch_flag = "" if batch_manager else "-no-batch"
-        submit_flag = "-submit" if submit else ""
-        debug_flag = "-debug" if debug else ""
-
         for subject in subjects_to_process:
-            key = "Postprocessing_sub-" + subject
-            submission_strings[key] = SUBJECT_SUBMISSION_STRING_TEMPLATE.format(
+            postprocess_subject(
                 subject_id=subject,
-                bids_dir=bids_dir,
-                fmriprep_dir=fmriprep_dir,
-                config_file=config_file,
-                index_dir=pybids_db_path,
-                output_dir=output_dir,
-                processing_stream=processing_stream,
-                log_dir=log_dir,
-                batch=batch_flag,
-                submit=submit_flag,
-                debug=debug_flag,
+                run_config=run_config,
+                run_config_path=stream_run_config_path,
+                bids=bids,
+                batch=batch,
+                submit=submit,
+                debug=debug
             )
-
-        _submit_jobs(batch_manager, submission_strings, logger, submit=submit)
+            
     except NoSubjectsFoundError as nsfe:
         logger.error(nsfe)
-        sys.exit()
+        sys.exit(1)
     except FileNotFoundError as fnfe:
         logger.error(fnfe)
-        sys.exit()
+        sys.exit(1)
 
-    sys.exit()
+
+def setup_dirs(run_config: PostProcessingRunConfig):
+    os.makedirs(run_config.stream_output_directory, exist_ok=True)
+    os.makedirs(run_config.stream_working_directory, exist_ok=True)
+    os.makedirs(run_config.stream_log_directory, exist_ok=True)
+
+
+def apply_stream(options, processing_stream):
+    from dataclasses import replace
+
+    stream_options = None
+    for stream in options.processing_streams:
+        if stream.stream_name == processing_stream:
+            stream_options = stream.postprocessing_options
+            break
+
+    return replace(options.postprocessing, **stream_options)
 
 
 def postprocess_subject(
-    subject_id,
-    bids_dir,
-    fmriprep_dir,
-    output_dir,
-    config_file,
-    index_dir,
-    batch,
-    submit,
-    log_dir,
-    processing_stream=DEFAULT_PROCESSING_STREAM,
+    subject_id: str,
+    run_config: PostProcessingRunConfig,
+    run_config_path: str,
+    bids: BIDSLayout,
+    batch: bool=False,
+    submit: bool=False,
     debug=False,
 ):
     """
-    Parse configuration and (TODO) sanitize inputs for image job distribution.
+    Handle postprocessing for a single subject.
     """
 
-    logger = get_logger("postprocess_subject", debug=debug)
-    logger.info(f"Processing subject: {subject_id}")
-
+    sub_with_id = "sub-" + subject_id
+    
     # Create a postprocessing logging directory for this subject,
     # if it doesn't exist
-    log_dir = Path(log_dir)
-    log_dir = log_dir / ("sub-" + subject_id)
+    subject_log_dir: Path = Path(run_config.stream_log_directory) / sub_with_id
+    subject_log_dir.mkdir(exist_ok=True)
 
-    config = _parse_config(config_file)
-    config_file = Path(config_file)
+    logger = get_logger(f"postprocess_{sub_with_id}", log_dir=subject_log_dir, f_name=f"{sub_with_id}.log", debug=debug)
+    logger.info(f"Processing subject: {subject_id}")
 
-    output_dir = Path(output_dir)
-
-    stream_output_dir = output_dir / processing_stream
-    postprocessing_config = _fetch_postprocessing_stream_config(
-        config, stream_output_dir, processing_stream=processing_stream
-    )
 
     batch_manager = None
     if batch:
-        batch_manager = _setup_batch_manager(config, log_dir)
+        subject_slurm_log_dir = subject_log_dir / "slurm_out"
+        subject_slurm_log_dir.mkdir(exist_ok=True)
+        batch_manager = _setup_batch_manager(run_config, subject_slurm_log_dir)
 
     try:
-        bids: BIDSLayout = get_bids(
-            bids_dir, database_path=index_dir, fmriprep_dir=fmriprep_dir
-        )
-        validate_subject_exists(bids, subject_id, logger)
+        logger.info(f"Checking for requested subject in fmriprep output")
+        validate_subject_exists(bids, subject_id)
 
-        image_space = postprocessing_config["TargetImageSpace"]
         try:
-            tasks = postprocessing_config["TargetTasks"]
+            tasks = run_config.options.target_tasks
         except KeyError:
             logger.warn(
                 (
@@ -256,7 +228,7 @@ def postprocess_subject(
             )
             tasks = None
         try:
-            acquisitions = postprocessing_config["TargetAcquisitions"]
+            acquisitions = run_config.options.target_acquisitions
         except KeyError:
             logger.warn(
                 (
@@ -267,21 +239,17 @@ def postprocess_subject(
             acquisitions = None
 
         images_to_process = get_images_to_process(
-            subject_id,
-            image_space,
-            bids,
-            logger,
+            subject_id = subject_id,
+            image_space = run_config.options.target_image_space,
+            bids = bids,
+            logger = logger,
             tasks=tasks,
             acquisitions=acquisitions,
         )
 
-        subject_out_dir = output_dir / processing_stream / ("sub-" + subject_id)
-
-        working_dir = postprocessing_config["WorkingDirectory"]
-        subject_working_dir = _get_subject_working_dir(
-            working_dir, output_dir, subject_id, processing_stream
-        )
-
+        subject_out_dir = Path(run_config.stream_output_directory) / sub_with_id
+        subject_working_dir = Path(run_config.stream_working_directory) / sub_with_id
+            
         if not subject_out_dir.exists():
             logger.info(f"Creating subject directory: {subject_out_dir}")
             subject_out_dir.mkdir(parents=True)
@@ -291,16 +259,11 @@ def postprocess_subject(
             subject_working_dir.mkdir(parents=True, exist_ok=False)
 
         submission_strings = _create_image_submission_strings(
+            run_config_path,
             images_to_process,
-            bids_dir,
-            fmriprep_dir,
-            index_dir,
-            output_dir,
             subject_out_dir,
-            processing_stream,
             subject_working_dir,
-            config_file,
-            log_dir,
+            subject_log_dir,
             debug,
             logger,
         )
@@ -308,50 +271,32 @@ def postprocess_subject(
         _submit_jobs(batch_manager, submission_strings, logger, submit=submit)
     except SubjectNotFoundError as snfe:
         logger.error(snfe)
-        sys.exit()
     except ValueError as ve:
         logger.error(ve)
-        sys.exit()
     except FileNotFoundError as fnfe:
         logger.error(fnfe)
-        sys.exit()
-
-    sys.exit()
 
 
 def postprocess_image(
-    config_file,
-    image_path,
-    bids_dir,
-    fmriprep_dir,
-    pybids_db_path,
-    out_dir,
-    subject_out_dir,
-    subject_working_dir,
-    log_dir,
-    processing_stream=DEFAULT_PROCESSING_STREAM,
+    run_config_file: os.PathLike,
+    image_path: os.PathLike,
+    subject_out_dir: os.PathLike,
+    subject_working_dir: os.PathLike,
+    subject_log_dir: os.PathLike,
     confounds_only=False,
     debug=False,
 ):
     """
     Setup the workflows specified in the postprocessing configuration.
     """
+    image_path = Path(image_path)
+    image_short_name = f"{str(Path(image_path).stem)}"
 
-    logger = get_logger("postprocess_image", debug=debug)
+    run_config: PostProcessingRunConfig = PostProcessingRunConfig.load(run_config_file)
+
+    logger = get_logger("postprocess_image", log_dir=subject_log_dir, f_name=f"{image_short_name}.log", debug=debug)
     logger.info(f"Processing image: {image_path}")
 
-    config = _parse_config(config_file)
-    config_file = Path(config_file)
-
-    stream_output_dir = Path(out_dir) / processing_stream
-    postprocessing_config = _fetch_postprocessing_stream_config(
-        config, stream_output_dir, processing_stream=processing_stream
-    )
-
-    image_path = Path(image_path)
-    subject_working_dir = Path(subject_working_dir)
-    log_dir = Path(log_dir)
-    subject_out_dir = Path(subject_out_dir)
 
     # Grab only the image file name in a way that works
     #   on both .nii and .nii.gz
@@ -364,7 +309,7 @@ def postprocess_image(
     pipeline_name = file_name_no_modality.replace("-", "_")
 
     bids: BIDSLayout = get_bids(
-        bids_dir, database_path=pybids_db_path, fmriprep_dir=fmriprep_dir
+        run_config.bids_directory, database_path=run_config.pybids_db_path, fmriprep_dir=run_config.target_directory
     )
     # Lookup the BIDSFile with the image path
     bids_image: BIDSFile = bids.get_file(image_path)
@@ -381,7 +326,7 @@ def postprocess_image(
     non_image_query_params.pop("space")
 
     mixing_file, noise_file = None, None
-    if "AROMARegression" in postprocessing_config["ProcessingSteps"]:
+    if "AROMARegression" in run_config.options.processing_steps:
         try:
             # TODO: update these for image entities
             mixing_file = get_mixing_file(bids, non_image_query_params, logger)
@@ -405,7 +350,7 @@ def postprocess_image(
     if confounds_path is not None:
         try:
             confounds_export_path = build_export_path(
-                confounds_path, query_params["subject"], fmriprep_dir, subject_out_dir
+                confounds_path, query_params["subject"], run_config.target_directory, subject_out_dir
             )
         except ValueError as ve:
             logger.warn(ve)
@@ -415,12 +360,12 @@ def postprocess_image(
     image_export_path = None
     if not confounds_only:
         image_export_path = build_export_path(
-            image_path, query_params["subject"], fmriprep_dir, subject_out_dir
+            image_path, query_params["subject"], run_config.target_directory, subject_out_dir
         )
 
     # Build the global postprocessing workflow
     postproc_wf: pe.Workflow = build_postprocessing_wf(
-        postprocessing_config,
+        run_config.options,
         tr,
         name=pipeline_name,
         image_file=bids_image,
@@ -432,11 +377,11 @@ def postprocess_image(
         mixing_file=mixing_file,
         noise_file=noise_file,
         base_dir=subject_working_dir,
-        crashdump_dir=log_dir,
+        crashdump_dir=subject_working_dir,
     )
 
-    if postprocessing_config["WriteProcessGraph"]:
-        draw_graph(postproc_wf, "processing_graph", stream_output_dir, logger=logger)
+    if run_config.options.write_process_graph:
+        draw_graph(postproc_wf, "processing_graph", run_config.stream_output_directory, logger=logger)
 
     postproc_wf.run()
     sys.exit(0)
@@ -472,34 +417,6 @@ def build_export_path(
     return export_path
 
 
-def _fetch_postprocessing_stream_config(
-    config: dict,
-    stream_output_dir: os.PathLike,
-    processing_stream: str = DEFAULT_PROCESSING_STREAM,
-):
-    """
-    The postprocessing stream config is a subset of the main
-    configuration's postprocessing config, based on
-    selections made in the processing streams config.
-
-    This stream postprocessing config is saved as a seperate configuration
-    file at the level of the output folder / stream folder and
-    is referred to by the workflow builders.
-    """
-
-    postprocessing_description_file = (
-        Path(stream_output_dir) / PROCESSING_DESCRIPTION_FILE_NAME
-    )
-    postprocessing_config = _postprocessing_config_apply_processing_stream(
-        config, processing_stream=processing_stream
-    )
-    _write_processing_description_file(
-        postprocessing_config, postprocessing_description_file
-    )
-
-    return postprocessing_config
-
-
 def _list_available_streams(postprocessing_config: dict):
     return postprocessing_config.keys()
 
@@ -522,40 +439,9 @@ def _write_processing_description_file(
         json.dump(postprocessing_config, file_to_write, indent=4)
 
 
-def _postprocessing_config_apply_processing_stream(
-    config: dict, processing_stream: str = DEFAULT_PROCESSING_STREAM
-):
-    postprocessing_config = _get_postprocessing_config(config)
-    processing_streams = _get_processing_streams(config)
-
-    # If using the default stream, no need to update postprocessing config
-    if processing_stream == DEFAULT_PROCESSING_STREAM:
-        return postprocessing_config
-
-    # Iterate through the available processing streams and see
-    #   if one matches the one requested
-    # The default processing stream name won't be in this list -
-    #   it refers to the base PostProcessingOptions
-    for stream in processing_streams:
-        stream_options = stream["PostProcessingOptions"]
-
-        if stream["ProcessingStream"] == processing_stream:
-            # Use deep update to impart the processing stream options
-            #   into the postprocessing config
-            postprocessing_config = pydantic.utils.deep_update(
-                postprocessing_config, stream_options
-            )
-            return postprocessing_config
-
-    raise ValueError(f"No stream found in configuration with name: {processing_stream}")
-
-
-def _get_postprocessing_config(config: dict):
-    return config["PostProcessingOptions2"]
-
-
-def _get_processing_streams(config: dict):
-    return config["ProcessingStreams"]
+def _get_processing_streams(options: ProjectOptions):
+    # TODO: possible support for command showing processing streams
+    pass
 
 
 def _submit_jobs(batch_manager, submission_strings, logger, submit=True):
@@ -577,16 +463,11 @@ def _submit_jobs(batch_manager, submission_strings, logger, submit=True):
 
 
 def _create_image_submission_strings(
+    run_config_file,
     images_to_process,
-    bids_dir,
-    fmriprep_dir,
-    pybids_db_path,
-    out_dir,
     subject_out_dir,
-    processing_stream,
     subject_working_dir,
-    config_file,
-    log_dir,
+    subject_log_dir,
     debug,
     logger,
 ):
@@ -599,35 +480,18 @@ def _create_image_submission_strings(
 
     logger.info("Creating submission string(s)")
     for image in images_to_process:
-        key = f"{str(Path(image.path).stem)}"
+        key = f"{Path(image.path).stem}"
 
         submission_strings[key] = IMAGE_SUBMISSION_STRING_TEMPLATE.format(
-            config_file=config_file,
-            image_path=image.path,
-            bids_dir=bids_dir,
-            fmriprep_dir=fmriprep_dir,
-            pybids_db_path=pybids_db_path,
-            out_dir=out_dir,
-            subject_out_dir=subject_out_dir,
-            processing_stream=processing_stream,
-            subject_working_dir=subject_working_dir,
-            log_dir=log_dir,
+            run_config_file = str(run_config_file),
+            image_file = image.path,
+            subject_out_dir = str(subject_out_dir),
+            subject_working_dir = str(subject_working_dir),
+            subject_log_dir = str(subject_log_dir),
             debug=debug_flag,
         )
         logger.debug(submission_strings[key])
     return submission_strings
-
-
-def _parse_config(config_file):
-    # Get postprocessing configuration from general config
-    if not config_file:
-        raise ValueError("No config file provided")
-
-    configParser = ClpipeConfigParser()
-    configParser.config_updater(config_file)
-    config = configParser.config
-
-    return config
 
 
 def _populate_batch_manager(batch_manager, submission_strings, logger):
@@ -640,18 +504,12 @@ def _populate_batch_manager(batch_manager, submission_strings, logger):
     batch_manager.compilejobstrings()
 
 
-def _setup_batch_manager(config, log_dir, non_processing=False):
-    batch_manager = BatchManager(config["BatchConfig"], log_dir)
-    batch_manager.update_mem_usage(
-        config["PostProcessingOptions2"]["BatchOptions"]["MemoryUsage"]
-    )
-    batch_manager.update_time(
-        config["PostProcessingOptions2"]["BatchOptions"]["TimeUsage"]
-    )
-    batch_manager.update_nthreads(
-        config["PostProcessingOptions2"]["BatchOptions"]["NThreads"]
-    )
-    batch_manager.update_email(config["EmailAddress"])
+def _setup_batch_manager(run_config: PostProcessingRunConfig, log_dir: str, non_processing=False):
+    batch_manager= BatchManager(run_config.batch_config_file, log_dir)
+    batch_manager.update_mem_usage(run_config.options.batch_options.memory_usage)
+    batch_manager.update_time(run_config.options.batch_options.time_usage)
+    batch_manager.update_nthreads(run_config.options.batch_options.n_threads)
+    batch_manager.update_email(run_config.email_address)
 
     if non_processing:
         batch_manager.update_mem_usage(2000)
@@ -660,18 +518,3 @@ def _setup_batch_manager(config, log_dir, non_processing=False):
 
     return batch_manager
 
-
-def _get_subject_working_dir(working_dir, out_dir, subject_id, processing_stream):
-    # If no top-level working directory is provided, make one in the out_dir
-    if not working_dir:
-        subject_working_dir = (
-            out_dir / "working" / processing_stream / ("sub-" + subject_id)
-        )
-    # Otherwise, use the provided top-level directory as a base,
-    #   and name working directory after the subject
-    else:
-        subject_working_dir = (
-            Path(working_dir) / processing_stream / ("sub-" + subject_id)
-        )
-
-    return subject_working_dir

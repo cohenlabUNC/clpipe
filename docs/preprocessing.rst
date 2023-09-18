@@ -2,6 +2,11 @@
 Preprocessing with fMRIprep
 ===========================
 
+*****************
+Overview
+*****************
+
+
 clpipe uses `fMRIprep <https://fmriprep.readthedocs.io/en/stable/>`_ via
 the ``clpipe preprocess`` command to perform minimal
 preprocessing on functional MRI data. 
@@ -13,17 +18,23 @@ increase the `[FMRIPrepOptions][FMRIPrepMemoryUsage]` option in the configuratio
 To submit your dataset for preprocessing, 
 use the following command:
 
+*****************
+Configuration
+*****************
+
+.. autoclass:: clpipe.config.options.FMRIPrepOptions
+	:members:
+
+*****************
+Command
+*****************
+
 .. click:: clpipe.cli:fmriprep_process_cli
    :prog: clpipe preprocess
-
-Configuration Options
--------------------------------
-
-.. autoclass:: clpipe.config.project.FMRIPrepOptions
-	:members:
    
-Getting Quality Control Reports
--------------------------------
+*****************
+Quality Control Reports
+*****************
 
 fMRIprep produces detailed html reports for each subject, allowing users to visually 
 inspect registration, normalization and confound plots. However, these reports do not 

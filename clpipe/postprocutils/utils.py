@@ -80,14 +80,14 @@ def get_scrub_vector_node(confounds_file, scrub_configs):
 
     # Get the column to be used for thresholding
     confounds_df = pd.read_csv(confounds_file, sep="\t")
-    target_timeseries = confounds_df[scrub_configs["TargetVariable"]]
+    target_timeseries = confounds_df[scrub_configs["target_variable"]]
 
     scrub_vector = get_scrub_vector(
         target_timeseries,
-        scrub_configs["Threshold"],
-        scrub_configs["ScrubBehind"],
-        scrub_configs["ScrubAhead"],
-        scrub_configs["ScrubContiguous"],
+        scrub_configs["threshold"],
+        scrub_configs["scrub_behind"],
+        scrub_configs["scrub_ahead"],
+        scrub_configs["scrub_contiguous"],
     )
     return scrub_vector
 
@@ -233,7 +233,7 @@ def draw_graph(
     graph_style: str = DEFAULT_GRAPH_STYLE,
     logger: logging.Logger = None,
 ):
-    graph_image_path = out_dir / f"{graph_name}.dot"
+    graph_image_path = Path(out_dir) / f"{graph_name}.dot"
     if logger:
         logger.info(f"Drawing confounds workflow graph: {graph_image_path}")
 
@@ -338,16 +338,18 @@ def expand_columns(tsv_file, column_names):
     return [*set(expanded_columns)]  # Removes duplicates from list
 
 
-def expand_scrub_dict(scrub_configs):
+def expand_scrub_dict(tsv_file, scrub_configs):
     # Expand the dictionary using expand_columns function
+    from clpipe.postprocutils.utils import expand_columns
+
     expanded_columns = []
     for column in scrub_configs:
-        target_var = column["TargetVariable"]
+        target_var = column["target_variable"]
         if "*" in target_var:
-            expanded_vars = expand_columns([target_var])
+            expanded_vars = expand_columns(tsv_file, [target_var])
             for exp_var in expanded_vars:
                 new_column = column.copy()
-                new_column["TargetVariable"] = exp_var
+                new_column["target_variable"] = exp_var
                 expanded_columns.append(new_column)
         else:
             expanded_columns.append(column)
@@ -374,3 +376,16 @@ def vector_to_txt(vector):
     f.close()
 
     return str(fname.resolve())
+
+def construct_motion_outliers(scrub_targets):
+    import pandas
+    import numpy as np
+
+    size = sum(scrub_targets)
+    mot_outliers = pandas.DataFrame(np.zeros((len(scrub_targets),size)))
+    counter = 0
+    for ind, i  in enumerate(scrub_targets):
+        if i == 1:
+            mot_outliers.iloc[ind, counter] = 1
+            counter += 1
+    return mot_outliers
