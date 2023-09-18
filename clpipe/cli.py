@@ -183,12 +183,11 @@ def _add_commands():
 def project_setup_cli(project_title=None, project_dir=None, source_data=None, 
                       move_source_data=None, symlink_source_data=None,
                       debug=False):
+    """Initialize a clpipe project."""
     # TODO: add prompts for more things like contributors, email, etc.
     if project_title is None:
         project_title = click.prompt('Please enter a name for your project:', type=str)
 
-
-    """Initialize a clpipe project."""
     from .project_setup import project_setup
     project_setup(
         project_title=project_title, 
