@@ -80,7 +80,7 @@ First, make the HNG modules available:
 
 .. code-block:: console
 
-    module use /proj/hng/software/module
+    module use /proj/hng/software/modules
 
 Now save this module source to your default collection:
 
