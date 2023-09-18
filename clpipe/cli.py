@@ -134,7 +134,7 @@ def _add_commands():
     cli.add_command(project_setup_cli, help_priority=0)
     cli.add_command(convert2bids_cli, help_priority=10)
     cli.add_command(bids_validate_cli, help_priority=15)
-    cli.add_command(templateflow_setup_cli, help_priority=17)
+    cli.add_command(templateflow_setup_cli, help_priority=17, hidden=True)
     cli.add_command(fmriprep_process_cli, help_priority=20)
     cli.add_command(postprocess_cli, help_priority=35)
     cli.add_command(flywheel_sync_cli, help_priority=55)
