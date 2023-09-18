@@ -17,28 +17,27 @@ PYTHON_REQUIRES = f'>={PYTHON_VERSION}'
 
 # List of all dependency packages, to be automatically installed alongside clpipe
 INSTALL_REQUIRES = [
-      'jsonschema',
-      'click',
-      'nipy',
+      'jsonschema==4.17.3',
+      'click==8.1.3',
+      'nipy==0.5.0',
       'numpy>=1.18.5',
-      'pandas',
+      'pandas==1.3.5',
       'nibabel>=3',
       'scipy==1.2.2',
-      'sphinx_rtd_theme',
-      'psutil',
-      'parse',
-      'nilearn',
-      'dcm2bids',
-      'nipype',
+      'sphinx_rtd_theme==1.2.0',
+      'psutil==5.9.5',
+      'parse==1.19.0',
+      'nilearn==0.9.0',
+      'dcm2bids==2.1.9',
+      'nipype==1.8.6',
       'pybids>=0.14.0',
-      'templateflow',
-      'deepdiff',
+      'templateflow==23.0.0',
       "pydantic==1.10.7",
-      "matplotlib",
+      "matplotlib==3.5.3",
       "heudiconv>=0.10.0",
-      "tqdm",
-      "marshmallow-dataclass",
-      "pyyaml"
+      "tqdm==4.65.0",
+      "marshmallow-dataclass==8.5.14",
+      "PyYAML==6.0"
 ],
 
 PACKAGE_DATA = {'clpipe': ['R_scripts/*.R']}
