@@ -82,7 +82,7 @@ def postprocess_subjects(
         target_directory = fmriprep_dir,
         log_directory = log_dir
     )
-    if options.postprocessing.working_directory is DEFAULT_WORKING_DIRECTORY:
+    if options.postprocessing.working_directory == DEFAULT_WORKING_DIRECTORY:
         raise ValueError("No working directory specified.")
     if processing_stream is not DEFAULT_PROCESSING_STREAM:
         options.postprocessing = apply_stream(options, processing_stream)
