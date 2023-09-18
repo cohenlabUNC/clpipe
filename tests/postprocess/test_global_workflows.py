@@ -343,7 +343,7 @@ def test_postprocess2_wf_scrubbing(
     helpers.plot_timeseries(out_path, sample_raw_image)
     helpers.plot_4D_img_slice(out_path, "postprocessed.png")
 
-@pytest.mark.skip(reason="@pytest.mark.skip(reason="Test runs long")")
+@pytest.mark.skip("Test runs long")
 def test_postprocess2_wf_scrubbing_aroma(
     artifact_dir,
     request,
