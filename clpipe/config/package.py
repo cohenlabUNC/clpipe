@@ -34,7 +34,7 @@ INSTALL_REQUIRES = [
       'templateflow==23.0.0',
       "pydantic==1.10.7",
       "matplotlib==3.5.3",
-      "heudiconv>=0.10.0",
+      "heudiconv==0.12.2",
       "tqdm==4.65.0",
       "marshmallow-dataclass==8.5.14",
       "PyYAML==6.0"

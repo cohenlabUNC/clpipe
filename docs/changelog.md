@@ -22,6 +22,7 @@
 ### Bug Fixes
 - `postprocess` - Fixed an issue where postprocess took excessively long to index large datasets due to a bug in pybids
 - `postprocess` - Issue where streams did not properly update postprocessing config fixed
+- `documentation` - path to HNG modules directory corrected - missing the 's' at the end
 
 
 ### Deprecations & Removals
@@ -29,6 +30,11 @@
 - `postprocess` - Removed original susan command; now a step of postprocess
 - `postprocess` - Disabled fmri-process-check report for now, pending rework
 - `postprocess` - The stream file "processing_description.json" has been moved to the stream working directory and is now called "run_config.json"
+
+### Dependencies
+- `convert2bids` - dcm2bids v2.1.9 now enforced to prevent update to v3, which uses a newer version of BIDS incompatible with fMRIPrep <= v23
+- `convert2bids` - heudiconv v12.2 now enforced to prevent update to v13, which for mysterious reasons does not work in our environment
+- `other` - all other top-level dependencies locked in for now to prevent breaking updates
 
 ### Development
 - `configuration` - Dataclass-based configuration has been applied to all major clpipe commands
