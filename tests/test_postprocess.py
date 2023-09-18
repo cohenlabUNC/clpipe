@@ -19,6 +19,20 @@ def test_postprocess_subjects(clpipe_fmriprep_dir):
         batch=True
     )
 
+def test_postprocess_subjects_invalid_subject(clpipe_fmriprep_dir):
+    """Run the subjects setup of postprocessing. Builds output directories, including
+    the BIDS index."""
+    config_file = clpipe_fmriprep_dir / "clpipe_config.json"
+
+    options = ProjectOptions.load(config_file)
+    options.postprocessing.working_directory = clpipe_fmriprep_dir / "data_working"
+
+    postprocess_subjects(
+        subjects=['99'],
+        config_file=options,
+        batch=True
+    )
+
 def test_postprocess_subjects_stream(clpipe_fmriprep_dir):
     """Run postprocess subjects using a stream."""
     config_file = clpipe_fmriprep_dir / "clpipe_config.json"
@@ -71,27 +85,6 @@ def test_apply_nested_items(artifact_dir, helpers, request):
     options = apply_stream(options, "nested_items")
 
     options.dump(test_dir / "clpipe_config_stream_applied.json")
-
-
-
-def test_postprocess_subjects_dir_invalid_subject(
-    clpipe_fmriprep_dir, artifact_dir, helpers, request
-):
-    fmriprep_dir = clpipe_fmriprep_dir / "data_fmriprep" / "fmriprep"
-    config = clpipe_fmriprep_dir / "clpipe_config.json"
-    test_dir = helpers.create_test_dir(artifact_dir, request.node.name)
-    postproc_dir = Path(test_dir / "data_postprocessed")
-    log_dir = Path(test_dir / "logs" / "postproc_logs")
-    log_dir.mkdir(parents=True, exist_ok=True)
-
-    with pytest.raises(SystemExit):
-        postprocess_subjects(
-            subjects=["99"],
-            config_file=config,
-            fmriprep_dir=fmriprep_dir,
-            output_dir=postproc_dir,
-            log_dir=log_dir,
-        )
 
 
 def test_postprocess_image(
