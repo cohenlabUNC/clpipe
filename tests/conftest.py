@@ -3,6 +3,9 @@ import sys
 import shutil
 import json
 from pathlib import Path
+from bids import BIDSLayout, BIDSLayoutIndexer
+from clpipe.bids import get_bids
+
 
 import nibabel as nib
 import nipype.pipeline.engine as pe
@@ -71,10 +74,10 @@ class Helpers:
 
     @staticmethod
     def plot_timeseries(
-        image_path: Path, 
+        image_path: Path,
         base_image_path: Path,
-        highlight_ranges: list=None,
-        num_figs: int=4
+        highlight_ranges: list = None,
+        num_figs: int = 4,
     ):
         import nibabel as nib
         import numpy as np
@@ -96,9 +99,10 @@ class Helpers:
         base_data_2d = np.reshape(base_data, (base_n_voxels, base_n_timepoints))
 
         import math
+
         if num_figs > 4 or num_figs < 1:
             raise ValueError("num_figs must be in the range 1-4")
-        
+
         # TODO: Abstract this logic.
         nrows = 1
         ncols = 1
@@ -109,7 +113,7 @@ class Helpers:
         elif num_figs == 4:
             nrows = 2
             ncols = 2
-        
+
         fig, axs = plt.subplots(nrows=nrows, ncols=ncols, figsize=(12, 8))
         if num_figs == 1:
             axs = [axs]
@@ -133,15 +137,15 @@ class Helpers:
             # Set the x-axis ticks to display all integers
             axis_len = len(data)
             axis_range = range(0, axis_len)
-            ticklabels = [str(tick) if tick % 10 == 0 else '' for tick in axis_range]
+            ticklabels = [str(tick) if tick % 10 == 0 else "" for tick in axis_range]
             ax.set_xticks(axis_range)
             ax.set_xticklabels(ticklabels)
-            #ax.set_xlim(1, axis_len)
+            # ax.set_xlim(1, axis_len)
 
             if highlight_ranges:
                 for highlight_range in highlight_ranges:
                     ax.axvspan(
-                        highlight_range[0], highlight_range[1], color='red', alpha=0.2
+                        highlight_range[0], highlight_range[1], color="red", alpha=0.2
                     )
 
         fig.legend(handles=[raw_plot, processed_plot])
@@ -184,7 +188,7 @@ def sample_raw_image() -> Path:
     'Interoception during aging: The heartbeat detection task'
     Located at https://openneuro.org/datasets/ds003763/versions/1.0.0
 
-    The image consists of slices 100-110 of 
+    The image consists of slices 100-110 of
         sub-09113/func/sub-09113_task-heart_bold.nii.gz
 
     Useful for tests that require a shorter timeseries for runtime consideration,
@@ -192,6 +196,7 @@ def sample_raw_image() -> Path:
     """
 
     return Path("tests/data/sample_raw.nii.gz").resolve()
+
 
 @pytest.fixture(scope="session")
 def sample_raw_image_longer() -> Path:
@@ -227,9 +232,10 @@ def sample_postprocessed_confounds() -> Path:
 
 @pytest.fixture(scope="session")
 def sample_nuisance_file() -> Path:
-    with open('tests/data/sample_nuisance_file.txt', 'w') as f:
+    with open("tests/data/sample_nuisance_file.txt", "w") as f:
         f.write("0\n0\n1\n0\n0\n0\n1\n0\n0\n0")
     return Path("tests/data/sample_nuisance_file.txt").resolve()
+
 
 @pytest.fixture(scope="session")
 def sample_melodic_mixing() -> Path:
@@ -300,7 +306,7 @@ def clpipe_bids_dir(tmp_path_factory, sample_raw_image):
     project_setup(project_title=PROJECT_TITLE, project_dir=str(project_dir))
     utils.populate_with_BIDS(project_dir, sample_raw_image)
 
-    return clpipe_dir
+    return project_dir
 
 
 @pytest.fixture(scope="session")
@@ -423,6 +429,18 @@ def clpipe_postprocess_subjects(clpipe_fmriprep_dir: Path):
     return clpipe_fmriprep_dir
 
 
+@pytest.fixture(scope="session")
+def clpipe_fmriprep_indexed_dir(clpipe_fmriprep_dir) -> Path:
+    project_dir = clpipe_fmriprep_dir
+    get_bids(
+        project_dir / "data_BIDS",
+        database_path=project_dir / "BIDS_index",
+        index_metadata=True,
+        fmriprep_dir=project_dir / "data_fmriprep",
+    )
+    return project_dir
+
+
 # TODO: seperate AROMA into its own type of fmriprep dir
 @pytest.fixture(scope="session")
 def clpipe_legacy_fmriprep_dir(
@@ -493,11 +511,13 @@ def legacy_config_dir(tmp_path_factory) -> Path:
 
     return temp_dir
 
+
 @pytest.fixture(scope="session")
 def project_config(clpipe_config):
     """Provide the project config as populated by default config file."""
 
     return convert_project_options(clpipe_config)
+
 
 @pytest.fixture(scope="session")
 def postproc_config(project_config):
@@ -560,6 +580,7 @@ def config_file_postproc(clpipe_postproc_dir: Path):
     """Return config file from the test postproc directory."""
 
     return clpipe_postproc_dir / "clpipe_config.json"
+
 
 @pytest.fixture(scope="module")
 def config_file_postproc_legacy_fmriprep(clpipe_postproc_legacy_fmriprep_dir: Path):
