@@ -4,25 +4,34 @@ import os
 
 from .utils import get_logger
 
-# TODO: We need to update the batch manager to be more flexible, 
+# TODO: We need to update the batch manager to be more flexible,
 # so as to allow for no-quotes, no equals, and to not have various options
 # for example, BIAC doesn't have time or number of cores as options.
 
 LOGGER_NAME = "batch-manager"
-OUTPUT_FORMAT_STR = 'Output-{jobid}-jobid-%j.out'
-JOB_ID_FORMAT_STR = '{jobid}'
+OUTPUT_FORMAT_STR = "Output-{jobid}-jobid-%j.out"
+JOB_ID_FORMAT_STR = "{jobid}"
 MAX_JOB_DISPLAY = 5
 DEFAULT_BATCH_CONFIG_PATH = "slurmUNCConfig.json"
+
 
 class BatchManager:
     """
     Handles the creation and submission of batch jobs.
     """
 
-    def __init__(self, batch_system_config: os.PathLike, output_directory=None,
-                 debug=False):
+    def __init__(
+        self,
+        batch_system_config: os.PathLike,
+        output_directory=None,
+        debug=False,
+        mem_use=None,
+        time=None,
+        threads=None,
+        email=None,
+    ):
         self.jobs = []
-        self.debug=debug
+        self.debug = debug
         self.logger = get_logger(LOGGER_NAME, debug=debug)
 
         if os.path.exists(os.path.abspath(batch_system_config)):
@@ -38,29 +47,33 @@ class BatchManager:
         self.submission_list = []
         if output_directory is None:
             self.logger.warning(
-                ("No output directory provided "
-                 "- defauling to current directory")
+                ("No output directory provided " "- defauling to current directory")
             )
-            output_directory = '.'
+            output_directory = "."
         self.logger.info(f"Batch job output path: {output_directory}")
         self.output_dir = os.path.abspath(output_directory)
         if not os.path.isdir(output_directory):
             os.makedirs(output_directory)
-            self.logger.debug(
-                f"Created batch output directory at: {output_directory}"
-            )
+            self.logger.debug(f"Created batch output directory at: {output_directory}")
+
+        self.config["MemoryDefault"] = mem_use
+        self.config["TimeDefault"] = time
+        self.config["NThreads"] = threads
+        self.config["EmailAddress"] = email
+
+        self.create_submission_head()
 
     def update_mem_usage(self, mem_use):
-        self.config['MemoryDefault'] = mem_use
+        self.config["MemoryDefault"] = mem_use
 
     def update_time(self, time):
-        self.config['TimeDefault'] = time
+        self.config["TimeDefault"] = time
 
     def update_nthreads(self, threads):
-        self.config['NThreads'] = threads
+        self.config["NThreads"] = threads
 
     def update_email(self, email):
-        self.config['EmailAddress'] = email
+        self.config["EmailAddress"] = email
 
     def addjob(self, job):
         self.jobs.append(job)
@@ -71,41 +84,47 @@ class BatchManager:
     def compilejobstrings(self):
         header = self.createsubmissionhead()
         for job in self.jobs:
-            temp = header.format(jobid=job.jobID, cmdwrap = job.jobString)
+            temp = header.format(jobid=job.jobID, cmdwrap=job.jobString)
             self.submission_list.append(temp)
 
     def compile_job_strings(self):
         return self.compilejobstrings()
 
     def createsubmissionhead(self):
-        head = [self.config['SubmissionHead']]
-        for e in self.config['SubmissionOptions']:
-            temp = e['command'] + ' ' + e['args']
+        head = [self.config["SubmissionHead"]]
+        for e in self.config["SubmissionOptions"]:
+            temp = e["command"] + " " + e["args"]
             head.append(temp)
-        for e in self.config['SubOptionsEqual']:
-            temp = e['command'] + '=' + e['args']
+        for e in self.config["SubOptionsEqual"]:
+            temp = e["command"] + "=" + e["args"]
             head.append(temp)
 
-        head.append(self.config['MemoryCommand'].format(
-            mem =self.config['MemoryDefault']))
-        if self.config['TimeCommandActive']:
-            head.append(self.config['TimeCommand'].format(
-                time = self.config['TimeDefault']))
-        if self.config['ThreadCommandActive']:
-            head.append(self.config['NThreadsCommand'].format(
-                nthreads = self.config['NThreads']
-            ))
-        if self.config['JobIDCommandActive']:
-            head.append(self.config['JobIDCommand'].format(
-                jobid = JOB_ID_FORMAT_STR))
-        if self.config['OutputCommandActive']:
-            head.append(self.config['OutputCommand'].format(
-                output =os.path.abspath(os.path.join(self.output_dir, 
-                OUTPUT_FORMAT_STR))))
+        head.append(
+            self.config["MemoryCommand"].format(mem=self.config["MemoryDefault"])
+        )
+        if self.config["TimeCommandActive"]:
+            head.append(
+                self.config["TimeCommand"].format(time=self.config["TimeDefault"])
+            )
+        if self.config["ThreadCommandActive"]:
+            head.append(
+                self.config["NThreadsCommand"].format(nthreads=self.config["NThreads"])
+            )
+        if self.config["JobIDCommandActive"]:
+            head.append(self.config["JobIDCommand"].format(jobid=JOB_ID_FORMAT_STR))
+        if self.config["OutputCommandActive"]:
+            head.append(
+                self.config["OutputCommand"].format(
+                    output=os.path.abspath(
+                        os.path.join(self.output_dir, OUTPUT_FORMAT_STR)
+                    )
+                )
+            )
         if self.config["EmailAddress"]:
-            head.append(self.config['EmailCommand'].format(
-                email=self.config["EmailAddress"]))
-        head.append(self.config['CommandWrapper'])
+            head.append(
+                self.config["EmailCommand"].format(email=self.config["EmailAddress"])
+            )
+        head.append(self.config["CommandWrapper"])
 
         return " ".join(head)
 
@@ -130,16 +149,18 @@ class BatchManager:
             output = "Jobs to run:\n\n"
             for index, job in enumerate(self.submission_list):
                 output += "\t" + job + "\n\n"
-                if index == MAX_JOB_DISPLAY - 1 and job_count \
-                    > MAX_JOB_DISPLAY and not self.debug:
-                    
-                    output += (f"\t...and {job_count - 5} more job(s).\n")
+                if (
+                    index == MAX_JOB_DISPLAY - 1
+                    and job_count > MAX_JOB_DISPLAY
+                    and not self.debug
+                ):
+                    output += f"\t...and {job_count - 5} more job(s).\n"
                     break
             output += "Re-run with the '-submit' flag to launch these jobs."
         self.logger.info(output)
 
     def get_threads_command(self):
-        return [self.config['NThreadsCommand'], self.config['NThreads']]
+        return [self.config["NThreadsCommand"], self.config["NThreads"]]
 
 
 class Job:
