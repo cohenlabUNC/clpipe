@@ -404,7 +404,7 @@ class MotionOutliers(Option):
     the threshold, a new column of all 0s and a single '1' at that timepoint is
     added to the end of the confounds file to serve as a spike regressor for GLM analysis."""
 
-    include: bool = field(default=False, metadata={"required": True})
+    include: bool = field(default=True, metadata={"required": True})
     """Set 'true' to add motion outlier spike regressors to each confound file."""
 
     scrub_var: str = field(default="framewise_displacement", metadata={"required": True})
@@ -669,9 +669,9 @@ class ProjectOptions(Option):
                 postprocessing_options={
                     "processing_steps": [
                         "SpatialSmoothing",
+                        "IntensityNormalization",
                         "AROMARegression",
                         "TemporalFiltering",
-                        "IntensityNormalization"
                     ]
                 }
             ),
@@ -680,9 +680,10 @@ class ProjectOptions(Option):
                 postprocessing_options={
                     "processing_steps": [
                         "SpatialSmoothing",
+                        "IntensityNormalization",
                         "AROMARegression",
+                        "ConfoundRegression",
                         "TemporalFiltering",
-                        "IntensityNormalization"
                     ],
                     "confound_options": {
                         "motion_outliers": {
