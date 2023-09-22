@@ -165,15 +165,29 @@ class ParallelManager:
         return [self.config["NThreadsCommand"], self.config["NThreads"]]
 
 
+# Would take manager
+class JobRunner:
+    def __init__(self, JobManager) -> None:
+        pass
+
+# Top job container
+class JobQueue:
+    def __init__(self) -> None:
+        pass
+    def add_job():
+        pass
 class Job:
+    pass
+
+
+# These go in container
+class ParallelJob:
     def __init__(self, jobID, jobString):
         self.jobID = jobID
         self.jobString = jobString
 
+class LocalJob:
+    pass
 
-class JobRunner:
-    def __init__(self, parallelManager, jobs):
-        self.batchManager = parallelManager
 
-    def run_jobs(self):
-        self.parallel_manager.submit_jobs()
+# Both parallel config and jobs are passed into JobQueue to be run
