@@ -3,6 +3,7 @@ from pathlib import Path
 
 from clpipe.bids import get_bids
 from bids import BIDSLayout, BIDSLayoutIndexer
+import re
 
 
 def test_get_bids(clpipe_fmriprep_dir):
