@@ -43,7 +43,7 @@ def convert2bids(dicom_dir=None, dicom_dir_format=None, bids_dir=None,
 
     logger = get_logger(STEP_NAME, debug=debug, log_dir=config.get_logs_dir())
 
-    batch_manager = BatchManager(config.batch_config_path, log_dir, debug=debug)
+    batch_manager = BatchManager(config.batch_config_path, config.convert2bids.log_directory, debug=debug)
     batch_manager.create_submission_head()
     batch_manager.update_mem_usage(config.convert2bids.mem_usage)
     batch_manager.update_time(config.convert2bids.time_usage)

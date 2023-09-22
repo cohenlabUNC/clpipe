@@ -130,7 +130,7 @@ def fmriprep_process(bids_dir=None, working_dir=None, output_dir=None,
 
     logger.info(f"Targeting subject(s): {', '.join(sublist)}")
 
-    batch_manager = BatchManager(config.batch_config_path, log_dir, debug=debug)
+    batch_manager = BatchManager(config.batch_config_path, config.fmriprep.log_directory, debug=debug)
     batch_manager.update_mem_usage(config.fmriprep.fmriprep_memory_usage)
     batch_manager.update_time(config.fmriprep.fmriprep_time_usage)
     batch_manager.update_nthreads(config.fmriprep.n_threads)
