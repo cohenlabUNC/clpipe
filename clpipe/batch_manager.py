@@ -3,6 +3,7 @@ from pkg_resources import resource_stream
 import os
 
 from .utils import get_logger
+from clpipe.config.parallel import ParallelConfig
 
 # TODO: We need to update the batch manager to be more flexible,
 # so as to allow for no-quotes, no equals, and to not have various options
@@ -15,7 +16,7 @@ MAX_JOB_DISPLAY = 5
 DEFAULT_BATCH_CONFIG_PATH = "slurmUNCConfig.json"
 
 
-class BatchManager:
+class ParallelManager:
     """
     Handles the creation and submission of batch jobs.
     """
@@ -56,24 +57,25 @@ class BatchManager:
             os.makedirs(output_directory)
             self.logger.debug(f"Created batch output directory at: {output_directory}")
 
-        self.config["MemoryDefault"] = mem_use
-        self.config["TimeDefault"] = time
-        self.config["NThreads"] = threads
-        self.config["EmailAddress"] = email
+        self.config = ParallelConfig()
+        self.config.mem_use = mem_use
+        self.config.time = time
+        self.config.threads = threads
+        self.config.email = email
 
         self.create_submission_head()
 
     def update_mem_usage(self, mem_use):
-        self.config["MemoryDefault"] = mem_use
+        self.config.mem_use = mem_use
 
     def update_time(self, time):
-        self.config["TimeDefault"] = time
+        self.config.time = time
 
     def update_nthreads(self, threads):
-        self.config["NThreads"] = threads
+        self.config.threads = threads
 
     def update_email(self, email):
-        self.config["EmailAddress"] = email
+        self.config.email = email
 
     def addjob(self, job):
         self.jobs.append(job)
@@ -167,3 +169,11 @@ class Job:
     def __init__(self, jobID, jobString):
         self.jobID = jobID
         self.jobString = jobString
+
+
+class JobRunner:
+    def __init__(self, parallelManager, jobs):
+        self.batchManager = parallelManager
+
+    def run_jobs(self):
+        self.parallel_manager.submit_jobs()
