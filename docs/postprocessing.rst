@@ -254,16 +254,16 @@ from an image's timeseries are also removed its respective confound file.
         "InsertNA": true,
         "Columns": [
             {
-                "TargetVariable": "cosine*",
-                "Threshold": 100,
+                "TargetVariable": "non_steady_state_outlier*",
+                "Threshold": 0,
                 "ScrubAhead": 0,
                 "ScrubBehind": 0,
                 "ScrubContiguous": 0
             },
             {
                 "TargetVariable": "framewise_displacement",
-                "Threshold": 0.2,
-                "ScrubAhead": 1,
+                "Threshold": 0.9,
+                "ScrubAhead": 0,
                 "ScrubBehind": 0,
                 "ScrubContiguous": 0
             }
@@ -395,43 +395,36 @@ specifies a filtering high pass by overriding the default value of -1 with
 .. code-block:: json
 
 	...
-	"ProcessingStreams": [
-		...
+	"processing_streams": [
 		{
-			"ProcessingStream": "smooth_aroma-regress_filter-butterworth_normalize",
-			"PostProcessingOptions": {
-				"TargetTasks": [
-					"rest"
-				],
-				"ProcessingSteps": [
+			"stream_name": "GLM_default",
+			"postprocessing_options": {
+				"processing_steps": [
 					"SpatialSmoothing",
-					"AROMARegression",
-					"TemporalFiltering",
 					"IntensityNormalization",
-					"ApplyMask"
+					"AROMARegression",
+					"TemporalFiltering"
 				]
 			}
 		},
 		{
-			"ProcessingStream": "smooth_aroma-regress_filter-high-only_normalize",
-			"PostProcessingOptions": {
-				"TargetTasks": [
-					"rest"
-				],
-				"ProcessingSteps": [
+			"stream_name": "functional_connectivity_default",
+			"postprocessing_options": {
+				"processing_steps": [
 					"SpatialSmoothing",
-					"AROMARegression",
-					"TemporalFiltering",
 					"IntensityNormalization",
-					"ApplyMask"
+					"AROMARegression",
+					"ConfoundRegression",
+					"TemporalFiltering"
 				],
-				"ProcessingStepOptions": {
-					"TemporalFiltering": {
-						"FilteringHighPass": .009
+				"confound_options": {
+					"motion_outliers": {
+						"include": false
 					}
 				}
 			}
-		},
+		}
+	],
 	...
 
 
