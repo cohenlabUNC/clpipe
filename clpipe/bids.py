@@ -3,6 +3,7 @@ BIDS dataset query and other helper functions
 """
 
 from pathlib import Path
+import re
 from .errors import (
     MixingFileNotFoundError,
     NoImagesFoundError,
@@ -24,6 +25,7 @@ def get_bids(
     fmriprep_dir: os.PathLike = None,
     index_metadata=False,
     refresh=False,
+    ignore: re.Pattern = None,
     logger=None,
 ) -> BIDSLayout:
     try:
@@ -38,7 +40,7 @@ def get_bids(
         # Index from scratch (slow)
         else:
             indexer = BIDSLayoutIndexer(
-                validate=validate, index_metadata=index_metadata
+                validate=validate, index_metadata=index_metadata, ignore=ignore
             )
             if logger:
                 logger.info(f"Indexing BIDS directory: {bids_dir}")
@@ -51,21 +53,22 @@ def get_bids(
                 # Ignore user warning about not using BIDSLayoutIndexer
                 with warnings.catch_warnings():
                     warnings.filterwarnings("ignore", category=UserWarning)
-                    return BIDSLayout(
+                    layout = BIDSLayout(
                         bids_dir,
                         database_path=database_path,
                         derivatives=fmriprep_dir,
                         reset_database=refresh,
-                        validate=validate,
-                        index_metadata=index_metadata,
+                        indexer=indexer
                     )
             else:
-                return BIDSLayout(
+                layout = BIDSLayout(
                     bids_dir,
-                    indexer=indexer,
                     database_path=database_path,
                     reset_database=refresh,
+                    indexer=indexer
                 )
+            return layout
+
     except FileNotFoundError as fne:
         if logger:
             logger.error(fne)
