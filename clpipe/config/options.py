@@ -337,7 +337,7 @@ class ScrubTimepoints(Option):
     scrub_columns: List[ScrubColumn] = field(
         default_factory=lambda: [
             ScrubColumn(target_variable="cosine*", threshold=100.0, scrub_ahead=0, scrub_behind=0, scrub_contiguous=0),
-            ScrubColumn(target_variable="framewise_displacement", threshold=0.2, scrub_ahead=0, scrub_behind=0, scrub_contiguous=0)
+            ScrubColumn(target_variable="framewise_displacement", threshold=0.9, scrub_ahead=0, scrub_behind=0, scrub_contiguous=0)
             ]
         )
     """A list of columns to be scrubbed."""
