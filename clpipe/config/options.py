@@ -351,10 +351,6 @@ class ScrubTimepoints(Option):
         except StopIteration:
             raise StopIteration
 
-
-
-
-
 @dataclass
 class Resample(Option):
     """Resample your image to a new space."""
@@ -392,7 +388,7 @@ class ProcessingStepOptions(Option):
     spatial_smoothing: SpatialSmoothing = field(default_factory=SpatialSmoothing, metadata={"required": True})
     aroma_regression: AROMARegression = field(default_factory=AROMARegression, metadata={"required": True})
     scrub_timepoints: ScrubTimepoints = field(default_factory=ScrubTimepoints, metadata={"required": True})
-    resample: Resample = field(default_factory=Resample, metadata={"required": True})
+    resample: Resample = field(default_factory=Resample, metadata={"required": False, "load_only": True})
     confound_regression: ConfoundRegression= field(default_factory=ConfoundRegression, metadata={"required": True})
     trim_timepoints: TrimTimepoints = field(default_factory=TrimTimepoints, metadata={"required": True})
 
@@ -855,7 +851,6 @@ KEY_MAP = {
     "fwhm": "FWHM",
     "aroma_regression": "AROMARegression",
     "scrub_timepoints": "ScrubTimepoints",
-    "resample": "Resample",
     "reference_image": "ReferenceImage",
     "trim_timepoints": "TrimTimepoints",
     "from_end": "FromEnd",
