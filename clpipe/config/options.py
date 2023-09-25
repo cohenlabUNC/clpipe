@@ -665,9 +665,9 @@ class ProjectOptions(Option):
                 postprocessing_options={
                     "processing_steps": [
                         "SpatialSmoothing",
-                        "IntensityNormalization",
                         "AROMARegression",
                         "TemporalFiltering",
+                        "IntensityNormalization"
                     ]
                 }
             ),
@@ -676,10 +676,10 @@ class ProjectOptions(Option):
                 postprocessing_options={
                     "processing_steps": [
                         "SpatialSmoothing",
-                        "IntensityNormalization",
                         "AROMARegression",
-                        "ConfoundRegression",
                         "TemporalFiltering",
+                        "IntensityNormalization",
+                        "ConfoundRegression",
                     ],
                     "confound_options": {
                         "motion_outliers": {

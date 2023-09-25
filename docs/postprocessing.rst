@@ -57,8 +57,7 @@ Step Options section for more information about configuring this section.
 		"ProcessingSteps": [
 			"SpatialSmoothing",
 			"TemporalFiltering",
-			"IntensityNormalization",
-			"ApplyMask"
+			"IntensityNormalization"
 		],
 		"ProcessingStepOptions": {
 			"TemporalFiltering": {
@@ -401,9 +400,9 @@ specifies a filtering high pass by overriding the default value of -1 with
 			"postprocessing_options": {
 				"processing_steps": [
 					"SpatialSmoothing",
-					"IntensityNormalization",
 					"AROMARegression",
-					"TemporalFiltering"
+					"TemporalFiltering",
+					"IntensityNormalization"
 				]
 			}
 		},
@@ -412,10 +411,10 @@ specifies a filtering high pass by overriding the default value of -1 with
 			"postprocessing_options": {
 				"processing_steps": [
 					"SpatialSmoothing",
-					"IntensityNormalization",
 					"AROMARegression",
-					"ConfoundRegression",
 					"TemporalFiltering"
+					"IntensityNormalization",
+					"ConfoundRegression",
 				],
 				"confound_options": {
 					"motion_outliers": {
