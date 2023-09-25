@@ -684,7 +684,7 @@ def update_config_cli(config_file, backup):
     from .config.options import update_config_file
     
     if not backup:
-        if click.confirm("Previous config file will be OVERWRITTEN. Would you like to back up your config file before updating?"):
+        if click.confirm("Would you like to back up your config file before updating?"):
             backup = True
     update_config_file(config_file, backup)
     
