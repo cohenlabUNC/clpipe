@@ -19,7 +19,7 @@ load("freesurfer/6.0.0")
 load("afni/20.3.00")
 load("r/4.2.1")
 load("dcm2niix/1.0.20211006")
-load("flywheel/16.4.0")
+load("flywheel/16.19.0")
 
 -- setup the various Python environment variables
 local root = "/proj/hng/software/venvs/clpipe/clpipe-{{ clpipe_version }}"
