@@ -1,11 +1,11 @@
 PACKAGE_NAME = 'clpipe'
-VERSION = '1.8.1'
+VERSION = '1.9.0.3'
 
 DESCRIPTION = 'clpipe: MRI processing pipeline for high performance clusters'
 REPO_URL = 'https://github.com/cohenlabUNC/clpipe'
 AUTHORS = (
       'Author/Maintainer: Teague Henry, Maintainer: Will Asciutto, '
-      'Contributor: Bhvaith Manapoty, Contributor: Deepak Melwani'
+      'Contributor: Bhvaith Manapoty, Contributor: Yuvraj Jain, Contributor: Deepak Melwani'
 )
 AUTHOR_EMAIL = 'ycp6wm@virginia.edu'
 LICENSE = 'MIT'
@@ -17,28 +17,27 @@ PYTHON_REQUIRES = f'>={PYTHON_VERSION}'
 
 # List of all dependency packages, to be automatically installed alongside clpipe
 INSTALL_REQUIRES = [
-      'jsonschema',
-      'click',
-      'nipy',
+      'jsonschema==4.17.3',
+      'click==8.1.3',
+      'nipy==0.5.0',
       'numpy>=1.18.5',
-      'pandas',
+      'pandas==1.3.5',
       'nibabel>=3',
       'scipy==1.2.2',
-      'sphinx_rtd_theme',
-      'psutil',
-      'parse',
-      'nilearn',
-      'dcm2bids',
-      'nipype',
+      'sphinx_rtd_theme==1.2.0',
+      'psutil==5.9.5',
+      'parse==1.19.0',
+      'nilearn==0.9.0',
+      'dcm2bids==2.1.9',
+      'nipype==1.8.6',
       'pybids>=0.14.0',
-      'templateflow',
-      'deepdiff',
+      'templateflow==23.0.0',
       "pydantic==1.10.7",
-      "matplotlib",
-      "heudiconv>=0.10.0",
-      "tqdm",
-      "marshmallow-dataclass",
-      "pyyaml"
+      "matplotlib==3.5.3",
+      "heudiconv==0.12.2",
+      "tqdm==4.65.0",
+      "marshmallow-dataclass==8.5.14",
+      "PyYAML==6.0"
 ],
 
 PACKAGE_DATA = {'clpipe': ['R_scripts/*.R']}
@@ -55,24 +54,21 @@ ENTRY_POINTS = '''
       fmriprep_process=clpipe.cli:fmriprep_process_cli
       fmri_postprocess=clpipe.cli:fmri_postprocess_cli
       fmri_postprocess2=clpipe.cli:fmri_postprocess2_cli
-      postprocess_subject=clpipe.cli:postprocess_subject_cli
       postprocess_image=clpipe.cli:postprocess_image_cli
-      glm_setup=clpipe.cli:glm_setup_cli
       glm_l1_preparefsf=clpipe.cli:glm_l1_preparefsf_cli
       glm_l1_launch=clpipe.cli:glm_l1_launch_cli
       glm_l2_preparefsf=clpipe.cli:glm_l2_preparefsf_cli
       glm_l2_launch=clpipe.cli:glm_l2_launch_cli
       fsl_onset_extract=clpipe.cli:fsl_onset_extract_cli
-      fmri_process_check=clpipe.fmri_process_check:fmri_process_check
+      fmri_process_check=clpipe.cli:fmriprep_process_cli
       get_reports=clpipe.cli:get_fmriprep_reports_cli
-      get_config_file=clpipe.grab_config_file:get_config_file
-      get_glm_config_file=clpipe.grab_config_file:get_glm_config_file
+      get_config_file=clpipe.cli:get_config_cli
+      get_glm_config_file=clpipe.cli:get_glm_config_cli
       fmri_roi_extraction=clpipe.cli:fmri_roi_extraction_cli
       test_batch_setup=clpipe.test_batch_setup:test_batch_setup
-      susan_smoothing = clpipe.susan_smoothing:susan_smoothing
       get_available_atlases=clpipe.cli:get_available_atlases_cli
-      update_config_file=clpipe.config_json_parser:update_config_file
-      templateflow_setup=clpipe.template_flow:templateflow_setup
+      update_config_file=clpipe.cli:update_config_cli
+      templateflow_setup=clpipe.cli:templateflow_setup_cli
       test_func=clpipe.utils:test_func
       fmap_cleanup=clpipe.fmap_cleanup:fmap_cleanup
       reho_extract=clpipe.reho_extract:reho_extract

@@ -3,7 +3,6 @@ import sys
 from pathlib import Path
 
 from .config.glm import *
-from .config_json_parser import GLMConfigParser, ClpipeConfigParser
 from .batch_manager import BatchManager, Job, DEFAULT_BATCH_CONFIG_PATH
 from .utils import get_logger
 
@@ -26,27 +25,9 @@ DEPRECATION_MSG = "Using deprecated GLM setup file."
 def glm_launch(glm_config_file: str=None, level: int=L1,
                           model: str=None, test_one: bool=False, 
                           submit: bool=False, debug: bool=False):
-    glm_config_parser = GLMConfigParser(glm_config_file)
-    glm_config = glm_config_parser.config
-
-    warn_deprecated = False
-    try:
-        # These working indicates the user has a glm_config file from < v1.7.4
-        # In this case, use the GLMSetupOptions block as root dict
-        # TODO: when we get centralized config classes, this can be handled there
-        parent_config = glm_config['GLMSetupOptions']['ParentClpipeConfig']
-        warn_deprecated = True
-    except KeyError:
-        parent_config = glm_config["ParentClpipeConfig"]
-
-    config = ClpipeConfigParser()
-    config.config_updater(parent_config)
-
-    project_dir = config.config["ProjectDirectory"]
-    logger = get_logger(STEP_NAME, debug=debug, log_dir=os.path.join(project_dir, "logs"))
-
-    if warn_deprecated:
-        logger.warn(DEPRECATION_MSG)
+    glm_config = GLMOptions(glm_config_file)
+    
+    logger = get_logger(STEP_NAME, debug=debug, log_dir=glm_config.parent_options.get_logs_dir())    
 
     if level in VALID_L1:
         level = "L1"
@@ -60,7 +41,7 @@ def glm_launch(glm_config_file: str=None, level: int=L1,
 
     logger.info(f"Setting up {level} .fsf launch using model: {model}")
 
-    block = [x for x in glm_config[setup] \
+    block = [x for x in glm_config.config[setup] \
             if x['ModelName'] == str(model)]
     if len(block) is not 1:
         logger.error("Model not found, or multiple entries found.")

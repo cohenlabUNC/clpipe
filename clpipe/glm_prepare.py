@@ -17,38 +17,33 @@ import shutil
 from pathlib import Path
 
 from .config.glm import *
-from .config_json_parser import GLMConfigParser, ClpipeConfigParser
 from .utils import get_logger
 from .errors import *
 
 STEP_NAME = "prepare"
 APPLY_MUMFORD_STEP_NAME = "apply_mumford"
 DEPRECATION_MSG = "WARNING: Using deprecated GLM setup file."
+L2_SUBLIST_CSV_FILE_NAME = "l2_sublist.csv"
+L2_SUBLIST_CSV_PATH = f'data/{L2_SUBLIST_CSV_FILE_NAME}'
 
 def glm_prepare(glm_config_file: str=None, level: int=L1,
                 model: str=None, debug: bool=False):
-    glm_config_parser = GLMConfigParser(glm_config_file)
-    glm_config = glm_config_parser.config
+    glm_config = GLMOptions(glm_config_file)
+    setup_dirs(glm_config)
 
     warn_deprecated = False
     try:
         # These working indicates the user has a glm_config file from < v1.7.4
         # In this case, use the GLMSetupOptions block as root dict
         # TODO: when we get centralized config classes, this can be handled there
-        task_name = glm_config['GLMSetupOptions']['TaskName']
-        reference_image = glm_config['GLMSetupOptions']['ReferenceImage']
-        parent_config = glm_config['GLMSetupOptions']['ParentClpipeConfig']
+        task_name = glm_config.config['GLMSetupOptions']['TaskName']
+        reference_image = glm_config.config['GLMSetupOptions']['ReferenceImage']
         warn_deprecated = True
     except KeyError:
-        task_name = glm_config['TaskName']
-        parent_config = glm_config["ParentClpipeConfig"]
-        reference_image = glm_config['ReferenceImage']
+        task_name = glm_config.config['TaskName']
+        reference_image = glm_config.config['ReferenceImage']
 
-    config = ClpipeConfigParser()
-    config.config_updater(parent_config)
-
-    project_dir = config.config["ProjectDirectory"]
-    logger = get_logger(STEP_NAME, debug=debug, log_dir=os.path.join(project_dir, "logs"))
+    logger = get_logger(STEP_NAME, debug=debug, log_dir=glm_config.parent_options.get_logs_dir())
 
     if warn_deprecated:
         logger.warn(DEPRECATION_MSG)
@@ -66,7 +61,7 @@ def glm_prepare(glm_config_file: str=None, level: int=L1,
     logger.info(f"Preparing .fsfs for {level} model: {model}")
     logger.info(f"Targeting task: {task_name}")
 
-    block = [x for x in glm_config[setup] \
+    block = [x for x in glm_config.config[setup] \
             if x['ModelName'] == str(model)]
     if len(block) is not 1:
         raise ValueError("Model not found, or multiple entries found.")
@@ -278,7 +273,7 @@ def glm_apply_mumford_workaround(glm_config_file=None,
 
     logger = get_logger(APPLY_MUMFORD_STEP_NAME, debug=debug)
     if glm_config_file:
-        glm_config = GLMConfigParser(glm_config_file).config
+        glm_config = GLMOptions(glm_config_file).config
         l1_feat_folders_path = glm_config["Level1Setups"]["OutputDir"]
 
     logger.info(f"Applying Mumford workaround to: {l1_feat_folders_path}")
@@ -343,4 +338,21 @@ def _apply_mumford_workaround(l1_feat_folder, logger, remove_reg_standard=False)
         print(e, "- skipping")
 
 
+def setup_dirs(glm_config: GLMOptions):
+    """Populates the GLM config file with resource paths based on project root dir."""
+    from pkg_resources import resource_filename
+    import shutil
 
+    # Copy over an example L2 csv
+    l2_csv = os.path.join(glm_config.parent_options.project_directory, L2_SUBLIST_CSV_FILE_NAME)
+    if not os.path.exists(l2_csv):
+        shutil.copyfile(resource_filename('clpipe', L2_SUBLIST_CSV_PATH), l2_csv)
+
+    # Create default directories
+    os.makedirs(glm_config.config['Level1Setups'][0]['FSFDir'], exist_ok=True)
+    os.makedirs(glm_config.config['Level1Setups'][0]['EVDirectory'], exist_ok=True)
+    os.makedirs(glm_config.config['Level1Setups'][0]['OutputDir'], exist_ok=True)
+    os.makedirs(glm_config.config['Level2Setups'][0]['FSFDir'], exist_ok=True)
+    os.makedirs(glm_config.config['Level2Setups'][0]['OutputDir'], exist_ok=True)
+    os.makedirs(glm_config.config['Level1Setups'][0]['LogDir'], exist_ok=True)
+    os.makedirs(glm_config.config['Level2Setups'][0]['LogDir'], exist_ok=True)

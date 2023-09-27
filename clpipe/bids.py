@@ -8,12 +8,7 @@ import json
 import warnings
 import os
 
-# This hides a pybids future warning
-with warnings.catch_warnings():
-    warnings.filterwarnings("ignore", category=FutureWarning)
-    from bids import BIDSLayout, BIDSLayoutIndexer, config as bids_config
-    from bids.layout import BIDSFile
-
+from bids import BIDSLayout, BIDSLayoutIndexer
 
 def get_bids(bids_dir: os.PathLike, validate=False, 
               database_path: os.PathLike=None, fmriprep_dir: os.PathLike=None, 
@@ -36,14 +31,18 @@ def get_bids(bids_dir: os.PathLike, validate=False,
                 logger.info("This can take a few minutes...")
 
             if fmriprep_dir:
-                return BIDSLayout(
-                    bids_dir, validate=validate, indexer=indexer, 
-                    database_path=database_path, derivatives=fmriprep_dir, 
-                    reset_database=refresh)
+                # When setting derivative dir in this version of pybids, don't use
+                #   the BIDSLayoutIndexer, pass through Layout instead - indexer
+                #   ignores derivatives due to bug.
+                # Ignore user warning about not using BIDSLayoutIndexer
+                with warnings.catch_warnings():
+                    warnings.filterwarnings("ignore", category=UserWarning)
+                    return BIDSLayout(
+                        bids_dir, database_path=database_path, derivatives=fmriprep_dir, 
+                        reset_database=refresh, validate=validate, index_metadata=index_metadata)
             else:
                 return BIDSLayout(
-                    bids_dir, validate=validate,
-                    indexer=indexer, database_path=database_path,
+                    bids_dir, indexer=indexer, database_path=database_path,
                     reset_database=refresh)
     except FileNotFoundError as fne:
         if logger:
@@ -104,16 +103,14 @@ def get_images_to_process(subject_id, image_space, bids, logger,
             f"No preproc BOLD image for subject {subject_id} found.")
 
 
-def validate_subject_exists(bids, subject_id, logger):
+def validate_subject_exists(bids, subject_id):
     # Open the bids dir and validate that it contains the subject
-    logger.info(f"Checking for requested subject in fmriprep output")
     if len(bids.get(subject=subject_id, scope="derivatives")) == 0:
         snfe = (
             f"Subject {subject_id} was not found in fmriprep output. "
             "You may need to add the option '-refresh_index' if this "
             "is a new subject."
         )
-        logger.error(snfe)
         raise SubjectNotFoundError(snfe)
 
 

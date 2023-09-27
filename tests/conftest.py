@@ -12,9 +12,11 @@ from nilearn.image import load_img, index_img
 sys.path.append("../clpipe")
 from clpipe.project_setup import project_setup
 from clpipe.config_json_parser import ClpipeConfigParser, GLMConfigParser
+from clpipe.config.options import convert_project_options
 import utils
 
 PROJECT_TITLE = "test_project"
+LEGACY_CONFIG_PATH = "tests/data/legacy_config.json"
 
 #################
 # Option Config #
@@ -262,7 +264,13 @@ def source_data(tmp_path_factory):
 # Project Dir Fixtures #
 ########################
 
+@pytest.fixture(scope="function")
+def scatch_dir(tmp_path_factory):
+    """Fixture which provides a temporary folder."""
 
+    scratch_dir = tmp_path_factory.mktemp("scratch")
+    return scratch_dir
+     
 @pytest.fixture(scope="session")
 def clpipe_dir(tmp_path_factory):
     """Fixture which provides a temporary clpipe project folder."""
@@ -296,7 +304,7 @@ def clpipe_bids_dir(tmp_path_factory, sample_raw_image):
 
 
 @pytest.fixture(scope="session")
-def clpipe_postproc2_dir(
+def clpipe_postproc_dir(
     tmp_path_factory,
     sample_raw_image,
     sample_raw_image_mask,
@@ -305,10 +313,10 @@ def clpipe_postproc2_dir(
     sample_aroma_noise_ics,
     sample_fmriprep_dataset_description,
 ) -> Path:
-    """Fixture which adds postproc2 subject folders and mock
-    postproc2 output data to data_postproc2 directory of clpipe project.
+    """Fixture which adds postproc subject folders and mock
+    postproc output data to data_postproc directory of clpipe project.
     """
-    project_dir = tmp_path_factory.mktemp("clpipe_bids_fmriprep_postproc2_dir")
+    project_dir = tmp_path_factory.mktemp("clpipe_bids_fmriprep_postproc_dir")
     project_setup(project_title=PROJECT_TITLE, project_dir=str(project_dir))
 
     utils.populate_with_BIDS(project_dir, sample_raw_image)
@@ -322,7 +330,7 @@ def clpipe_postproc2_dir(
         sample_fmriprep_dataset_description,
         legacy=False,
     )
-    utils.populate_with_postproc2(
+    utils.populate_with_postproc(
         project_dir, sample_raw_image, sample_confounds_timeseries
     )
 
@@ -330,7 +338,7 @@ def clpipe_postproc2_dir(
 
 
 @pytest.fixture(scope="session")
-def clpipe_postproc2_legacy_fmriprep_dir(
+def clpipe_postproc_legacy_fmriprep_dir(
     tmp_path_factory,
     sample_raw_image,
     sample_raw_image_mask,
@@ -339,11 +347,11 @@ def clpipe_postproc2_legacy_fmriprep_dir(
     sample_aroma_noise_ics,
     sample_fmriprep_dataset_description,
 ) -> Path:
-    """Same as clpipe_postproc2_dir but uses legacy fmriprep.
+    """Same as clpipe_postproc_dir but uses legacy fmriprep.
     Ideally that function would be parameterized with legacy=True/False,
         but have not figured out how to do this with fixtures yet #TODO
     """
-    project_dir = tmp_path_factory.mktemp("clpipe_bids_fmriprep_postproc2_dir")
+    project_dir = tmp_path_factory.mktemp("clpipe_bids_fmriprep_postproc_dir")
     project_setup(project_title=PROJECT_TITLE, project_dir=str(project_dir))
 
     utils.populate_with_BIDS(project_dir, sample_raw_image)
@@ -357,7 +365,7 @@ def clpipe_postproc2_legacy_fmriprep_dir(
         sample_fmriprep_dataset_description,
         legacy=True,
     )
-    utils.populate_with_postproc2(
+    utils.populate_with_postproc(
         project_dir, sample_raw_image, sample_confounds_timeseries
     )
 
@@ -395,6 +403,25 @@ def clpipe_fmriprep_dir(
 
     return project_dir
 
+@pytest.fixture(scope="session")
+def clpipe_postprocess_subjects(clpipe_fmriprep_dir: Path):
+    """Runs postprocess_subjects on fmriprep fixtures,
+    generating the first step of postprocess outputs, including a run_config.json."""
+
+    from clpipe.config.options import ProjectOptions
+    from clpipe.postprocess import postprocess_subjects
+
+    config = clpipe_fmriprep_dir / "clpipe_config.json"
+
+    options = ProjectOptions.load(config)
+    options.postprocessing.working_directory = clpipe_fmriprep_dir / "data_working"
+
+    postprocess_subjects(
+        config_file=options
+    )
+
+    return clpipe_fmriprep_dir
+
 
 # TODO: seperate AROMA into its own type of fmriprep dir
 @pytest.fixture(scope="session")
@@ -428,40 +455,6 @@ def clpipe_legacy_fmriprep_dir(
     return project_dir
 
 
-@pytest.fixture(scope="session")
-def clpipe_dir_old_glm_config(
-    tmp_path_factory,
-    sample_raw_image,
-    sample_raw_image_mask,
-    sample_confounds_timeseries,
-    sample_melodic_mixing,
-    sample_aroma_noise_ics,
-    sample_fmriprep_dataset_description,
-):
-    """Fixture which provides a project using the old glm config."""
-
-    project_dir = tmp_path_factory.mktemp("clpipe_old_glm_dir")
-
-    # Monkeypatch setup_glm to use the old method
-    ClpipeConfigParser.setup_glm = utils.old_setup_glm
-
-    GLMConfigParser.__init__ = utils.old_GLMConfigParser_init
-
-    project_setup(project_title=PROJECT_TITLE, project_dir=project_dir)
-    utils.populate_with_BIDS(project_dir, sample_raw_image)
-    utils.populate_with_fmriprep(
-        project_dir,
-        sample_raw_image,
-        sample_raw_image_mask,
-        sample_confounds_timeseries,
-        sample_melodic_mixing,
-        sample_aroma_noise_ics,
-        sample_fmriprep_dataset_description,
-        legacy=True,
-    )
-
-    return project_dir
-
 
 ##################################
 # Project Configuration Fixtures #
@@ -484,15 +477,42 @@ def clpipe_config(config_file) -> dict:
 def clpipe_config_default() -> dict:
     return ClpipeConfigParser().config
 
+@pytest.fixture(scope="module")
+def legacy_config_path() -> Path:
+    return Path(LEGACY_CONFIG_PATH)
+
+@pytest.fixture(scope="function")
+def legacy_config_dir(tmp_path_factory) -> Path:
+    """A dir simply for holding a legacy config file for testing."""
+    temp_dir = tmp_path_factory.mktemp("legacy_config_dir")
+
+    temp_config_file = temp_dir / "clpipe_config.json"
+
+    import shutil
+    shutil.copy(LEGACY_CONFIG_PATH, temp_config_file)
+
+    return temp_dir
+
+@pytest.fixture(scope="session")
+def project_config(clpipe_config):
+    """Provide the project config as populated by default config file."""
+
+    return convert_project_options(clpipe_config)
+
+@pytest.fixture(scope="session")
+def postproc_config(project_config):
+    """Provide the project config as populated by default config file."""
+    return project_config.postprocess_config
+
 
 @pytest.fixture(scope="module")
 def postprocessing_config(clpipe_config_default):
-    return clpipe_config_default["PostProcessingOptions2"]
+    return clpipe_config_default["PostProcessingOptions"]
 
 
 @pytest.fixture(scope="session")
 def config_file_confounds(clpipe_config_default, config_file):
-    clpipe_config_default["PostProcessingOptions2"]["ConfoundOptions"]["Include"] = True
+    clpipe_config_default["PostProcessingOptions"]["ConfoundOptions"]["Include"] = True
 
     with open(config_file, "w") as f:
         json.dump(clpipe_config_default, f)
@@ -502,7 +522,7 @@ def config_file_confounds(clpipe_config_default, config_file):
 
 @pytest.fixture(scope="session")
 def config_file_aroma(clpipe_config_default, config_file):
-    clpipe_config_default["PostProcessingOptions2"]["ProcessingSteps"] = [
+    clpipe_config_default["PostProcessingOptions"]["ProcessingSteps"] = [
         "AROMARegression",
         "SpatialSmoothing",
         "IntensityNormalization",
@@ -516,8 +536,8 @@ def config_file_aroma(clpipe_config_default, config_file):
 
 @pytest.fixture(scope="session")
 def config_file_aroma_confounds(clpipe_config_default, config_file):
-    clpipe_config_default["PostProcessingOptions2"]["ConfoundOptions"]["Include"] = True
-    clpipe_config_default["PostProcessingOptions2"]["ProcessingSteps"] = [
+    clpipe_config_default["PostProcessingOptions"]["ConfoundOptions"]["Include"] = True
+    clpipe_config_default["PostProcessingOptions"]["ProcessingSteps"] = [
         "AROMARegression",
         "TemporalFiltering",
     ]
@@ -536,16 +556,16 @@ def config_file_fmriprep(clpipe_fmriprep_dir: Path):
 
 
 @pytest.fixture(scope="module")
-def config_file_postproc2(clpipe_postproc2_dir: Path):
-    """Return config file from the test postproc2 directory."""
+def config_file_postproc(clpipe_postproc_dir: Path):
+    """Return config file from the test postproc directory."""
 
-    return clpipe_postproc2_dir / "clpipe_config.json"
+    return clpipe_postproc_dir / "clpipe_config.json"
 
 @pytest.fixture(scope="module")
-def config_file_postproc2_legacy_fmriprep(clpipe_postproc2_legacy_fmriprep_dir: Path):
-    """Same as config_file_postproc2 but with legacy fmriprep dir."""
+def config_file_postproc_legacy_fmriprep(clpipe_postproc_legacy_fmriprep_dir: Path):
+    """Same as config_file_postproc but with legacy fmriprep dir."""
 
-    return clpipe_postproc2_legacy_fmriprep_dir / "clpipe_config.json"
+    return clpipe_postproc_legacy_fmriprep_dir / "clpipe_config.json"
 
 
 @pytest.fixture(scope="session")

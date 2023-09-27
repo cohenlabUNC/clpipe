@@ -1,6 +1,6 @@
 import pytest
 
-from clpipe.postprocutils.workflows import *
+from clpipe.postprocutils.image_workflows import *
 from clpipe.postprocutils.confounds_workflows import build_confounds_processing_workflow
 
 
@@ -157,52 +157,57 @@ def test_fslmath_temporal_filter_wf(
 
     helpers.plot_timeseries(filtered_path, sample_raw_image)
 
-    
-
     if plot_img:
         helpers.plot_4D_img_slice(filtered_path, "filtered.png")
 
     assert True
+
 
 class TestWorkflows:
     highlight_ranges = None
 
     def teardown(self):
         """All workflow tests share these steps once their workflow is setup."""
-        self.wf.write_graph(dotfilename = self.test_path / "wf_diagram", graph2use="orig")
+        self.wf.write_graph(dotfilename=self.test_path / "wf_diagram", graph2use="orig")
         self.wf.run()
-        
 
         self.helpers.plot_timeseries(
-            self.export_path, self.sample_raw_image, 
+            self.export_path,
+            self.sample_raw_image,
             highlight_ranges=self.highlight_ranges,
-            num_figs=1
-            )
+            num_figs=1,
+        )
 
         if self.plot_img:
             self.helpers.plot_4D_img_slice(self.export_path, "sample_processed.png")
 
     def test_3dtproject_temporal_filter_wf(self):
         """Test the basic case of running the workflow."""
-        
+
         self.wf = build_3dtproject_temporal_filter(
-            bpHigh= .9, bpLow= 0.005, tr=2,
+            bpHigh=0.9,
+            bpLow=0.005,
+            tr=2,
             import_file=self.sample_raw_image,
             export_file=self.export_path,
-            base_dir=self.test_path, crashdump_dir=self.test_path,
-            mask_file=self.sample_raw_image_mask
+            base_dir=self.test_path,
+            crashdump_dir=self.test_path,
+            mask_file=self.sample_raw_image_mask,
         )
-        
+
     def test_3dtproject_temporal_filter_wf_scrubs(self):
         """Test the basic case of running the workflow."""
 
         self.wf = build_3dtproject_temporal_filter(
-            bpHigh= .9, bpLow= 0.005, tr=2,
+            bpHigh=0.9,
+            bpLow=0.005,
+            tr=2,
             scrub_targets=True,
             import_file=self.sample_raw_image,
             export_file=self.export_path,
-            base_dir=self.test_path, crashdump_dir=self.test_path,
-            mask_file=self.sample_raw_image_mask
+            base_dir=self.test_path,
+            crashdump_dir=self.test_path,
+            mask_file=self.sample_raw_image_mask,
         )
         scrub_targets = [1] * 100
         scrub_targets[46:52] = [0] * 6
@@ -217,18 +222,29 @@ class TestWorkflows:
         self.export_path = self.test_path / "sample_processed.nii.gz"
 
     @pytest.fixture(autouse=True)
-    def _request_fixtures(self, sample_raw_image_longer, sample_raw_image_mask, helpers, plot_img):
+    def _request_fixtures(
+        self, sample_raw_image_longer, sample_raw_image_mask, helpers, plot_img
+    ):
         """Import fixtures from conftest to be used by the class. Done here instead
-            of in a 'setup' function because fixtures can only be requested by tests
-            or other fixtures."""
+        of in a 'setup' function because fixtures can only be requested by tests
+        or other fixtures."""
         self.sample_raw_image = sample_raw_image_longer
         self.sample_raw_image_mask = sample_raw_image_mask
         self.helpers = helpers
         self.plot_img = plot_img
 
 
-@pytest.mark.skip(reason="Needs to be fixed but not prioritized")    
-def test_confound_regression_fsl_glm_wf(artifact_dir, sample_raw_image, sample_postprocessed_confounds, sample_raw_image_mask, plot_img, write_graph, request, helpers):
+@pytest.mark.skip(reason="Needs to be fixed but not prioritized")
+def test_confound_regression_fsl_glm_wf(
+    artifact_dir,
+    sample_raw_image,
+    sample_postprocessed_confounds,
+    sample_raw_image_mask,
+    plot_img,
+    write_graph,
+    request,
+    helpers,
+):
     test_path = helpers.create_test_dir(artifact_dir, request.node.name)
 
     regressed_path = test_path / "sample_raw_regressed.nii"
@@ -316,6 +332,7 @@ def test_apply_aroma_fsl_regfilt_wf(
 
     if plot_img:
         helpers.plot_4D_img_slice(regressed_path, "aromaaplied.png")
+
 
 @pytest.mark.skip(reason="Need to provide reference image")
 def test_resample_wf(
@@ -422,6 +439,7 @@ def test_scrubbing_wf_confounds(
     )
     wf.run()
 
+
 @pytest.mark.skip(reason="Need to wrap tsv as image.")
 def test_scrubbing_wf_aroma(artifact_dir, sample_melodic_mixing, request, helpers):
     """Test that a list of arbitrary timepoints can be scrubbed from an
@@ -440,71 +458,3 @@ def test_scrubbing_wf_aroma(artifact_dir, sample_melodic_mixing, request, helper
         crashdump_dir=test_path,
     )
     wf.run()
-
-
-def test_build_postprocessing_workflow_scrub(
-    artifact_dir,
-    postprocessing_config,
-    request,
-    sample_raw_image,
-    sample_raw_image_mask,
-    sample_confounds_timeseries,
-    sample_postprocessed_confounds,
-    plot_img,
-    helpers,
-):
-    postprocessing_config["ProcessingSteps"] = ["TemporalFiltering", "ScrubTimepoints"]
-    postprocessing_config["ConfoundOptions"]["Columns"] = [
-        "framewise_displacement",
-        "csf",
-        "csf_derivative1",
-        "white_matter",
-        "white_matter_derivative1",
-    ]
-    postprocessing_config["ProcessingStepOptions"]["ScrubTimepoints"][
-        "Threshold"
-    ] = 0.13
-
-    test_path = helpers.create_test_dir(artifact_dir, request.node.name)
-    image_out_path = test_path / "postProcessed.nii.gz"
-    confound_out_path = test_path / "postProcessed.tsv"
-
-    image_wf = build_image_postprocessing_workflow(
-        postprocessing_config,
-        tr=2,
-        export_path=image_out_path,
-        mask_file=sample_raw_image_mask,
-        base_dir=test_path,
-        crashdump_dir=test_path,
-    )
-
-    confounds_wf = build_confounds_processing_workflow(
-        postprocessing_config,
-        export_file=confound_out_path,
-        tr=2,
-        base_dir=test_path,
-        crashdump_dir=test_path,
-    )
-
-    wf = build_postprocessing_workflow(
-        image_wf,
-        confounds_wf,
-        postprocessing_config=postprocessing_config,
-        confounds_file=sample_postprocessed_confounds,
-        base_dir=test_path,
-        crashdump_dir=test_path,
-    )
-
-    wf.inputs.inputnode.in_file = sample_raw_image
-    wf.inputs.inputnode.confounds_file = sample_confounds_timeseries
-
-    wf.write_graph(
-        dotfilename=test_path / "postProcessSubjectFlow", graph2use="colored"
-    )
-
-    wf.run()
-
-    helpers.plot_timeseries(image_out_path, sample_raw_image)
-
-    if plot_img:
-        helpers.plot_4D_img_slice(image_out_path, "postProcessed.png")

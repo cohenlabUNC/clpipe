@@ -78,9 +78,6 @@ FMRIPREP_OUTPUT_DIR_HELP = (
 
 # Postprocess help
 POSTPROCESS_COMMAND_NAME = "postprocess"
-
-# Postprocess2 help
-POSTPROCESS2_COMMAND_NAME = "postprocess2"
 FMRIPREP_DIR_HELP = (
     "Which fmriprep directory to process. "
     "If a configuration file is provided with a BIDS directory, " 
@@ -99,7 +96,6 @@ REFRESH_INDEX_HELP = \
 
 
 # GLM Help
-GLM_SETUP_COMMAND_NAME = "setup"
 L1_PREPARE_FSF_COMMAND_NAME = "l1_prepare_fsf"
 L2_PREPARE_FSF_COMMAND_NAME = "l2_prepare_fsf"
 APPLY_MUMFORD_COMMAND_NAME = "apply_mumford"

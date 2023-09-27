@@ -130,7 +130,6 @@ def project_paths() -> List[Path]:
     """
 
     data_BIDS = Path("data_BIDS")
-    data_postproc = Path("data_postproc")
     data_ROI_ts = Path("data_ROI_ts")
     logs = Path("logs")
 
@@ -150,9 +149,6 @@ def project_paths() -> List[Path]:
         data_BIDS / ".bidsignore",
         Path("data_fmriprep"),
         Path("data_onsets"),
-        data_postproc,
-        data_postproc / "betaseries_default",
-        data_postproc / "postproc_default",
         data_ROI_ts,
         data_ROI_ts / "postproc_default",
         Path("l1_feat_folders"),
@@ -160,16 +156,13 @@ def project_paths() -> List[Path]:
         Path("l2_fsfs"),
         Path("l2_gfeat_folders"),
         logs,
-        logs / "betaseries_logs",
         logs / "bids_validation_logs",
         logs / "DCM2BIDS_logs",
         logs / "FMRIprep_logs",
         logs / "glm_logs",
         logs / "glm_logs" / "L1_launch",
         logs / "glm_logs" / "L2_launch",
-        logs / "postproc_logs",
         logs / "ROI_extraction_logs",
-        logs / "SUSAN_logs",
         logs / "clpipe.log",
         Path("scripts"),
         Path("clpipe_config.json"),

@@ -142,7 +142,7 @@ def populate_with_fmriprep(
                 json.dump(sidecar_json, sidecar_file)
 
 
-def populate_with_postproc2(
+def populate_with_postproc(
     project_dir: Path,
     sample_raw_image,
     sample_confounds_timeseries,
@@ -154,11 +154,11 @@ def populate_with_postproc2(
     bold_suffix = "desc-postproc_bold.nii.gz"
     confounds_suffix = "desc-confounds_timeseries.tsv"
 
-    postproc2_dir = project_dir / "data_postproc2" / "default"
-    postproc2_dir.mkdir(parents=True, exist_ok=True)
+    postproc_dir = project_dir / "data_postproc" / "default"
+    postproc_dir.mkdir(parents=True, exist_ok=True)
 
     for sub_num in range(num_subjects):
-        subject_folder = postproc2_dir / f"sub-{sub_num}" / "func"
+        subject_folder = postproc_dir / f"sub-{sub_num}" / "func"
         subject_folder.mkdir(parents=True)
 
         for task in tasks:

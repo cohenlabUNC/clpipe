@@ -1,5 +1,46 @@
 # Change Log
 
+## 1.9.0 (Sep 15, 2023)
+
+### Enhancements
+
+- `postprocess` - postprocess2 is now named postprocess, replacing the original postprocessing functionality
+- `postprocess` - Wildcards can now be used in the `target_variables` of the scrub configuration to select multiple columns with similar names, such as non_steady_state_outliers*
+- `postprocess` - BIDS index now saves to the user's working directory
+- `postprocess` - Logs now saved in folders according to stream, like the output and working directories
+- `postprocess` - Distributor-level slurm jobs removed, simplifying job structure and removing the distributor log folder
+- `postprocess` - Individual images now get their own rolling log files
+- `postprocess` - Slurm output files are now saved to a separate `slurm_out` folder
+- `postprocess` - There are now a default processing streams setup and named specifically for the GLM and functional connectivity analyses
+- `glm` - GLM setup command now completely removed, in favor of using the GLM postprocessing stream
+- `documentation` - Expanded documentation for Postprocessing section
+- `documentation` - Sections reorganized and made more consistent with each other.
+- `project_setup` - Now prompts for name of project if not given.
+- `config update` - Converts config to new format and offers to backup old version
+
+
+### Bug Fixes
+- `postprocess` - Fixed an issue where postprocess took excessively long to index large datasets due to a bug in pybids
+- `postprocess` - Issue where streams did not properly update postprocessing config fixed
+- `documentation` - path to HNG modules directory corrected - missing the 's' at the end
+
+
+### Deprecations & Removals
+- `postprocess` - Removed original postprocessing command
+- `postprocess` - Removed original susan command; now a step of postprocess
+- `postprocess` - Disabled fmri-process-check report for now, pending rework
+- `postprocess` - The stream file "processing_description.json" has been moved to the stream working directory and is now called "run_config.json"
+
+### Dependencies
+- `convert2bids` - dcm2bids v2.1.9 now enforced to prevent update to v3, which uses a newer version of BIDS incompatible with fMRIPrep <= v23
+- `convert2bids` - heudiconv v12.2 now enforced to prevent update to v13, which for mysterious reasons does not work in our environment
+- `other` - all other top-level dependencies locked in for now to prevent breaking updates
+
+### Development
+- `configuration` - Dataclass-based configuration has been applied to all major clpipe commands
+- `configuration` - Configuration is now serialized/deserialized with Marshmallow, which allows both JSON and YAML file types to be used
+- `postprocess` - Global workflow now constructs image and confounds workflows on its own
+
 ## 1.8.1 (Jun 28, 2023)
 
 ### Enhancements

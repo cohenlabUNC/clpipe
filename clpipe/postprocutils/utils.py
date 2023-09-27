@@ -73,24 +73,21 @@ def get_scrub_vector(fdts, fd_thres=0.3, fd_behind=1, fd_ahead=1, fd_contig=3):
     return scrubVect
 
 
-def get_scrub_vector_node(
-    confounds_file,
-    scrub_target_variable: str,
-    scrub_threshold: float,
-    scrub_ahead: int,
-    scrub_behind: int,
-    scrub_contiguous: int,
-):
+def get_scrub_vector_node(confounds_file, scrub_configs):
     """Wrapper for call to get_scrub_vector, but includes extracting column"""
     import pandas as pd
     from clpipe.postprocutils.utils import get_scrub_vector
 
     # Get the column to be used for thresholding
     confounds_df = pd.read_csv(confounds_file, sep="\t")
-    target_timeseries = confounds_df[scrub_target_variable]
+    target_timeseries = confounds_df[scrub_configs["target_variable"]]
 
     scrub_vector = get_scrub_vector(
-        target_timeseries, scrub_threshold, scrub_behind, scrub_ahead, scrub_contiguous
+        target_timeseries,
+        scrub_configs["threshold"],
+        scrub_configs["scrub_behind"],
+        scrub_configs["scrub_ahead"],
+        scrub_configs["scrub_contiguous"],
     )
     return scrub_vector
 
@@ -236,7 +233,7 @@ def draw_graph(
     graph_style: str = DEFAULT_GRAPH_STYLE,
     logger: logging.Logger = None,
 ):
-    graph_image_path = out_dir / f"{graph_name}.dot"
+    graph_image_path = Path(out_dir) / f"{graph_name}.dot"
     if logger:
         logger.info(f"Drawing confounds workflow graph: {graph_image_path}")
 
@@ -319,15 +316,13 @@ def matrix_to_nii(matrix, orig_shape, affine):
 
     return out_image
 
+
 def expand_columns(tsv_file, column_names):
     import pandas as pd
     import fnmatch
 
     df = pd.read_csv(tsv_file, sep="\t")
     column_list = df.columns
-
-    # Change to file handle
-    # column_list = timeseries[0]
     expanded_columns = []
     for pattern in column_names:
         matching_columns = []
@@ -342,6 +337,33 @@ def expand_columns(tsv_file, column_names):
         expanded_columns.extend(matching_columns)
     return [*set(expanded_columns)]  # Removes duplicates from list
 
+
+def expand_scrub_dict(tsv_file, scrub_configs):
+    # Expand the dictionary using expand_columns function
+    from clpipe.postprocutils.utils import expand_columns
+
+    expanded_columns = []
+    for column in scrub_configs:
+        target_var = column["target_variable"]
+        if "*" in target_var:
+            expanded_vars = expand_columns(tsv_file, [target_var])
+            for exp_var in expanded_vars:
+                new_column = column.copy()
+                new_column["target_variable"] = exp_var
+                expanded_columns.append(new_column)
+        else:
+            expanded_columns.append(column)
+    return expanded_columns
+
+
+def logical_or_across_lists(list_of_lists):
+    import numpy as np
+
+    np_array = np.array(list_of_lists)
+    or_result = np.any(np_array, axis=0).astype(int).tolist()
+    return or_result
+
+
 def vector_to_txt(vector):
     """Convert an input vector to a txt file."""
     from pathlib import Path
@@ -354,3 +376,16 @@ def vector_to_txt(vector):
     f.close()
 
     return str(fname.resolve())
+
+def construct_motion_outliers(scrub_targets):
+    import pandas
+    import numpy as np
+
+    size = sum(scrub_targets)
+    mot_outliers = pandas.DataFrame(np.zeros((len(scrub_targets),size)))
+    counter = 0
+    for ind, i  in enumerate(scrub_targets):
+        if i == 1:
+            mot_outliers.iloc[ind, counter] = 1
+            counter += 1
+    return mot_outliers

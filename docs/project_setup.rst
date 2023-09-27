@@ -2,6 +2,10 @@
 Project Setup
 ========================
 
+*****************
+Overview
+*****************
+
 clpipe contains a convenience command for setting up the directories and configuration 
 files for a given neuroimaging project, in a way that makes it simple to 
 change configuration option.
@@ -39,6 +43,10 @@ This command will create the necessary directory structures, as well as create a
     |   |-- postproc_logs
     |   |-- ROI_extraction_logs
     |-- scripts
+
+*****************
+Command
+*****************
 
 .. click:: clpipe.cli:project_setup_cli
 	:prog: clpipe project_setup

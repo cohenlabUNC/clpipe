@@ -1,14 +1,13 @@
 from pathlib import Path
 from .batch_manager import BatchManager, Job
-from .config_json_parser import ClpipeConfigParser
+from .config.options import ProjectOptions
 import os
 import parse
 import glob
-import sys
 import click
 import logging
 
-from .utils import get_logger, add_file_handler
+from .utils import get_logger
 from .status import needs_processing, write_record
 
 # These imports are for the heudiconv converter
@@ -20,6 +19,8 @@ BASE_CMD = ("dcm2bids -d {subject_dicom_dir} -o {bids_dir} "
             "-p {subject} -c {conv_config_file}")
 HEUDICONV_BASE_CMD = '''heudiconv --files {subject_dicom_dir} -s {subject} '''\
         '''-f {heuristic} -o {output_directory} -b'''
+DEFAULT_CONV_CONFIG_PATH = "data/default_conv_config.json"
+
 
 
 def convert2bids(dicom_dir=None, dicom_dir_format=None, bids_dir=None, 
@@ -29,70 +30,44 @@ def convert2bids(dicom_dir=None, dicom_dir_format=None, bids_dir=None,
                  longitudinal=False, status_cache=None, submit=False, debug=False, 
                  dcm2bids=True, batch=False):
     
-    config_parser = ClpipeConfigParser()
-    config_parser.config_updater(config_file)
-    config = config_parser.config
+    config: ProjectOptions = ProjectOptions.load(config_file)
+    config.convert2bids.load_cli_args(
+        dicom_directory = dicom_dir,
+        dicom_format_string = dicom_dir_format,
+        conversion_config = conv_config_file,
+        bids_directory = bids_dir,
+        log_directory = log_dir
+    )
 
-    project_dir = config["ProjectDirectory"]
+    setup_dirs(config)
 
-    add_file_handler(os.path.join(project_dir, "logs"))
-    logger = get_logger(STEP_NAME, debug=debug)
+    logger = get_logger(STEP_NAME, debug=debug, log_dir=config.get_logs_dir())
 
-    dicom_dir = dicom_dir if dicom_dir else config['DICOMToBIDSOptions']['DICOMDirectory']
-    dicom_dir_format = dicom_dir_format if dicom_dir_format else config['DICOMToBIDSOptions']['DICOMFormatString']
-    bids_dir = bids_dir if bids_dir else config['DICOMToBIDSOptions']['BIDSDirectory']
-    conv_config_file = conv_config_file if conv_config_file else config['DICOMToBIDSOptions']['ConversionConfig']
-    log_dir = log_dir if log_dir else config['DICOMToBIDSOptions']['LogDirectory']
-
-    batch_config = config['BatchConfig']
-    mem_usage = config['DICOMToBIDSOptions']['MemUsage']
-    time_usage = config['DICOMToBIDSOptions']['TimeUsage']
-    n_threads = config['DICOMToBIDSOptions']['CoreUsage']
-
-    if not dicom_dir:
-        logger.error('DICOM directory not specified.')
-        sys.exit(1)
-    if not bids_dir:
-        logger.error('BIDS directory not specified.')
-        sys.exit(1)
-    if not dicom_dir_format:
-        logger.error('Format string not specified.')
-        sys.exit(1)
-    if not log_dir:
-        logger.error('Log directory not specified.')
-        sys.exit(1)
-    if not conv_config_file:
-        logger.error("Conversion config file not specified")
-        sys.exit(1)
-
-    batch_manager = BatchManager(batch_config, log_dir, debug=debug)
+    batch_manager = BatchManager(config.batch_config_path, config.convert2bids.log_directory, debug=debug)
     batch_manager.create_submission_head()
-    batch_manager.update_mem_usage(mem_usage)
-    batch_manager.update_time(time_usage)
-    batch_manager.update_nthreads(n_threads)
+    batch_manager.update_mem_usage(config.convert2bids.mem_usage)
+    batch_manager.update_time(config.convert2bids.time_usage)
+    batch_manager.update_nthreads(config.convert2bids.core_usage)
 
-    logger.info(f"Starting BIDS conversion targeting: {dicom_dir}")
+    logger.info(f"Starting BIDS conversion targeting: {config.convert2bids.dicom_directory}")
     logger.debug(f"Using config file: {config_file}")
 
     # Pack a single subject into list
     if subject and not subjects:
         subjects = [subject]
-        logger.warn("WARNING: The -subject option is deprecated. You can now pass an arbitrary number of subjects as command line arguments.")
+        logger.warn("WARNING: The -subject option is deprecated. "
+            "You can now pass an arbitrary number of subjects "
+            "as command line arguments.")
     
     if dcm2bids:
         logger.info("Using converter: dcm2bids")
 
-        config_parser.setup_dcm2bids(
-            dicom_dir,
-            conv_config_file,
-            bids_dir,
-            dicom_dir_format,
-            log_dir)
-
         # move sub / session detection code to seperate function to try with heudiconv
         dcm2bids_wrapper(
-            dicom_dir=dicom_dir, dicom_dir_format=dicom_dir_format, 
-            bids_dir=bids_dir, conv_config=conv_config_file, 
+            dicom_dir=config.convert2bids.dicom_directory,
+            dicom_dir_format=config.convert2bids.dicom_format_string, 
+            bids_dir=config.convert2bids.bids_directory,
+            conv_config=config.convert2bids.conversion_config,
             overwrite=overwrite, subjects=subjects, session=session, 
             longitudinal=longitudinal, 
             submit=submit, status_cache=status_cache,
@@ -101,16 +76,11 @@ def convert2bids(dicom_dir=None, dicom_dir_format=None, bids_dir=None,
     elif not dcm2bids:
         logger.info("Using converter: heudiconv")
 
-        config_parser.setup_heudiconv(
-            dicom_dir,
-            os.path.abspath(conv_config_file),
-            os.path.abspath(bids_dir))
-
         heudiconv_wrapper(
-            subjects=subjects, session=session, dicom_dir=dicom_dir, submit=submit,
-            output_directory=bids_dir, heuristic_file=conv_config_file,
+            subjects=subjects, session=session, dicom_dir=config.convert2bids.dicom_directory, submit=submit,
+            output_directory=config.convert2bids.bids_directory, heuristic_file=config.convert2bids.conversion_config,
             overwrite=overwrite, batch_manager=batch_manager, logger=logger,
-            dicom_dir_format=dicom_dir_format, clear_cache=clear_cache, 
+            dicom_dir_format=config.convert2bids.dicom_format_string, clear_cache=clear_cache, 
             clear_outputs=clear_outputs, longitudinal=longitudinal)
 
     else:
@@ -328,7 +298,33 @@ def _get_sub_session_list(dicom_dir, dicom_dir_format, logger, subjects=None, se
     sub_sess_list = [sub_sess_list[i] for i in sub_sess_inds]
 
     return sub_sess_list, folders
-    
+
+
+def setup_dirs(config):
+    from pkg_resources import resource_stream
+    import json
+
+    # Create the step's core directories
+    os.makedirs(config.convert2bids.bids_directory, exist_ok=True)
+    os.makedirs(config.convert2bids.log_directory, exist_ok=True)
+
+    # Create the default conversion config file
+    if not os.path.exists(config.convert2bids.conversion_config):
+        with resource_stream(__name__, DEFAULT_CONV_CONFIG_PATH) as def_conv_config:
+            conv_config = json.load(def_conv_config)
+        
+            with open(config.convert2bids.conversion_config, 'w') as fp:
+                json.dump(conv_config, fp, indent='\t')
+        
+    # Create a default .bidsignore file
+    bids_ignore_path = os.path.join(config.convert2bids.bids_directory, ".bidsignore")
+    if not os.path.exists(bids_ignore_path):
+        with open(bids_ignore_path, 'w') as bids_ignore_file:
+            # Ignore dcm2bid's auto-generated directory
+            bids_ignore_file.write("tmp_dcm2bids\n")
+            # Ignore heudiconv's auto-generated scan file
+            bids_ignore_file.write("scans.json\n")
+
 
 @click.command(INFO_COMMAND_NAME)
 @click.option('-config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True), default = None, help = 'The configuration file for the study, use if you have a custom batch configuration.')
@@ -339,7 +335,7 @@ def _get_sub_session_list(dicom_dir, dicom_dir_format, logger, subjects=None, se
 @click.option('-submit', is_flag = True, default=False, help = 'Submission job to HPC.')
 def dicom_to_nifti_to_bids_converter_setup(subject = None, session = None, dicom_directory=None, output_file=None, config_file = None,  submit=False):
     """This command can be used to compute and extract a dicom information spreadsheet so that a heuristic file can be written. Users should specify a subject with all scans of interest present, and run this command on all sessions of interest. """
-    config = ClpipeConfigParser()
+    config: ProjectOptions = load_project_config(config_file)
 
     heuristic_file = resource_filename(__name__, 'data/setup_heuristic.py')
 
@@ -352,7 +348,7 @@ def dicom_to_nifti_to_bids_converter_setup(subject = None, session = None, dicom
                            ''' -f {heuristic} -o ./test/ -b --minmeta \n cp ./test/''' \
                            '''.heudiconv/{subject}/info/dicominfo.tsv {outputfile} \n rm -rf ./test/'''
 
-    batch_manager = BatchManager(config.config['BatchConfig'], None)
+    batch_manager = BatchManager(config.batch_config_path, None)
     batch_manager.update_time('1:0:0')
     batch_manager.update_mem_usage('3000')
     if session:

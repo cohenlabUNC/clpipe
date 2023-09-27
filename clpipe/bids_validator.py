@@ -1,13 +1,15 @@
 import os
 import sys
+from pathlib import Path
 
 from .batch_manager import BatchManager, Job
-from .config_json_parser import ClpipeConfigParser
-from .utils import add_file_handler, get_logger
+from .config.options import ProjectOptions
+from .utils import get_logger
 
 STEP_NAME = "bids-validation"
 SINGULARITY_CMD_TEMPLATE = ('singularity run --cleanenv -B {bindPaths} '
                       '{validatorInstance} {bidsDir}')
+DEFAULT_MEMORY_USAGE = '3G'
 
 
 def bids_validate(bids_dir=None, config_file=None, log_dir=None, 
@@ -18,18 +20,14 @@ def bids_validate(bids_dir=None, config_file=None, log_dir=None,
     If a configuration file has a BIDSDirectory specified, 
     you do not need to provide a BIDS directory in the command.
     """
-    config = ClpipeConfigParser()
-    config.config_updater(config_file)
-    config.setup_bids_validation(log_dir)
-    config.setup_fmriprep_directories(bids_dir, None, None)
+    config: ProjectOptions = ProjectOptions.load(config_file)
+    config.bids_validation.load_cli_args(
+        bids_directory = bids_dir,
+        log_directory = log_dir
+    )
+    setup_dirs(config)
 
-    bids_dir = config.config['FMRIPrepOptions']['BIDSDirectory']
-    batch_config = config.config['BatchConfig']
-    log_dir = config.config['BIDSValidationOptions']['LogDirectory']
-    project_dir = config.config["ProjectDirectory"]
-
-    add_file_handler(os.path.join(project_dir, "logs"))
-    logger = get_logger(STEP_NAME, debug=debug)
+    logger = get_logger(STEP_NAME, debug=debug, log_dir=config.get_logs_dir())
 
     logger.info(f"Starting BIDS validation targeting: {bids_dir}")
     logger.debug(f"Using config file: {config_file}")
@@ -40,18 +38,12 @@ def bids_validate(bids_dir=None, config_file=None, log_dir=None,
         sys.exit(1)
     
     batch_manager = BatchManager(
-        batch_config, 
+        config.batch_config_path, 
         output_directory=log_dir,
         debug=debug)
-    batch_manager.update_mem_usage('3000')
-
-    # Validator image moved to BIDSValidationOptions block
-    # If the image isn't there, try looking in the old spot for backwards compatibility
-    #   with clpipe <= v1.7.2
-    try:
-        bids_validator_image = config.config['BIDSValidationOptions']['BIDSValidatorImage']
-    except KeyError:
-        bids_validator_image = config.config['PostProcessingOptions']['BIDSValidatorImage']
+    batch_manager.update_mem_usage(DEFAULT_MEMORY_USAGE)
+    
+    config.bids_validation.bids_validator_image
 
     singularity_string = SINGULARITY_CMD_TEMPLATE
     if verbose:
@@ -60,15 +52,15 @@ def bids_validate(bids_dir=None, config_file=None, log_dir=None,
     if interactive:
         logger.info("Running BIDS validation interactively.")
         os.system(singularity_string.format(
-            validatorInstance=bids_validator_image,
+            validatorInstance = config.bids_validation.bids_validator_image,
             bidsDir=bids_dir,
             bindPaths=batch_manager.config['SingularityBindPaths']
         ))
         logger.info("Validation complete.")
     else:
         batch_manager.addjob(Job("BIDSValidator", singularity_string.format(
-            validatorInstance=bids_validator_image,
-            bidsDir=config.config['FMRIPrepOptions']['BIDSDirectory'],
+            validatorInstance=config.bids_validation.bids_validator_image,
+            bidsDir=config.fmriprep.bids_directory,
             bindPaths=batch_manager.config['SingularityBindPaths']
         )))
 
@@ -79,3 +71,7 @@ def bids_validate(bids_dir=None, config_file=None, log_dir=None,
             logger.info(f"Check {log_dir} for results.")
         else:
             batch_manager.print_jobs()
+
+
+def setup_dirs(config: ProjectOptions):
+    os.makedirs(config.bids_validation.log_directory, exist_ok=True)

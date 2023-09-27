@@ -7,10 +7,7 @@ import click
 from pkg_resources import resource_stream, resource_filename
 import shutil
 
-@click.command()
-@click.option('-config_file', type=click.Path(exists=True, dir_okay=False, file_okay=True),
-              default=None, required = True,
-              help='Configuration file to update.')
+
 def update_config_file(config_file=None):
     '''Updates an existing configuration file with any new fields. Does not modify existing fields.'''
     new_config = config_json_parser(config_file)
@@ -30,6 +27,10 @@ def config_json_parser(json_path):
 
 
 class ClpipeConfigParser:
+    """Legacy configuration class used for all modules in clpipe < 1.9.0
+    
+    Still used by some modules that haven't been converted to new config.
+    """
 
     def __init__(self, config_file:os.PathLike=None):
         if not config_file:
@@ -70,24 +71,11 @@ class ClpipeConfigParser:
         self.setup_bids_validation(None)
         self.setup_fmriprep_directories(os.path.join(self.config['ProjectDirectory'], 'data_BIDS'),
                                         None, os.path.join(self.config['ProjectDirectory'], 'data_fmriprep'))
-        self.setup_postproc(self.config['FMRIPrepOptions']['OutputDirectory'],
-                            target_suffix= None,
-                            output_dir= os.path.join(self.config['ProjectDirectory'], 'data_postproc', 'postproc_default'),
-                            output_suffix= 'postproc.nii.gz')
-        self.setup_postproc(self.config['FMRIPrepOptions']['OutputDirectory'],
-                            target_suffix=None,
-                            output_dir=os.path.join(self.config['ProjectDirectory'], 'data_postproc', 'betaseries_default'),
-                            output_suffix='betaseries.nii.gz', beta_series=True)
         self.setup_roiextract(target_dir = os.path.join(self.config['ProjectDirectory'], 'data_postproc2', 'default'),
-                              target_suffix= 'postproc_bold.nii.gz',
+                              target_suffix= 'desc-postproc_bold.nii.gz',
                               output_dir= os.path.join(self.config['ProjectDirectory'],
                                            'data_ROI_ts', 'postproc_default'),
                               )
-        self.setup_susan(os.path.join(self.config['ProjectDirectory'], 'data_postproc', 'postproc_default'),
-                            target_suffix='postproc.nii.gz',
-                            output_dir=os.path.join(self.config['ProjectDirectory'], 'data_postproc',
-                                                    'postproc_default'),
-                            output_suffix='postproc_default.nii.gz')
         self.setup_glm(self.config['ProjectDirectory'])
 
     def setup_glm(self, project_path):
@@ -120,26 +108,6 @@ class ClpipeConfigParser:
             self.config['FMRIPrepOptions']['LogDirectory'] = os.path.abspath(log_dir)
         else:
             self.config['FMRIPrepOptions']['LogDirectory'] = os.path.join(self.config['ProjectDirectory'], 'logs', 'FMRIprep_logs')
-
-    def setup_postproc(self, target_dir, target_suffix, output_dir, output_suffix, beta_series = False, log_dir = None):
-        target_output = 'PostProcessingOptions'
-        log_target = 'postproc_logs'
-        if beta_series:
-            target_output = 'BetaSeriesOptions'
-            log_target = 'betaseries_logs'
-
-        if target_dir is not None:
-            self.config[target_output]['TargetDirectory'] = os.path.abspath(target_dir)
-        if output_dir is not None:
-            self.config[target_output]['OutputDirectory'] = os.path.abspath(output_dir)
-        if target_suffix is not None:
-            self.config[target_output]['TargetSuffix'] = target_suffix
-        if output_suffix is not None:
-            self.config[target_output]['OutputSuffix'] = output_suffix
-        if log_dir is not None:
-            self.config[target_output]['LogDirectory'] = os.path.abspath(log_dir)
-        else:
-            self.config[target_output]['LogDirectory'] = os.path.join(self.config['ProjectDirectory'], 'logs', log_target)
 
     def setup_heudiconv(self, dicom_directory, heuristic_file, output_directory):
         if dicom_directory is not None:
@@ -182,21 +150,6 @@ class ClpipeConfigParser:
         else:
             self.config['ROIExtractionOptions']['LogDirectory'] = os.path.join(self.config['ProjectDirectory'], 'logs',
                                                                              'ROI_extraction_logs')
-
-    def setup_susan(self, target_dir, target_suffix, output_dir, output_suffix, log_dir =None):
-        if target_dir is not None:
-            self.config['SUSANOptions']['TargetDirectory'] = os.path.abspath(target_dir)
-        if output_dir is not None:
-            self.config['SUSANOptions']['OutputDirectory'] = os.path.abspath(output_dir)
-        if target_suffix is not None:
-            self.config['SUSANOptions']['TargetSuffix'] = target_suffix
-        if output_suffix is not None:
-            self.config['SUSANOptions']['OutputSuffix'] = output_suffix
-        if log_dir is not None:
-            self.config['SUSANOptions']['LogDirectory'] = os.path.abspath(log_dir)
-        else:
-            self.config['SUSANOptions']['LogDirectory'] = os.path.join(self.config['ProjectDirectory'], 'logs',
-                                                                               'SUSAN_logs')
 
     def get_processing_stream_names(self):
         try:
@@ -247,39 +200,6 @@ class GLMConfigParser:
             json.dump(self.config, fp, indent="\t")
         return(outpath)
 
-
-def file_folder_generator(basename, modality, target_suffix = None):
-    """Function parses out a BIDS file name to find its sub-components.
-
-        TODO: this addresses a need that many other modules of clpipe use
-        as well, but in slightly different ways (see the GLM prepare functions).
-        This function is rather specific / hard-coded and
-            could use better generalization.
-        We should look to provide a utility function to replace where 
-        this logic is used in roi_extract, and others.
-    """
-    
-    if target_suffix is not None:
-        basename = basename.replace(target_suffix, "")
-
-    comps = basename.split("_")
-    if comps[-1] is "":
-        comps = comps[0:-1]
-    sub = comps[0]
-    ses = comps[1]
-    try:
-        # Try to grab 'space' if present
-        front_matter = '_'.join(comps[0:-1])
-    except IndexError:
-        front_matter = '_'.join(comps[0:-2])
-    type = comps[-1]
-    if 'ses-' in ses:
-        path = os.path.join(sub, ses, modality, front_matter)
-        return [sub, ses, modality, front_matter, type, path]
-    else:
-        ses = ''
-        path = os.path.join(sub, modality, front_matter)
-        return [sub, ses, modality, front_matter, type, path]
 
 def update(d, u):
     for k, v in u.items():

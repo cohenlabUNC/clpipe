@@ -34,8 +34,14 @@ from .nodes import (
     RegressAromaR,
     ImageSlice,
 )
-from .utils import scrub_image, get_scrub_vector_node, vector_to_txt
+from .utils import (
+    scrub_image,
+    get_scrub_vector_node,
+    vector_to_txt,
+    logical_or_across_lists,
+)
 from ..errors import ImplementationNotFoundError
+from ..config.options import PostProcessingOptions
 
 # TODO: Set these values up as hierarchical, maybe with enums
 
@@ -65,123 +71,8 @@ STEP_RESAMPLE = "Resample"
 STEP_SCRUB_TIMEPOINTS = "ScrubTimepoints"
 
 
-def build_postprocessing_workflow(
-    image_wf: pe.Workflow = None,
-    confounds_wf: pe.Workflow = None,
-    name: str = "image_wf",
-    postprocessing_config: dict = None,
-    confounds_file: os.PathLike = None,
-    base_dir: os.PathLike = None,
-    crashdump_dir: os.PathLike = None,
-):
-    """Creates a top-level postprocessing workflow which combines the image and confounds processing workflows
-
-    Args:
-        image_wf (pe.Workflow, optional): An image processing workflow. Defaults to None.
-        confounds_wf (pe.Workflow, optional): A confound processing workflow. Defaults to None.
-        name (str, optional): The name for the constructed workflow. Defaults to "Postprocessing_Pipeline".
-        confound_regression (bool, optional): Should the processed confounds be passed to the image workflow for regression? Defaults to False.
-
-    Returns:
-        pe.Workflow: A complete postprocessing workflow.
-    """
-
-    input_node = pe.Node(
-        IdentityInterface(
-            fields=[
-                "in_file",
-                "confounds_file",
-                "image_export_path",
-                "confounds_export_path",
-            ],
-            mandatory_inputs=False,
-        ),
-        name="inputnode",
-    )
-    output_node = pe.Node(
-        IdentityInterface(
-            fields=["out_file", "processed_confounds_file"], mandatory_inputs=False
-        ),
-        name="outputnode",
-    )
-
-    postproc_wf = pe.Workflow(name=name, base_dir=base_dir)
-    if crashdump_dir is not None:
-        postproc_wf.config["execution"]["crashdump_dir"] = crashdump_dir
-
-    if confounds_file:
-        input_node.confounds_file = confounds_file
-
-    # Setup inputs
-    postproc_wf.connect(input_node, "in_file", image_wf, "inputnode.in_file")
-    postproc_wf.connect(input_node, "confounds_file", confounds_wf, "inputnode.in_file")
-    # postproc_wf.connect(input_node, "image_export_path", image_wf, "inputnode.export_file")
-    # postproc_wf.connect(input_node, "confounds_export_path", confounds_wf, "inputnode.in_file")
-
-    # Setup outputs
-    postproc_wf.connect(image_wf, "outputnode.out_file", output_node, "out_file")
-    postproc_wf.connect(
-        confounds_wf, "outputnode.out_file", output_node, "processed_confounds_file"
-    )
-
-    processing_steps = postprocessing_config["ProcessingSteps"]
-
-    # Connect postprocessed confound file to image_wf if needed
-    if STEP_CONFOUND_REGRESSION in processing_steps:
-        postproc_wf.connect(
-            confounds_wf, "outputnode.out_file", image_wf, "inputnode.confounds_file"
-        )
-
-    # Setup scrub target if needed
-    if STEP_SCRUB_TIMEPOINTS in processing_steps:
-        scrub_target_node = pe.Node(
-            Function(
-                input_names=[
-                    "confounds_file",
-                    "scrub_target_variable",
-                    "scrub_threshold",
-                    "scrub_behind",
-                    "scrub_ahead",
-                    "scrub_contiguous",
-                ],
-                output_names=["scrub_vector"],
-                function=get_scrub_vector_node,
-            ),
-            name="get_scrub_vector_node",
-        )
-
-        # Setup scrub inputs
-        scrub_target_node.inputs.scrub_target_variable = postprocessing_config[
-            "ProcessingStepOptions"
-        ]["ScrubTimepoints"]["TargetVariable"]
-        scrub_target_node.inputs.scrub_threshold = postprocessing_config[
-            "ProcessingStepOptions"
-        ]["ScrubTimepoints"]["Threshold"]
-        scrub_target_node.inputs.scrub_behind = postprocessing_config[
-            "ProcessingStepOptions"
-        ]["ScrubTimepoints"]["ScrubBehind"]
-        scrub_target_node.inputs.scrub_ahead = postprocessing_config[
-            "ProcessingStepOptions"
-        ]["ScrubTimepoints"]["ScrubAhead"]
-        scrub_target_node.inputs.scrub_contiguous = postprocessing_config[
-            "ProcessingStepOptions"
-        ]["ScrubTimepoints"]["ScrubContiguous"]
-
-        postproc_wf.connect(
-            input_node, "confounds_file", scrub_target_node, "confounds_file"
-        )
-        postproc_wf.connect(
-            scrub_target_node, "scrub_vector", image_wf, "inputnode.scrub_vector"
-        )
-        postproc_wf.connect(
-            scrub_target_node, "scrub_vector", confounds_wf, "inputnode.scrub_vector"
-        )
-
-    return postproc_wf
-
-
 def build_image_postprocessing_workflow(
-    postprocessing_config: dict,
+    processing_options: PostProcessingOptions,
     in_file: os.PathLike = None,
     export_path: os.PathLike = None,
     name: str = "Postprocessing_Pipeline",
@@ -201,7 +92,7 @@ def build_image_postprocessing_workflow(
         postproc_wf.config["execution"]["crashdump_dir"] = crashdump_dir
 
     if processing_steps is None:
-        processing_steps = postprocessing_config["ProcessingSteps"]
+        processing_steps = processing_options.processing_steps
     step_count = len(processing_steps)
 
     if step_count < 1:
@@ -256,18 +147,10 @@ def build_image_postprocessing_workflow(
         if step == STEP_TEMPORAL_FILTERING:
             if not tr:
                 raise ValueError(f"Missing TR corresponding to image: {in_file}")
-            hp = postprocessing_config["ProcessingStepOptions"][step][
-                "FilteringHighPass"
-            ]
-            lp = postprocessing_config["ProcessingStepOptions"][step][
-                "FilteringLowPass"
-            ]
-            order = postprocessing_config["ProcessingStepOptions"][step][
-                "FilteringOrder"
-            ]
-            implementation_name = postprocessing_config["ProcessingStepOptions"][step][
-                "Implementation"
-            ]
+            hp = processing_options.processing_step_options.temporal_filtering.filtering_high_pass
+            lp = processing_options.processing_step_options.temporal_filtering.filtering_low_pass
+            order = processing_options.processing_step_options.temporal_filtering.filtering_order
+            implementation_name = processing_options.processing_step_options.temporal_filtering.implementation
 
             current_wf = build_temporal_filter_workflow(
                 implementation_name,
@@ -281,9 +164,7 @@ def build_image_postprocessing_workflow(
             )
 
         elif step == STEP_INTENSITY_NORMALIZATION:
-            implementation_name = postprocessing_config["ProcessingStepOptions"][step][
-                "Implementation"
-            ]
+            implementation_name = processing_options.processing_step_options.intensity_normalization.implementation
 
             intensity_normalization_implementation = (
                 _getIntensityNormalizationImplementation(implementation_name)
@@ -296,11 +177,8 @@ def build_image_postprocessing_workflow(
             )
 
         elif step == STEP_SPATIAL_SMOOTHING:
-            fwhm_mm = postprocessing_config["ProcessingStepOptions"][step]["FWHM"]
-            # brightness_threshold = postprocessing_config["ProcessingStepOptions"][step]["BrightnessThreshold"]
-            implementation_name = postprocessing_config["ProcessingStepOptions"][step][
-                "Implementation"
-            ]
+            fwhm_mm = processing_options.processing_step_options.spatial_smoothing.fwhm
+            implementation_name = processing_options.processing_step_options.spatial_smoothing.implementation
 
             spatial_smoothing_implementation = _getSpatialSmoothingImplementation(
                 implementation_name
@@ -314,9 +192,7 @@ def build_image_postprocessing_workflow(
             )
 
         elif step == STEP_AROMA_REGRESSION:
-            implementation_name = postprocessing_config["ProcessingStepOptions"][step][
-                "Implementation"
-            ]
+            implementation_name = processing_options.processing_step_options.aroma_regression.implementation
 
             apply_aroma_implementation = _getAROMARegressionImplementation(
                 implementation_name
@@ -331,9 +207,7 @@ def build_image_postprocessing_workflow(
             )
 
         elif step == STEP_CONFOUND_REGRESSION:
-            implementation_name = postprocessing_config["ProcessingStepOptions"][step][
-                "Implementation"
-            ]
+            implementation_name = processing_options.processing_step_options.confound_regression.implementation
 
             confound_regression_implementation = _getConfoundRegressionImplementation(
                 implementation_name
@@ -359,12 +233,8 @@ def build_image_postprocessing_workflow(
             )
 
         elif step == STEP_TRIM_TIMEPOINTS:
-            trim_from_beginning = postprocessing_config["ProcessingStepOptions"][step][
-                "FromEnd"
-            ]
-            trim_from_end = postprocessing_config["ProcessingStepOptions"][step][
-                "FromBeginning"
-            ]
+            trim_from_beginning = processing_options.processing_step_options.trim_timepoints.from_beginning
+            trim_from_end = processing_options.processing_step_options.trim_timepoints.from_end
 
             current_wf = build_trim_timepoints_workflow(
                 trim_from_beginning=trim_from_beginning,
@@ -374,9 +244,7 @@ def build_image_postprocessing_workflow(
             )
 
         elif step == STEP_RESAMPLE:
-            reference_image = postprocessing_config["ProcessingStepOptions"][step][
-                "ReferenceImage"
-            ]
+            reference_image = processing_options.processing_step_options.resample.reference_image
             if reference_image == "SET REFERENCE IMAGE":
                 raise ValueError(
                     "No reference image provided. Please set a path to reference in clpipe_config.json"
@@ -389,7 +257,7 @@ def build_image_postprocessing_workflow(
             )
 
         elif step == STEP_SCRUB_TIMEPOINTS:
-            insert_na = postprocessing_config["ProcessingStepOptions"][step]["InsertNA"]
+            insert_na = processing_options.processing_step_options.scrub_timepoints.insert_na
 
             current_wf = build_scrubbing_workflow(
                 insert_na=insert_na,
@@ -424,16 +292,54 @@ def build_image_postprocessing_workflow(
 
     return postproc_wf
 
-def build_temporal_filter_workflow(implementationName: str, hp: float, lp: float, tr: float, order: float=None, in_file: os.PathLike=None, 
-    out_file: os.PathLike=None, base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None, scrub_targets: os.PathLike=None, mask_file: os.PathLike=None):
+
+def build_temporal_filter_workflow(
+    implementationName: str,
+    hp: float,
+    lp: float,
+    tr: float,
+    order: float = None,
+    in_file: os.PathLike = None,
+    out_file: os.PathLike = None,
+    base_dir: os.PathLike = None,
+    crashdump_dir: os.PathLike = None,
+    scrub_targets: os.PathLike = None,
+    mask_file: os.PathLike = None,
+):
     if implementationName == IMPLEMENTATION_BUTTERWORTH:
-        return build_butterworth_filter_workflow(hp=hp,lp=lp, tr=tr, order=order, base_dir=base_dir, crashdump_dir=crashdump_dir)
+        return build_butterworth_filter_workflow(
+            hp=hp,
+            lp=lp,
+            tr=tr,
+            order=order,
+            base_dir=base_dir,
+            crashdump_dir=crashdump_dir,
+        )
     elif implementationName == IMPLEMENTATION_FSLMATHS:
-        return build_fslmath_temporal_filter(hp=hp,lp=lp, tr=tr, order=order, base_dir=base_dir, crashdump_dir=crashdump_dir)
+        return build_fslmath_temporal_filter(
+            hp=hp,
+            lp=lp,
+            tr=tr,
+            order=order,
+            base_dir=base_dir,
+            crashdump_dir=crashdump_dir,
+        )
     elif implementationName == IMPLEMENTATION_AFNI_3DTPROJECT:
-        return build_3dtproject_temporal_filter(bpHigh=lp, bpLow=hp, tr=tr, order=order, base_dir=base_dir, crashdump_dir=crashdump_dir, scrub_targets=scrub_targets, mask_file=mask_file)
+        return build_3dtproject_temporal_filter(
+            bpHigh=lp,
+            bpLow=hp,
+            tr=tr,
+            order=order,
+            base_dir=base_dir,
+            crashdump_dir=crashdump_dir,
+            scrub_targets=scrub_targets,
+            mask_file=mask_file,
+        )
     else:
-        raise ImplementationNotFoundError(f"{STEP_TEMPORAL_FILTERING} implementation not found: {implementationName}")
+        raise ImplementationNotFoundError(
+            f"{STEP_TEMPORAL_FILTERING} implementation not found: {implementationName}"
+        )
+
 
 def _getIntensityNormalizationImplementation(implementationName: str):
     if implementationName == IMPLEMENTATION_10000_GLOBAL_MEDIAN:
@@ -803,31 +709,47 @@ def build_fslmath_temporal_filter(
 
     return workflow
 
-def build_3dtproject_temporal_filter(bpHigh: float, bpLow: float, tr: float, order: float=None, 
-                                     scrub_targets: bool=False, 
-                                     import_file: os.PathLike=None, export_file: os.PathLike=None,
-                                      base_dir: os.PathLike=None, crashdump_dir: os.PathLike=None,
-                                       mask_file: os.PathLike=None):
-    
-    workflow = pe.Workflow(name=f"{STEP_TEMPORAL_FILTERING}_{IMPLEMENTATION_AFNI_3DTPROJECT}", base_dir=base_dir)
+
+def build_3dtproject_temporal_filter(
+    bpHigh: float,
+    bpLow: float,
+    tr: float,
+    order: float = None,
+    scrub_targets: bool = False,
+    import_file: os.PathLike = None,
+    export_file: os.PathLike = None,
+    base_dir: os.PathLike = None,
+    crashdump_dir: os.PathLike = None,
+    mask_file: os.PathLike = None,
+):
+    workflow = pe.Workflow(
+        name=f"{STEP_TEMPORAL_FILTERING}_{IMPLEMENTATION_AFNI_3DTPROJECT}",
+        base_dir=base_dir,
+    )
     if crashdump_dir is not None:
-        workflow.config['execution']['crashdump_dir'] = crashdump_dir
+        workflow.config["execution"]["crashdump_dir"] = crashdump_dir
 
     # Setup identity (pass through) input/output nodes
     input_node = pe.Node(
         IdentityInterface(
-            fields=["in_file", "out_file", "mask_file", "TR", 
-                    "bandpass", "scrub_targets", "export_file"],
+            fields=[
+                "in_file",
+                "out_file",
+                "mask_file",
+                "TR",
+                "bandpass",
+                "scrub_targets",
+                "export_file",
+            ],
             mandatory_inputs=False,
         ),
         name="inputnode",
-        
     )
     if import_file:
         input_node.inputs.in_file = import_file
     input_node.inputs.TR = tr
     input_node.inputs.bandpass = (bpLow, bpHigh)
-    
+
     output_node = build_output_node()
 
     # Setup the 3DTProject Temporal Filter
@@ -836,10 +758,10 @@ def build_3dtproject_temporal_filter(bpHigh: float, bpLow: float, tr: float, ord
     temp_filt.inputs.outputtype = "NIFTI_GZ"
     temp_filt.inputs.polort = 2
     temp_filt.inputs.cenmode = "NTRP"
-    
+
     mean_image_node = pe.Node(MeanImage(), name="mean_image")
     temporal_filter_node = pe.Node(temp_filt, name="3dTproject_temporal_filter")
-    add_node = pe.Node(BinaryMaths(operation='add'), name="add_mean")
+    add_node = pe.Node(BinaryMaths(operation="add"), name="add_mean")
 
     workflow.connect(input_node, "in_file", mean_image_node, "in_file")
     workflow.connect(input_node, "in_file", temporal_filter_node, "in_file")
@@ -854,8 +776,9 @@ def build_3dtproject_temporal_filter(bpHigh: float, bpLow: float, tr: float, ord
                 input_names=["vector"],
                 output_names=["out_file"],
                 function=vector_to_txt,
-            ), 
-            name="vector_to_txt")
+            ),
+            name="vector_to_txt",
+        )
         vector_to_txt_node.inputs.out_file = "scrub_ort.txt"
         workflow.connect(input_node, "scrub_targets", vector_to_txt_node, "vector")
         workflow.connect(vector_to_txt_node, "out_file", temporal_filter_node, "censor")
@@ -871,8 +794,9 @@ def build_3dtproject_temporal_filter(bpHigh: float, bpLow: float, tr: float, ord
         )
         workflow.connect(output_node, "out_file", export_node, "in_file")
         workflow.connect(input_node, "export_file", export_node, "out_file")
-    
+
     return workflow
+
 
 def build_confound_regression_fsl_glm_workflow(
     in_file: os.PathLike = None,

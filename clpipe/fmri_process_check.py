@@ -3,7 +3,7 @@ import pandas as pd
 import os
 import glob
 from .utils import get_logger, add_file_handler, resolve_fmriprep_dir_new
-from .config.project import getProjectConfig
+from .config.options import ProjectOptions
 
 STEP_NAME = "fmri-process-check"
 
@@ -12,15 +12,15 @@ def fmri_process_check(config_file, output_file=None, debug=False):
     dataset, and creates a CSV file that lists all scans across all three datasets. 
     Use to find which subjects/scans failed processing."""
 
-    config = getProjectConfig(config_file)
+    config = ProjectOptions.load(config_file)
 
     add_file_handler(os.path.join(config.ProjectDirectory, "logs"))
     logger = get_logger(STEP_NAME, debug=debug)
     logger.info("Test Printing")
 
-    sublist = [o for o in os.listdir(resolve_fmriprep_dir_new(config.PostProcessingOptions.TargetDirectory))
+    sublist = [o for o in os.listdir(resolve_fmriprep_dir_new(config.FMRIPrepOptions.OutputDirectory))
                if os.path.isdir(
-            os.path.join(resolve_fmriprep_dir_new(config.PostProcessingOptions.TargetDirectory), o)) and 'sub-' in o]
+            os.path.join(resolve_fmriprep_dir_new(config.FMRIPrepOptions.OutputDirectory), o)) and 'sub-' in o]
 
     file_list = []
     for sub in sublist:
@@ -29,7 +29,7 @@ def fmri_process_check(config_file, output_file=None, debug=False):
             os.path.join(config.FMRIPrepOptions.BIDSDirectory, sub, '**', 'func', '*.nii.gz'),
             recursive=True)
         fmriprep_files = glob.glob(
-            os.path.join(config.PostProcessingOptions.TargetDirectory, sub, '**', 'func',
+            os.path.join(config.FMRIPrepOptions.OutputDirectory, sub, '**', 'func',
                          '*' + config.PostProcessingOptions.TargetSuffix), recursive=True)
         logger.debug('[%s]' % ', '.join(map(str, fmriprep_files)))
 

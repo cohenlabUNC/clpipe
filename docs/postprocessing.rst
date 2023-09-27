@@ -2,54 +2,49 @@
 Postprocessing
 ===================
 
-------------------
-postprocess2
-------------------
-
+*****************
 Overview
-==================
+*****************
 
-The ``clpipe postprocess2`` command combines the functionality of the legacy
-``fmri_postprocess`` and ``glm_setup`` commands into a unified postprocessing stream.
+The ``clpipe postprocess`` command combines the functionality of the
+retired ``fmri_postprocess`` and ``glm_setup`` commands into a unified postprocessing stream.
 
 This command allows for flexible creation of processing streams. The order of
 processing steps and their specific implementations can be modified in the
 configuration file. Any temporally-relevant processing steps can also be
 applied to each image's corresponding confounds file.
-``postprocess2`` caches its processing intermediaries
+``postprocess`` caches its processing intermediaries
 in a working directory, which allows quick re-runs of pipelines with 
 new parameters.
 
 This command will also output a detailed processing graph
 for each processing stream.
 
-Available processing steps:
-
-	- Temporal Filtering
-	- Intensity Normalization
-	- Spatial Smoothing
-	- AROMA Regression
-	- Confound Regression
-	- Apply Mask
-	- Scrub Timepoints
-	- Resample
-	- Trim Timepoints
-
-Example Pipeline
-------------------
+**Example Pipeline**
 
 .. image:: resources/example_pipeline.png
 
+******************
+Configuration
+******************
 
-Configuration Overview
-===================
+Overview
+#################
 
-This command requires a new configuration block - if you using an existing
-clpipe project, you will have to insert this json into your configuration file.
-Otherwise, this block will be included when running "project setup."
+The top level of the postprocessing configuration section contains general options like
+the path to your working directory, which tasks to target, etc.
 
-Configuration Block
--------------------
+Following this are the ``ProcessingSteps``, which define the steps used for
+postprocessing. Postprocessing will occur in the order of the list.
+
+``ProcessStepOptions`` displays all of the processing steps with configurable options,
+allowing them to be configured to suit the needs of your project. See the Processing
+Step Options section for more information about configuring this section.
+
+``ConfoundOptions`` contains settings specific to each image's confounds file, and
+``BatchOptions`` contains settings for job submission.
+
+**Option Block**
 
 .. code-block:: json
 
@@ -62,8 +57,7 @@ Configuration Block
 		"ProcessingSteps": [
 			"SpatialSmoothing",
 			"TemporalFiltering",
-			"IntensityNormalization",
-			"ApplyMask"
+			"IntensityNormalization"
 		],
 		"ProcessingStepOptions": {
 			"TemporalFiltering": {
@@ -94,66 +88,19 @@ Configuration Block
     	}	
 	}
 
-Configuration Definitions
--------------------
-
-    * ``WorkingDirectory:`` Directory for caching intermediary processing files.
-    * ``WriteProcessGraph:`` Set 'true' to write a processing graph alongside your output.
-    * ``TargetImageSpace:`` Which space to use from your fmriprep output. This is the value that follows "space-" in the image file names.
-    * ``TargetTasks:`` Which tasks to use from your fmriprep output. This is the value that follows "task-" in the image file names. Leave blank to target all tasks.
-    * ``TargetAcquisitions:`` Which acquisitions to use from your fmriprep output. This is the value that follows "acq-" in the image file names. Leave blank to target all acquisitions.
-    * ``ProcessingSteps:`` The default list of processing steps to use. Processing will follow the order of this list.
-    * ``ProcessingStepOptions:`` The default processing options for each step.
-
-        * ``TemporalFiltering:`` Apply temporal filtering to the image data. Also be applied to confounds.
-
-			* ``Implementation:`` Currently limited to "fslmaths"
-			* ``FilteringHighPass:`` High pass frequency for filtering. Defaults to .08 Hz. Set to -1 to remove high pass filtering.
-			* ``FilteringLowPass:`` Low pass frequency for filtering. Defaults to no filter (-1). Set to -1 to remove low pass filtering.
-			* ``FilteringOrder:`` Order of filter. Defaults to 2.
-        * ``IntensityNormalization:`` Apply intensity normalization to the image data.
-
-			* ``Implementation:`` Currently limited to "10000_GlobalMedian"
-        * ``SpatialSmoothing:`` Apply spatial smoothing to the image data.
-
-			* ``Implementation:`` Currently limited to "SUSAN"
-			* ``FWHM:`` The size of the smoothing kernel. Specifically the full width half max of the Gaussian kernel. Scaled in millimeters.
-        * ``AROMARegression:`` Regress out AROMA artifacts from the image data. Also be applied to confounds.
-
-			* ``Implementation:`` Currently limited to "fsl_regfilt_R"
-        * ``Resample:`` Resample the image into a new space.
-        * ``TrimTimepoints:`` Trim timepoints from the beginning or end of an image. Also be applied to confounds.
-
-			* ``FromEnd:`` Number of timepoints to trim from the end of each image.
-			* ``FromBeginning:`` Number of timepoints to trim from the beginning of each image.
-        * ``ConfoundRegression:`` Regress out the confound file values from your image. If any other processing steps are relevant to the confounds, they will be applied first.
-
-			* ``Implementation:`` Currently limited to "afni_3dTproject"
-    * ``ConfoundOptions:`` The default options to apply to the confounds files.
-	
-		* ``Columns:`` A list containing a subset of confound file columns to use from each image's confound file.
-		* ``MotionOutliers:`` Options specific to motion outliers.
-
-			* ``Include:`` Set 'true' to add motion outlier spike regressors to each confound file.
-			* ``ScrubVar:`` Which variable in the confounds file should be used to calculate motion outliers, defaults to framewise displacement.
-			* ``Threshold:`` Threshold at which to flag a timepoint as a motion outlier, defaults to .9
-			* ``ScrubAhead:`` How many time points ahead of a flagged time point should be flagged also, defaults to 0.
-			* ``ScrubBehind:`` If a timepoint is scrubbed, how many points before to remove. Defaults to 0.
-			* ``ScrubContiguous:`` How many good contiguous timepoints need to exist. Defaults to 0.
-    * ``BatchOptions:`` The batch settings for postprocessing.
-
-        * ``MemoryUsage:`` How much memory to allocate per job.
-        * ``TimeUsage:`` How much time to allocate per job.
-        * ``NThreads:`` How many threads to allocate per job.
+**Top-Level Definitions**
+.. autoclass:: clpipe.config.options.PostProcessingOptions
+	:members:
 
 
 Processing Step Options
-====================
+#################
 
 Temporal Filtering
 --------------------
 
-This step removes signals from an image's timeseries based on cutoff thresholds.
+This step removes signals from an image's timeseries based on cutoff thresholds. This
+transformation is also applied to your confounds.
 
 **ProcessingStepOptions Block:**
 
@@ -168,15 +115,12 @@ This step removes signals from an image's timeseries based on cutoff thresholds.
 
 **Definitions:**
 
-* ``Implementation:`` fslmaths, 3dTProject
-* ``FilteringHighPass:`` Values below this threshold are filtered. Defaults to .08 Hz. Set to -1 to disable.
-* ``FilteringLowPass:`` Values above this threshold are filtered. Disabled by default (-1).
-* ``FilteringOrder:`` Order of the filter. Defaults to 2.
+.. autoclass:: clpipe.config.options.TemporalFiltering
 
 **Special Case: Filtering with Scrubbed Timepoints**
 
 When the scrubbing step is active at the same time as temporal filtering (see
-Scrub Timepoints), filtering is handled with a special workflow. This for two
+``ScrubTimepoints``), filtering is handled with a special workflow. This for two
 reasons: first, temporal filtering must be done before scrubbing, because this step
 cannot tolerate NAs or non-continuous gaps in the timeseries. Second, filtering can
 distribute the impact of a disruptive motion artifact throughout a timeseries, despite
@@ -194,6 +138,104 @@ were interpolated to improve the performance of the filter.
 *Warning*: To achieve interpolation, this special case always uses the 3dTproject
 implementation, regardless of the implementation requested.
 
+Intensity Normalization
+--------------------
+This step normalizes the central tendency of the data to a standard scale. As data
+acquired from different subjects can vary in relative intensity values, this step
+is important for accurate group-level statistics.
+
+**ProcessingStepOptions Block**
+
+.. code-block:: json
+
+	"IntensityNormalization": {
+		"Implementation": "10000_GlobalMedian"
+	}
+
+**Definitions**
+
+.. autoclass:: clpipe.config.options.IntensityNormalization
+
+Spatial Smoothing
+--------------------
+
+This step blurs the image data across adjacent voxels. This helps improve the validity
+of statistical testing by smoothing over random noise in the data, and enchancing
+underlying brain signal.
+
+To achieve the smoothing, a 3D Gaussian filter is applied to the data. This filter takes
+as input a kernel radius, which is analogous to the size of the blur tool in a photo
+editing tool.
+
+
+**Unsmoothed Raw Image**
+
+.. image:: resources/sample_image_base.png
+
+**Smoothed with 6mm Kernel**
+
+.. image:: resources/sample_image_smoothed.png
+
+**ProcessingStepOptions Block**
+
+.. code-block:: json
+
+	"SpatialSmoothing": {
+		"Implementation": "SUSAN",
+		"FWHM": 6
+	}
+
+**Definitions**
+
+.. autoclass:: clpipe.config.options.SpatialSmoothing
+
+AROMA Regression
+--------------------
+
+This step removes AROMA-identified noise artifacts from the data with non-aggressive
+regression.
+
+AROMA regression relies on the presence of AROMA output artifacts in your fMRIPrep
+directory - they are the files with ``desc-MELODIC_mixing.tsv`` and ``AROMAnoiseICs.csv``
+as suffixes. Thus, you must have the UseAROMA option enabled in your preprocessing
+options to use this step.
+
+Also applies to confounds.
+
+**ProcessingStepOptions Block**
+
+.. code-block:: json
+
+	"AROMARegression": {
+		"Implementation": "fsl_regfilt"
+	}
+
+**Definitions**
+
+.. autoclass:: clpipe.config.options.AROMARegression
+
+Confound Regression
+--------------------
+This step regresses the contents of the postprocessesed confounds file out of your data.
+Confounds are processed before their respective image, so regressed confounds will
+have any selected processing steps applied to them (such as ``TemporalFiltering``) before
+this regression occurs. The columns used are those defined in the ``ConfoundOptions``
+configuration block.
+
+Confound regression is typically used for network analysis - GLM analysis removes
+these confounds through there inclusion in the model as nuisance regressors.
+
+**ProcessingStepOptions Block**
+
+.. code-block:: json
+
+	"ConfoundRegression": {
+		"Implementation": "afni_3dTproject"
+	}
+
+**Definitions**
+
+.. autoclass:: clpipe.config.options.ConfoundRegression
 
 
 Scrub Timepoints
@@ -203,154 +245,222 @@ The ``ScrubTimepoints`` step can be used to remove timepoints from the image tim
 based on a target variable from that image's confounds file. Timepoints scrubbed
 from an image's timeseries are also removed its respective confound file.
 
-ProcessingStepOptions Block:
+**ProcessingStepOptions Block**
 
 .. code-block:: json
 
-	"ScrubTimepoints": {
-		"TargetVariable": "framewise_displacement",
-		"Threshold": 0.9,
-		"ScrubAhead": 0,
-		"ScrubBehind": 0,
-		"ScrubContiguous": 0,
-		"InsertNA": true
+    "ScrubTimepoints": {
+        "InsertNA": true,
+        "Columns": [
+            {
+                "TargetVariable": "non_steady_state_outlier*",
+                "Threshold": 0,
+                "ScrubAhead": 0,
+                "ScrubBehind": 0,
+                "ScrubContiguous": 0
+            },
+            {
+                "TargetVariable": "framewise_displacement",
+                "Threshold": 0.9,
+                "ScrubAhead": 0,
+                "ScrubBehind": 0,
+                "ScrubContiguous": 0
+            }
+        ]
+    }
+
+**Definitions**
+
+.. autoclass:: clpipe.config.options.ScrubTimepoints
+
+.. autoclass:: clpipe.config.options.ScrubColumn
+
+Resample
+--------------------
+
+This step will resample your image into the same resolution as the given ``ReferenceImage``.
+Exercise caution with this step - make sure you are not unintentionally resampling
+to an image with a lower resolution.
+
+**ProcessingStepOptions Block**
+
+.. code-block:: json
+
+	"Resample": {
+		"ReferenceImage": "SET REFERENCE IMAGE"
 	}
 
-Definitions:
+**Definitions**
 
-* ``TargetVariable:`` Which confound variable to use as a reference for scrubbing
-* ``Threshold:`` Any timepoint of the target variable exceeding this value will be scrubbed
-* ``ScrubAhead:`` Set the number of timepoints to scrub ahead of target timepoints
-* ``ScrubBehind:`` Set the number of timepoints to scrub behind target timepoints
-* ``ScrubContiguous:`` Scrub everything between scrub targets up to this far apart
-* ``InsertNA:`` Set true to replace scrubbed timepoints with NA. False removes the timepoints completely.
+.. autoclass:: clpipe.config.options.Resample
+
+Trim Timepoints
+--------------------
+
+This step performs simple trimming of timepoints from the beginning and/or end of
+your timeseries with no other logic. Also applies to your confounds.
+
+**ProcessingStepOptions Block**
+
+.. code-block:: json
+
+	"TrimTimepoints": {
+		"FromEnd": 0,
+		"FromBeginning": 0
+	}
+
+**Definitions**
+
+.. autoclass:: clpipe.config.options.TrimTimepoints
 
 
+Apply Mask
+--------------------
+This step will apply the image's fMRIPrep mask.
+
+Note - There is currently nothing to configure for this step, 
+so it is simply added to the ``ProcessingSteps`` list
+as "ApplyMask" and does not have a section in ``ProcessingStepOptions``
+
+.. code-block:: json
+
+	"ProcessingSteps": [
+		"SpatialSmoothing",
+		"TemporalFiltering",
+		"IntensityNormalization",
+		"ApplyMask"
+	]
+
+
+
+Confounds Options
+#################
+
+This option block defines your settings for processing the confounds file accompanying
+each image. A subset of the columns provided by your base fMRIPrep confounds file is
+chosen with the ``Columns`` list.
+
+The ``MotionOutliers`` section is used to add spike regressors based on (usually) framewise displacement
+for inclusion in a GLM model. Note that this section is independent from the scrubbing
+step - the scrubbing step removes timepoints from both the image and the confounds,
+while this step adds a variable number of columns to your confounds.
+
+**Definitions**
+
+.. autoclass:: clpipe.config.options.ConfoundOptions
+
+.. autoclass:: clpipe.config.options.MotionOutliers
+
+Resample
+--------------------
+.. autoclass:: clpipe.config.project.Resample
+
+Trim Timepoints
+--------------------
+.. autoclass:: clpipe.config.project.TrimTimepoints
+
+Batch Options
+#################
+These options specify the cluster compute options used when submitting jobs. The
+default values are usually sufficient to process the data.
+
+**Definitions**
+
+.. autoclass:: clpipe.config.options.BatchOptions
 
 Processing Streams Setup
-===================
+#################
 
-By default, the output from running fmri_postprocess2 will appear in your
-clpipe folder at data_postproc2/smooth_filter_normalize, reflecting the
-defaults from PostProcessingOptions2.
+By default, the output from running fmri_postprocess will appear in your
+clpipe folder at ``data_postproc/default``, reflecting the
+defaults from PostProcessingOptions.
 
 However, you can utilize the power of processing streams to deploy multiple
-postprocessing streams. Each processing stream you define your config file's 
-ProcessingStreams block will create a new output folder named 
-after the ProcessingStream setting.
+postprocessing streams. Options for processing streams are found in a separate section
+of your configuration file, ``ProcessingStreams``. 
+Each processing stream you define your config file's 
+``ProcessingStreams`` block will create a new output folder named 
+after the stream setting.
 
 Within each processing stream, you can override any of the settings in the main
-PostProcessingOptions2 section. For example, in the follow json snippet,
+``PostProcessingOptions`` section. For example, in the follow json snippet,
 the first processing stream will only pick "rest" tasks and defines its
 own set of processing steps. The second stream does the same thing, but
 specifies a filtering high pass by overriding the default value of -1 with
 .009. 
 
-Command
-===================
-
-.. click:: clpipe.cli:fmri_postprocess2_cli
-	:prog: clpipe postprocess2
+**Option Block**
 
 .. code-block:: json
 
 	...
-	"ProcessingStreams": [
-		...
+	"processing_streams": [
 		{
-			"ProcessingStream": "smooth_aroma-regress_filter-butterworth_normalize",
-			"PostProcessingOptions": {
-				"TargetTasks": [
-					"rest"
-				],
-				"ProcessingSteps": [
+			"stream_name": "GLM_default",
+			"postprocessing_options": {
+				"processing_steps": [
 					"SpatialSmoothing",
 					"AROMARegression",
 					"TemporalFiltering",
-					"IntensityNormalization",
-					"ApplyMask"
+					"IntensityNormalization"
 				]
 			}
 		},
 		{
-			"ProcessingStream": "smooth_aroma-regress_filter-high-only_normalize",
-			"PostProcessingOptions": {
-				"TargetTasks": [
-					"rest"
-				],
-				"ProcessingSteps": [
+			"stream_name": "functional_connectivity_default",
+			"postprocessing_options": {
+				"processing_steps": [
 					"SpatialSmoothing",
 					"AROMARegression",
-					"TemporalFiltering",
+					"TemporalFiltering"
 					"IntensityNormalization",
-					"ApplyMask"
+					"ConfoundRegression",
 				],
-				"ProcessingStepOptions": {
-					"TemporalFiltering": {
-						"FilteringHighPass": .009
+				"confound_options": {
+					"motion_outliers": {
+						"include": false
 					}
 				}
 			}
-		},
+		}
+	],
 	...
 
-To run a specific stream, give the ``-processing_stream`` stream option
-of ``clpipe postprocess2`` the name of the stream:
+
+******************
+Command
+******************
+
+CLI Options
+#################
+
+.. click:: clpipe.cli:postprocess_cli
+	:prog: clpipe postprocess
+
+Examples
+#################
+
+Display jobs to be run without submitting.
 
 .. code-block:: console
 
-	clpipe postprocess2 -config_file clpipe_config.json -processing_stream smooth_aroma-regress_filter-butterworth_normalize -submit
+	clpipe postprocess -c clpipe_config.json
 
-------------------
-Legacy postprocess Command
-------------------
+Submit jobs.
 
-Not all features of the legacy postprocess command have been implemented yet in
-postprocess2, namely some which support functional connectivity, 
-so the command remains available for this use.
+.. code-block:: console
 
-When performing functional connectivity analysis, there are several additional 
-processing steps that need to be taken after the minimal preprocessing of fMRIPrep. 
-clpipe implements these steps in Python, and a fMRIprep preprocessed dataset can 
-be postprocessed using the following command:
+	clpipe postprocess -c clpipe_config.json -submit
 
-.. click:: clpipe.cli:fmri_postprocess_cli
-	:prog: clpipe postprocess
+Submit jobs for specific subjects.
 
+.. code-block:: console
 
-------------------
-Processing Checker
-------------------
+	clpipe postprocess 123 124 125 -c clpipe_config.json -submit
 
-clpipe has a convenient function for determining which scans successfully made it 
-through both preprocessing using fMRIprep and postprocessing.
+To run a specific stream, give the ``-processing_stream`` (``-p`` for short) option
+the name of the stream:
 
-This command will create a csv file listing all scans found in the BIDS dataset, 
-and corresponding scans in the fMRIprep dataset and the postprocessed dataset.
+.. code-block:: console
 
-For a description of the various postprocessing steps, along with references,
-please see the following documentation:
-
-1. Nuisance Regression
-2. Frequency Filtering
-3. Scrubbing
-4. Spectral Interpolation
-
-.. click:: clpipe.fmri_process_check:fmri_process_check
-	:prog: clpipe reports fmri-process-check
-
-
-------------------
-SUSAN Spatial Smoothing
-------------------
-
-
-clpipe uses FSL's `SUSAN smoothing <https://fsl.fmrib.ox.ac.uk/fsl/fslwiki/SUSAN>`_ 
-to perform spatial smoothing. This step is usually done after postprocessing. 
-Options for this are configurable on a processing stream basis, 
-see config file for more details.
-
-.. click:: clpipe.susan_smoothing:susan_smoothing
-	:prog: susan_smoothing
-
-
+	clpipe postprocess -c clpipe_config.json -p smooth_aroma-regress_filter-butterworth_normalize -submit

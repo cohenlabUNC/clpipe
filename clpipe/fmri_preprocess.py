@@ -3,8 +3,8 @@ import sys
 from pathlib import Path
 
 from .batch_manager import BatchManager, Job
-from .config_json_parser import ClpipeConfigParser
-from .utils import get_logger, add_file_handler
+from .config.options import ProjectOptions
+from .utils import get_logger
 from .status import needs_processing, write_record
 
 STEP_NAME = "fmriprep-process"
@@ -38,42 +38,29 @@ def fmriprep_process(bids_dir=None, working_dir=None, output_dir=None,
     Specify subject IDs to run specific subjects. If left blank,
     runs all subjects.
     """
-    
-    config = ClpipeConfigParser()
-    config.config_updater(config_file)
-    config.setup_fmriprep_directories(
-        bids_dir, working_dir, output_dir, log_dir
+    # os.makedirs(config.fmriprep.working_directory, exist_ok=True)
+    config: ProjectOptions = ProjectOptions.load(config_file)
+    config.fmriprep.load_cli_args(
+        output_directory = output_dir,
+        working_directory = working_dir,
+        bids_directory = bids_dir,
+        log_directory = log_dir
     )
+    setup_dirs(config)
 
-    config = config.config
-    project_dir = config["ProjectDirectory"]
-    bids_dir = bids_dir if bids_dir else config['FMRIPrepOptions']['BIDSDirectory']
-    working_dir = working_dir if working_dir else config['FMRIPrepOptions']['WorkingDirectory']
-    output_dir = output_dir if output_dir else config['FMRIPrepOptions']['OutputDirectory']
-    log_dir = log_dir if log_dir else config['FMRIPrepOptions']['LogDirectory']
-    template_flow_path = config["FMRIPrepOptions"]["TemplateFlowPath"]
-    batch_config = config['BatchConfig']
-    mem_usage = config['FMRIPrepOptions']['FMRIPrepMemoryUsage']
-    time_usage = config['FMRIPrepOptions']['FMRIPrepTimeUsage']
-    n_threads = config['FMRIPrepOptions']['NThreads']
-    email = config["EmailAddress"]
-    cmd_line_opts = config['FMRIPrepOptions']['CommandLineOpts']
-    use_aroma_flag = config['FMRIPrepOptions']['UseAROMA']
-    docker_toggle = config['FMRIPrepOptions']['DockerToggle']
-    docker_fmriprep_version = \
-        config['FMRIPrepOptions']['DockerFMRIPrepVersion']
-    freesurfer_license_path = \
-        config['FMRIPrepOptions']['FreesurferLicensePath']
-    fmriprep_path = config['FMRIPrepOptions']['FMRIPrepPath']
+    logger = get_logger(STEP_NAME, debug=debug, log_dir=config.get_logs_dir())
 
-    add_file_handler(os.path.join(project_dir, "logs"))
-    logger = get_logger(STEP_NAME, debug=debug)
-
-    if working_dir == "SET WORKING DIRECTORY":
+    # Check to make sure working directory has been changed from the default
+    if config.fmriprep.working_directory == ProjectOptions().fmriprep.working_directory:
         logger.error("A working directory for this step must be provided in your config file.")
         sys.exit(1)
 
-    if not any([bids_dir, output_dir, working_dir, log_dir]):
+    if not any([
+        config.fmriprep.bids_directory, 
+        config.fmriprep.output_directory,
+        config.fmriprep.working_directory,
+        config.fmriprep.log_directory
+    ]):
         logger.error(
             'Please make sure the BIDS, working and output directories are '
             'specified in either the configfile or in the command. '
@@ -81,18 +68,18 @@ def fmriprep_process(bids_dir=None, working_dir=None, output_dir=None,
         )
         sys.exit(1)
 
-    logger.info(f"Starting fMRIprep job targeting: {bids_dir}")
+    logger.info(f"Starting fMRIprep job targeting: {config.fmriprep.bids_directory}")
     logger.debug(f"Using config file: {config_file}")
 
     template_1 = ""
     template_2 = ""
-    if config['FMRIPrepOptions']['TemplateFlowToggle']:
+    if config.fmriprep.templateflow_toggle:
         logger.debug("Template Flow toggle: ON")
 
-        if template_flow_path == "":
+        if config.fmriprep.templateflow_path == "":
             logger.error("Template flow toggle on but no template flow path given.")
             sys.exit(1)
-        logger.debug(f"Template Flow path: {template_flow_path}")
+        logger.debug(f"Template Flow path: {config.fmriprep.templateflow_path}")
 
         # Templateflow requires a caching directory that it for some reason
         #   does not make itself, so it is created here.
@@ -101,33 +88,32 @@ def fmriprep_process(bids_dir=None, working_dir=None, output_dir=None,
             user_templateflow_path.mkdir(parents=True)
 
         template_1 = TEMPLATE_1.format(
-            templateflowpath = template_flow_path
+            templateflowpath = config.fmriprep.templateflow_path
         )
         template_2 = TEMPLATE_2.format(
-            templateflowpath = template_flow_path
+            templateflowpath = config.fmriprep.templateflow_path
         )
         
-    if docker_toggle:
+    if config.fmriprep.docker_toggle:
         logger.debug("Using container type: Docker")
-        logger.debug(f"Docker fMRIprep version: {docker_fmriprep_version}")
+        logger.debug(f"Docker fMRIprep version: {config.fmriprep.fmriprep_path}")
     else:
         logger.debug("Using container type: Singularity")
-        logger.debug(f"Container path: {fmriprep_path}")
+        logger.debug(f"Container path: {config.fmriprep.docker_fmriprep_version}")
 
-    other_opts = cmd_line_opts
-    
-    use_aroma = ""
-    if USE_AROMA_FLAG in other_opts:
+
+    use_aroma_arg = ""
+    if USE_AROMA_FLAG in config.fmriprep.commandline_opts:
         logger.debug("Use AROMA: ON")  
-    elif use_aroma_flag:
+    elif config.fmriprep.use_aroma:
         logger.debug("Use AROMA: ON")
-        use_aroma = USE_AROMA_FLAG
+        use_aroma_arg = USE_AROMA_FLAG
     else:
         logger.debug("Use AROMA: OFF")
 
     if not subjects:
-        sublist = [o.replace('sub-', '') for o in os.listdir(bids_dir)
-                   if os.path.isdir(os.path.join(bids_dir, o)) and 'sub-' in o]
+        sublist = [o.replace('sub-', '') for o in os.listdir(config.fmriprep.bids_directory)
+                   if os.path.isdir(os.path.join(config.fmriprep.bids_directory, o)) and 'sub-' in o]
     else:
         sublist = subjects
 
@@ -144,41 +130,41 @@ def fmriprep_process(bids_dir=None, working_dir=None, output_dir=None,
 
     logger.info(f"Targeting subject(s): {', '.join(sublist)}")
 
-    batch_manager = BatchManager(batch_config, log_dir, debug=debug)
-    batch_manager.update_mem_usage(mem_usage)
-    batch_manager.update_time(time_usage)
-    batch_manager.update_nthreads(n_threads)
-    batch_manager.update_email(email)
+    batch_manager = BatchManager(config.batch_config_path, config.fmriprep.log_directory, debug=debug)
+    batch_manager.update_mem_usage(config.fmriprep.fmriprep_memory_usage)
+    batch_manager.update_time(config.fmriprep.fmriprep_time_usage)
+    batch_manager.update_nthreads(config.fmriprep.n_threads)
+    batch_manager.update_email(config.email_address)
 
     thread_command_active = batch_manager.config['ThreadCommandActive']
     batch_commands = batch_manager.config["FMRIPrepBatchCommands"]
     singularity_bind_paths = batch_manager.config['SingularityBindPaths']
 
-    threads = ''
+    threads_arg = ''
     if thread_command_active:
         logger.debug("Threads command: ACTIVE")
-        threads = f'{N_THREADS_FLAG} ' + batch_manager.get_threads_command()[1]
+        threads_arg = f'{N_THREADS_FLAG} ' + batch_manager.get_threads_command()[1]
         
     fmriprep_args = {
-        "bids_dir": bids_dir,
-        "output_dir": output_dir,
-        "working_dir": working_dir,
-        "fslicense": freesurfer_license_path,
-        "threads": threads,
-        "useAROMA": use_aroma,
-        "other_opts": other_opts
+        "bids_dir": config.fmriprep.bids_directory,
+        "output_dir": config.fmriprep.output_directory,
+        "working_dir": config.fmriprep.working_directory,
+        "fslicense": config.fmriprep.freesurfer_license_path,
+        "threads": threads_arg,
+        "useAROMA": use_aroma_arg,
+        "other_opts": config.fmriprep.commandline_opts
     }
 
     for sub in sublist:
         fmriprep_args["participantLabels"] = sub
-        if docker_toggle:
-            fmriprep_args["docker_fmriprep"] = docker_fmriprep_version
+        if config.fmriprep.docker_toggle:
+            fmriprep_args["docker_fmriprep"] = config.fmriprep.docker_fmriprep_version
 
             submission_string = BASE_DOCKER_CMD.format(**fmriprep_args)    
         else:
             fmriprep_args["templateflow1"] = template_1
             fmriprep_args["templateflow2"] = template_2
-            fmriprep_args["fmriprepInstance"] = fmriprep_path
+            fmriprep_args["fmriprepInstance"] = config.fmriprep.fmriprep_path
             fmriprep_args["batchcommands"] = batch_commands
             fmriprep_args["bindPaths"] = singularity_bind_paths
 
@@ -196,3 +182,8 @@ def fmriprep_process(bids_dir=None, working_dir=None, output_dir=None,
     else:
         batch_manager.print_jobs()
     sys.exit(0)
+
+
+def setup_dirs(config: ProjectOptions):
+    os.makedirs(config.fmriprep.output_directory, exist_ok=True)
+    os.makedirs(config.fmriprep.log_directory, exist_ok=True)
