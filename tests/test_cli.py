@@ -14,6 +14,14 @@ def test_cli():
 
     assert e.value.code == 0
 
+def test_source_cli(clpipe_dicom_dir: Path):
+    """Simple test to ensure the source commmand runs without error."""
+
+    runner = CliRunner()
+    result = runner.invoke(flywheel_sync_cli, ["-c", str(clpipe_dicom_dir / "clpipe_config.json")])
+    print(result.output)
+    assert result.exit_code == 0
+
 def test_project_setup_cli(scatch_dir: Path):
     """Check basic functionality."""
     
