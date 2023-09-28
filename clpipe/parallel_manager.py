@@ -23,7 +23,7 @@ class ParallelManager:
 
     def __init__(
         self,
-        batch_system_config: os.PathLike,
+        parallel_system_config: os.PathLike,
         output_directory=None,
         debug=False,
         mem_use=None,
@@ -34,13 +34,13 @@ class ParallelManager:
         self.debug = debug
         self.logger = get_logger(LOGGER_NAME, debug=debug)
 
-        if os.path.exists(os.path.abspath(batch_system_config)):
-            self.logger.debug(f"Using batch config at: {batch_system_config}")
-            with open(os.path.abspath(batch_system_config)) as bat_config:
+        if os.path.exists(os.path.abspath(parallel_system_config)):
+            self.logger.debug(f"Using batch config at: {parallel_system_config}")
+            with open(os.path.abspath(parallel_system_config)) as bat_config:
                 self.config = json.load(bat_config)
         else:
             with resource_stream(
-                __name__, "batchConfigs/" + batch_system_config
+                __name__, "batchConfigs/" + parallel_system_config
             ) as bat_config:
                 self.config = json.load(bat_config)
 
@@ -178,3 +178,7 @@ class JobRunner:
 
     def add_job(self, job):
         self.job_queue.append(job)
+
+    def submit_jobs():
+        # Method to submit and run jobs from appropriate manager.
+        pass

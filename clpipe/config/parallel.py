@@ -19,4 +19,3 @@ class ParallelConfig:
     email: str = field(
         default=None, metadata={"description": "Email address for job notifications."}
     )
-    submission_head: 
