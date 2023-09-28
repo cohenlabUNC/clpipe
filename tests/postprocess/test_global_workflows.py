@@ -46,7 +46,7 @@ def test_build_postprocessing_wf_no_mask(
     postprocessing_config.processing_steps = [
         "IntensityNormalization",
         "TemporalFiltering",
-        "SpatialSmoothing"
+        "SpatialSmoothing",
     ]
 
     test_path = helpers.create_test_dir(artifact_dir, request.node.name)
@@ -76,7 +76,6 @@ def test_build_postprocessing_wf_2_steps(
     sample_confounds_timeseries,
     helpers,
 ):
-    
     postprocessing_config = ProjectOptions().postprocessing
     postprocessing_config.processing_steps = [
         "SpatialSmoothing",
@@ -137,7 +136,7 @@ def test_build_postprocessing_wf_1_step(
     wf.write_graph(dotfilename=test_path / "workflow_graph", graph2use="colored")
     wf.run()
 
-    
+
 def test_postprocess2_wf_confound_regression_last(
     artifact_dir,
     request,
@@ -205,6 +204,7 @@ def test_postprocess2_wf_confound_regression_first(
     wf.write_graph(dotfilename=test_path / "workflow_graph", graph2use="colored")
     wf.run()
 
+
 @pytest.mark.skip(reason="Test runs long")
 def test_postprocess2_wf_aroma(
     artifact_dir,
@@ -247,6 +247,7 @@ def test_postprocess2_wf_aroma(
     helpers.plot_timeseries(out_path, sample_raw_image)
     helpers.plot_4D_img_slice(out_path, "postprocessed.png")
 
+
 @pytest.mark.skip(reason="Test runs long")
 def test_postprocess2_wf_aroma_last(
     artifact_dir,
@@ -264,7 +265,6 @@ def test_postprocess2_wf_aroma_last(
         "SpatialSmoothing",
         "AROMARegression",
     ]
-    
 
     test_path = helpers.create_test_dir(artifact_dir, request.node.name)
     out_path = test_path / "postprocessed_image.nii.gz"
@@ -311,14 +311,8 @@ def test_postprocess2_wf_scrubbing(
 
     # Setup target & threshold to ensure some scrubbing happens
     postprocessing_config.processing_step_options.scrub_timepoints.scrub_columns = [
-        ScrubColumn(
-            target_variable="csf",
-            threshold=332.44
-        ),
-        ScrubColumn(
-            target_variable="trans_y*",
-            threshold=0.1
-        )
+        ScrubColumn(target_variable="csf", threshold=332.44),
+        ScrubColumn(target_variable="trans_y*", threshold=0.1),
     ]
 
     test_path = helpers.create_test_dir(artifact_dir, request.node.name)
@@ -342,6 +336,7 @@ def test_postprocess2_wf_scrubbing(
 
     helpers.plot_timeseries(out_path, sample_raw_image)
     helpers.plot_4D_img_slice(out_path, "postprocessed.png")
+
 
 @pytest.mark.skip("Test runs long")
 def test_postprocess2_wf_scrubbing_aroma(
@@ -370,16 +365,10 @@ def test_postprocess2_wf_scrubbing_aroma(
     ]
 
     # Setup target & threshold to ensure some scrubbing happens
-    postprocessing_config.processing_step_options.scrub_timepoints = \
-        ScrubTimepoints(
-            insert_na=True,
-            scrub_columns=[
-                ScrubColumn(
-                    target_variable="csf",
-                    threshold=332.44
-                )
-            ]
-        )
+    postprocessing_config.processing_step_options.scrub_timepoints = ScrubTimepoints(
+        insert_na=True,
+        scrub_columns=[ScrubColumn(target_variable="csf", threshold=332.44)],
+    )
 
     test_path = helpers.create_test_dir(artifact_dir, request.node.name)
     out_path = test_path / "postprocessed_image.nii.gz"
@@ -433,16 +422,10 @@ def test_postprocess2_wf_scrubbing_confound_regression(
 
     # Setup target & threshold to ensure some scrubbing happens
     # Setup target & threshold to ensure some scrubbing happens
-    postprocessing_config.processing_step_options.scrub_timepoints = \
-        ScrubTimepoints(
-            insert_na=True,
-            scrub_columns=[
-                ScrubColumn(
-                    target_variable="csf",
-                    threshold=332.44
-                )
-            ]
-        )
+    postprocessing_config.processing_step_options.scrub_timepoints = ScrubTimepoints(
+        insert_na=True,
+        scrub_columns=[ScrubColumn(target_variable="csf", threshold=332.44)],
+    )
 
     test_path = helpers.create_test_dir(artifact_dir, request.node.name)
     out_path = test_path / "postprocessed_image.nii.gz"
@@ -465,7 +448,6 @@ def test_postprocess2_wf_scrubbing_confound_regression(
     wf.write_graph(dotfilename=test_path / "workflow_graph", graph2use="colored")
     wf.run()
 
-
     helpers.plot_timeseries(out_path, sample_raw_image)
     helpers.plot_4D_img_slice(out_path, "postprocessed.png")
 
@@ -479,24 +461,17 @@ def test_build_multiple_scrubbing_workflow(
     test_path = helpers.create_test_dir(artifact_dir, request.node.name)
 
     postprocessing_config = ProjectOptions().postprocessing
-    postprocessing_config.processing_step_options.scrub_timepoints = \
-        ScrubTimepoints(
-            insert_na=True,
-            scrub_columns=[
-                ScrubColumn(
-                    target_variable="csf",
-                    threshold=332.44
-                ),
-                ScrubColumn(
-                    target_variable="framewise_displacement",
-                    threshold=0.13
-                )
-            ]
-        )
+    postprocessing_config.processing_step_options.scrub_timepoints = ScrubTimepoints(
+        insert_na=True,
+        scrub_columns=[
+            ScrubColumn(target_variable="csf", threshold=332.44),
+            ScrubColumn(target_variable="framewise_displacement", threshold=0.13),
+        ],
+    )
 
     test_wf = build_multiple_scrubbing_workflow(
         postprocessing_config.processing_step_options.scrub_timepoints,
-        sample_confounds_timeseries
+        sample_confounds_timeseries,
     )
 
     # Passing in the inputs externally

@@ -12,7 +12,6 @@ def test_glm_launch_controller_L1(glm_config_file: Path):
     assert e.value.code == 0
 
 
-
 def test_glm_launch_controller_L2(glm_config_file: Path):
     """Check running glm_launch controller."""
 
@@ -20,7 +19,6 @@ def test_glm_launch_controller_L2(glm_config_file: Path):
         glm_launch(glm_config_file=glm_config_file, level="L2", model="example")
 
     assert e.value.code == 0
-
 
 
 def test_glm_launch_controller_invalid_level(glm_config_file: Path):

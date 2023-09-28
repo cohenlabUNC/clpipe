@@ -115,7 +115,7 @@ def build_postprocessing_wf(
     if STEP_SCRUB_TIMEPOINTS in processing_steps:
         mult_scrub_wf = build_multiple_scrubbing_workflow(
             processing_options.processing_step_options.scrub_timepoints.scrub_columns,
-            confounds_file
+            confounds_file,
         )
         mult_scrub_wf.get_node("inputnode").inputs.confounds_file = confounds_file
 

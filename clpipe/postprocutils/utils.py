@@ -377,14 +377,15 @@ def vector_to_txt(vector):
 
     return str(fname.resolve())
 
+
 def construct_motion_outliers(scrub_targets):
     import pandas
     import numpy as np
 
     size = sum(scrub_targets)
-    mot_outliers = pandas.DataFrame(np.zeros((len(scrub_targets),size)))
+    mot_outliers = pandas.DataFrame(np.zeros((len(scrub_targets), size)))
     counter = 0
-    for ind, i  in enumerate(scrub_targets):
+    for ind, i in enumerate(scrub_targets):
         if i == 1:
             mot_outliers.iloc[ind, counter] = 1
             counter += 1
