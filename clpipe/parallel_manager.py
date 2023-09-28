@@ -9,7 +9,7 @@ from clpipe.config.parallel import ParallelConfig
 # so as to allow for no-quotes, no equals, and to not have various options
 # for example, BIAC doesn't have time or number of cores as options.
 
-LOGGER_NAME = "batch-manager"
+LOGGER_NAME = "parallel-manager"
 OUTPUT_FORMAT_STR = "Output-{jobid}-jobid-%j.out"
 JOB_ID_FORMAT_STR = "{jobid}"
 MAX_JOB_DISPLAY = 5
@@ -31,7 +31,6 @@ class ParallelManager:
         threads=None,
         email=None,
     ):
-        self.jobs = []
         self.debug = debug
         self.logger = get_logger(LOGGER_NAME, debug=debug)
 
@@ -76,12 +75,6 @@ class ParallelManager:
 
     def update_email(self, email):
         self.config.email = email
-
-    def addjob(self, job):
-        self.jobs.append(job)
-
-    def add_job(self, job):
-        return self.addjob(job)
 
     def compilejobstrings(self):
         header = self.createsubmissionhead()
@@ -185,30 +178,3 @@ class JobRunner:
 
     def add_job(self, job):
         self.job_queue.append(job)
-
-
-# Top job container
-class JobQueue:
-    def __init__(self) -> None:
-        pass
-
-    def add_job():
-        pass
-
-
-class Job:
-    pass
-
-
-# These go in container
-class ParallelJob:
-    def __init__(self, jobID, jobString):
-        self.jobID = jobID
-        self.jobString = jobString
-
-
-class LocalJob:
-    pass
-
-
-# Both parallel config and jobs are passed into JobQueue to be run
