@@ -3,7 +3,7 @@ import sys
 from pathlib import Path
 
 from .config.glm import *
-from .batch_manager import BatchManager, Job, DEFAULT_BATCH_CONFIG_PATH
+from .parallel_manager import BatchManager, Job, DEFAULT_BATCH_CONFIG_PATH
 from .utils import get_logger
 
 DEFAULT_L1_MEMORY_USAGE = "10G"

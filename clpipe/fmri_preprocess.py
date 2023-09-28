@@ -2,7 +2,7 @@ import os
 import sys
 from pathlib import Path
 
-from .batch_manager import BatchManager, Job
+from .parallel_manager import BatchManager, Job
 from .config.options import ProjectOptions
 from .utils import get_logger
 from .status import needs_processing, write_record

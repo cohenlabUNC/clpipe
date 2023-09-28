@@ -167,15 +167,35 @@ class ParallelManager:
 
 # Would take manager
 class JobRunner:
-    def __init__(self, JobManager) -> None:
-        pass
+    def __init__(self, method: str) -> None:
+        """
+        Initializes a JobRunner object.
+
+         Args:
+             method (str): "Parallel / Local"
+             The method to be used for running the job.
+        """
+        self.job_queue = []
+        self.method = method
+
+        if method == "parallel":
+            self.job_manager = ParallelManager()
+        else:
+            self.job_manager = None
+
+    def add_job(self, job):
+        self.job_queue.append(job)
+
 
 # Top job container
 class JobQueue:
     def __init__(self) -> None:
         pass
+
     def add_job():
         pass
+
+
 class Job:
     pass
 
@@ -185,6 +205,7 @@ class ParallelJob:
     def __init__(self, jobID, jobString):
         self.jobID = jobID
         self.jobString = jobString
+
 
 class LocalJob:
     pass

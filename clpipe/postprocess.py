@@ -32,7 +32,7 @@ with warnings.catch_warnings():
 
 from .config.options import ProjectOptions, PostProcessingRunConfig, DEFAULT_WORKING_DIRECTORY
 from .config.options import DEFAULT_PROCESSING_STREAM
-from .batch_manager import BatchManager, Job
+from .parallel_manager import BatchManager, Job
 from .postprocutils.global_workflows import build_postprocessing_wf
 from .postprocutils.utils import draw_graph
 from .utils import get_logger, resolve_fmriprep_dir

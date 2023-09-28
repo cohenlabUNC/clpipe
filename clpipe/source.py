@@ -3,7 +3,7 @@ from .utils import get_logger
 import os
 from pathlib import Path
 
-from .batch_manager import BatchManager, Job
+from .parallel_manager import BatchManager, Job
 
 FLYWHEEL_TEMP_DIR_NAME = "'<TemporaryDirectory '\\'''/"
 

@@ -1,5 +1,5 @@
 import click
-from .batch_manager import BatchManager,Job
+from .parallel_manager import BatchManager,Job
 from .config_json_parser import ClpipeConfigParser
 from nipype.interfaces.fsl.utils import ExtractROI
 import os

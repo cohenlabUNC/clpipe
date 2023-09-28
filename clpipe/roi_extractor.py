@@ -14,7 +14,7 @@ import json
 import glob
 import shutil
 from .config.options import ProjectOptions
-from .batch_manager import BatchManager, Job
+from .parallel_manager import BatchManager, Job
 from pkg_resources import resource_stream, resource_filename
 from .errors import MaskFileNotFoundError
 from .utils import get_logger, resolve_fmriprep_dir
