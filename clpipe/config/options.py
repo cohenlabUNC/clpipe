@@ -167,9 +167,9 @@ class Convert2BIDSOptions(Option):
             raise ValidationError("Must be type '.py' or '.json'")
 
     def populate_project_paths(self, project_directory: os.PathLike, source_data: os.PathLike):
-        # create as alt constructor?
+        # Get abs path of project directory
 
-        self.dicom_directory = os.path.abspath(source_data)
+        self.dicom_directory = source_data
         self.conversion_config = os.path.join(project_directory, 'conversion_config.json')
         self.bids_directory = os.path.join(project_directory, 'data_BIDS')
         self.log_directory = os.path.join(project_directory, "logs", "DCM2BIDS_logs")
@@ -711,7 +711,7 @@ class ProjectOptions(Option):
             project_dir (os.PathLike): Root directory of the project.
             source_data (os.PathLike): Directory pointing to the source DICOM data.
         """
-        self.project_directory = os.path.abspath(project_dir)
+        self.project_directory = project_dir
 
         self.convert2bids.populate_project_paths(project_dir, source_data)
         self.bids_validation.populate_project_paths(project_dir)
