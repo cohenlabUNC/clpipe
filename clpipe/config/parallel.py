@@ -10,7 +10,7 @@ from pathlib import Path
 
 
 @dataclass
-class ParralelManagerConfig:
+class ParallelManagerConfig:
     """
     Config dataclass for ParallelManager
     """
