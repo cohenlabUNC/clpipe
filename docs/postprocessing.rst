@@ -89,6 +89,7 @@ Step Options section for more information about configuring this section.
 	}
 
 **Top-Level Definitions**
+
 .. autoclass:: clpipe.config.options.PostProcessingOptions
 	:members:
 
@@ -353,10 +354,12 @@ while this step adds a variable number of columns to your confounds.
 
 Resample
 --------------------
+
 .. autoclass:: clpipe.config.project.Resample
 
 Trim Timepoints
 --------------------
+
 .. autoclass:: clpipe.config.project.TrimTimepoints
 
 Batch Options
