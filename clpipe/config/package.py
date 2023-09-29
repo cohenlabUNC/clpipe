@@ -19,12 +19,11 @@ PYTHON_REQUIRES = f'>={PYTHON_VERSION}'
 INSTALL_REQUIRES = [
       'jsonschema==4.17.3',
       'click==8.1.3',
-      'nipy==0.5.0',
       'numpy==1.21.6',
+      'nipy==0.5.0',
       'pandas==1.3.5',
       'nibabel==4.0.2',
       'scipy==1.2.2',
-      'sphinx_rtd_theme==1.2.0',
       'psutil==5.9.5',
       'parse==1.19.0',
       'nilearn==0.9.0',
