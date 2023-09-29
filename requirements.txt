@@ -1,13 +1,10 @@
+# Development Tools
 build
 pytest
 wheel
 
-# Documentation builder tools
-markdown-it-py==2.0.1 
-myst-parser==0.16.1 
-sphinx==4.5.0
-sphinx-jsonschema==1.17.2
-sphinx-click==4.3.0
+# Install the Documentation Dependencies
+-r docs/requirements.txt
 
 # Install this package in edit mode
 -e .
