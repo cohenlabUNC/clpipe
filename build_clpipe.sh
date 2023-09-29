@@ -3,7 +3,7 @@
 echo "Starting build"
 
 echo "Clearing previous build"
-rm -r dist/*
+rm -rf dist/*
 
 # Build the .whl file
 echo "Building wheel"
