@@ -3,15 +3,11 @@ from dataclasses import dataclass, field
 from pathlib import Path
 import json
 
-
-# Questions:
-
-# Frozen dataclasses
-# Do I need to add string literals after every attribute created here?
+# Move this into Option
 
 
 @dataclass
-class ParallelManagerConfig:
+class ParallelManagerConfig(Option):
     """
     Config dataclass for ParallelManager
     """
@@ -67,3 +63,5 @@ class ParallelManagerConfig:
         with open(json_file_path, "r") as file:
             config_data = json.load(file)
         return cls(**config_data)
+
+    # USE THE OPTIONS LOAD.
