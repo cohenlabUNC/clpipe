@@ -3,7 +3,7 @@ from pkg_resources import resource_stream
 import os
 
 from .utils import get_logger
-from clpipe.config.parallel import ParallelConfig
+from clpipe.config.parallel import ParallelManagerConfig
 
 # TODO: We need to update the batch manager to be more flexible,
 # so as to allow for no-quotes, no equals, and to not have various options
@@ -21,6 +21,9 @@ class ParallelManager:
     Handles the creation and submission of batch jobs.
     """
 
+    # How to work with parallel_system_config? JSON dump into dataclass?
+    # need to figure out how to JSON dump - look at how Will did it in options.
+    # for now just working with
     def __init__(
         self,
         parallel_system_config: os.PathLike,
@@ -34,15 +37,15 @@ class ParallelManager:
         self.debug = debug
         self.logger = get_logger(LOGGER_NAME, debug=debug)
 
-        if os.path.exists(os.path.abspath(parallel_system_config)):
-            self.logger.debug(f"Using batch config at: {parallel_system_config}")
-            with open(os.path.abspath(parallel_system_config)) as bat_config:
-                self.config = json.load(bat_config)
-        else:
-            with resource_stream(
-                __name__, "batchConfigs/" + parallel_system_config
-            ) as bat_config:
-                self.config = json.load(bat_config)
+        # if os.path.exists(os.path.abspath(parallel_system_config)):
+        #     self.logger.debug(f"Using batch config at: {parallel_system_config}")
+        #     with open(os.path.abspath(parallel_system_config)) as bat_config:
+        #         self.config = json.load(bat_config)
+        # else:
+        #     with resource_stream(
+        #         __name__, "batchConfigs/" + parallel_system_config
+        #     ) as bat_config:
+        #         self.config = json.load(bat_config)
 
         self.submission_list = []
         if output_directory is None:
@@ -56,7 +59,8 @@ class ParallelManager:
             os.makedirs(output_directory)
             self.logger.debug(f"Created batch output directory at: {output_directory}")
 
-        self.config = ParallelConfig()
+        self.config = ParallelManagerConfig.from_json(parallel_system_config)
+
         self.config.mem_use = mem_use
         self.config.time = time
         self.config.threads = threads
@@ -86,40 +90,34 @@ class ParallelManager:
         return self.compilejobstrings()
 
     def createsubmissionhead(self):
-        head = [self.config["SubmissionHead"]]
-        for e in self.config["SubmissionOptions"]:
+        head = [self.config.SubmissionHead]
+        for e in self.config.SubmissionOptions:
             temp = e["command"] + " " + e["args"]
             head.append(temp)
-        for e in self.config["SubOptionsEqual"]:
+        for e in self.config.SubOptionsEqual:
             temp = e["command"] + "=" + e["args"]
             head.append(temp)
 
-        head.append(
-            self.config["MemoryCommand"].format(mem=self.config["MemoryDefault"])
-        )
-        if self.config["TimeCommandActive"]:
+        head.append(self.config.MemoryCommand.format(mem=self.config.MemoryDefault))
+        if self.config.TimeCommandActive:
+            head.append(self.config.TimeCommand.format(time=self.config.TimeDefault))
+        if self.config.ThreadCommandActive:
             head.append(
-                self.config["TimeCommand"].format(time=self.config["TimeDefault"])
+                self.config.NThreadsCommand.format(nthreads=self.config.NThreads)
             )
-        if self.config["ThreadCommandActive"]:
+        if self.config.JobIDCommandActive:
+            head.append(self.config.JobIDCommand.format(jobid=JOB_ID_FORMAT_STR))
+        if self.config.OutputCommandActive:
             head.append(
-                self.config["NThreadsCommand"].format(nthreads=self.config["NThreads"])
-            )
-        if self.config["JobIDCommandActive"]:
-            head.append(self.config["JobIDCommand"].format(jobid=JOB_ID_FORMAT_STR))
-        if self.config["OutputCommandActive"]:
-            head.append(
-                self.config["OutputCommand"].format(
+                self.config.OutputCommand.format(
                     output=os.path.abspath(
                         os.path.join(self.output_dir, OUTPUT_FORMAT_STR)
                     )
                 )
             )
-        if self.config["EmailAddress"]:
-            head.append(
-                self.config["EmailCommand"].format(email=self.config["EmailAddress"])
-            )
-        head.append(self.config["CommandWrapper"])
+        if self.config.EmailAddress:
+            head.append(self.config.EmailAddress.format(email=self.config.EmailAddress))
+        head.append(self.config.CommandWrapper)
 
         return " ".join(head)
 
@@ -128,10 +126,10 @@ class ParallelManager:
 
     def submit_jobs(self):
         self.logger.info(f"Submitting {len(self.submission_list)} job(s).")
-        self.logger.debug(f"Memory usage: {self.config['MemoryDefault']}")
-        self.logger.debug(f"Time usage: {self.config['TimeDefault']}")
-        self.logger.debug(f"Number of threads: {self.config['NThreads']}")
-        self.logger.debug(f"Email: {self.config['EmailAddress']}")
+        self.logger.debug(f"Memory usage: {self.config.MemoryDefault}")
+        self.logger.debug(f"Time usage: {self.config.TimeDefault}")
+        self.logger.debug(f"Number of threads: {self.config.NThreads}")
+        self.logger.debug(f"Email: {self.config.EmailAddress}")
         for job in self.submission_list:
             os.system(job)
 
@@ -155,7 +153,7 @@ class ParallelManager:
         self.logger.info(output)
 
     def get_threads_command(self):
-        return [self.config["NThreadsCommand"], self.config["NThreads"]]
+        return [self.config.NThreadsCommand, self.config.NThreads]
 
 
 # Would take manager

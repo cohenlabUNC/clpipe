@@ -1,6 +1,7 @@
 from typing import List
 from dataclasses import dataclass, field
 from pathlib import Path
+import json
 
 
 # Questions:
@@ -40,7 +41,7 @@ class ParallelManagerConfig:
     # This is the best way I could figure out to use one dataclass but use different
     # default configs.
     # This is example config
-    # unc_config = BatchConfig.from_default("unc")
+    # unc_config = ParallelManagerConfig.from_default("unc")
     @classmethod
     def from_default(cls, config_type="unc"):
         defaults = {
@@ -60,3 +61,9 @@ class ParallelManagerConfig:
             },
         }
         return cls(**defaults.get(config_type, {}))
+
+    @classmethod
+    def from_json(cls, json_file_path):
+        with open(json_file_path, "r") as file:
+            config_data = json.load(file)
+        return cls(**config_data)
