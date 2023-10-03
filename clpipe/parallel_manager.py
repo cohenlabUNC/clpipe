@@ -16,7 +16,11 @@ MAX_JOB_DISPLAY = 5
 DEFAULT_BATCH_CONFIG_PATH = "slurmUNCConfig.json"
 
 
-class ParallelManager:
+class JobRunner:
+    pass
+
+
+class ParallelRunner(JobRunner):
     """
     Handles the creation and submission of batch jobs.
     """
@@ -59,7 +63,9 @@ class ParallelManager:
             os.makedirs(output_directory)
             self.logger.debug(f"Created batch output directory at: {output_directory}")
 
-        self.config = ParallelManagerConfig.from_json(parallel_system_config)
+        self.config = ParallelManagerConfig.load(
+            os.path.abspath(parallel_system_config)
+        )
 
         self.config.mem_use = mem_use
         self.config.time = time
@@ -81,9 +87,9 @@ class ParallelManager:
         self.config.email = email
 
     def compilejobstrings(self):
-        header = self.createsubmissionhead()
-        for job in self.jobs:
-            temp = header.format(jobid=job.jobID, cmdwrap=job.jobString)
+        header = self.create_submission_head()
+        for job in self.job_queue:
+            temp = header.format(job_id=job.job_id, cmdwrap=job.job_string)
             self.submission_list.append(temp)
 
     def compile_job_strings(self):
@@ -133,6 +139,33 @@ class ParallelManager:
         for job in self.submission_list:
             os.system(job)
 
+    def get_threads_command(self):
+        return [self.config.NThreadsCommand, self.config.NThreads]
+
+
+# Would take manager
+class JobManager:
+    def __init__(self, method: str) -> None:
+        """
+        Initializes a JobRunner object.
+
+         Args:
+             method (str): "Parallel / Local"
+             The method to be used for running the job.
+        """
+        self.job_queue = []
+        if method == "parallel":
+            self.job_runner = ParallelRunner()
+        else:
+            self.job_runner = LocalRunner()
+
+    def add_job(self, job_id, job_string):
+        self.job_queue.append(Job(job_id, job_string))
+
+    def submit_jobs(self):
+        # Method to submit and run jobs from appropriate manager.
+        self.job_manager.submit_jobs()
+
     def print_jobs(self):
         job_count = len(self.submission_list)
 
@@ -152,31 +185,12 @@ class ParallelManager:
             output += "Re-run with the '-submit' flag to launch these jobs."
         self.logger.info(output)
 
-    def get_threads_command(self):
-        return [self.config.NThreadsCommand, self.config.NThreads]
+
+class LocalRunner(JobRunner):
+    pass
 
 
-# Would take manager
-class JobRunner:
-    def __init__(self, method: str) -> None:
-        """
-        Initializes a JobRunner object.
-
-         Args:
-             method (str): "Parallel / Local"
-             The method to be used for running the job.
-        """
-        self.job_queue = []
-        self.method = method
-
-        if method == "parallel":
-            self.job_manager = ParallelManager()
-        else:
-            self.job_manager = None
-
-    def add_job(self, job):
-        self.job_queue.append(job)
-
-    def submit_jobs():
-        # Method to submit and run jobs from appropriate manager.
-        pass
+class Job:
+    def __init__(self, job_id, job_string):
+        self.job_id = job_id
+        self.job_string = job_string
