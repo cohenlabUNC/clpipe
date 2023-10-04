@@ -182,7 +182,7 @@ class ParallelManagerConfig(Option):
     time_command_active: bool = field(default=True, metadata={"required": True})
     thread_command_active: bool = field(default=True, metadata={"required": True})
     job_id_command_active: bool = field(default=True, metadata={"required": True})
-    output_command_Active: bool = field(default=True, metadata={"required": True})
+    output_command_active: bool = field(default=True, metadata={"required": True})
     singularity_bind_paths: str = field(
         default="/proj,/pine,/work,/nas02,/nas", metadata={"required": True}
     )
