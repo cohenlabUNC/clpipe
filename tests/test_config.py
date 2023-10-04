@@ -14,8 +14,8 @@ because we will always load the config object from the new config file only
 
 
 def test_json_load(config_file):
-    """ Ensure that the config class loads in .json data as expected. """
-    
+    """Ensure that the config class loads in .json data as expected."""
+
     options = ProjectOptions.load(config_file)
     assert options is not None
     assert options.project_title == "test_project"
@@ -27,7 +27,7 @@ def test_json_load(config_file):
 
 def test_yaml_load(config_file, tmp_path):
     """Ensure that the config class loads from .yaml as expected."""
-    
+
     options = ProjectOptions.load(config_file)
     options.dump(os.path.join(tmp_path, "config.yaml"))
     options_yaml = ProjectOptions.load(os.path.join(tmp_path, "config.yaml"))
@@ -46,10 +46,7 @@ def test_default(legacy_config_path):
     options = ProjectOptions.load(legacy_config_path)
     assert options.project_title == "test_project"
     assert options.contributors == "SET AUTHOR"
-    assert (
-        options.source.mem_usage
-        == "10G"
-    )
+    assert options.source.mem_usage == "10G"
 
 
 @pytest.mark.skip(reason="Need to generate wrong order from correct order dict")
@@ -65,10 +62,12 @@ def test_wrong_order(config_file, tmp_path):
         newConf = json.load(f)
 
     convertedConfig = convert_project_config(oldConf, newConf)
-    with open(os.path.join(tmp_path,'convertedConfig.json'), 'w') as f:
+    with open(os.path.join(tmp_path, "convertedConfig.json"), "w") as f:
         json.dump(convertedConfig, f)
 
-    convertedConfig = ProjectOptions.load(os.path.join(tmp_path,'convertedConfig.json'))
+    convertedConfig = ProjectOptions.load(
+        os.path.join(tmp_path, "convertedConfig.json")
+    )
     correctConfig = ProjectOptions.load()
     assert correctConfig == convertedConfig
 
@@ -85,29 +84,30 @@ def test_author_contributor(legacy_config_path):
 def test_dump_project_config_yaml_default(helpers, artifact_dir, request):
     test_dir = helpers.create_test_dir(artifact_dir, request.node.name)
 
-    ProjectOptions().dump(test_dir / 'test_project_options.yaml')
+    ProjectOptions().dump(test_dir / "test_project_options.yaml")
 
 
 def test_dump_project_config_json_default(helpers, artifact_dir, request):
     test_dir = helpers.create_test_dir(artifact_dir, request.node.name)
 
-    ProjectOptions().dump(test_dir / 'test_project_options.json')
+    ProjectOptions().dump(test_dir / "test_project_options.json")
 
 
 def test_dump_project_config_json(helpers, artifact_dir, request):
     test_dir = helpers.create_test_dir(artifact_dir, request.node.name)
 
-    config:ProjectOptions = ProjectOptions()
+    config: ProjectOptions = ProjectOptions()
     config.populate_project_paths(test_dir, "test_source")
-    config.dump(test_dir / 'test_project_options.json')
+    config.dump(test_dir / "test_project_options.json")
 
 
 def test_dump_project_config_yaml(helpers, artifact_dir, request):
     test_dir = helpers.create_test_dir(artifact_dir, request.node.name)
 
-    config:ProjectOptions = ProjectOptions()
+    config: ProjectOptions = ProjectOptions()
     config.populate_project_paths(test_dir, "test_source")
-    config.dump(test_dir / 'test_project_options.yaml')
+    config.dump(test_dir / "test_project_options.yaml")
+
 
 def test_update_config_file_legacy(legacy_config_dir):
     """Test to ensure legacy config update to new format works."""
@@ -115,20 +115,48 @@ def test_update_config_file_legacy(legacy_config_dir):
 
     update_config_file(config_file)
 
+
 def test_update_config_file_legacy_relative(legacy_config_dir):
     """Test to ensure legacy config update to new format works when using
-        just 'clpipe_config.json' within clpipe dir."""
+    just 'clpipe_config.json' within clpipe dir."""
     original_dir = os.getcwd()
     os.chdir(legacy_config_dir)
-    
+
     update_config_file("clpipe_config.json")
 
     # Make sure to reset to original directory to not mess up other tests.
     os.chdir(original_dir)
 
+
 def test_update_config_file_legacy_backup(legacy_config_dir):
     """Test to ensure legacy config update to new format works when using
-        just 'clpipe_config.json' within clpipe dir."""
+    just 'clpipe_config.json' within clpipe dir."""
     config_file = legacy_config_dir / "clpipe_config.json"
-    
+
     update_config_file(config_file, backup=True)
+
+
+@pytest.fixture
+def parallel_config_default():
+    return ParallelManagerConfig()
+
+
+@pytest.fixture
+def parallel_config_variant():
+    return ParallelManagerConfig.from_default("pitt")
+
+
+def test_dump_parallel_manager_config_json(helpers, artifact_dir, request):
+    test_dir = helpers.create_test_dir(artifact_dir, request.node.name)
+
+    output_file_path = os.path.join(test_dir, "default_config.json")
+
+    parallel_config_default.dump(output_file_path)
+
+    assert os.path.exists(output_file_path)
+
+    # Load the dumped config from the output file
+    with open(output_file_path, "r") as file:
+        loaded_config = json.load(file)
+
+    assert loaded_config == parallel_config_default.to_dict()
