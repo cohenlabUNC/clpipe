@@ -136,22 +136,12 @@ def test_update_config_file_legacy_backup(legacy_config_dir):
     update_config_file(config_file, backup=True)
 
 
-@pytest.fixture
-def parallel_config_default():
-    return ParallelManagerConfig()
-
-
-@pytest.fixture
-def parallel_config_variant():
-    return ParallelManagerConfig.from_default("pitt")
-
-
 def test_dump_parallel_manager_config_json(helpers, artifact_dir, request):
-    test_dir = helpers.create_test_dir(artifact_dir, request.node.name)
+    test_dir = helpers.create_test_dir(artifact_dir / "config_tests", request.node.name)
 
     output_file_path = os.path.join(test_dir, "default_config.json")
-
-    parallel_config_default.dump(output_file_path)
+    parallel_config = ParallelManagerConfig()
+    parallel_config.dump(output_file_path)
 
     assert os.path.exists(output_file_path)
 
@@ -159,4 +149,33 @@ def test_dump_parallel_manager_config_json(helpers, artifact_dir, request):
     with open(output_file_path, "r") as file:
         loaded_config = json.load(file)
 
-    assert loaded_config == parallel_config_default.to_dict()
+    assert loaded_config == parallel_config.to_dict()
+
+
+def test_dump_variant_parallel_manager_config_json(helpers, artifact_dir, request):
+    test_dir = helpers.create_test_dir(artifact_dir / "config_tests", request.node.name)
+
+    output_file_path = os.path.join(test_dir, "default_config.json")
+    parallel_config = ParallelManagerConfig.from_default("pitt")
+    parallel_config.dump(output_file_path)
+
+    assert os.path.exists(output_file_path)
+
+    # Load the dumped config from the output file
+    with open(output_file_path, "r") as file:
+        loaded_config = json.load(file)
+
+    assert loaded_config == parallel_config.to_dict()
+
+
+def test_load_parallel_manager_config_json(helpers, artifact_dir, request):
+    test_dir = helpers.create_test_dir(artifact_dir / "config_tests", request.node.name)
+
+    output_file_path = os.path.join(test_dir, "default_config.json")
+    config = ParallelManagerConfig()
+    config.submission_head = "TEST_SUBMISSION_HEAD"
+    config.dump(output_file_path)
+
+    loaded_config = ClpipeData.load(output_file_path)
+    loaded_config
+    assert True
