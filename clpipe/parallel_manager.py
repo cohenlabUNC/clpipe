@@ -3,7 +3,7 @@ from pkg_resources import resource_stream
 import os
 
 from .utils import get_logger
-from clpipe.config.parallel import ParallelManagerConfig
+from clpipe.config.options import ParallelManagerConfig
 
 # TODO: We need to update the batch manager to be more flexible,
 # so as to allow for no-quotes, no equals, and to not have various options
@@ -96,34 +96,36 @@ class ParallelRunner(JobRunner):
         return self.compilejobstrings()
 
     def createsubmissionhead(self):
-        head = [self.config.SubmissionHead]
-        for e in self.config.SubmissionOptions:
+        head = [self.config.submission_head]
+        for e in self.config.submission_options:
             temp = e["command"] + " " + e["args"]
             head.append(temp)
-        for e in self.config.SubOptionsEqual:
+        for e in self.config.sub_options_equal:
             temp = e["command"] + "=" + e["args"]
             head.append(temp)
 
-        head.append(self.config.MemoryCommand.format(mem=self.config.MemoryDefault))
-        if self.config.TimeCommandActive:
-            head.append(self.config.TimeCommand.format(time=self.config.TimeDefault))
-        if self.config.ThreadCommandActive:
+        head.append(self.config.memory_command.format(mem=self.config.memory_default))
+        if self.config.time_command_active:
+            head.append(self.config.TimeCommand.format(time=self.config.time_default))
+        if self.config.thread_command_active:
             head.append(
-                self.config.NThreadsCommand.format(nthreads=self.config.NThreads)
+                self.config.n_threads_command.format(nthreads=self.config.n_threads)
             )
-        if self.config.JobIDCommandActive:
-            head.append(self.config.JobIDCommand.format(jobid=JOB_ID_FORMAT_STR))
-        if self.config.OutputCommandActive:
+        if self.config.job_id_command_active:
+            head.append(self.config.job_id_command.format(jobid=JOB_ID_FORMAT_STR))
+        if self.config.output_command_active:
             head.append(
-                self.config.OutputCommand.format(
+                self.config.output_command.format(
                     output=os.path.abspath(
                         os.path.join(self.output_dir, OUTPUT_FORMAT_STR)
                     )
                 )
             )
-        if self.config.EmailAddress:
-            head.append(self.config.EmailAddress.format(email=self.config.EmailAddress))
-        head.append(self.config.CommandWrapper)
+        if self.config.email_address:
+            head.append(
+                self.config.email_address.format(email=self.config.email_address)
+            )
+        head.append(self.config.command_wrapper)
 
         return " ".join(head)
 
@@ -132,15 +134,15 @@ class ParallelRunner(JobRunner):
 
     def submit_jobs(self):
         self.logger.info(f"Submitting {len(self.submission_list)} job(s).")
-        self.logger.debug(f"Memory usage: {self.config.MemoryDefault}")
-        self.logger.debug(f"Time usage: {self.config.TimeDefault}")
-        self.logger.debug(f"Number of threads: {self.config.NThreads}")
-        self.logger.debug(f"Email: {self.config.EmailAddress}")
+        self.logger.debug(f"Memory usage: {self.config.memory_default}")
+        self.logger.debug(f"Time usage: {self.config.time_default}")
+        self.logger.debug(f"Number of threads: {self.config.n_threads}")
+        self.logger.debug(f"Email: {self.config.email_address}")
         for job in self.submission_list:
             os.system(job)
 
     def get_threads_command(self):
-        return [self.config.NThreadsCommand, self.config.NThreads]
+        return [self.config.n_threads_command, self.config.n_threads]
 
 
 # Would take manager
