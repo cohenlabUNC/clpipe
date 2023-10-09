@@ -58,14 +58,18 @@ def get_bids(
                         database_path=database_path,
                         derivatives=fmriprep_dir,
                         reset_database=refresh,
-                        indexer=indexer
+                        indexer=indexer,
+                        index_metadata=index_metadata,
+                        ignore=ignore,
                     )
             else:
                 layout = BIDSLayout(
                     bids_dir,
                     database_path=database_path,
                     reset_database=refresh,
-                    indexer=indexer
+                    indexer=indexer,
+                    index_metadata=index_metadata,
+                    ignore=ignore,
                 )
             return layout
 
