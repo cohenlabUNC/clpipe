@@ -106,6 +106,12 @@ def populate_with_fmriprep(
         anat_folder = fmriprep_dir / f"sub-{sub_num}" / "anat"
         anat_folder.mkdir(parents=True)
 
+        figures_folder = fmriprep_dir / f"sub-{sub_num}" / "figures"
+        figures_folder.mkdir(parents=True)
+
+        fmap_folder = fmriprep_dir / f"sub-{sub_num}" / "fmap"
+        fmap_folder.mkdir(parents=True)
+
         for task in tasks:
             task_info = f"task-{task}"
 
@@ -147,6 +153,12 @@ def populate_with_fmriprep(
 
         # Create the 'aparcaseg_dseg.nii.gz' file in the 'anat' folder
         aparcaseg_dseg_file = anat_folder / f"sub-{sub_num}_{aparcaseg_dseg_suffix}"
+        open(aparcaseg_dseg_file, "w").close()
+
+        aparcaseg_dseg_file = figures_folder / f"sub-{sub_num}_{aparcaseg_dseg_suffix}"
+        open(aparcaseg_dseg_file, "w").close()
+
+        aparcaseg_dseg_file = fmap_folder / f"sub-{sub_num}_{aparcaseg_dseg_suffix}"
         open(aparcaseg_dseg_file, "w").close()
 
 
