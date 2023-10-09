@@ -144,48 +144,48 @@ class ParallelManagerConfig(Option):
     Config dataclass for ParallelManager
     """
 
-    submission_head: str = field(
-        default="sbatch --no-requeue", metadata={"required": True}
-    )
-    submission_options: list = field(
-        default_factory=lambda: [{"command": "-n", "args": "1"}],
-        metadata={"required": True},
-    )
-    sub_options_equal: list = field(
-        default_factory=lambda: [], metadata={"required": True}
-    )
-    n_threads_command: str = field(
-        default="--cpus-per-task={nthreads}", metadata={"required": True}
-    )
-    n_threads: str = field(default="1", metadata={"required": True})
-    memory_command: str = field(default="--mem={mem}", metadata={"required": True})
-    memory_default: str = field(default="1000", metadata={"required": True})
-    time_command: str = field(default="--time={time}", metadata={"required": True})
-    time_default: str = field(default="1:0:0", metadata={"required": True})
-    job_id_command: str = field(
-        default='--job-name="{jobid}"', metadata={"required": True}
-    )
-    output_command: str = field(
-        default="--output={output}", metadata={"required": True}
-    )
-    command_wrapper: str = field(
-        default='--wrap="{cmdwrap}"', metadata={"required": True}
-    )
-    email_address: str = field(default="", metadata={"required": True})
-    email_command: str = field(
-        default="--mail-user {email} --mail-type=FAIL", metadata={"required": True}
-    )
-    fmri_prep_batch_commands: str = field(
-        default="-e --no-home", metadata={"required": True}
-    )
-    no_quotes: bool = field(default=False, metadata={"required": True})
-    time_command_active: bool = field(default=True, metadata={"required": True})
-    thread_command_active: bool = field(default=True, metadata={"required": True})
-    job_id_command_active: bool = field(default=True, metadata={"required": True})
-    output_command_active: bool = field(default=True, metadata={"required": True})
-    singularity_bind_paths: str = field(
-        default="/proj,/pine,/work,/nas02,/nas", metadata={"required": True}
-    )
+    # submission_head: str = field(
+    #     default="sbatch --no-requeue", metadata={"required": True}
+    # )
+    # submission_options: list = field(
+    #     default_factory=lambda: [{"command": "-n", "args": "1"}],
+    #     metadata={"required": True},
+    # )
+    # sub_options_equal: list = field(
+    #     default_factory=lambda: [], metadata={"required": True}
+    # )
+    # n_threads_command: str = field(
+    #     default="--cpus-per-task={nthreads}", metadata={"required": True}
+    # )
+    # n_threads: str = field(default="1", metadata={"required": True})
+    # memory_command: str = field(default="--mem={mem}", metadata={"required": True})
+    # memory_default: str = field(default="1000", metadata={"required": True})
+    # time_command: str = field(default="--time={time}", metadata={"required": True})
+    # time_default: str = field(default="1:0:0", metadata={"required": True})
+    # job_id_command: str = field(
+    #     default='--job-name="{jobid}"', metadata={"required": True}
+    # )
+    # output_command: str = field(
+    #     default="--output={output}", metadata={"required": True}
+    # )
+    # command_wrapper: str = field(
+    #     default='--wrap="{cmdwrap}"', metadata={"required": True}
+    # )
+    # email_address: str = field(default="", metadata={"required": True})
+    # email_command: str = field(
+    #     default="--mail-user {email} --mail-type=FAIL", metadata={"required": True}
+    # )
+    # fmri_prep_batch_commands: str = field(
+    #     default="-e --no-home", metadata={"required": True}
+    # )
+    # no_quotes: bool = field(default=False, metadata={"required": True})
+    # time_command_active: bool = field(default=True, metadata={"required": True})
+    # thread_command_active: bool = field(default=True, metadata={"required": True})
+    # job_id_command_active: bool = field(default=True, metadata={"required": True})
+    # output_command_active: bool = field(default=True, metadata={"required": True})
+    # singularity_bind_paths: str = field(
+    #     default="/proj,/pine,/work,/nas02,/nas", metadata={"required": True}
+    # )
 
     @classmethod
     def from_default(cls, config_type="unc"):
@@ -203,6 +203,7 @@ class ParallelManagerConfig(Option):
                 "job_id_command_active": False,
                 "output_command_active": False,
                 "singularity_bind_paths": "/proj,/pine,/nas02,/nas",
+                "memory_command": "",
             },
         }
         return cls(**defaults.get(config_type, {}))
