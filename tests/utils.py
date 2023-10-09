@@ -89,6 +89,7 @@ def populate_with_fmriprep(
     confounds_suffix = "desc-confounds_timeseries.tsv"
     melodic_mixing_suffix = "desc-MELODIC_mixing.tsv"
     aroma_noise_ics_suffix = "AROMAnoiseICs.csv"
+    aparcaseg_dseg_suffix = "desc-aparcaseg_dseg.nii.gz"
 
     if legacy:
         fmriprep_dir = project_dir / "data_fmriprep" / "fmriprep"
@@ -101,6 +102,9 @@ def populate_with_fmriprep(
     for sub_num in range(num_subjects):
         subject_folder = fmriprep_dir / f"sub-{sub_num}" / "func"
         subject_folder.mkdir(parents=True)
+
+        anat_folder = fmriprep_dir / f"sub-{sub_num}" / "anat"
+        anat_folder.mkdir(parents=True)
 
         for task in tasks:
             task_info = f"task-{task}"
@@ -140,6 +144,10 @@ def populate_with_fmriprep(
                 "w",
             ) as sidecar_file:
                 json.dump(sidecar_json, sidecar_file)
+
+        # Create the 'aparcaseg_dseg.nii.gz' file in the 'anat' folder
+        aparcaseg_dseg_file = anat_folder / f"sub-{sub_num}_{aparcaseg_dseg_suffix}"
+        open(aparcaseg_dseg_file, "w").close()
 
 
 def populate_with_postproc(
