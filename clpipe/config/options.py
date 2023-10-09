@@ -66,7 +66,7 @@ class ClpipeData:
     @classmethod
     def transform_dict(cls, config_dict: dict) -> dict:
         """Override to customize file loaded dictionary before loading into schema."""
-        pass
+        return config_dict
 
     @classmethod
     def load(cls, options: Union[os.PathLike, "ClpipeData"]) -> "ClpipeData":
