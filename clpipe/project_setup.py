@@ -23,7 +23,7 @@ class SourceDataError(ValueError):
 
 def project_setup(project_title: str="A Neuroimaging Project", project_dir: os.PathLike=os.getcwd(), 
                   source_data=None, move_source_data=False,
-                  symlink_source_data=False, debug=False):
+                  symlink_source_data=False, debug=False, portable=False):
     """Initialize a clpipe project.
 
     No values can come in as None except source_data.
@@ -37,6 +37,10 @@ def project_setup(project_title: str="A Neuroimaging Project", project_dir: os.P
 
     # Start up the logger, without file output until we get a project path
     logger = get_logger(STEP_NAME, debug=debug)
+
+    # Ensure project_dir is absolute if portability not requested
+    if not portable:
+        project_dir = os.path.abspath(project_dir)
 
     # Create a default DICOM dir for source if no source given
     default_dicom_dir = os.path.join(project_dir, DEFAULT_DICOM_DIR)

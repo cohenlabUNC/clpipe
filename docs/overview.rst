@@ -19,9 +19,34 @@ command. To create addition configuration files for your dataset, use the follow
 This command will create a default configuration file with whatever name you specified. 
 The top of the default configuration file looks like this:
 
-.. literalinclude:: ../clpipe/data/defaultConfig.json
-   :language: json
-   :lines: 1-20
+.. code-block:: json
+
+    {
+        "project_title": "test_project",
+        "contributors": "SET CONTRIBUTORS",
+        "project_directory": "/nas/longleaf/home/user/clpipe",
+        "email_address": "SET EMAIL ADDRESS",
+        "source": {
+            "source_url": "fw://",
+            "dropoff_directory": "",
+            "temp_directory": "",
+            "commandline_opts": "-y",
+            "time_usage": "1:0:0",
+            "mem_usage": "10G",
+            "core_usage": "2"
+        },
+        "convert2bids": {
+            "dicom_directory": "/nas/longleaf/home/user/clpipe/data_DICOMs",
+            "bids_directory": "/nas/longleaf/home/user/clpipe/data_BIDS",
+            "conversion_config": "/nas/longleaf/home/user/clpipe/conversion_config.json",
+            "dicom_format_string": "",
+            "time_usage": "1:0:0",
+            "mem_usage": "5000",
+            "core_usage": "2",
+            "log_directory": "/nas/longleaf/home/user/clpipe/logs/DCM2BIDS_logs"
+        },
+        ...
+    }
 
 The configuration file consists of some project-level metadata, such as "ProjectTitle",
 and a set of Option blocks that contain their own sub-settings. Each Option block

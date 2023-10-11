@@ -1,5 +1,5 @@
 PACKAGE_NAME = 'clpipe'
-VERSION = '1.9.0.3'
+VERSION = '1.9.0.4'
 
 DESCRIPTION = 'clpipe: MRI processing pipeline for high performance clusters'
 REPO_URL = 'https://github.com/cohenlabUNC/clpipe'
@@ -19,18 +19,17 @@ PYTHON_REQUIRES = f'>={PYTHON_VERSION}'
 INSTALL_REQUIRES = [
       'jsonschema==4.17.3',
       'click==8.1.3',
+      'numpy==1.21.6',
       'nipy==0.5.0',
-      'numpy>=1.18.5',
       'pandas==1.3.5',
-      'nibabel>=3',
+      'nibabel==4.0.2',
       'scipy==1.2.2',
-      'sphinx_rtd_theme==1.2.0',
       'psutil==5.9.5',
       'parse==1.19.0',
       'nilearn==0.9.0',
       'dcm2bids==2.1.9',
       'nipype==1.8.6',
-      'pybids>=0.14.0',
+      'pybids>=0.15.6',
       'templateflow==23.0.0',
       "pydantic==1.10.7",
       "matplotlib==3.5.3",

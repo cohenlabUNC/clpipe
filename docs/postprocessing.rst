@@ -48,47 +48,54 @@ Step Options section for more information about configuring this section.
 
 .. code-block:: json
 
-	"PostProcessingOptions2": {
-		"WorkingDirectory": "",
-		"WriteProcessGraph": true,
-		"TargetImageSpace": "MNI152NLin2009cAsym",
-		"TargetTasks": [],
-		"TargetAcquisitions": [],
-		"ProcessingSteps": [
+	"postprocessing": {
+		"working_directory": "/nas/longleaf/home/user/work",
+		"write_process_graph": true,
+		"target_directory": "/nas/longleaf/home/clpipe/data_fmriprep",
+		"target_image_space": "MNI152NLin2009cAsym",
+		"target_tasks": [],
+		"target_acquisitions": [],
+		"output_directory": "/nas/longleaf/home/user/clpipe/data_postprocess",
+		"processing_steps": [
 			"SpatialSmoothing",
 			"TemporalFiltering",
-			"IntensityNormalization"
+			"IntensityNormalization",
+			"ApplyMask"
 		],
-		"ProcessingStepOptions": {
-			"TemporalFiltering": {
-				"Implementation":"fslmaths",
-				"FilteringHighPass": 0.008,
-				"FilteringLowPass": -1,
-				"FilteringOrder": 2
-			}, 
+		"processing_step_options": {
+			"temporal_filtering": {
+				"implementation": "fslmaths",
+				"filtering_high_pass": 0.008,
+				"filtering_low_pass": -1,
+				"filtering_order": 2
+			},
 			...additional processing step options
 		},
-		"ConfoundOptions": {
-			"Columns": [
-				"csf", "csf_derivative1", "white_matter", "white_matter_derivative1"
+		"confound_options": {
+			"columns": [
+				"csf",
+				"csf_derivative1",
+				"white_matter",
+				"white_matter_derivative1"
 			],
-			"MotionOutliers": {
-				"Include": true,
-				"ScrubVar": "framewise_displacement",
-				"Threshold": 0.9,
-				"ScrubAhead": 0,
-				"ScrubBehind": 0,
-				"ScrubContiguous": 0
+			"motion_outliers": {
+				"include": true,
+				"scrub_var": "framewise_displacement",
+				"threshold": 0.9,
+				"scrub_ahead": 0,
+				"scrub_behind": 0,
+				"scrub_contiguous": 0
 			}
 		},
-		"BatchOptions": {
-			"MemoryUsage": "20000",
-			"TimeUsage": "2:0:0",
-			"NThreads": "1"
-    	}	
-	}
+		"batch_options": {
+			"memory_usage": "20G",
+			"time_usage": "2:0:0",
+			"n_threads": "1"
+		},
+		"log_directory": "/nas/longleaf/home/user/clpipe/logs/postprocess_logs"
 
 **Top-Level Definitions**
+
 .. autoclass:: clpipe.config.options.PostProcessingOptions
 	:members:
 
@@ -353,10 +360,12 @@ while this step adds a variable number of columns to your confounds.
 
 Resample
 --------------------
+
 .. autoclass:: clpipe.config.project.Resample
 
 Trim Timepoints
 --------------------
+
 .. autoclass:: clpipe.config.project.TrimTimepoints
 
 Batch Options
