@@ -141,51 +141,107 @@ class SourceOptions(Option):
 @dataclass
 class ParallelManagerConfig(Option):
     """
-    Config dataclass for ParallelManager
+    Config dataclass factory for ParallelManager.
+
+    This class defines configuration options for the ParallelManager, which is a tool
+    for managing and submitting parallel batch jobs in various computing environments.
+    It provides a flexible way to customize job submission settings and adapt to
+    different cluster setups.
+
+    Class Methods:
+        from_default(cls, config_type="unc"): A class method to create a configuration
+        instance with predefined default settings based on the specified 'config_type'.
+        The available 'config_type' values are 'unc', 'pitt', 'duke', and 'uva'.
+
+    Example:
+        config = ParallelManagerConfig.from_default("uva")
+        # Create a configuration instance with default settings for 'uva' environment.
     """
 
     submission_head: str = field(
         default="sbatch --no-requeue", metadata={"required": True}
     )
+    """The submission command to initiate a batch job (e.g., 'sbatch --no-requeue')."""
+
     submission_options: list = field(
         default_factory=lambda: [{"command": "-n", "args": "1"}],
         metadata={"required": True},
     )
+    """A list of dictionaries specifying additional submission options."""
+
     sub_options_equal: list = field(
         default_factory=lambda: [], metadata={"required": True}
     )
+    """Additional submission options that apply to all job submissions."""
+
     n_threads_command: str = field(
         default="--cpus-per-task={nthreads}", metadata={"required": True}
     )
+    """The command used to specify the number of CPU threads per task."""
+
     n_threads: str = field(default="1", metadata={"required": True})
+    """The default number of CPU threads."""
+
     memory_command: str = field(default="--mem={mem}", metadata={"required": True})
+    """The command used to specify the memory requirements for a job."""
+
     memory_default: str = field(default="1000", metadata={"required": True})
+    """The default memory allocation."""
+
     time_command: str = field(default="--time={time}", metadata={"required": True})
+    """The command used to specify the maximum job runtime."""
+
     time_default: str = field(default="1:0:0", metadata={"required": True})
+    """The default maximum runtime."""
+
     job_id_command: str = field(
         default='--job-name="{jobid}"', metadata={"required": True}
     )
+    """The command used to set the job name or identifier."""
+
     output_command: str = field(
         default="--output={output}", metadata={"required": True}
     )
+    """The command used to specify the output file for job logs."""
+
     command_wrapper: str = field(
         default='--wrap="{cmdwrap}"', metadata={"required": True}
     )
+    """The command used to wrap the job command."""
+
     email_address: str = field(default="", metadata={"required": True})
+    """The email address for job notifications."""
+
     email_command: str = field(
         default="--mail-user {email} --mail-type=FAIL", metadata={"required": True}
     )
+    """The command used to set email notifications for job events."""
+
     fmri_prep_batch_commands: str = field(
         default="-e --no-home", metadata={"required": True}
     )
+    """Additional batch commands for specific job types."""
+
     no_quotes: bool = field(default=False, metadata={"required": True})
+    """A boolean indicating whether quotes should be removed from certain 
+    command arguments."""
+
     time_command_active: bool = field(default=True, metadata={"required": True})
+    """A boolean indicating whether the time command is active."""
+
     thread_command_active: bool = field(default=True, metadata={"required": True})
+    """A boolean indicating whether the thread command is active."""
+
     job_id_command_active: bool = field(default=True, metadata={"required": True})
+    """A boolean indicating whether the job ID command is active."""
+
     output_command_active: bool = field(default=True, metadata={"required": True})
+    """A boolean indicating whether the output command is active."""
+
     singularity_bind_paths: str = field(
         default="/proj,/pine,/work,/nas02,/nas", metadata={"required": True}
     )
+    """???"""
 
     @classmethod
     def from_default(cls, config_type="unc"):
@@ -198,14 +254,47 @@ class ParallelManagerConfig(Option):
             "pitt": {
                 "submission_head": "bq",
                 "submission_options": [],
+                "memory_command": "",
+                "memory_default": "",
+                "no_quotes": False,
                 "time_command_active": False,
                 "thread_command_active": False,
                 "job_id_command_active": False,
                 "output_command_active": False,
                 "singularity_bind_paths": "/proj,/pine,/nas02,/nas",
-                "memory_command": "",
+            },
+            "duke": {
+                "submission_head": "qsub",
+                "submission_options": [],
+                "n_threads_command": "",
+                "n_threads": "",
+                "memory_command": "-l h_vmem={mem}G,vf={mem}G",
+                "memory_default": "8",
+                "time_command": "",
+                "time_default": "",
+                "job_id_command": "-N {jobid}",
+                "output_command": "-o {output}",
+                "command_wrapper": '-b y "{cmdwrap}"',
+                "email_command": "-M {email}",
+                "fmri_prep_batch_commands": "-e",
+                "time_command_active": False,
+                "thread_command_active": False,
+                "singularity_bind_paths": "/mnt",
+            },
+            "uva": {
+                "sub_options_equal": field(
+                    default_factory=lambda: [
+                        {"command": "-partition", "args": "standard"}
+                    ],
+                    metadata={"required": True},
+                ),
+                "singularity_bind_paths": field(
+                    default="/proj,/pine,/work,/nas02,/nas", metadata={"required": True}
+                ),
             },
         }
+        if config_type not in defaults:
+            raise ValueError(f"Config Type {config_type} does not exist.")
         return cls(**defaults.get(config_type, {}))
 
 
