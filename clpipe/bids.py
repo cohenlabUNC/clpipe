@@ -3,6 +3,7 @@ BIDS dataset query and other helper functions
 """
 
 from pathlib import Path
+
 import re
 from .errors import (
     MixingFileNotFoundError,
@@ -23,7 +24,6 @@ DESG = re.compile(r".*desg.*")
 HTML = re.compile(r".*html.*")
 SVG = re.compile(r".*svg.*")
 DEFAULT_IGNORE = [ANAT, FMAP, DESG, HTML, SVG]
-
 
 def get_bids(
     bids_dir: os.PathLike,
@@ -60,6 +60,7 @@ def get_bids(
                 # Ignore user warning about not using BIDSLayoutIndexer
                 with warnings.catch_warnings():
                     warnings.filterwarnings("ignore", category=UserWarning)
+
                     layout = BIDSLayout(
                         bids_dir,
                         database_path=database_path,

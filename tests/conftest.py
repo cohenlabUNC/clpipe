@@ -270,13 +270,15 @@ def source_data(tmp_path_factory):
 # Project Dir Fixtures #
 ########################
 
+
 @pytest.fixture(scope="function")
 def scatch_dir(tmp_path_factory):
     """Fixture which provides a temporary folder."""
 
     scratch_dir = tmp_path_factory.mktemp("scratch")
     return scratch_dir
-     
+
+
 @pytest.fixture(scope="session")
 def clpipe_dir(tmp_path_factory):
     """Fixture which provides a temporary clpipe project folder."""
@@ -409,6 +411,7 @@ def clpipe_fmriprep_dir(
 
     return project_dir
 
+
 @pytest.fixture(scope="session")
 def clpipe_postprocess_subjects(clpipe_fmriprep_dir: Path):
     """Runs postprocess_subjects on fmriprep fixtures,
@@ -422,9 +425,7 @@ def clpipe_postprocess_subjects(clpipe_fmriprep_dir: Path):
     options = ProjectOptions.load(config)
     options.postprocessing.working_directory = clpipe_fmriprep_dir / "data_working"
 
-    postprocess_subjects(
-        config_file=options
-    )
+    postprocess_subjects(config_file=options)
 
     return clpipe_fmriprep_dir
 
@@ -473,7 +474,6 @@ def clpipe_legacy_fmriprep_dir(
     return project_dir
 
 
-
 ##################################
 # Project Configuration Fixtures #
 ##################################
@@ -495,9 +495,11 @@ def clpipe_config(config_file) -> dict:
 def clpipe_config_default() -> dict:
     return ClpipeConfigParser().config
 
+
 @pytest.fixture(scope="module")
 def legacy_config_path() -> Path:
     return Path(LEGACY_CONFIG_PATH)
+
 
 @pytest.fixture(scope="function")
 def legacy_config_dir(tmp_path_factory) -> Path:
@@ -507,6 +509,7 @@ def legacy_config_dir(tmp_path_factory) -> Path:
     temp_config_file = temp_dir / "clpipe_config.json"
 
     import shutil
+
     shutil.copy(LEGACY_CONFIG_PATH, temp_config_file)
 
     return temp_dir

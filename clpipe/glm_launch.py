@@ -18,31 +18,37 @@ STEP_NAME = "glm-launch"
 
 # Unset PYTHONPATH to ensure FSL uses its own internal python
 #   libraries
-SUBMISSION_STRING_TEMPLATE = ("unset PYTHONPATH; feat {fsf_file}")
+SUBMISSION_STRING_TEMPLATE = "unset PYTHONPATH; feat {fsf_file}"
 DEPRECATION_MSG = "Using deprecated GLM setup file."
 
 
-def glm_launch(glm_config_file: str=None, level: int=L1,
-                          model: str=None, test_one: bool=False, 
-                          submit: bool=False, debug: bool=False):
+def glm_launch(
+    glm_config_file: str = None,
+    level: int = L1,
+    model: str = None,
+    test_one: bool = False,
+    submit: bool = False,
+    debug: bool = False,
+):
     glm_config = GLMOptions(glm_config_file)
-    
-    logger = get_logger(STEP_NAME, debug=debug, log_dir=glm_config.parent_options.get_logs_dir())    
+
+    logger = get_logger(
+        STEP_NAME, debug=debug, log_dir=glm_config.parent_options.get_logs_dir()
+    )
 
     if level in VALID_L1:
         level = "L1"
-        setup = 'Level1Setups'
+        setup = "Level1Setups"
     elif level in VALID_L2:
         level = "L2"
-        setup = 'Level2Setups'
+        setup = "Level2Setups"
     else:
         logger.error(f"Level must be {L1} or {L2}")
         sys.exit(1)
 
     logger.info(f"Setting up {level} .fsf launch using model: {model}")
 
-    block = [x for x in glm_config.config[setup] \
-            if x['ModelName'] == str(model)]
+    block = [x for x in glm_config.config[setup] if x["ModelName"] == str(model)]
     if len(block) is not 1:
         logger.error("Model not found, or multiple entries found.")
         sys.exit(1)
@@ -83,13 +89,16 @@ def glm_launch(glm_config_file: str=None, level: int=L1,
     logger.info(f"Using log dir: {log_dir}")
 
     batch_manager = _setup_batch_manager(
-        batch_config_path, log_dir,
-        memory_usage=memory_usage, time_usage=time_usage, n_threads=n_threads,
-        email=email)
+        batch_config_path,
+        log_dir,
+        memory_usage=memory_usage,
+        time_usage=time_usage,
+        n_threads=n_threads,
+        email=email,
+    )
 
-    submission_strings = _create_submission_strings(
-        fsf_dir, test_one=test_one)
-   
+    submission_strings = _create_submission_strings(fsf_dir, test_one=test_one)
+
     num_jobs = len(submission_strings)
 
     _populate_batch_manager(batch_manager, submission_strings)
@@ -101,9 +110,14 @@ def glm_launch(glm_config_file: str=None, level: int=L1,
     sys.exit(0)
 
 
-def _setup_batch_manager(batch_config_path: str, log_dir: str, 
-                         memory_usage: str = None, time_usage: str = None, 
-                         n_threads: int = None, email: str = None, ):
+def _setup_batch_manager(
+    batch_config_path: str,
+    log_dir: str,
+    memory_usage: str = None,
+    time_usage: str = None,
+    n_threads: int = None,
+    email: str = None,
+):
     batch_manager = BatchManager(batch_config_path, log_dir)
     if memory_usage:
         batch_manager.update_mem_usage(memory_usage)
@@ -116,31 +130,26 @@ def _setup_batch_manager(batch_config_path: str, log_dir: str,
 
     return batch_manager
 
- 
-def _create_submission_strings(fsf_files: os.PathLike, 
-                               test_one:bool=False):
 
-        submission_strings = {}
-        
-        for fsf in Path(fsf_files).iterdir():
-            key = f"{str(fsf.stem)}"
-            
-            submission_string = SUBMISSION_STRING_TEMPLATE.format(
-                fsf_file=fsf
-            )
+def _create_submission_strings(fsf_files: os.PathLike, test_one: bool = False):
+    submission_strings = {}
 
-            # if python_path:
-            #     submission_string += f"{python_path};"
+    for fsf in Path(fsf_files).iterdir():
+        key = f"{str(fsf.stem)}"
 
-            submission_strings[key] = submission_string
+        submission_string = SUBMISSION_STRING_TEMPLATE.format(fsf_file=fsf)
 
-            if test_one:
-                break
-        return submission_strings
+        # if python_path:
+        #     submission_string += f"{python_path};"
+
+        submission_strings[key] = submission_string
+
+        if test_one:
+            break
+    return submission_strings
 
 
-def _populate_batch_manager(batch_manager: BatchManager, 
-                            submission_strings: dict):
+def _populate_batch_manager(batch_manager: BatchManager, submission_strings: dict):
     for key in submission_strings.keys():
         batch_manager.addjob(Job(key, submission_strings[key]))
 

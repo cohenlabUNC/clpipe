@@ -18,20 +18,13 @@ def test_build_confounds_processing_workflow_2_steps(
         "IntensityNormalization",
         "TemporalFiltering",
     ]
-    postprocessing_config.processing_step_options.scrub_timepoints = \
-        ScrubTimepoints(
-            insert_na=True,
-            scrub_columns=[
-                ScrubColumn(
-                    target_variable="csf",
-                    threshold=332.44
-                ),
-                ScrubColumn(
-                    target_variable="framewise_displacement",
-                    threshold=0.13
-                )
-            ]
-        )
+    postprocessing_config.processing_step_options.scrub_timepoints = ScrubTimepoints(
+        insert_na=True,
+        scrub_columns=[
+            ScrubColumn(target_variable="csf", threshold=332.44),
+            ScrubColumn(target_variable="framewise_displacement", threshold=0.13),
+        ],
+    )
 
     test_path = helpers.create_test_dir(artifact_dir, request.node.name)
     out_path = test_path / "postprocessed.tsv"
@@ -61,9 +54,7 @@ def test_build_confounds_processing_workflow_aroma_regression(
     """Check that confounds processing works with IN and TF."""
 
     postprocessing_config = ProjectOptions().postprocessing
-    postprocessing_config.processing_steps = [
-        "AROMARegression"
-    ]
+    postprocessing_config.processing_steps = ["AROMARegression"]
 
     test_path = helpers.create_test_dir(artifact_dir, request.node.name)
     out_path = test_path / "postprocessed.tsv"
@@ -176,9 +167,7 @@ def test_build_confounds_prep_workflow_no_scrubs(
     wf.run()
 
 
-def test_prepare_confounds(
-    sample_confounds_timeseries, artifact_dir, helpers, request
-):
+def test_prepare_confounds(sample_confounds_timeseries, artifact_dir, helpers, request):
     test_path = helpers.create_test_dir(artifact_dir, request.node.name)
     out_path = test_path / "new_confounds.tsv"
 
@@ -226,6 +215,7 @@ def test_prepare_confounds_aroma(
     )
 
     cf_workflow.run()
+
 
 def test_build_confounds_add_motion_outliers_workflow():
     pass

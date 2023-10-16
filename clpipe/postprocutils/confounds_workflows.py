@@ -69,7 +69,9 @@ def build_confounds_processing_workflow(
 
     # Force use of the R variant of fsl_regfilt for confounds
     if "AROMARegression" in processing_steps:
-        processing_options.processing_step_options.aroma_regression.implementation = "fsl_regfilt_R"
+        processing_options.processing_step_options.aroma_regression.implementation = (
+            "fsl_regfilt_R"
+        )
 
     # Gather motion outlier details if present
     motion_outliers = True
@@ -79,7 +81,9 @@ def build_confounds_processing_workflow(
         scrub_var = processing_options.confound_options.motion_outliers.scrub_var
         scrub_ahead = processing_options.confound_options.motion_outliers.scrub_ahead
         scrub_behind = processing_options.confound_options.motion_outliers.scrub_behind
-        scrub_contiguous = processing_options.confound_options.motion_outliers.scrub_contiguous
+        scrub_contiguous = (
+            processing_options.confound_options.motion_outliers.scrub_contiguous
+        )
     except KeyError:
         motion_outliers = False
 
@@ -255,10 +259,7 @@ def build_confounds_prep_workflow(
     if scrub_target_variable:
         scrub_target_node = pe.Node(
             Function(
-                input_names=[
-                    "scrub_configs",
-                    "confounds_file"
-                ],
+                input_names=["scrub_configs", "confounds_file"],
                 output_names=["scrub_vector"],
                 function=get_scrub_vector_node,
             ),
@@ -280,11 +281,16 @@ def build_confounds_prep_workflow(
 
     # Setup input connections
     workflow.connect(input_node, "in_file", tsv_expand_columns_node, "tsv_file")
-    workflow.connect(input_node, "column_names", tsv_expand_columns_node, "column_names")
+    workflow.connect(
+        input_node, "column_names", tsv_expand_columns_node, "column_names"
+    )
 
     # Expand columns and select desired columns from input TSV
     workflow.connect(
-        tsv_expand_columns_node, "expanded_column_names", tsv_select_node, "column_names"
+        tsv_expand_columns_node,
+        "expanded_column_names",
+        tsv_select_node,
+        "column_names",
     )
     workflow.connect(input_node, "in_file", tsv_select_node, "tsv_file")
 
@@ -513,7 +519,7 @@ def _combine_confounds_files(base_confounds_file, append_confounds_file):
     out_file = Path(out_file + "_combined.tsv")
 
     base_confounds_df = pd.read_csv(base_confounds_file, sep="\t")
-    base_confounds_df = base_confounds_df.fillna('n/a')
+    base_confounds_df = base_confounds_df.fillna("n/a")
     try:
         append_confounds_df = pd.read_csv(append_confounds_file, sep="\t")
 
@@ -635,7 +641,7 @@ def _nii_to_tsv(nii_file, tsv_file=None, headers=None):
         tsv_file = str(tsv_file.absolute())
 
     transposed_df = pd.DataFrame(transposed_matrix, columns=headers)
-    transposed_df = transposed_df.fillna('n/a')
+    transposed_df = transposed_df.fillna("n/a")
     transposed_df.to_csv(tsv_file, sep="\t", index=False)
 
     return tsv_file

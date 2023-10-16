@@ -28,7 +28,7 @@
 	},
 	"FMRIPrepOptions": {
 		"BIDSDirectory": "/nas/longleaf/home/willasc/repos/clpipe/tests/temp/clpipe_dir0/data_BIDS",
-		"WorkingDirectory": "SET WORKING DIRECTORY",
+		"WorkingDirectory": "/nas/longleaf/home/willasc/working",
 		"OutputDirectory": "/nas/longleaf/home/willasc/repos/clpipe/tests/temp/clpipe_dir0/data_fmriprep",
 		"FMRIPrepPath": "/proj/hng/singularity_imgs/fmriprep_22.1.1.sif",
 		"FreesurferLicensePath": "/proj/hng/singularity_imgs/license.txt",
@@ -52,13 +52,16 @@
 		"DockerFMRIPrepVersion": ""
 	},
 	"PostProcessingOptions": {
-		"WorkingDirectory": "",
+		"WorkingDirectory": "SET WORKING DIRECTORY"
+	},
+	"PostProcessingOptions2": {
+		"WorkingDirectory": "/nas/longleaf/home/willasc/working",
 		"WriteProcessGraph": true,
-		"TargetDirectory": "",
+		"TargetDirectory": "/nas/longleaf/home/willasc/data_fmriprep",
 		"TargetImageSpace": "MNI152NLin2009cAsym",
 		"TargetTasks": [],
 		"TargetAcquisitions": [],
-		"OutputDirectory": "",
+		"OutputDirectory": "/nas/longleaf/home/willasc/data_postproc2",
 		"ProcessingSteps": [
 			"SpatialSmoothing",
 			"TemporalFiltering",

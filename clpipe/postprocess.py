@@ -30,7 +30,11 @@ with warnings.catch_warnings():
     from bids import BIDSLayout
     from bids.layout import BIDSFile
 
-from .config.options import ProjectOptions, PostProcessingRunConfig, DEFAULT_WORKING_DIRECTORY
+from .config.options import (
+    ProjectOptions,
+    PostProcessingRunConfig,
+    DEFAULT_WORKING_DIRECTORY,
+)
 from .config.options import DEFAULT_PROCESSING_STREAM
 from .batch_manager import BatchManager, Job
 from .postprocutils.global_workflows import build_postprocessing_wf
@@ -52,6 +56,7 @@ BIDS_INDEX_NAME = "bids_index"
 SUBJECT_LOG_DIR = "distributor"
 """Where to save batch files, within the postprocessing log folder, for subject-level batch logs"""
 RUN_CONFIG_FILE_NAME = "run_config.json"
+
 
 def postprocess_subjects(
     subjects=None,
@@ -75,60 +80,75 @@ def postprocess_subjects(
 
     options: ProjectOptions = ProjectOptions.load(config_file)
     options.fmriprep.load_cli_args(
-        bids_directory = bids_dir,
+        bids_directory=bids_dir,
     )
     options.postprocessing.load_cli_args(
-        output_directory = output_dir,
-        target_directory = fmriprep_dir,
-        log_directory = log_dir
+        output_directory=output_dir,
+        target_directory=fmriprep_dir,
+        log_directory=log_dir,
     )
     if options.postprocessing.working_directory == DEFAULT_WORKING_DIRECTORY:
         raise ValueError("No working directory specified.")
     if processing_stream is not DEFAULT_PROCESSING_STREAM:
         options.postprocessing = apply_stream(options, processing_stream)
-    
 
     # Initialize the run config
     # TODO: The getters here are still a bit confusing and could be moved to run_config,
     #   handled internally
     run_config: PostProcessingRunConfig = PostProcessingRunConfig(
-        options = options.postprocessing,
-        target_directory = options.postprocessing.target_directory,
-        bids_directory= options.fmriprep.bids_directory,
+        options=options.postprocessing,
+        target_directory=options.postprocessing.target_directory,
+        bids_directory=options.fmriprep.bids_directory,
         batch_config_file=options.batch_config_path,
         email_address=options.email_address,
-        stream_working_directory = options.postprocessing.get_stream_working_dir(processing_stream),
-        stream_log_directory = options.postprocessing.get_stream_log_dir(processing_stream),
-        stream_output_directory = options.postprocessing.get_stream_output_dir(processing_stream),
-        pybids_db_path = options.postprocessing.get_pybids_db_path(processing_stream, BIDS_INDEX_NAME)
+        stream_working_directory=options.postprocessing.get_stream_working_dir(
+            processing_stream
+        ),
+        stream_log_directory=options.postprocessing.get_stream_log_dir(
+            processing_stream
+        ),
+        stream_output_directory=options.postprocessing.get_stream_output_dir(
+            processing_stream
+        ),
+        pybids_db_path=options.postprocessing.get_pybids_db_path(
+            processing_stream, BIDS_INDEX_NAME
+        ),
     )
     # This is the only run-related attribute that can be set by the CLI right now
-    run_config.load_cli_args(
-        pybids_db_path = pybids_db_path
-    )
+    run_config.load_cli_args(pybids_db_path=pybids_db_path)
 
     # Setup top-level directories
     setup_dirs(run_config)
 
     # Save the run configuration for use downstream
-    stream_run_config_path = Path(run_config.stream_working_directory) / RUN_CONFIG_FILE_NAME
+    stream_run_config_path = (
+        Path(run_config.stream_working_directory) / RUN_CONFIG_FILE_NAME
+    )
     run_config.dump(stream_run_config_path)
 
     # Setup Logging
-    logger= get_logger(STEP_NAME, debug=debug, log_dir=options.get_logs_dir())
+    logger = get_logger(STEP_NAME, debug=debug, log_dir=options.get_logs_dir())
 
-    options.postprocessing.target_directory = resolve_fmriprep_dir(options.postprocessing.target_directory)
-    logger.info(f"Preparing postprocessing job targeting: {options.postprocessing.target_directory}")
-    
+    options.postprocessing.target_directory = resolve_fmriprep_dir(
+        options.postprocessing.target_directory
+    )
+    logger.info(
+        f"Preparing postprocessing job targeting: {options.postprocessing.target_directory}"
+    )
+
     time.sleep(0.5)
 
     logger.info(f"Output directory: {options.postprocessing.output_directory}")
 
     # Check to make sure working directory has been changed from the default
-    if options.postprocessing.working_directory == ProjectOptions().postprocessing.working_directory:
-        logger.error("A working directory for this step must be provided in your config file.")
+    if (
+        options.postprocessing.working_directory
+        == ProjectOptions().postprocessing.working_directory
+    ):
+        logger.error(
+            "A working directory for this step must be provided in your config file."
+        )
         sys.exit(1)
-    
 
     # Create jobs based on subjects given for processing
     try:
@@ -154,9 +174,9 @@ def postprocess_subjects(
                 bids=bids,
                 batch=batch,
                 submit=submit,
-                debug=debug
+                debug=debug,
             )
-            
+
     except NoSubjectsFoundError as nsfe:
         logger.error(nsfe)
         sys.exit(1)
@@ -188,8 +208,8 @@ def postprocess_subject(
     run_config: PostProcessingRunConfig,
     run_config_path: str,
     bids: BIDSLayout,
-    batch: bool=False,
-    submit: bool=False,
+    batch: bool = False,
+    submit: bool = False,
     debug=False,
 ):
     """
@@ -197,15 +217,19 @@ def postprocess_subject(
     """
 
     sub_with_id = "sub-" + subject_id
-    
+
     # Create a postprocessing logging directory for this subject,
     # if it doesn't exist
     subject_log_dir: Path = Path(run_config.stream_log_directory) / sub_with_id
     subject_log_dir.mkdir(exist_ok=True)
 
-    logger = get_logger(f"postprocess_{sub_with_id}", log_dir=subject_log_dir, f_name=f"{sub_with_id}.log", debug=debug)
+    logger = get_logger(
+        f"postprocess_{sub_with_id}",
+        log_dir=subject_log_dir,
+        f_name=f"{sub_with_id}.log",
+        debug=debug,
+    )
     logger.info(f"Processing subject: {subject_id}")
-
 
     batch_manager = None
     if batch:
@@ -239,17 +263,17 @@ def postprocess_subject(
             acquisitions = None
 
         images_to_process = get_images_to_process(
-            subject_id = subject_id,
-            image_space = run_config.options.target_image_space,
-            bids = bids,
-            logger = logger,
+            subject_id=subject_id,
+            image_space=run_config.options.target_image_space,
+            bids=bids,
+            logger=logger,
             tasks=tasks,
             acquisitions=acquisitions,
         )
 
         subject_out_dir = Path(run_config.stream_output_directory) / sub_with_id
         subject_working_dir = Path(run_config.stream_working_directory) / sub_with_id
-            
+
         if not subject_out_dir.exists():
             logger.info(f"Creating subject directory: {subject_out_dir}")
             subject_out_dir.mkdir(parents=True)
@@ -294,9 +318,13 @@ def postprocess_image(
 
     run_config: PostProcessingRunConfig = PostProcessingRunConfig.load(run_config_file)
 
-    logger = get_logger("postprocess_image", log_dir=subject_log_dir, f_name=f"{image_short_name}.log", debug=debug)
+    logger = get_logger(
+        "postprocess_image",
+        log_dir=subject_log_dir,
+        f_name=f"{image_short_name}.log",
+        debug=debug,
+    )
     logger.info(f"Processing image: {image_path}")
-
 
     # Grab only the image file name in a way that works
     #   on both .nii and .nii.gz
@@ -309,7 +337,9 @@ def postprocess_image(
     pipeline_name = file_name_no_modality.replace("-", "_")
 
     bids: BIDSLayout = get_bids(
-        run_config.bids_directory, database_path=run_config.pybids_db_path, fmriprep_dir=run_config.target_directory
+        run_config.bids_directory,
+        database_path=run_config.pybids_db_path,
+        fmriprep_dir=run_config.target_directory,
     )
     # Lookup the BIDSFile with the image path
     bids_image: BIDSFile = bids.get_file(image_path)
@@ -350,7 +380,10 @@ def postprocess_image(
     if confounds_path is not None:
         try:
             confounds_export_path = build_export_path(
-                confounds_path, query_params["subject"], run_config.target_directory, subject_out_dir
+                confounds_path,
+                query_params["subject"],
+                run_config.target_directory,
+                subject_out_dir,
             )
         except ValueError as ve:
             logger.warn(ve)
@@ -360,7 +393,10 @@ def postprocess_image(
     image_export_path = None
     if not confounds_only:
         image_export_path = build_export_path(
-            image_path, query_params["subject"], run_config.target_directory, subject_out_dir
+            image_path,
+            query_params["subject"],
+            run_config.target_directory,
+            subject_out_dir,
         )
 
     # Build the global postprocessing workflow
@@ -381,10 +417,16 @@ def postprocess_image(
     )
 
     if run_config.options.write_process_graph:
-        draw_graph(postproc_wf, "processing_graph", run_config.stream_output_directory, logger=logger)
+        draw_graph(
+            postproc_wf,
+            "processing_graph",
+            run_config.stream_output_directory,
+            logger=logger,
+        )
 
     postproc_wf.run()
     sys.exit(0)
+
 
 def build_export_path(
     image_path: os.PathLike,
@@ -483,11 +525,11 @@ def _create_image_submission_strings(
         key = f"{Path(image.path).stem}"
 
         submission_strings[key] = IMAGE_SUBMISSION_STRING_TEMPLATE.format(
-            run_config_file = str(run_config_file),
-            image_file = image.path,
-            subject_out_dir = str(subject_out_dir),
-            subject_working_dir = str(subject_working_dir),
-            subject_log_dir = str(subject_log_dir),
+            run_config_file=str(run_config_file),
+            image_file=image.path,
+            subject_out_dir=str(subject_out_dir),
+            subject_working_dir=str(subject_working_dir),
+            subject_log_dir=str(subject_log_dir),
             debug=debug_flag,
         )
         logger.debug(submission_strings[key])
@@ -504,8 +546,10 @@ def _populate_batch_manager(batch_manager, submission_strings, logger):
     batch_manager.compilejobstrings()
 
 
-def _setup_batch_manager(run_config: PostProcessingRunConfig, log_dir: str, non_processing=False):
-    batch_manager= BatchManager(run_config.batch_config_file, log_dir)
+def _setup_batch_manager(
+    run_config: PostProcessingRunConfig, log_dir: str, non_processing=False
+):
+    batch_manager = BatchManager(run_config.batch_config_file, log_dir)
     batch_manager.update_mem_usage(run_config.options.batch_options.memory_usage)
     batch_manager.update_time(run_config.options.batch_options.time_usage)
     batch_manager.update_nthreads(run_config.options.batch_options.n_threads)
@@ -517,4 +561,3 @@ def _setup_batch_manager(run_config: PostProcessingRunConfig, log_dir: str, non_
         batch_manager.update_time("0:30:0")
 
     return batch_manager
-

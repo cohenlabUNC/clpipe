@@ -3,11 +3,13 @@ from pathlib import Path
 from clpipe.fmri_process_check import fmri_process_check
 import os
 
+
 @pytest.mark.skip(reason="Temporarily disabled - checker rework required")
 def test_fmriprep_process_check(clpipe_fmriprep_dir):
     """Check basic attempt to run fmriprep_process_check."""
     fmri_process_check(os.path.join(clpipe_fmriprep_dir, "clpipe_config.json"))
     assert os.path.isfile(os.path.join(clpipe_fmriprep_dir, "Checker-Output.csv"))
+
 
 @pytest.mark.skip(reason="Temporarily disabled - checker rework required")
 def test_legacy_fmriprep_process_check(clpipe_legacy_fmriprep_dir):
