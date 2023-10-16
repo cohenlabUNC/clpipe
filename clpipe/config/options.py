@@ -239,9 +239,9 @@ class ParallelManagerConfig(Option):
     """A boolean indicating whether the output command is active."""
 
     singularity_bind_paths: str = field(
-        default="/proj,/pine,/work,/nas02,/nas", metadata={"required": True}
+        default="/proj,/work,/nas02,/nas", metadata={"required": True}
     )
-    """???"""
+    """Paths made available to the singularity container."""
 
     @classmethod
     def from_default(cls, config_type="unc"):
@@ -249,7 +249,7 @@ class ParallelManagerConfig(Option):
             "unc": {
                 "submission_head": "sbatch --no-requeue",
                 "submission_options": [{"command": "-n", "args": "1"}],
-                "singularity_bind_paths": "/proj,/pine,/work,/nas02,/nas",
+                "singularity_bind_paths": "/proj,/work,/nas02,/nas",
             },
             "pitt": {
                 "submission_head": "bq",
@@ -261,7 +261,7 @@ class ParallelManagerConfig(Option):
                 "thread_command_active": False,
                 "job_id_command_active": False,
                 "output_command_active": False,
-                "singularity_bind_paths": "/proj,/pine,/nas02,/nas",
+                "singularity_bind_paths": "/proj,/nas02,/nas",
             },
             "duke": {
                 "submission_head": "qsub",
@@ -289,7 +289,7 @@ class ParallelManagerConfig(Option):
                     metadata={"required": True},
                 ),
                 "singularity_bind_paths": field(
-                    default="/proj,/pine,/work,/nas02,/nas", metadata={"required": True}
+                    default="/sfs/qumulo/qproject,/sfs/qumulo/qhome,/sfs/lustre/bahamut/scratch", metadata={"required": True}
                 ),
             },
         }
