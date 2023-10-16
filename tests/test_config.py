@@ -176,6 +176,5 @@ def test_load_parallel_manager_config_json(helpers, artifact_dir, request):
     config.submission_head = "TEST_SUBMISSION_HEAD"
     config.dump(output_file_path)
 
-    loaded_config = ClpipeData.load(output_file_path)
-    loaded_config
-    assert True
+    loaded_config = ParallelManagerConfig.load(output_file_path)
+    assert loaded_config == config
