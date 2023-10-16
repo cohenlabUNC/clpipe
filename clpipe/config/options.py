@@ -289,7 +289,8 @@ class ParallelManagerConfig(Option):
                     metadata={"required": True},
                 ),
                 "singularity_bind_paths": field(
-                    default="/sfs/qumulo/qproject,/sfs/qumulo/qhome,/sfs/lustre/bahamut/scratch", metadata={"required": True}
+                    default="/sfs/qumulo/qproject,/sfs/qumulo/qhome,/sfs/lustre/bahamut/scratch",
+                    metadata={"required": True},
                 ),
             },
         }
