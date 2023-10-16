@@ -17,6 +17,13 @@ import os
 
 from bids import BIDSLayout, BIDSLayoutIndexer
 
+ANAT = re.compile(r".*\/anat\/.*")
+FMAP = re.compile(r".*\/fmap\/.*")
+DESG = re.compile(r".*desg.*")
+HTML = re.compile(r".*html.*")
+SVG = re.compile(r".*svg.*")
+DEFAULT_IGNORE = [ANAT, FMAP, DESG, HTML, SVG]
+
 
 def get_bids(
     bids_dir: os.PathLike,
@@ -25,19 +32,11 @@ def get_bids(
     fmriprep_dir: os.PathLike = None,
     index_metadata=False,
     refresh=False,
-    ignore=None,
+    ignore=DEFAULT_IGNORE,
     logger=None,
 ) -> BIDSLayout:
     try:
         database_path = Path(database_path)
-
-        # Setting up the RE patterns for default folders to be ignored.
-        anat = re.compile(r".*\/anat\/.*")
-        desg = re.compile(r".*desg.*")
-        html = re.compile(r".*html.*")
-        svg = re.compile(r".*svg.*")
-        default_ignore = [anat, desg, html, svg]
-        ignore = ignore.extend(default_ignore)
 
         # Use an existing pybids database,
         #   and user did not request an index refresh
