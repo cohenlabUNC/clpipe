@@ -25,11 +25,19 @@ def get_bids(
     fmriprep_dir: os.PathLike = None,
     index_metadata=False,
     refresh=False,
-    ignore: re.Pattern = None,
+    ignore=None,
     logger=None,
 ) -> BIDSLayout:
     try:
         database_path = Path(database_path)
+
+        # Setting up the RE patterns for default folders to be ignored.
+        anat = re.compile(r".*\/anat\/.*")
+        desg = re.compile(r".*desg.*")
+        html = re.compile(r".*html.*")
+        svg = re.compile(r".*svg.*")
+        default_ignore = [anat, desg, html, svg]
+        ignore = ignore.extend(default_ignore)
 
         # Use an existing pybids database,
         #   and user did not request an index refresh
