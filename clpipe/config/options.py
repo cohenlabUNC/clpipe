@@ -139,7 +139,7 @@ class SourceOptions(Option):
 
 
 @dataclass
-class ParallelManagerConfig(Option):
+class BatchManagerConfig(Option):
     """
     Config dataclass factory for ParallelManager.
 
