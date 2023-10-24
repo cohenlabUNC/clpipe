@@ -3,13 +3,21 @@ from .utils import get_logger
 import os
 from pathlib import Path
 
-from .parallel_manager import BatchManager, Job
+from .job_manager import BatchManager, Job
 
 FLYWHEEL_TEMP_DIR_NAME = "'<TemporaryDirectory '\\'''/"
 
-def flywheel_sync(config_file, source_url=None, dropoff_dir=None, temp_dir=None, submit=False, debug=False):
+
+def flywheel_sync(
+    config_file,
+    source_url=None,
+    dropoff_dir=None,
+    temp_dir=None,
+    submit=False,
+    debug=False,
+):
     """Sync your project's DICOMs with Flywheel."""
-    
+
     config_parser = ClpipeConfigParser(config_file)
     config = config_parser.config
 
@@ -26,17 +34,17 @@ def flywheel_sync(config_file, source_url=None, dropoff_dir=None, temp_dir=None,
     temp_dir = Path(temp_dir)
 
     try:
-        cmd_line_opts = config['SourceOptions']['CommandLineOpts']
+        cmd_line_opts = config["SourceOptions"]["CommandLineOpts"]
     except KeyError:
         cmd_line_opts = ""
 
     if not temp_dir.exists():
         temp_dir.mkdir(parents=True)
-        
-    batch_config = config['BatchConfig']
-    mem_usage = config['SourceOptions']['MemUsage']
-    time_usage = config['SourceOptions']['TimeUsage']
-    n_threads = config['SourceOptions']['CoreUsage']
+
+    batch_config = config["BatchConfig"]
+    mem_usage = config["SourceOptions"]["MemUsage"]
+    time_usage = config["SourceOptions"]["TimeUsage"]
+    n_threads = config["SourceOptions"]["CoreUsage"]
 
     log_dir = Path(config["ProjectDirectory"]) / "logs" / "sync_logs"
     if not log_dir.exists:
@@ -60,14 +68,14 @@ def flywheel_sync(config_file, source_url=None, dropoff_dir=None, temp_dir=None,
     flywheel_generated_temp_dir = os.path.join(os.getcwd(), FLYWHEEL_TEMP_DIR_NAME)
 
     logger.debug(f"Temporary Directory: {flywheel_generated_temp_dir}")
-    
+
     submission_string = f"fw sync --include dicom --tmp-path {temp_dir} {cmd_line_opts} {source_url} {dropoff_dir}; rm -r {flywheel_generated_temp_dir}"
     job_id = f"flywheel_sync_DICOM"
 
     job = Job(job_id, submission_string)
 
     batch_manager.addjob(job)
-    
+
     batch_manager.compile_job_strings()
 
     if submit:

@@ -14,7 +14,7 @@ import json
 import glob
 import shutil
 from .config.options import ProjectOptions
-from .parallel_manager import BatchManager, Job
+from .job_manager import BatchManager, Job
 from pkg_resources import resource_stream, resource_filename
 from .errors import MaskFileNotFoundError
 from .utils import get_logger, resolve_fmriprep_dir
@@ -47,28 +47,24 @@ def fmri_roi_extraction(
         target_directory=target_dir,
         target_suffix=target_suffix,
         output_directory=output_dir,
-        log_directory=log_output_dir
+        log_directory=log_output_dir,
     )
     setup_dirs(config)
 
     logger = get_logger(STEP_NAME, debug=debug, log_dir=config.get_logs_dir())
 
     if not single:
-        config_path = os.path.join(config.roi_extraction.output_directory, os.path.basename(config_file))
+        config_path = os.path.join(
+            config.roi_extraction.output_directory, os.path.basename(config_file)
+        )
         config.dump(config_path)
     else:
         config_path = ""
     if not subjects:
         sublist = [
             o.replace("sub-", "")
-            for o in os.listdir(
-                config.roi_extraction.target_directory
-            )
-            if os.path.isdir(
-                os.path.join(
-                    config.roi_extraction.target_directory, o
-                )
-            )
+            for o in os.listdir(config.roi_extraction.target_directory)
+            if os.path.isdir(os.path.join(config.roi_extraction.target_directory, o))
             and "sub-" in o
         ]
     else:
@@ -248,15 +244,11 @@ def _fmri_roi_extract_subject(
     logger.info(f"Processing subjects: {subject_files}")
 
     os.makedirs(
-        os.path.join(
-            config.roi_extraction.output_directory, atlas_name
-        ),
+        os.path.join(config.roi_extraction.output_directory, atlas_name),
         exist_ok=True,
     )
     if not Path(atlas_labelpath).exists():
-        shutil.copy2(
-            atlas_labelpath, config.roi_extraction.output_directory
-        )
+        shutil.copy2(atlas_labelpath, config.roi_extraction.output_directory)
 
     for file in subject_files:
         fmri_roi_extract_image(
@@ -367,9 +359,7 @@ def fmri_roi_extract_image(
     # Save the ROI timeseries
     np.savetxt(
         os.path.join(
-            os.path.join(
-                config.roi_extraction.output_directory, atlas_name
-            ),
+            os.path.join(config.roi_extraction.output_directory, atlas_name),
             file_outname + "_atlas-" + atlas_name + ".csv",
         ),
         ROI_ts,
@@ -425,12 +415,12 @@ def _mask_finder(data, config: ProjectOptions, logger):
         "func",
         target_suffix=config.roi_extraction.target_suffix,
     )
-    logger.debug(f'Target suffix: {config.roi_extraction.target_suffix}')
-    logger.debug(f"Image components (front_matter, type, path): {front_matter, type, path}")
-
-    fmriprep_dir = resolve_fmriprep_dir(
-        config.roi_extraction.target_directory
+    logger.debug(f"Target suffix: {config.roi_extraction.target_suffix}")
+    logger.debug(
+        f"Image components (front_matter, type, path): {front_matter, type, path}"
     )
+
+    fmriprep_dir = resolve_fmriprep_dir(config.roi_extraction.target_directory)
     logger.debug(f"fMRIPrep dir: {fmriprep_dir}")
 
     target_mask = os.path.join(
@@ -449,20 +439,23 @@ def _mask_finder(data, config: ProjectOptions, logger):
 
 
 def setup_dirs(config: ProjectOptions):
-    os.makedirs(Path(config.roi_extraction.output_directory) / "postproc_default", exist_ok=True)
+    os.makedirs(
+        Path(config.roi_extraction.output_directory) / "postproc_default", exist_ok=True
+    )
     os.makedirs(config.roi_extraction.log_directory, exist_ok=True)
 
-def _file_folder_generator(basename, modality, target_suffix = None):
+
+def _file_folder_generator(basename, modality, target_suffix=None):
     """Function parses out a BIDS file name to find its sub-components.
 
-        TODO: this addresses a need that many other modules of clpipe use
-        as well, but in slightly different ways (see the GLM prepare functions).
-        This function is rather specific / hard-coded and
-            could use better generalization.
-        We should look to provide a utility function to replace where 
-        this logic is used in roi_extract, and others.
+    TODO: this addresses a need that many other modules of clpipe use
+    as well, but in slightly different ways (see the GLM prepare functions).
+    This function is rather specific / hard-coded and
+        could use better generalization.
+    We should look to provide a utility function to replace where
+    this logic is used in roi_extract, and others.
     """
-    
+
     if target_suffix is not None:
         basename = basename.replace(target_suffix, "")
 
@@ -473,14 +466,14 @@ def _file_folder_generator(basename, modality, target_suffix = None):
     ses = comps[1]
     try:
         # Try to grab 'space' if present
-        front_matter = '_'.join(comps[0:-1])
+        front_matter = "_".join(comps[0:-1])
     except IndexError:
-        front_matter = '_'.join(comps[0:-2])
+        front_matter = "_".join(comps[0:-2])
     type = comps[-1]
-    if 'ses-' in ses:
+    if "ses-" in ses:
         path = os.path.join(sub, ses, modality, front_matter)
         return sub, ses, modality, front_matter, type, path
     else:
-        ses = ''
+        ses = ""
         path = os.path.join(sub, modality, front_matter)
         return sub, ses, modality, front_matter, type, path
