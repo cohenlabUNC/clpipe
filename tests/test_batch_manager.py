@@ -1,5 +1,5 @@
 import pytest
-from clpipe.parallel_manager import *
+from clpipe.job_manager import *
 
 SLURMUNCCONFIG: str = "clpipe/batchConfigs/slurmUNCConfig.json"
 
