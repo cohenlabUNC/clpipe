@@ -11,12 +11,12 @@ def test_batch_manager_instantiation():
 
 def test_adding_jobs():
     batch_manager = BatchManager(SLURMUNCCONFIG)
-    job1 = Job(1, "test_job_string")
+    job1 = Job(1, "echo hi")
     batch_manager.add_job(job1)
 
     assert len(batch_manager.jobs) == 1
     assert batch_manager.jobs[0].job_id == 1
-    assert batch_manager.jobs[0].job_string == "test_job_string"
+    assert batch_manager.jobs[0].job_string == "echo hi"
 
     job2 = Job(2, "additional_job")
     batch_manager.add_job(job2)
