@@ -1,5 +1,5 @@
 from pathlib import Path
-from .batch_manager import BatchManager, Job
+from .job_manager import *
 from .config.options import ProjectOptions
 import os
 import parse
@@ -59,13 +59,20 @@ def convert2bids(
 
     logger = get_logger(STEP_NAME, debug=debug, log_dir=config.get_logs_dir())
 
-    batch_manager = BatchManager(
-        config.batch_config_path, config.convert2bids.log_directory, debug=debug
+    batch_manager = JobManagerFactory.get(
+        batch_config=config.batch_config_path,
+        mem_use=config.convert2bids.mem_usage,
+        time=config.convert2bids.time_usage,
+        threads=config.convert2bids.core_usage,
     )
-    batch_manager.create_submission_head()
-    batch_manager.update_mem_usage(config.convert2bids.mem_usage)
-    batch_manager.update_time(config.convert2bids.time_usage)
-    batch_manager.update_nthreads(config.convert2bids.core_usage)
+
+    # batch_manager = BatchManager(
+    #     config.batch_config_path, config.convert2bids.log_directory, debug=debug
+    # )
+    # batch_manager.create_submission_head()
+    # batch_manager.update_mem_usage(config.convert2bids.mem_usage)
+    # batch_manager.update_time(config.convert2bids.time_usage)
+    # batch_manager.update_nthreads(config.convert2bids.core_usage)
 
     logger.info(
         f"Starting BIDS conversion targeting: {config.convert2bids.dicom_directory}"
@@ -128,7 +135,7 @@ def dcm2bids_wrapper(
     bids_dir: os.PathLike,
     conv_config: os.PathLike,
     dicom_dir_format: str,
-    batch_manager: BatchManager,
+    batch_manager: JobManager,
     logger: logging.Logger,
     subjects: str = None,
     session: str = None,
@@ -196,7 +203,7 @@ def dcm2bids_wrapper(
         if subject in subjects_need_processing:
             batch_manager.addjob(job)
 
-    batch_manager.compile_job_strings()
+    # batch_manager.compile_job_strings()
     if submit:
         if len(subjects_need_processing) > 0:
             logger.info(f"Converting subject(s): {', '.join(subjects_need_processing)}")
@@ -216,7 +223,7 @@ def heudiconv_wrapper(
     output_directory: os.PathLike,
     heuristic_file: os.PathLike,
     dicom_dir_format: str,
-    batch_manager: BatchManager,
+    batch_manager: JobManager,
     logger: logging.Logger,
     subjects: list = None,
     session: str = None,
@@ -298,7 +305,6 @@ def heudiconv_wrapper(
         job = Job(job_id, job_str)
         batch_manager.add_job(job)
 
-    batch_manager.compilejobstrings()
     if submit:
         batch_manager.submit_jobs()
     else:
@@ -423,9 +429,10 @@ def dicom_to_nifti_to_bids_converter_setup(
             """.heudiconv/{subject}/info/dicominfo.tsv {outputfile} \n rm -rf ./test/"""
         )
 
-    batch_manager = BatchManager(config.batch_config_path, None)
-    batch_manager.update_time("1:0:0")
-    batch_manager.update_mem_usage("3000")
+    batch_manager = JobManagerFactory.get(
+        batch_config=config.batch_config_path, time="1:0:0", mem_use="3000"
+    )
+
     if session:
         job1 = Job(
             "heudiconv_setup",
@@ -449,7 +456,7 @@ def dicom_to_nifti_to_bids_converter_setup(
         )
 
     batch_manager.addjob(job1)
-    batch_manager.compilejobstrings()
+
     if submit:
         batch_manager.submit_jobs()
     else:
