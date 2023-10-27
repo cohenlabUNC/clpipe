@@ -491,7 +491,7 @@ def build_confounds_add_motion_outliers_workflow(
 
 def _construct_motion_outliers(scrub_vector: list):
     from pathlib import Path
-    from .utils import construct_motion_outliers
+    from clpipe.postprocutils.utils import construct_motion_outliers
 
     # Create outlier columns
     mot_outliers = construct_motion_outliers(scrub_vector)

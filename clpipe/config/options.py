@@ -822,7 +822,7 @@ class ProjectOptions(Option):
             project_dir (os.PathLike): Root directory of the project.
             source_data (os.PathLike): Directory pointing to the source DICOM data.
         """
-        self.project_directory = os.path.abspath(project_dir)
+        self.project_directory = project_dir
 
         self.convert2bids.populate_project_paths(project_dir, source_data)
         self.bids_validation.populate_project_paths(project_dir)

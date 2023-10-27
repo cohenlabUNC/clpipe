@@ -46,8 +46,9 @@ def bids_validate(
         sys.exit(1)
 
     batch_manager = BatchManager(
-        config.batch_config_path, output_directory=log_dir, debug=debug
-    )
+        config.batch_config_path, 
+        output_directory=config.bids_validation.log_directory,
+        debug=debug)
     batch_manager.update_mem_usage(DEFAULT_MEMORY_USAGE)
 
     config.bids_validation.bids_validator_image

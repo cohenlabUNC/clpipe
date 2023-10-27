@@ -4,6 +4,7 @@ import os
 from typing import List
 
 from clpipe.project_setup import project_setup, SourceDataError
+from clpipe.config.options import ProjectOptions
 
 PROJECT_TITLE = "test_project"
 
@@ -12,10 +13,21 @@ def test_project_setup_no_source(tmp_path: Path):
     """Check that clpipe creates an empty data_DICOMs folder in the project
     directory when no source is provided.
     """
-
     project_setup(project_title=PROJECT_TITLE, project_dir=tmp_path)
 
     assert Path(tmp_path / "data_DICOMs").exists()
+    assert Path(tmp_path / "clpipe_config.json").exists()
+
+def test_project_setup_no_source_rel_path(tmp_path: Path):
+    """Assure proper paths created in config when relative path provided."""
+    os.chdir(tmp_path)
+
+    project_setup(project_title=PROJECT_TITLE, project_dir=".")
+
+    config: ProjectOptions = ProjectOptions().load(Path(tmp_path / "clpipe_config.json"))
+
+    # Ensure absolute path was applied to config
+    assert(not config.fmriprep.output_directory.startswith("."))
 
 
 def test_project_setup_referenced_source(tmp_path: Path, source_data: Path):
