@@ -36,30 +36,30 @@ class JobManager:
 
         self.job_queue = []
 
-        def print_jobs(self):
-            job_count = len(self.job_queue)
+    def print_jobs(self):
+        job_count = len(self.job_queue)
 
-            if job_count == 0:
-                output = "No jobs to run."
-            else:
-                output = "Jobs to run:\n\n"
-                for index, job in enumerate(self.job_queue):
-                    output += "\t" + job + "\n\n"
-                    if (
-                        index == MAX_JOB_DISPLAY - 1
-                        and job_count > MAX_JOB_DISPLAY
-                        and not self.debug
-                    ):
-                        output += f"\t...and {job_count - 5} more job(s).\n"
-                        break
-                output += "Re-run with the '-submit' flag to launch these jobs."
-            self.logger.info(output)
+        if job_count == 0:
+            output = "No jobs to run."
+        else:
+            output = "Jobs to run:\n\n"
+            for index, job in enumerate(self.job_queue):
+                output += "\t" + job.job_string + "\n\n"
+                if (
+                    index == MAX_JOB_DISPLAY - 1
+                    and job_count > MAX_JOB_DISPLAY
+                    and not self.debug
+                ):
+                    output += f"\t...and {job_count - 5} more job(s).\n"
+                    break
+            output += "Re-run with the '-submit' flag to launch these jobs."
+        self.logger.info(output)
 
-        def add_jobs(self):
-            ...
+    def add_jobs(self):
+        ...
 
-        def submit_jobs(self):
-            ...
+    def submit_jobs(self):
+        ...
 
 
 class BatchJobManager(JobManager):
@@ -73,8 +73,8 @@ class BatchJobManager(JobManager):
         threads=None,
         email=None,
     ):
-        super.__init__(output_directory, debug)
-        self.config = BatchManagerConfig.load(batch_system_config)
+        super().__init__(output_directory, debug)
+        self.config = BatchManagerConfig.load(os.path.abspath(batch_system_config))
 
         self.config.mem_use = mem_use
         self.config.time = time
@@ -94,7 +94,7 @@ class BatchJobManager(JobManager):
 
         head.append(self.config.memory_command.format(mem=self.config.memory_default))
         if self.config.time_command_active:
-            head.append(self.config.TimeCommand.format(time=self.config.time_default))
+            head.append(self.config.time_command.format(time=self.config.time_default))
         if self.config.thread_command_active:
             head.append(
                 self.config.n_threads_command.format(nthreads=self.config.n_threads)
@@ -118,8 +118,7 @@ class BatchJobManager(JobManager):
         return " ".join(head)
 
     def add_job(self, job_id, job_string):
-        job = Job(job_id, job_string)
-        job_string = self.header.format(job_id=job.job_id, cmdwrap=job.job_string)
+        job_string = self.header.format(jobid=job_id, cmdwrap=job_string)
         self.job_queue.append(Job(job_id, job_string))
 
     def submit_jobs(self):
@@ -130,6 +129,7 @@ class BatchJobManager(JobManager):
         self.logger.debug(f"Email: {self.config.email_address}")
         for job in self.job_queue:
             os.system(job.job_string)
+        self.job_queue.clear()
 
 
 class LocalJobManager(JobManager):
@@ -143,12 +143,12 @@ class LocalJobManager(JobManager):
     def submit_jobs(self):
         self.logger.info(f"Submitting {len(self.job_queue)} job(s) locally.")
         for job in self.job_queue:
-            os.system(job.string)
+            os.system(job.job_string)
+        self.job_queue.clear()
 
 
 class JobManagerFactory:
     def get(
-        self,
         batch_config=None,
         output_directory=None,
         mem_use=None,
