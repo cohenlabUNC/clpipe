@@ -1,5 +1,5 @@
 from pathlib import Path
-from .job_manager import BatchManager, Job
+from .job_manager import *
 from .config.options import ProjectOptions
 import os
 import parse
@@ -59,11 +59,15 @@ def convert2bids(
 
     logger = get_logger(STEP_NAME, debug=debug, log_dir=config.get_logs_dir())
 
-    batch_manager = BatchManager(config.batch_config_path, log_dir, debug=debug)
-    batch_manager.create_submission_head()
-    batch_manager.update_mem_usage(config.convert2bids.mem_usage)
-    batch_manager.update_time(config.convert2bids.time_usage)
-    batch_manager.update_nthreads(config.convert2bids.core_usage)
+    batch_manager = JobManagerFactory.get(
+        batch_config=config.batch_config_path, output_directory=log_dir, debug=debug
+    )
+
+    # batch_manager = BatchManager(config.batch_config_path, log_dir, debug=debug)
+    # batch_manager.create_submission_head()
+    # batch_manager.update_mem_usage(config.convert2bids.mem_usage)
+    # batch_manager.update_time(config.convert2bids.time_usage)
+    # batch_manager.update_nthreads(config.convert2bids.core_usage)
 
     logger.info(
         f"Starting BIDS conversion targeting: {config.convert2bids.dicom_directory}"
@@ -189,12 +193,10 @@ def dcm2bids_wrapper(
         # Unpack the conv_args
         submission_string = conv_string.format(**conv_args)
 
-        job = Job(job_id, submission_string)
-
         if subject in subjects_need_processing:
-            batch_manager.addjob(job)
+            batch_manager.addjob(job_id, submission_string)
 
-    batch_manager.compile_job_strings()
+    # batch_manager.compile_job_strings()
     if submit:
         if len(subjects_need_processing) > 0:
             logger.info(f"Converting subject(s): {', '.join(subjects_need_processing)}")
@@ -293,10 +295,10 @@ def heudiconv_wrapper(
             clear_bids_cmd = f"rm -r {output_directory}/sub-{i['subject']}"
             job_str = clear_bids_cmd + "; " + job_str
 
-        job = Job(job_id, job_str)
-        batch_manager.add_job(job)
+        # job = Job(job_id, job_str)
+        batch_manager.add_job(job_id, job_str)
 
-    batch_manager.compilejobstrings()
+    # batch_manager.compilejobstrings()
     if submit:
         batch_manager.submit_jobs()
     else:
@@ -421,9 +423,13 @@ def dicom_to_nifti_to_bids_converter_setup(
             """.heudiconv/{subject}/info/dicominfo.tsv {outputfile} \n rm -rf ./test/"""
         )
 
-    batch_manager = BatchManager(config.batch_config_path, None)
-    batch_manager.update_time("1:0:0")
-    batch_manager.update_mem_usage("3000")
+    batch_manager = JobManagerFactory.get(
+        batch_config=config.batch_config_path, time="1:0:0", mem_use="3000"
+    )
+
+    # batch_manager = BatchManager(config.batch_config_path, None)
+    # batch_manager.update_time("1:0:0")
+    # batch_manager.update_mem_usage("3000")
     if session:
         job1 = Job(
             "heudiconv_setup",
@@ -446,8 +452,8 @@ def dicom_to_nifti_to_bids_converter_setup(
             ),
         )
 
-    batch_manager.addjob(job1)
-    batch_manager.compilejobstrings()
+    batch_manager.addjob(job1.job_id, job1.job_string)
+    # batch_manager.compilejobstrings()
     if submit:
         batch_manager.submit_jobs()
     else:

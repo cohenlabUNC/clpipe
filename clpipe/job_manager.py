@@ -55,7 +55,7 @@ class JobManager:
             output += "Re-run with the '-submit' flag to launch these jobs."
         self.logger.info(output)
 
-    def add_jobs(self):
+    def add_job(self):
         ...
 
     def submit_jobs(self):
@@ -151,6 +151,7 @@ class JobManagerFactory:
     def get(
         batch_config=None,
         output_directory=None,
+        debug=False,
         mem_use=None,
         time=None,
         threads=None,
@@ -165,7 +166,7 @@ class JobManagerFactory:
         """
         if batch_config:
             return BatchJobManager(
-                batch_config, output_directory, mem_use, time, threads, email
+                batch_config, output_directory, debug, mem_use, time, threads, email
             )
         else:
             return LocalJobManager()
