@@ -155,7 +155,7 @@ class BatchManagerConfig(Option):
 
     Example:
         config = ParallelManagerConfig.from_default("uva")
-        # Create a configuration instance with default settings for 'uva' environment.
+        Create a configuration instance with default settings for 'uva' environment.
     """
 
     submission_head: str = field(
