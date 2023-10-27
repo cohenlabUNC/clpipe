@@ -140,7 +140,7 @@ def test_dump_parallel_manager_config_json(helpers, artifact_dir, request):
     test_dir = helpers.create_test_dir(artifact_dir / "config_tests", request.node.name)
 
     output_file_path = os.path.join(test_dir, "default_config.json")
-    parallel_config = ParallelManagerConfig()
+    parallel_config = BatchManagerConfig()
     parallel_config.dump(output_file_path)
 
     assert os.path.exists(output_file_path)
@@ -156,7 +156,7 @@ def test_dump_variant_parallel_manager_config_json(helpers, artifact_dir, reques
     test_dir = helpers.create_test_dir(artifact_dir / "config_tests", request.node.name)
 
     output_file_path = os.path.join(test_dir, "default_config.json")
-    parallel_config = ParallelManagerConfig.from_default("pitt")
+    parallel_config = BatchManagerConfig.from_default("pitt")
     parallel_config.dump(output_file_path)
 
     assert os.path.exists(output_file_path)
@@ -172,9 +172,9 @@ def test_load_parallel_manager_config_json(helpers, artifact_dir, request):
     test_dir = helpers.create_test_dir(artifact_dir / "config_tests", request.node.name)
 
     output_file_path = os.path.join(test_dir, "default_config.json")
-    config = ParallelManagerConfig()
+    config = BatchManagerConfig()
     config.submission_head = "TEST_SUBMISSION_HEAD"
     config.dump(output_file_path)
 
-    loaded_config = ParallelManagerConfig.load(output_file_path)
+    loaded_config = BatchManagerConfig.load(output_file_path)
     assert loaded_config == config
