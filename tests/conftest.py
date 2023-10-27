@@ -3,6 +3,9 @@ import sys
 import shutil
 import json
 from pathlib import Path
+from bids import BIDSLayout, BIDSLayoutIndexer
+from clpipe.bids import get_bids
+
 
 import nibabel as nib
 import nipype.pipeline.engine as pe
@@ -305,7 +308,7 @@ def clpipe_bids_dir(tmp_path_factory, sample_raw_image):
     project_setup(project_title=PROJECT_TITLE, project_dir=str(project_dir))
     utils.populate_with_BIDS(project_dir, sample_raw_image)
 
-    return clpipe_dir
+    return project_dir
 
 
 @pytest.fixture(scope="session")
@@ -425,6 +428,18 @@ def clpipe_postprocess_subjects(clpipe_fmriprep_dir: Path):
     postprocess_subjects(config_file=options)
 
     return clpipe_fmriprep_dir
+
+
+@pytest.fixture(scope="session")
+def clpipe_fmriprep_indexed_dir(clpipe_fmriprep_dir) -> Path:
+    project_dir = clpipe_fmriprep_dir
+    get_bids(
+        project_dir / "data_BIDS",
+        database_path=project_dir / "BIDS_index",
+        index_metadata=True,
+        fmriprep_dir=project_dir / "data_fmriprep",
+    )
+    return project_dir
 
 
 # TODO: seperate AROMA into its own type of fmriprep dir
