@@ -4,8 +4,10 @@ from clpipe.job_manager import *
 SLURMUNCCONFIG: str = "clpipe/batchConfigs/slurmUNCConfigSnakeCase.json"
 
 
-def test_batch_manager_instantiation():
-    batch_manager = JobManagerFactory.get(batch_config=os.path.abspath(SLURMUNCCONFIG))
+def test_batch_manager_instantiation(scatch_dir):
+    batch_manager = JobManagerFactory.get(
+        batch_config=os.path.abspath(SLURMUNCCONFIG), output_directory=scatch_dir
+    )
     assert isinstance(batch_manager, BatchJobManager)
 
     batch_manager.add_job(1, "echo hi")
@@ -20,8 +22,8 @@ def test_batch_manager_instantiation():
     assert len(batch_manager.job_queue) == 0
 
 
-def test_local_manager_instantiation():
-    batch_manager = JobManagerFactory.get()
+def test_local_manager_instantiation(scatch_dir, capsys):
+    batch_manager = JobManagerFactory.get(output_directory=scatch_dir)
     assert isinstance(batch_manager, LocalJobManager)
 
     batch_manager.add_job(1, "echo local")
@@ -32,5 +34,8 @@ def test_local_manager_instantiation():
 
     batch_manager.print_jobs()
     batch_manager.submit_jobs()
+
+    captured = capsys.readouterr()
+    assert captured.out == "local"
 
     assert len(batch_manager.job_queue) == 0
