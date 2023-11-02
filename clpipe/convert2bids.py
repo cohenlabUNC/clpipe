@@ -60,14 +60,13 @@ def convert2bids(
     logger = get_logger(STEP_NAME, debug=debug, log_dir=config.get_logs_dir())
 
     batch_manager = JobManagerFactory.get(
-        batch_config=config.batch_config_path, output_directory=log_dir, debug=debug
+        batch_config=config.batch_config_path,
+        output_directory=log_dir,
+        debug=debug,
+        mem_use=config.convert2bids.mem_usage,
+        time=config.convert2bids.time_usage,
+        threads=config.convert2bids.core_usage,
     )
-
-    # batch_manager = BatchManager(config.batch_config_path, log_dir, debug=debug)
-    # batch_manager.create_submission_head()
-    # batch_manager.update_mem_usage(config.convert2bids.mem_usage)
-    # batch_manager.update_time(config.convert2bids.time_usage)
-    # batch_manager.update_nthreads(config.convert2bids.core_usage)
 
     logger.info(
         f"Starting BIDS conversion targeting: {config.convert2bids.dicom_directory}"
