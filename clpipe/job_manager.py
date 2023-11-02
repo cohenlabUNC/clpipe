@@ -117,9 +117,9 @@ class BatchJobManager(JobManager):
 
         return " ".join(head)
 
-    def add_job(self, job_id, job_string):
-        job_string = self.header.format(jobid=job_id, cmdwrap=job_string)
-        self.job_queue.append(Job(job_id, job_string))
+    def add_job(self, job_name, job_string):
+        job_string = self.header.format(jobid=job_name, cmdwrap=job_string)
+        self.job_queue.append(Job(job_name, job_string))
 
     def submit_jobs(self):
         self.logger.info(f"Submitting {len(self.job_queue)} job(s) in batch.")
@@ -136,8 +136,8 @@ class LocalJobManager(JobManager):
     def __init__(self, output_directory=None, debug=False):
         super().__init__(output_directory, debug)
 
-    def add_job(self, job_id, job_string):
-        job = Job(job_id, job_string)
+    def add_job(self, job_name, job_string):
+        job = Job(job_name, job_string)
         self.job_queue.append(job)
 
     def submit_jobs(self):
@@ -173,8 +173,8 @@ class JobManagerFactory:
 
 
 class Job:
-    def __init__(self, job_id, job_string):
-        self.job_id = job_id
+    def __init__(self, job_name, job_string):
+        self.job_name = job_name
         self.job_string = job_string
 
 
