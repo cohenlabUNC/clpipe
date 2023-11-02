@@ -56,3 +56,13 @@ def test_heudiconv(clpipe_dicom_dir: Path, config_file: Path):
         dicom_dir=clpipe_dicom_dir / "sub",
         dicom_dir_format="{subject}",
     )
+
+
+def test_convert2bids_local(clpipe_dicom_dir: Path, config_file: Path):
+    convert2bids(
+        dcm2bids=True,
+        config_file=config_file,
+        dicom_dir=clpipe_dicom_dir / "sub",
+        dicom_dir_format="{subject}",
+        batch=False,
+    )
