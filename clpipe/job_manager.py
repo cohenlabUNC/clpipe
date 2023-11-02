@@ -78,8 +78,8 @@ class BatchJobManager(JobManager):
 
         self.config.mem_use = mem_use if mem_use else self.config.memory_default
         self.config.time = time if time else self.config.time_default
-        self.config.threads = threads if threads else self.config.n_threads
-        self.config.email = email if email else self.config.email_address
+        self.config.threads = threads if threads else self.config.n_threads_default
+        self.config.email = email if email else self.config.email_address_default
 
         self.header = self.create_submission_head()
 

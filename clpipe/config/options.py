@@ -179,7 +179,7 @@ class BatchManagerConfig(Option):
     )
     """The command used to specify the number of CPU threads per task."""
 
-    n_threads: str = field(default="1", metadata={"required": True})
+    n_threads_default: str = field(default="1", metadata={"required": True})
     """The default number of CPU threads."""
 
     memory_command: str = field(default="--mem={mem}", metadata={"required": True})
@@ -209,7 +209,7 @@ class BatchManagerConfig(Option):
     )
     """The command used to wrap the job command."""
 
-    email_address: str = field(default="", metadata={"required": True})
+    email_address_default: str = field(default="", metadata={"required": True})
     """The email address for job notifications."""
 
     email_command: str = field(
