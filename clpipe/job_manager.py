@@ -76,10 +76,10 @@ class BatchJobManager(JobManager):
         super().__init__(output_directory, debug)
         self.config = BatchManagerConfig.load(os.path.abspath(batch_system_config))
 
-        self.config.mem_use = mem_use
-        self.config.time = time
-        self.config.threads = threads
-        self.config.email = email
+        self.config.mem_use = mem_use if mem_use else self.config.memory_default
+        self.config.time = time if time else self.config.time_default
+        self.config.threads = threads if threads else self.config.n_threads
+        self.config.email = email if email else self.config.email_address
 
         self.header = self.create_submission_head()
 
@@ -92,9 +92,9 @@ class BatchJobManager(JobManager):
             temp = e["command"] + "=" + e["args"]
             head.append(temp)
 
-        head.append(self.config.memory_command.format(mem=self.config.memory_default))
+        head.append(self.config.memory_command.format(mem=self.config.mem_use))
         if self.config.time_command_active:
-            head.append(self.config.time_command.format(time=self.config.time_default))
+            head.append(self.config.time_command.format(time=self.config.time))
         if self.config.thread_command_active:
             head.append(
                 self.config.n_threads_command.format(nthreads=self.config.n_threads)
