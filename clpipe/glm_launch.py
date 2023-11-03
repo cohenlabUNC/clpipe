@@ -18,7 +18,7 @@ STEP_NAME = "glm-launch"
 
 # Unset PYTHONPATH to ensure FSL uses its own internal python
 #   libraries
-SUBMISSION_STRING_TEMPLATE = "unset PYTHONPATH; feat {fsf_file}"
+SUBMISSION_STRING_TEMPLATE = "unset PYTHONPATH; feat '{fsf_file}'"
 DEPRECATION_MSG = "Using deprecated GLM setup file."
 
 

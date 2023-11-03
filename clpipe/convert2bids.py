@@ -16,12 +16,12 @@ from pkg_resources import resource_filename
 INFO_COMMAND_NAME = "dicom-info"
 STEP_NAME = "bids-conversion"
 BASE_CMD = (
-    "dcm2bids -d {subject_dicom_dir} -o {bids_dir} "
-    "-p {subject} -c {conv_config_file}"
+    "dcm2bids -d '{subject_dicom_dir}' -o '{bids_dir}' "
+    "-p '{subject}' -c '{conv_config_file}'"
 )
 HEUDICONV_BASE_CMD = (
-    """heudiconv --files {subject_dicom_dir} -s {subject} """
-    """-f {heuristic} -o {output_directory} -b"""
+    """heudiconv --files '{subject_dicom_dir}' -s '{subject}' """
+    """-f '{heuristic}' -o '{output_directory}' -b"""
 )
 DEFAULT_CONV_CONFIG_PATH = "data/default_conv_config.json"
 
