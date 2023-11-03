@@ -1,6 +1,7 @@
 import json
 from pkg_resources import resource_stream
 import os
+import subprocess
 
 from .utils import get_logger
 from clpipe.config.options import BatchManagerConfig
@@ -97,7 +98,9 @@ class BatchJobManager(JobManager):
             head.append(self.config.time_command.format(time=self.config.time))
         if self.config.thread_command_active:
             head.append(
-                self.config.n_threads_command.format(nthreads=self.config.n_threads)
+                self.config.n_threads_command.format(
+                    nthreads=self.config.n_threads_default
+                )
             )
         if self.config.job_id_command_active:
             head.append(self.config.job_id_command.format(jobid=JOB_ID_FORMAT_STR))
@@ -109,9 +112,11 @@ class BatchJobManager(JobManager):
                     )
                 )
             )
-        if self.config.email_address:
+        if self.config.email_address_default:
             head.append(
-                self.config.email_address.format(email=self.config.email_address)
+                self.config.email_address_default.format(
+                    email=self.config.email_address_default
+                )
             )
         head.append(self.config.command_wrapper)
 
@@ -125,10 +130,11 @@ class BatchJobManager(JobManager):
         self.logger.info(f"Submitting {len(self.job_queue)} job(s) in batch.")
         self.logger.debug(f"Memory usage: {self.config.memory_default}")
         self.logger.debug(f"Time usage: {self.config.time_default}")
-        self.logger.debug(f"Number of threads: {self.config.n_threads}")
-        self.logger.debug(f"Email: {self.config.email_address}")
+        self.logger.debug(f"Number of threads: {self.config.n_threads_default}")
+        self.logger.debug(f"Email: {self.config.email_address_default}")
         for job in self.job_queue:
-            os.system(job.job_string)
+            # os.system(job.job_string)
+            subprocess.run(job.job_string, shell=True)
         self.job_queue.clear()
 
 
@@ -143,7 +149,7 @@ class LocalJobManager(JobManager):
     def submit_jobs(self):
         self.logger.info(f"Submitting {len(self.job_queue)} job(s) locally.")
         for job in self.job_queue:
-            os.system(job.job_string)
+            subprocess.run(job.job_string, shell=True)
         self.job_queue.clear()
 
 
