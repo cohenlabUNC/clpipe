@@ -46,9 +46,9 @@ STEP_NAME = "postprocess"
 PROCESSING_DESCRIPTION_FILE_NAME = "processing_description.json"
 IMAGE_TIME_DIMENSION_INDEX = 3
 IMAGE_SUBMISSION_STRING_TEMPLATE = (
-    "postprocess_image {run_config_file} "
-    "{image_file} {subject_out_dir} {subject_working_dir} {subject_log_dir} "
-    "{debug}"
+    "postprocess_image '{run_config_file}' "
+    "'{image_file}' '{subject_out_dir}' '{subject_working_dir}' '{subject_log_dir}' "
+    "'{debug}'"
 )
 BIDS_INDEX_NAME = "bids_index"
 """This is the location of the pybids-generated index"""

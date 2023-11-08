@@ -8,7 +8,7 @@ from .utils import get_logger
 
 STEP_NAME = "bids-validation"
 SINGULARITY_CMD_TEMPLATE = (
-    "singularity run --cleanenv -B {bindPaths} " "{validatorInstance} {bidsDir}"
+    "singularity run --cleanenv -B '{bindPaths}' " "'{validatorInstance}' '{bidsDir}'"
 )
 DEFAULT_MEMORY_USAGE = "3G"
 

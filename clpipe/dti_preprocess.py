@@ -74,17 +74,17 @@ def qsiprep_process(
             "Please make sure the BIDS, working and output directories are specified in either the configfile or in the command. At least one is not specified."
         )
     singularity_string = (
-        """unset PYTHONPATH; {templateflow1} singularity run -B {templateflow2}{bindPaths} {batchcommands} {fmriprepInstance} {bidsDir} {outputDir} participant """
-        """--participant-label {participantLabels} -w {workingdir} --fs-license-file {fslicense} {threads} {otheropts}"""
+        """unset PYTHONPATH; '{templateflow1}' singularity run -B '{templateflow2}''{bindPaths}' '{batchcommands}' '{fmriprepInstance}' '{bidsDir}' '{outputDir}' participant """
+        """--participant-label '{participantLabels}' -w '{workingdir}' --fs-license-file '{fslicense}' '{threads}' '{otheropts}'"""
     )
 
     if config.config["QSIprepOptions"]["TemplateFlowToggle"]:
         template1 = (
-            "export SINGULARITYENV_TEMPLATEFLOW_HOME={templateflowpath};".format(
+            "export SINGULARITYENV_TEMPLATEFLOW_HOME='{templateflowpath}';".format(
                 templateflowpath=config.config["QSIprepOptions"]["TemplateFlowPath"]
             )
         )
-        template2 = "${{TEMPLATEFLOW_HOME:-$HOME/.cache/templateflow}}:{templateflowpath},".format(
+        template2 = "${{TEMPLATEFLOW_HOME:-$HOME/.cache/templateflow}}:'{templateflowpath}',".format(
             templateflowpath=config.config["QSIprepOptions"]["TemplateFlowPath"]
         )
     else:

@@ -161,7 +161,7 @@ def dcm2bids_wrapper(
     session_toggle = "{session}" in dicom_dir_format
 
     if session_toggle and not longitudinal:
-        conv_string += " -s {session}"
+        conv_string += " -s '{session}'"
     if overwrite:
         conv_string = conv_string + " --clobber --forceDcm2niix"
 
@@ -418,15 +418,15 @@ def dicom_to_nifti_to_bids_converter_setup(
 
     if session:
         heudiconv_string = (
-            """module add heudiconv \n heudiconv -d {dicomdirectory} -s {subject} """
-            """ -ss {sess} -f {heuristic} -o ./test/ -b --minmeta \n cp ./test/"""
-            """.heudiconv/{subject}/ses-{sess}/info/dicominfo_ses-{sess}.tsv {outputfile} \n rm -rf ./test/"""
+            """module add heudiconv \n heudiconv -d '{dicomdirectory}' -s '{subject}' """
+            """ -ss '{sess}' -f '{heuristic}' -o ./test/ -b --minmeta \n cp ./test/"""
+            """.heudiconv/'{subject}'/ses-'{sess}'/info/dicominfo_ses-'{sess}'.tsv '{outputfile}' \n rm -rf ./test/"""
         )
     else:
         heudiconv_string = (
-            """module add heudiconv \n heudiconv -d {dicomdirectory} -s {subject} """
-            """ -f {heuristic} -o ./test/ -b --minmeta \n cp ./test/"""
-            """.heudiconv/{subject}/info/dicominfo.tsv {outputfile} \n rm -rf ./test/"""
+            """module add heudiconv \n heudiconv -d '{dicomdirectory}' -s '{subject}' """
+            """ -f '{heuristic}' -o ./test/ -b --minmeta \n cp ./test/"""
+            """.heudiconv/'{subject}'/info/dicominfo.tsv '{outputfile}' \n rm -rf ./test/"""
         )
 
     batch_manager = JobManagerFactory.get(

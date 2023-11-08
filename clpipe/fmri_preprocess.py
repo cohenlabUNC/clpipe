@@ -9,21 +9,21 @@ from .status import needs_processing, write_record
 
 STEP_NAME = "fmriprep-process"
 BASE_SINGULARITY_CMD = (
-    "unset PYTHONPATH; {templateflow1} singularity run -B {templateflow2}"
-    "{bindPaths} {batchcommands} {fmriprepInstance} {bids_dir} {output_dir} "
-    "participant --participant-label {participantLabels} -w {working_dir} "
-    "--fs-license-file {fslicense} {threads} {useAROMA} {other_opts}"
+    "unset PYTHONPATH; '{templateflow1}' singularity run -B '{templateflow2}'"
+    "'{bindPaths}' '{batchcommands}' '{fmriprepInstance}' '{bids_dir}' '{output_dir}' "
+    "participant --participant-label '{participantLabels}' -w '{working_dir}' "
+    "--fs-license-file '{fslicense}' '{threads}' '{useAROMA}' '{other_opts}'"
 )
 BASE_DOCKER_CMD = (
     "docker run --rm -ti "
-    "-v {fslicense}:/opt/freesurfer/license.txt:ro "
-    "-v {bids_dir}:/data:ro -v {output_dir}:/out "
-    "-v {working_dir}:/work "
-    "{docker_fmriprep} /data /out participant -w /work {threads} {useAROMA} "
-    "{other_opts} --participant-label {participantLabels}"
+    "-v '{fslicense}':/opt/freesurfer/license.txt:ro "
+    "-v '{bids_dir}':/data:ro -v {output_dir}:/out "
+    "-v '{working_dir}':/work "
+    "'{docker_fmriprep}' /data /out participant -w /work '{threads}' '{useAROMA}' "
+    "'{other_opts}' --participant-label '{participantLabels}'"
 )
-TEMPLATE_1 = "export SINGULARITYENV_TEMPLATEFLOW_HOME={templateflowpath};"
-TEMPLATE_2 = "${{TEMPLATEFLOW_HOME:-$HOME/.cache/templateflow}}:{templateflowpath},"
+TEMPLATE_1 = "export SINGULARITYENV_TEMPLATEFLOW_HOME='{templateflowpath}';"
+TEMPLATE_2 = "${{TEMPLATEFLOW_HOME:-$HOME/.cache/templateflow}}:'{templateflowpath}',"
 USE_AROMA_FLAG = "--use-aroma"
 N_THREADS_FLAG = "--nthreads"
 TEMPLATE_FLOW_CACHE_PATH = ".cache/templateflow"
@@ -138,7 +138,7 @@ def fmriprep_process(
             logger.info(
                 (
                     "No subjects need processing. If this seems incorrect, "
-                    f"you may need to clear 'submitted' {STEP_NAME} entries from "
+                    f"you may need to clear 'submitted' '{STEP_NAME}' entries from "
                     "your status log."
                 )
             )
