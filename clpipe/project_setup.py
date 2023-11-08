@@ -10,10 +10,13 @@ from .bids_validator import setup_dirs as setup_bids_validation_dirs
 from .fmri_preprocess import setup_dirs as setup_preprocess_dirs
 from .roi_extractor import setup_dirs as setup_roiextract_dirs
 from .glm_prepare import setup_dirs as setup_glm_dirs
+from clpipe.config.options import BatchManagerConfig
 
 STEP_NAME = "project-setup"
 DEFAULT_DICOM_DIR = "data_DICOMs"
 DCM2BIDS_SCAFFOLD_TEMPLATE = "dcm2bids_scaffold -o {}"
+CLPIPE_HIDDEN_DIR = ".clpipe"
+BATCH_CONFIG_FILE = "batch_config.json"
 
 
 DEFAULT_GLM_CONFIG_FILE_NAME = "glm_config.json"
@@ -29,6 +32,7 @@ def project_setup(
     source_data=None,
     move_source_data=False,
     symlink_source_data=False,
+    profile_data="unc",
     debug=False,
 ):
     """Initialize a clpipe project.
@@ -77,8 +81,11 @@ def project_setup(
     logger.debug("Creating JSON config file")
     config.dump(config_file_path)
 
-    Path(".clpipe").mkdir(exist_ok=False)
-    # And then dump
+    clpipe_dir = os.path.join(project_dir, CLPIPE_HIDDEN_DIR)
+    Path(clpipe_dir).mkdir(exist_ok=False)
+    batch_config = BatchManagerConfig.from_default(profile_data)
+    batch_config_file = os.path.join(clpipe_dir, BATCH_CONFIG_FILE)
+    batch_config.dump(batch_config_file)
 
     # Setup directories for the first few steps
     setup_convert2bids_dirs(config)
