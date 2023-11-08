@@ -27,6 +27,11 @@ MOVE_SOURCE_DATA_HELP = \
     "Move source data into project/data_DICOMs folder. USE WITH CAUTION."
 SYM_LINK_HELP = \
     "Symlink the source data into project/data_dicoms. Usually safe to do."
+PROFILE_HELP = \
+    """
+    The user profile you would like to use. Default is unc. The options
+    include: "unc", "duke", "uva", "pitt"
+    """
 
 # BIDS conversion help
 CONVERSION_COMMAND_NAME = "convert2bids"
