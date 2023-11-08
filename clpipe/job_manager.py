@@ -112,10 +112,10 @@ class BatchJobManager(JobManager):
                     )
                 )
             )
-        if self.config.email_address_default:
+        if self.config.email:
             head.append(
-                self.config.email_address_default.format(
-                    email=self.config.email_address_default
+                self.config.email.format(
+                    email=self.config.email
                 )
             )
         head.append(self.config.command_wrapper)
@@ -128,10 +128,10 @@ class BatchJobManager(JobManager):
 
     def submit_jobs(self):
         self.logger.info(f"Submitting {len(self.job_queue)} job(s) in batch.")
-        self.logger.debug(f"Memory usage: {self.config.memory_default}")
-        self.logger.debug(f"Time usage: {self.config.time_default}")
-        self.logger.debug(f"Number of threads: {self.config.n_threads_default}")
-        self.logger.debug(f"Email: {self.config.email_address_default}")
+        self.logger.debug(f"Memory usage: {self.config.mem_use}")
+        self.logger.debug(f"Time usage: {self.config.time}")
+        self.logger.debug(f"Number of threads: {self.config.threads}")
+        self.logger.debug(f"Email: {self.config.email}")
         for job in self.job_queue:
             # os.system(job.job_string)
             subprocess.run(job.job_string, shell=True)
