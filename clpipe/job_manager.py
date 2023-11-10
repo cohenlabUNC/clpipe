@@ -154,7 +154,9 @@ class LocalJobManager(JobManager):
 
 
 class JobManagerFactory:
+    @classmethod
     def get(
+        cls,
         batch_config=None,
         output_directory=None,
         debug=False,
@@ -164,7 +166,7 @@ class JobManagerFactory:
         email=None,
     ) -> JobManager:
         """
-        Initializes a JobRunner object.
+        Initializes a JobManager object.
 
         Args:
             method (str): "batch / Local"

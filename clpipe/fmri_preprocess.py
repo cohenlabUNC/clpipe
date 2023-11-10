@@ -2,7 +2,7 @@ import os
 import sys
 from pathlib import Path
 
-from .job_manager import BatchManager, Job
+from .job_manager import JobManagerFactory
 from .config.options import ProjectOptions
 from .utils import get_logger
 from .status import needs_processing, write_record
@@ -146,20 +146,35 @@ def fmriprep_process(
 
     logger.info(f"Targeting subject(s): {', '.join(sublist)}")
 
-    batch_manager = BatchManager(config.batch_config_path, log_dir, debug=debug)
-    batch_manager.update_mem_usage(config.fmriprep.fmriprep_memory_usage)
-    batch_manager.update_time(config.fmriprep.fmriprep_time_usage)
-    batch_manager.update_nthreads(config.fmriprep.n_threads)
-    batch_manager.update_email(config.email_address)
+    batch_manager = JobManagerFactory.get(
+        batch_config=config.batch_config_path,
+        output_directory=log_dir,
+        debug=debug,
+        mem_use=config.fmriprep.fmriprep_memory_usage,
+        time=config.fmriprep.fmriprep_time_usage,
+        threads=config.fmriprep.n_threads,
+        email=config.email_address
+    )
 
-    thread_command_active = batch_manager.config["ThreadCommandActive"]
-    batch_commands = batch_manager.config["FMRIPrepBatchCommands"]
-    singularity_bind_paths = batch_manager.config["SingularityBindPaths"]
+    thread_command_active = batch_manager.config.thread_command_active
+    batch_commands = batch_manager.config.fmri_prep_batch_commands
+    singularity_bind_paths = batch_manager.config.singularity_bind_paths
+
+    # batch_manager = BatchManager(config.batch_config_path, log_dir, debug=debug)
+    # batch_manager.update_mem_usage(config.fmriprep.fmriprep_memory_usage)
+    # batch_manager.update_time(config.fmriprep.fmriprep_time_usage)
+    # batch_manager.update_nthreads(config.fmriprep.n_threads)
+    # batch_manager.update_email(config.email_address)
+
+    # thread_command_active = batch_manager.config["ThreadCommandActive"]
+    # batch_commands = batch_manager.config["FMRIPrepBatchCommands"]
+    # singularity_bind_paths = batch_manager.config["SingularityBindPaths"]
 
     threads_arg = ""
     if thread_command_active:
         logger.debug("Threads command: ACTIVE")
-        threads_arg = f"{N_THREADS_FLAG} " + batch_manager.get_threads_command()[1]
+        # threads_arg = f"{N_THREADS_FLAG} " + batch_manager.get_threads_command()[1]
+        threads_arg = f"{N_THREADS_FLAG} " + batch_manager.config.n_threads_command
 
     fmriprep_args = {
         "bids_dir": config.fmriprep.bids_directory,
@@ -185,9 +200,10 @@ def fmriprep_process(
             fmriprep_args["bindPaths"] = singularity_bind_paths
 
             submission_string = BASE_SINGULARITY_CMD.format(**fmriprep_args)
-        batch_manager.addjob(Job("sub-" + sub + "_fmriprep", submission_string))
+        # batch_manager.addjob(Job("sub-" + sub + "_fmriprep", submission_string))
+        batch_manager.addjob("sub-" + sub + "_fmriprep", submission_string)
 
-    batch_manager.compilejobstrings()
+    # batch_manager.compilejobstrings()
     if submit:
         batch_manager.submit_jobs()
         if status_cache:

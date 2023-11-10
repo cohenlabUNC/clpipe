@@ -36,7 +36,7 @@ from .config.options import (
     DEFAULT_WORKING_DIRECTORY,
 )
 from .config.options import DEFAULT_PROCESSING_STREAM
-from .job_manager import BatchManager, Job
+from .job_manager import JobManagerFactory
 from .postprocutils.global_workflows import build_postprocessing_wf
 from .postprocutils.utils import draw_graph
 from .utils import get_logger, resolve_fmriprep_dir
@@ -549,15 +549,36 @@ def _populate_batch_manager(batch_manager, submission_strings, logger):
 def _setup_batch_manager(
     run_config: PostProcessingRunConfig, log_dir: str, non_processing=False
 ):
-    batch_manager = BatchManager(run_config.batch_config_file, log_dir)
-    batch_manager.update_mem_usage(run_config.options.batch_options.memory_usage)
-    batch_manager.update_time(run_config.options.batch_options.time_usage)
-    batch_manager.update_nthreads(run_config.options.batch_options.n_threads)
-    batch_manager.update_email(run_config.email_address)
-
+    
     if non_processing:
-        batch_manager.update_mem_usage(2000)
-        batch_manager.update_nthreads(1)
-        batch_manager.update_time("0:30:0")
+        return JobManagerFactory.get(
+            batch_config=run_config.batch_config_file,
+            output_directory=log_dir,
+            mem_use=2000,
+            threads=1,
+            time="0:30:0",
+            email=run_config.email_address
+        )
+    
+    else:
+        return JobManagerFactory.get(
+        batch_config=run_config.batch_config_file,
+        output_directory=log_dir,
+        mem_use=run_config.options.batch_options.memory_usage,
+        time=run_config.options.batch_options.time_usage,
+        threads=run_config.options.batch_options.n_threads,
+        email=run_config.email_address
+    )
 
-    return batch_manager
+    # batch_manager = BatchManager(run_config.batch_config_file, log_dir)
+    # batch_manager.update_mem_usage(run_config.options.batch_options.memory_usage)
+    # batch_manager.update_time(run_config.options.batch_options.time_usage)
+    # batch_manager.update_nthreads(run_config.options.batch_options.n_threads)
+    # batch_manager.update_email(run_config.email_address)
+
+    # if non_processing:
+    #     batch_manager.update_mem_usage(2000)
+    #     batch_manager.update_nthreads(1)
+    #     batch_manager.update_time("0:30:0")
+
+    # return batch_manager

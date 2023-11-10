@@ -3,7 +3,7 @@ from .utils import get_logger
 import os
 from pathlib import Path
 
-from .job_manager import BatchManager, Job
+from .job_manager import JobManagerFactory
 
 FLYWHEEL_TEMP_DIR_NAME = "'<TemporaryDirectory '\\'''/"
 
@@ -41,6 +41,8 @@ def flywheel_sync(
     if not temp_dir.exists():
         temp_dir.mkdir(parents=True)
 
+    # How to deal with this??
+
     batch_config = config["BatchConfig"]
     mem_usage = config["SourceOptions"]["MemUsage"]
     time_usage = config["SourceOptions"]["TimeUsage"]
@@ -51,11 +53,19 @@ def flywheel_sync(
         logger.debug(f"Creating log dir: {log_dir}")
         log_dir.mkdir()
 
-    batch_manager = BatchManager(batch_config, log_dir, debug=debug)
-    batch_manager.create_submission_head()
-    batch_manager.update_mem_usage(mem_usage)
-    batch_manager.update_time(time_usage)
-    batch_manager.update_nthreads(n_threads)
+    batch_manager = JobManagerFactory.get(
+        batch_config=batch_config, 
+        debug=debug,
+        mem_use=mem_usage,
+        time=time_usage,
+        threads=n_threads
+        )
+
+    # batch_manager = BatchManager(batch_config, log_dir, debug=debug)
+    # batch_manager.create_submission_head()
+    # batch_manager.update_mem_usage(mem_usage)
+    # batch_manager.update_time(time_usage)
+    # batch_manager.update_nthreads(n_threads)
 
     logger = get_logger("flywheel_sync", debug=debug)
 
@@ -70,13 +80,14 @@ def flywheel_sync(
     logger.debug(f"Temporary Directory: {flywheel_generated_temp_dir}")
 
     submission_string = f"fw sync --include dicom --tmp-path {temp_dir} {cmd_line_opts} {source_url} {dropoff_dir}; rm -r {flywheel_generated_temp_dir}"
-    job_id = f"flywheel_sync_DICOM"
+    job_name = f"flywheel_sync_DICOM"
 
-    job = Job(job_id, submission_string)
+    batch_manager.add_job(job_name, submission_string)
 
-    batch_manager.addjob(job)
+    # job = Job(job_id, submission_string)
+    # batch_manager.addjob(job)
 
-    batch_manager.compile_job_strings()
+    # batch_manager.compile_job_strings()
 
     if submit:
         batch_manager.submit_jobs()
