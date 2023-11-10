@@ -23,19 +23,19 @@ def test_batch_manager_instantiation(scatch_dir):
 
 
 def test_local_manager_instantiation(scatch_dir, capsys):
-    batch_manager = JobManagerFactory.get(output_directory=scatch_dir)
-    assert isinstance(batch_manager, LocalJobManager)
+    local_manager = JobManagerFactory.get(output_directory=scatch_dir)
+    assert isinstance(local_manager, LocalJobManager)
 
-    batch_manager.add_job(1, "echo local")
-    assert len(batch_manager.job_queue) == 1
+    local_manager.add_job(1, "echo local")
+    assert len(local_manager.job_queue) == 1
 
-    batch_manager.add_job(2, "echo running")
-    assert len(batch_manager.job_queue) == 2
+    local_manager.add_job(2, "echo running")
+    assert len(local_manager.job_queue) == 2
 
-    batch_manager.print_jobs()
-    batch_manager.submit_jobs()
+    local_manager.print_jobs()
+    process1, process2 = local_manager.submit_jobs()
 
-    captured = capsys.readouterr()
-    assert captured.out == "local"
+    assert process1.stdout.decode("utf-8") == "local\n"
+    assert process2.stdout.decode("utf-8") == "running\n"
 
-    assert len(batch_manager.job_queue) == 0
+    assert len(local_manager.job_queue) == 0

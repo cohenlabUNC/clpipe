@@ -2,6 +2,7 @@ import json
 from pkg_resources import resource_stream
 import os
 import subprocess
+import sys
 
 from .utils import get_logger
 from clpipe.config.options import BatchManagerConfig
@@ -148,9 +149,12 @@ class LocalJobManager(JobManager):
 
     def submit_jobs(self):
         self.logger.info(f"Submitting {len(self.job_queue)} job(s) locally.")
+        processes = []
         for job in self.job_queue:
-            subprocess.run(job.job_string, shell=True)
+            process = subprocess.run(job.job_string, shell=True, capture_output=True)
+            processes.append(process)
         self.job_queue.clear()
+        return processes
 
 
 class JobManagerFactory:
