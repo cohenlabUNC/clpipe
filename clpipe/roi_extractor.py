@@ -35,7 +35,7 @@ def fmri_roi_extraction(
     custom_atlas=None,
     custom_label=None,
     custom_type=None,
-    radius="5",
+    sphere_radius="5",
     submit=False,
     single=False,
     overlap_ok=None,
@@ -84,7 +84,7 @@ def fmri_roi_extraction(
 
     atlas_names = [atlas["atlas_name"] for atlas in atlas_library["Atlases"]]
     logger.debug(atlas_names)
-    custom_radius = radius
+    custom_radius = sphere_radius
     submission_string = (
         """fmri_roi_extraction -config_file={config} -atlas_name={atlas} -single"""
     )
@@ -208,7 +208,7 @@ def _fmri_roi_extract_subject(
     atlas_filename,
     atlas_label,
     atlas_type,
-    radius,
+    sphere_radius,
     custom_flag,
     config: ProjectOptions,
     overlap_ok,
@@ -265,7 +265,7 @@ def _fmri_roi_extract_subject(
             atlas_name,
             atlas_path,
             atlas_type,
-            radius,
+            sphere_radius,
             overlap_ok,
             overwrite,
             logger,
@@ -278,7 +278,7 @@ def fmri_roi_extract_image(
     atlas_name,
     atlas_path,
     atlas_type,
-    radius,
+    sphere_radius,
     overlap_ok,
     overwrite,
     logger,
@@ -314,7 +314,7 @@ def fmri_roi_extract_image(
                 "Unable to find a mask for this image. Extracting ROIs without using brain mask."
             )
             ROI_ts = _fmri_roi_extract_image(
-                file, atlas_path, atlas_type, radius, overlap_ok, logger
+                file, atlas_path, atlas_type, sphere_radius, overlap_ok, logger
             )
     else:
         try:
@@ -324,7 +324,7 @@ def fmri_roi_extract_image(
                 file,
                 atlas_path,
                 atlas_type,
-                radius,
+                sphere_radius,
                 overlap_ok,
                 logger,
                 mask=mask_file,
@@ -334,12 +334,12 @@ def fmri_roi_extract_image(
             logger.warning(ve.__str__() + ". Extracting ROIs without using brain mask.")
             logger.info("Starting non-masked ROI extraction...")
             ROI_ts = _fmri_roi_extract_image(
-                file, atlas_path, atlas_type, radius, overlap_ok, logger
+                file, atlas_path, atlas_type, sphere_radius, overlap_ok, logger
             )
 
         temp_mask = concat_imgs([mask_file, mask_file])
         mask_ROIs = _fmri_roi_extract_image(
-            temp_mask, atlas_path, atlas_type, radius, overlap_ok, logger
+            temp_mask, atlas_path, atlas_type, sphere_radius, overlap_ok, logger
         )
         mask_ROIs = np.nan_to_num(mask_ROIs)
         logger.debug(mask_ROIs[0])
@@ -380,7 +380,7 @@ def fmri_roi_extract_image(
 
 
 def _fmri_roi_extract_image(
-    data, atlas_path, atlas_type, radius, overlap_ok, logger, mask=None
+    data, atlas_path, atlas_type, sphere_radius, overlap_ok, logger, mask=None
 ):
     if "label" in atlas_type:
         logger.info("Extract type: label")
@@ -389,9 +389,9 @@ def _fmri_roi_extract_image(
     if "sphere" in atlas_type:
         atlas_path = np.loadtxt(atlas_path)
         logger.info("Extract type: sphere")
-        logger.info(f"Sphere radius: {radius}mm")
+        logger.info(f"Sphere radius: {sphere_radius}mm")
         spheres_masker = NiftiSpheresMasker(
-            atlas_path, float(radius), mask_img=mask, allow_overlap=overlap_ok
+            atlas_path, float(sphere_radius), mask_img=mask, allow_overlap=overlap_ok
         )
         timeseries = spheres_masker.fit_transform(data)
     if "maps" in atlas_type:
