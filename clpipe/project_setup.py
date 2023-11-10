@@ -32,7 +32,7 @@ def project_setup(
     source_data=None,
     move_source_data=False,
     symlink_source_data=False,
-    profile_data="unc",
+    profile="unc",
     debug=False,
 ):
     """Initialize a clpipe project.
@@ -73,19 +73,24 @@ def project_setup(
 
     logger.info(f"Creating new clpipe project in directory: {project_dir}")
 
+    # Make and dump the batch_config into hidden dir
+    clpipe_dir = os.path.join(project_dir, CLPIPE_HIDDEN_DIR)
+    Path(clpipe_dir).mkdir(exist_ok=False)
+    batch_config = BatchManagerConfig.from_default(profile)
+    batch_config_path = os.path.join(clpipe_dir, BATCH_CONFIG_FILE)
+    batch_config.dump(batch_config_path)
+
     config: ProjectOptions = ProjectOptions()
     config.populate_project_paths(project_dir, source_data)
     config.project_title = project_title
+    config.batch_config_path = batch_config_path
+
     # Dump the now-populated config file
     config_file_path = os.path.join(project_dir, DEFAULT_CONFIG_FILE_NAME)
     logger.debug("Creating JSON config file")
     config.dump(config_file_path)
 
-    clpipe_dir = os.path.join(project_dir, CLPIPE_HIDDEN_DIR)
-    Path(clpipe_dir).mkdir(exist_ok=False)
-    batch_config = BatchManagerConfig.from_default(profile_data)
-    batch_config_file = os.path.join(clpipe_dir, BATCH_CONFIG_FILE)
-    batch_config.dump(batch_config_file)
+
 
     # Setup directories for the first few steps
     setup_convert2bids_dirs(config)

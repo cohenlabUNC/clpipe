@@ -169,4 +169,6 @@ def project_paths() -> List[Path]:
         Path("conversion_config.json"),
         Path("glm_config.json"),
         Path("l2_sublist.csv"),
+        Path(".clpipe"),
+        Path(".clpipe/batch_config.json")
     ]

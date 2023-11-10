@@ -29,7 +29,7 @@ SYM_LINK_HELP = \
     "Symlink the source data into project/data_dicoms. Usually safe to do."
 PROFILE_HELP = \
     """
-    The user profile you would like to use. Default is unc. The options
+    The batch profile you would like to use. Default is unc. The options
     include: "unc", "duke", "uva", "pitt"
     """
 
