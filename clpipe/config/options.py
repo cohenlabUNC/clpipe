@@ -133,7 +133,7 @@ class SourceOptions(Option):
 
     @validates("source_url")
     def validate_(self, value):
-        if not value.startswith("fw://"):
+        if not value.startswith("fw://") and value != "":
             raise ValidationError("source_url must start with prefix: fw://")
 
 
@@ -163,7 +163,7 @@ class Convert2BIDSOptions(Option):
     @validates("conversion_config")
     def validate_conversion_config(self, value):
         suffix = Path(value).suffix
-        if (suffix != ".py") and (suffix != ".json"):
+        if (suffix != ".py") and (suffix != ".json") and (suffix != ""):
             raise ValidationError("Must be type '.py' or '.json'")
 
     def populate_project_paths(self, project_directory: os.PathLike, source_data: os.PathLike):
