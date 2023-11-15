@@ -92,7 +92,7 @@ def fmri_roi_extraction(
         -atlas_name={atlas} -custom_atlas={custom_atlas} -custom_label={custom_labels} 
         -custom_type={custom_type} -single"""
 
-    batch_manager = BatchManager(config.batch_config_path, log_output_dir)
+    batch_manager = BatchManager(config.batch_config_path, config.roi_extraction.log_directory)
     batch_manager.update_mem_usage(config.roi_extraction.memory_usage)
     batch_manager.update_time(config.roi_extraction.time_usage)
     batch_manager.update_nthreads(config.roi_extraction.n_threads)
@@ -166,7 +166,7 @@ def fmri_roi_extraction(
                     atlas=atlas_name,
                 )
             if sphere_flag:
-                sub_string_temp = sub_string_temp + " -radius=" + custom_radius
+                sub_string_temp = sub_string_temp + " -sphere_radius=" + custom_radius
             if task is not None:
                 sub_string_temp = sub_string_temp + " -task=" + task
             if overlap_ok or config.roi_extraction.overlap_ok:
