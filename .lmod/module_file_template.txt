@@ -14,8 +14,8 @@ whatis("URL: https://github.com/cohenlabUNC/clpipe")
 unload("python")
 
 -- load in clpipe dependencies
-load("fsl/6.0.3")
 load("freesurfer/6.0.0")
+load("fsl/6.0.3")
 load("afni/20.3.00")
 load("r/4.2.1")
 load("dcm2niix/1.0.20211006")
