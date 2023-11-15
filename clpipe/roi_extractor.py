@@ -301,8 +301,8 @@ def fmri_roi_extract_image(
         return
 
     try:
-        # First, try to find this image's mask.
-        mask_file = _mask_finder(file, config, logger)
+        # First, try to find this image's mask from fMRIPrep.
+        mask_file = fmriprep_mask_finder(file, config, logger)
     except MaskFileNotFoundError:
         if config.roi_extraction.require_mask:
             # If a mask is required, return here due to missing mask.
@@ -416,12 +416,12 @@ def get_available_atlases():
         print("")
 
 
-def _mask_finder(data, config: ProjectOptions, logger):
+def fmriprep_mask_finder(image_path, config: ProjectOptions, logger) -> os.PathLike:
     """Search for a mask in the fmriprep output directory matching
     the name of the image targeted for roi_extraction"""
 
     _, _, _, front_matter, type, path = _file_folder_generator(
-        os.path.basename(data),
+        os.path.basename(image_path),
         "func",
         target_suffix=config.roi_extraction.target_suffix,
     )
@@ -429,9 +429,9 @@ def _mask_finder(data, config: ProjectOptions, logger):
     logger.debug(f"Image components (front_matter, type, path): {front_matter, type, path}")
 
     fmriprep_dir = resolve_fmriprep_dir(
-        config.roi_extraction.target_directory
+        config.postprocessing.target_directory
     )
-    logger.debug(f"fMRIPrep dir: {fmriprep_dir}")
+    logger.debug(f"Searching for mask in fMRIPrep dir: {fmriprep_dir}")
 
     target_mask = os.path.join(
         fmriprep_dir, path + "_" + type + "_desc-brain_mask.nii.gz"
