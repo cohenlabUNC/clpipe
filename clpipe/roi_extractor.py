@@ -86,11 +86,13 @@ def fmri_roi_extraction(
     logger.debug(atlas_names)
     custom_radius = sphere_radius
     submission_string = (
-        """fmri_roi_extraction -config_file={config} -atlas_name={atlas} -single"""
+        """clpipe roi extract -config_file={config} -atlas_name={atlas} -single"""
     )
-    submission_string_custom = """fmri_roi_extraction -config_file={config} 
-        -atlas_name={atlas} -custom_atlas={custom_atlas} -custom_label={custom_labels} 
-        -custom_type={custom_type} -single"""
+    submission_string_custom = (
+        "clpipe roi extract -config_file={config} "
+        "-atlas_name={atlas} -custom_atlas={custom_atlas} -custom_label={custom_labels} "
+        "-custom_type={custom_type} -single"
+    )
 
     batch_manager = BatchManager(config.batch_config_path, config.roi_extraction.log_directory)
     batch_manager.update_mem_usage(config.roi_extraction.memory_usage)
@@ -99,7 +101,7 @@ def fmri_roi_extraction(
     batch_manager.update_email(config.email_address)
     batch_manager.createsubmissionhead()
     for subject in sublist:
-        logger.info(f"Starting ROI extraction for suject: {subject}")
+        logger.debug(f"Setting up ROI extraction for subject {subject}")
         for cur_atlas in atlas_list:
             custom_flag = False
             sphere_flag = False
