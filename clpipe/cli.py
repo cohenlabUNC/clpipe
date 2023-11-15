@@ -9,7 +9,7 @@ from .config.package import VERSION
 
 DEFAULT_HELP_PRIORITY = 5
 
-CONTEXT_SETTINGS = dict(help_option_names=['-help'])
+CONTEXT_SETTINGS = dict(help_option_names=['-help'], show_default=True)
 
 # Click path validation types
 CLICK_FILE_TYPE = click.Path(dir_okay=False, file_okay=True)
