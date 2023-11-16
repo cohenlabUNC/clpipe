@@ -35,7 +35,7 @@ def fmri_roi_extraction(
     custom_atlas=None,
     custom_label=None,
     custom_type=None,
-    radius="5",
+    sphere_radius="5",
     submit=False,
     single=False,
     overlap_ok=None,
@@ -84,22 +84,24 @@ def fmri_roi_extraction(
 
     atlas_names = [atlas["atlas_name"] for atlas in atlas_library["Atlases"]]
     logger.debug(atlas_names)
-    custom_radius = radius
+    custom_radius = sphere_radius
     submission_string = (
-        """fmri_roi_extraction -config_file={config} -atlas_name={atlas} -single"""
+        """clpipe roi extract -config_file={config} -atlas_name={atlas} -single"""
     )
-    submission_string_custom = """fmri_roi_extraction -config_file={config} 
-        -atlas_name={atlas} -custom_atlas={custom_atlas} -custom_label={custom_labels} 
-        -custom_type={custom_type} -single"""
+    submission_string_custom = (
+        "clpipe roi extract -config_file={config} "
+        "-atlas_name={atlas} -custom_atlas={custom_atlas} -custom_label={custom_labels} "
+        "-custom_type={custom_type} -single"
+    )
 
-    batch_manager = BatchManager(config.batch_config_path, log_output_dir)
+    batch_manager = BatchManager(config.batch_config_path, config.roi_extraction.log_directory)
     batch_manager.update_mem_usage(config.roi_extraction.memory_usage)
     batch_manager.update_time(config.roi_extraction.time_usage)
     batch_manager.update_nthreads(config.roi_extraction.n_threads)
     batch_manager.update_email(config.email_address)
     batch_manager.createsubmissionhead()
     for subject in sublist:
-        logger.info(f"Starting ROI extraction for suject: {subject}")
+        logger.debug(f"Setting up ROI extraction for subject {subject}")
         for cur_atlas in atlas_list:
             custom_flag = False
             sphere_flag = False
@@ -166,7 +168,7 @@ def fmri_roi_extraction(
                     atlas=atlas_name,
                 )
             if sphere_flag:
-                sub_string_temp = sub_string_temp + " -radius=" + custom_radius
+                sub_string_temp = sub_string_temp + " -sphere_radius=" + custom_radius
             if task is not None:
                 sub_string_temp = sub_string_temp + " -task=" + task
             if overlap_ok or config.roi_extraction.overlap_ok:
@@ -208,7 +210,7 @@ def _fmri_roi_extract_subject(
     atlas_filename,
     atlas_label,
     atlas_type,
-    radius,
+    sphere_radius,
     custom_flag,
     config: ProjectOptions,
     overlap_ok,
@@ -265,7 +267,7 @@ def _fmri_roi_extract_subject(
             atlas_name,
             atlas_path,
             atlas_type,
-            radius,
+            sphere_radius,
             overlap_ok,
             overwrite,
             logger,
@@ -278,7 +280,7 @@ def fmri_roi_extract_image(
     atlas_name,
     atlas_path,
     atlas_type,
-    radius,
+    sphere_radius,
     overlap_ok,
     overwrite,
     logger,
@@ -301,8 +303,8 @@ def fmri_roi_extract_image(
         return
 
     try:
-        # First, try to find this image's mask.
-        mask_file = _mask_finder(file, config, logger)
+        # First, try to find this image's mask from fMRIPrep.
+        mask_file = fmriprep_mask_finder(file, config, logger)
     except MaskFileNotFoundError:
         if config.roi_extraction.require_mask:
             # If a mask is required, return here due to missing mask.
@@ -314,7 +316,7 @@ def fmri_roi_extract_image(
                 "Unable to find a mask for this image. Extracting ROIs without using brain mask."
             )
             ROI_ts = _fmri_roi_extract_image(
-                file, atlas_path, atlas_type, radius, overlap_ok, logger
+                file, atlas_path, atlas_type, sphere_radius, overlap_ok, logger
             )
     else:
         try:
@@ -324,7 +326,7 @@ def fmri_roi_extract_image(
                 file,
                 atlas_path,
                 atlas_type,
-                radius,
+                sphere_radius,
                 overlap_ok,
                 logger,
                 mask=mask_file,
@@ -334,12 +336,12 @@ def fmri_roi_extract_image(
             logger.warning(ve.__str__() + ". Extracting ROIs without using brain mask.")
             logger.info("Starting non-masked ROI extraction...")
             ROI_ts = _fmri_roi_extract_image(
-                file, atlas_path, atlas_type, radius, overlap_ok, logger
+                file, atlas_path, atlas_type, sphere_radius, overlap_ok, logger
             )
 
         temp_mask = concat_imgs([mask_file, mask_file])
         mask_ROIs = _fmri_roi_extract_image(
-            temp_mask, atlas_path, atlas_type, radius, overlap_ok, logger
+            temp_mask, atlas_path, atlas_type, sphere_radius, overlap_ok, logger
         )
         mask_ROIs = np.nan_to_num(mask_ROIs)
         logger.debug(mask_ROIs[0])
@@ -380,7 +382,7 @@ def fmri_roi_extract_image(
 
 
 def _fmri_roi_extract_image(
-    data, atlas_path, atlas_type, radius, overlap_ok, logger, mask=None
+    data, atlas_path, atlas_type, sphere_radius, overlap_ok, logger, mask=None
 ):
     if "label" in atlas_type:
         logger.info("Extract type: label")
@@ -389,9 +391,9 @@ def _fmri_roi_extract_image(
     if "sphere" in atlas_type:
         atlas_path = np.loadtxt(atlas_path)
         logger.info("Extract type: sphere")
-        logger.info(f"Sphere radius: {radius}mm")
+        logger.info(f"Sphere radius: {sphere_radius}mm")
         spheres_masker = NiftiSpheresMasker(
-            atlas_path, float(radius), mask_img=mask, allow_overlap=overlap_ok
+            atlas_path, float(sphere_radius), mask_img=mask, allow_overlap=overlap_ok
         )
         timeseries = spheres_masker.fit_transform(data)
     if "maps" in atlas_type:
@@ -416,12 +418,12 @@ def get_available_atlases():
         print("")
 
 
-def _mask_finder(data, config: ProjectOptions, logger):
+def fmriprep_mask_finder(image_path, config: ProjectOptions, logger) -> os.PathLike:
     """Search for a mask in the fmriprep output directory matching
     the name of the image targeted for roi_extraction"""
 
     _, _, _, front_matter, type, path = _file_folder_generator(
-        os.path.basename(data),
+        os.path.basename(image_path),
         "func",
         target_suffix=config.roi_extraction.target_suffix,
     )
@@ -429,9 +431,9 @@ def _mask_finder(data, config: ProjectOptions, logger):
     logger.debug(f"Image components (front_matter, type, path): {front_matter, type, path}")
 
     fmriprep_dir = resolve_fmriprep_dir(
-        config.roi_extraction.target_directory
+        config.postprocessing.target_directory
     )
-    logger.debug(f"fMRIPrep dir: {fmriprep_dir}")
+    logger.debug(f"Searching for mask in fMRIPrep dir: {fmriprep_dir}")
 
     target_mask = os.path.join(
         fmriprep_dir, path + "_" + type + "_desc-brain_mask.nii.gz"
@@ -449,7 +451,9 @@ def _mask_finder(data, config: ProjectOptions, logger):
 
 
 def setup_dirs(config: ProjectOptions):
-    os.makedirs(Path(config.roi_extraction.output_directory) / "postproc_default", exist_ok=True)
+    """Setup the directories necessary for ROI extraction's output."""
+    
+    os.makedirs(config.roi_extraction.output_directory, exist_ok=True)
     os.makedirs(config.roi_extraction.log_directory, exist_ok=True)
 
 def _file_folder_generator(basename, modality, target_suffix = None):

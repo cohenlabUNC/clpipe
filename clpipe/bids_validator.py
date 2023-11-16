@@ -39,7 +39,7 @@ def bids_validate(bids_dir=None, config_file=None, log_dir=None,
     
     batch_manager = BatchManager(
         config.batch_config_path, 
-        output_directory=log_dir,
+        output_directory=config.bids_validation.log_directory,
         debug=debug)
     batch_manager.update_mem_usage(DEFAULT_MEMORY_USAGE)
     

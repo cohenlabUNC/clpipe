@@ -9,7 +9,7 @@ from .config.package import VERSION
 
 DEFAULT_HELP_PRIORITY = 5
 
-CONTEXT_SETTINGS = dict(help_option_names=['-help'])
+CONTEXT_SETTINGS = dict(help_option_names=['-help'], show_default=True)
 
 # Click path validation types
 CLICK_FILE_TYPE = click.Path(dir_okay=False, file_okay=True)
@@ -581,7 +581,7 @@ def fsl_onset_extract_cli(config_file, glm_config_file, debug):
 @click.option('-debug', '-d', is_flag=True, help='Flag to enable detailed error messages and traceback')
 def fmri_roi_extraction_cli(subjects, config_file, target_dir, target_suffix, 
                             output_dir, task, log_output_dir, atlas_name, custom_atlas,
-                            custom_label, custom_type, radius, submit, single, 
+                            custom_label, custom_type, sphere_radius, submit, single, 
                             overlap_ok, debug, overwrite):
     """Extract ROIs with a given atlas."""
     from .roi_extractor import fmri_roi_extraction
@@ -589,7 +589,7 @@ def fmri_roi_extraction_cli(subjects, config_file, target_dir, target_suffix,
         subjects=subjects,config_file=config_file, target_dir=target_dir,
         target_suffix=target_suffix, output_dir=output_dir, task=task,
         log_output_dir=log_output_dir, atlas_name=atlas_name, custom_atlas=custom_atlas,
-        custom_label=custom_label, custom_type=custom_type, radius=radius,
+        custom_label=custom_label, custom_type=custom_type, sphere_radius=sphere_radius,
         submit=submit, single=single, overlap_ok=overlap_ok, debug=debug,
         overwrite=overwrite)
 
