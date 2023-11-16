@@ -22,7 +22,7 @@ def test_batch_manager_instantiation(scatch_dir):
     assert len(batch_manager.job_queue) == 0
 
 
-def test_local_manager_instantiation(scatch_dir, capsys):
+def test_local_manager_instantiation(scatch_dir):
     local_manager = JobManagerFactory.get(output_directory=scatch_dir)
     assert isinstance(local_manager, LocalJobManager)
 
