@@ -1,5 +1,5 @@
 from pathlib import Path
-from .job_manager import *
+from .batch_manager import *
 from .config.options import ProjectOptions
 import os
 import parse
