@@ -45,20 +45,12 @@ def bids_validate(
         )
         sys.exit(1)
 
-    # batch_manager = BatchManager(
-    #     config.batch_config_path, output_directory=log_dir, debug=debug
-    # )
-    # batch_manager.update_mem_usage(DEFAULT_MEMORY_USAGE)
-
     batch_manager = JobManagerFactory.get(
         batch_config=config.batch_config_path,
         output_directory=log_dir,
         debug=debug,
         mem_use=DEFAULT_MEMORY_USAGE
     )
-
-    # Not sure what this is doing tbh
-    config.bids_validation.bids_validator_image
 
     singularity_string = SINGULARITY_CMD_TEMPLATE
     if verbose:
@@ -70,31 +62,20 @@ def bids_validate(
             singularity_string.format(
                 validatorInstance=config.bids_validation.bids_validator_image,
                 bidsDir=bids_dir,
-                bindPaths=batch_manager.config["SingularityBindPaths"],
+                bindPaths=batch_manager.config.singularity_bind_paths,
             )
         )
         logger.info("Validation complete.")
     else:
-        # batch_manager.addjob(
-        #     Job(
-        #         "BIDSValidator",
-        #         singularity_string.format(
-        #             validatorInstance=config.bids_validation.bids_validator_image,
-        #             bidsDir=config.fmriprep.bids_directory,
-        #             bindPaths=batch_manager.config["SingularityBindPaths"],
-        #         ),
-        #     )
-        # )
-        batch_manager.addjob(
-                "BIDSValidator",
+        batch_manager.add_job(
+                STEP_NAME,
                 singularity_string.format(
                     validatorInstance=config.bids_validation.bids_validator_image,
                     bidsDir=config.fmriprep.bids_directory,
-                    bindPaths=batch_manager.config["SingularityBindPaths"],
+                    bindPaths=batch_manager.config.singularity_bind_paths,
                 )
         )
 
-        # batch_manager.compilejobstrings()
         if submit:
             logger.info("Running BIDS validation in batch mode.")
             batch_manager.submit_jobs()
