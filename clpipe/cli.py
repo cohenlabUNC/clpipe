@@ -8,8 +8,7 @@ from .config.options import DEFAULT_PROCESSING_STREAM
 from .config.package import VERSION
 
 DEFAULT_HELP_PRIORITY = 5
-
-CONTEXT_SETTINGS = dict(help_option_names=["-help"])
+CONTEXT_SETTINGS = dict(help_option_names=["-help"], show_default=True)
 
 # Click path validation types
 CLICK_FILE_TYPE = click.Path(dir_okay=False, file_okay=True)
@@ -915,7 +914,7 @@ def fmri_roi_extraction_cli(
     custom_atlas,
     custom_label,
     custom_type,
-    radius,
+    sphere_radius,
     submit,
     single,
     overlap_ok,
@@ -937,7 +936,7 @@ def fmri_roi_extraction_cli(
         custom_atlas=custom_atlas,
         custom_label=custom_label,
         custom_type=custom_type,
-        radius=radius,
+        sphere_radius=sphere_radius,
         submit=submit,
         single=single,
         overlap_ok=overlap_ok,
