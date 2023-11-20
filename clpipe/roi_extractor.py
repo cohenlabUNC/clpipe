@@ -14,7 +14,7 @@ import json
 import glob
 import shutil
 from .config.options import ProjectOptions
-from .batch_manager import BatchManager, Job
+from .job_manager import BatchManager, Job
 from pkg_resources import resource_stream, resource_filename
 from .errors import MaskFileNotFoundError
 from .utils import get_logger, resolve_fmriprep_dir
@@ -417,8 +417,10 @@ def fmriprep_mask_finder(image_path, config: ProjectOptions, logger) -> os.PathL
         "func",
         target_suffix=config.roi_extraction.target_suffix,
     )
-    logger.debug(f'Target suffix: {config.roi_extraction.target_suffix}')
-    logger.debug(f"Image components (front_matter, type, path): {front_matter, type, path}")
+    logger.debug(f"Target suffix: {config.roi_extraction.target_suffix}")
+    logger.debug(
+        f"Image components (front_matter, type, path): {front_matter, type, path}"
+    )
 
     fmriprep_dir = resolve_fmriprep_dir(
         config.postprocessing.target_directory

@@ -195,13 +195,14 @@ def _add_commands():
     "-move_source_data", is_flag=True, default=False, help=MOVE_SOURCE_DATA_HELP
 )
 @click.option("-symlink_source_data", is_flag=True, default=False, help=SYM_LINK_HELP)
+@click.option('-profile', required=False, default="unc", help=PROFILE_HELP)
 @click.option("-debug", is_flag=True, help=DEBUG_HELP)
 def project_setup_cli(
     project_title=None,
     project_dir=None,
     source_data=None,
     move_source_data=None,
-    symlink_source_data=None,
+    symlink_source_data=None, profile=None,
     debug=False,
 ):
     """Initialize a clpipe project."""
@@ -217,8 +218,8 @@ def project_setup_cli(
         source_data=source_data,
         move_source_data=move_source_data,
         symlink_source_data=symlink_source_data,
-        debug=debug,
-    )
+        profile=profile,
+        debug=debug)
 
 
 @click.command(CONVERSION_COMMAND_NAME, no_args_is_help=True)

@@ -6,7 +6,7 @@ import pandas as pd
 import os
 import glob
 import click
-from .batch_manager import BatchManager, Job
+from .job_manager import BatchManager, Job
 from .config_json_parser import ClpipeConfigParser
 import logging
 import sys

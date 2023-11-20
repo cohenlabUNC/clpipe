@@ -61,18 +61,12 @@ def convert2bids(
 
     batch_manager = JobManagerFactory.get(
         batch_config=config.batch_config_path,
+        output_directory=log_dir,
+        debug=debug,
         mem_use=config.convert2bids.mem_usage,
         time=config.convert2bids.time_usage,
         threads=config.convert2bids.core_usage,
     )
-
-    # batch_manager = BatchManager(
-    #     config.batch_config_path, config.convert2bids.log_directory, debug=debug
-    # )
-    # batch_manager.create_submission_head()
-    # batch_manager.update_mem_usage(config.convert2bids.mem_usage)
-    # batch_manager.update_time(config.convert2bids.time_usage)
-    # batch_manager.update_nthreads(config.convert2bids.core_usage)
 
     logger.info(
         f"Starting BIDS conversion targeting: {config.convert2bids.dicom_directory}"
@@ -198,10 +192,8 @@ def dcm2bids_wrapper(
         # Unpack the conv_args
         submission_string = conv_string.format(**conv_args)
 
-        job = Job(job_id, submission_string)
-
         if subject in subjects_need_processing:
-            batch_manager.addjob(job)
+            batch_manager.add_job(job_id, submission_string)
 
     # batch_manager.compile_job_strings()
     if submit:
@@ -302,9 +294,9 @@ def heudiconv_wrapper(
             clear_bids_cmd = f"rm -r {output_directory}/sub-{i['subject']}"
             job_str = clear_bids_cmd + "; " + job_str
 
-        job = Job(job_id, job_str)
-        batch_manager.add_job(job)
+        batch_manager.add_job(job_id, job_str)
 
+    # batch_manager.compilejobstrings()
     if submit:
         batch_manager.submit_jobs()
     else:
@@ -434,7 +426,7 @@ def dicom_to_nifti_to_bids_converter_setup(
     )
 
     if session:
-        job1 = Job(
+        batch_manager.add_job(
             "heudiconv_setup",
             heudiconv_string.format(
                 dicomdirectory=os.path.abspath(dicom_directory),
@@ -445,17 +437,15 @@ def dicom_to_nifti_to_bids_converter_setup(
             ),
         )
     else:
-        job1 = Job(
+        batch_manager.add_job(
             "heudiconv_setup",
             heudiconv_string.format(
                 dicomdirectory=os.path.abspath(dicom_directory),
                 subject=subject,
                 heuristic=heuristic_file,
                 outputfile=os.path.abspath(output_file),
-            ),
+            )
         )
-
-    batch_manager.addjob(job1)
 
     if submit:
         batch_manager.submit_jobs()

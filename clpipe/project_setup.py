@@ -10,10 +10,13 @@ from .bids_validator import setup_dirs as setup_bids_validation_dirs
 from .fmri_preprocess import setup_dirs as setup_preprocess_dirs
 from .roi_extractor import setup_dirs as setup_roiextract_dirs
 from .glm_prepare import setup_dirs as setup_glm_dirs
+from clpipe.config.options import BatchManagerConfig
 
 STEP_NAME = "project-setup"
 DEFAULT_DICOM_DIR = "data_DICOMs"
 DCM2BIDS_SCAFFOLD_TEMPLATE = "dcm2bids_scaffold -o {}"
+CLPIPE_HIDDEN_DIR = ".clpipe"
+BATCH_CONFIG_FILE = "batch_config.json"
 
 
 DEFAULT_GLM_CONFIG_FILE_NAME = "glm_config.json"
@@ -22,9 +25,16 @@ DEFAULT_GLM_CONFIG_FILE_NAME = "glm_config.json"
 class SourceDataError(ValueError):
     pass
 
-def project_setup(project_title: str="A Neuroimaging Project", project_dir: os.PathLike=os.getcwd(), 
-                  source_data=None, move_source_data=False,
-                  symlink_source_data=False, debug=False, portable=False):
+
+def project_setup(
+    project_title: str = "A Neuroimaging Project",
+    project_dir: os.PathLike = os.getcwd(),
+    source_data=None,
+    move_source_data=False,
+    symlink_source_data=False,
+    profile="unc",
+    debug=False,
+, portable=False):
     """Initialize a clpipe project.
 
     No values can come in as None except source_data.
@@ -67,13 +77,24 @@ def project_setup(project_title: str="A Neuroimaging Project", project_dir: os.P
 
     logger.info(f"Creating new clpipe project in directory: {project_dir}")
 
+    # Make and dump the batch_config into hidden dir
+    clpipe_dir = os.path.join(project_dir, CLPIPE_HIDDEN_DIR)
+    Path(clpipe_dir).mkdir(exist_ok=False)
+    batch_config = BatchManagerConfig.from_default(profile)
+    batch_config_path = os.path.join(clpipe_dir, BATCH_CONFIG_FILE)
+    batch_config.dump(batch_config_path)
+
     config: ProjectOptions = ProjectOptions()
     config.populate_project_paths(project_dir, source_data)
     config.project_title = project_title
+    config.batch_config_path = batch_config_path
+
     # Dump the now-populated config file
     config_file_path = os.path.join(project_dir, DEFAULT_CONFIG_FILE_NAME)
     logger.debug("Creating JSON config file")
     config.dump(config_file_path)
+
+
 
     # Setup directories for the first few steps
     setup_convert2bids_dirs(config)

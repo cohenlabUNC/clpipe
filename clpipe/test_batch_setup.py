@@ -1,7 +1,7 @@
 import os
 import click
 from .config_json_parser import ClpipeConfigParser
-from .batch_manager import BatchManager, Job
+from .job_manager import BatchManager, Job
 import logging
 
 

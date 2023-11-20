@@ -20,7 +20,7 @@ from .postprocutils.utils import (
     notch_filter,
 )
 from .postprocutils.spec_interpolate import spec_inter
-from .batch_manager import BatchManager, Job
+from .job_manager import BatchManager, Job
 from .config_json_parser import ClpipeConfigParser
 from .errors import SubjectNotFoundError
 from .utils import get_logger, add_file_handler

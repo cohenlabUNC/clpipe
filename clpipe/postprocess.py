@@ -36,7 +36,7 @@ from .config.options import (
     DEFAULT_WORKING_DIRECTORY,
 )
 from .config.options import DEFAULT_PROCESSING_STREAM
-from .batch_manager import BatchManager, Job
+from .job_manager import JobManagerFactory
 from .postprocutils.global_workflows import build_postprocessing_wf
 from .postprocutils.utils import draw_graph
 from .utils import get_logger, resolve_fmriprep_dir
@@ -235,7 +235,14 @@ def postprocess_subject(
     if batch:
         subject_slurm_log_dir = subject_log_dir / "slurm_out"
         subject_slurm_log_dir.mkdir(exist_ok=True)
-        batch_manager = _setup_batch_manager(run_config, subject_slurm_log_dir)
+        batch_manager = JobManagerFactory.get(
+            batch_config=run_config.batch_config_file,
+            output_directory=subject_slurm_log_dir,
+            mem_use=2000,
+            threads=1,
+            time="0:30:0",
+            email=run_config.email_address
+        )
 
     try:
         logger.info(f"Checking for requested subject in fmriprep output")
@@ -292,7 +299,25 @@ def postprocess_subject(
             logger,
         )
 
-        _submit_jobs(batch_manager, submission_strings, logger, submit=submit)
+        # Submit the jobs through batch manager
+        if batch_manager:
+            logger.info("Setting up batch manager with jobs to run.")
+
+            for key in submission_strings.keys():
+                batch_manager.add_job(key, submission_strings[key])
+
+            if submit:
+                batch_manager.submit_jobs()
+            else:
+                batch_manager.print_jobs()
+        else:
+            if submit:
+                for key in submission_strings.keys():
+                    os.system(submission_strings[key])
+            else:
+                for key in submission_strings.keys():
+                    print(submission_strings[key])
+
     except SubjectNotFoundError as snfe:
         logger.error(snfe)
     except ValueError as ve:
@@ -486,24 +511,6 @@ def _get_processing_streams(options: ProjectOptions):
     pass
 
 
-def _submit_jobs(batch_manager, submission_strings, logger, submit=True):
-    num_jobs = len(submission_strings)
-
-    if batch_manager:
-        _populate_batch_manager(batch_manager, submission_strings, logger)
-        if submit:
-            batch_manager.submit_jobs()
-        else:
-            batch_manager.print_jobs()
-    else:
-        if submit:
-            for key in submission_strings.keys():
-                os.system(submission_strings[key])
-        else:
-            for key in submission_strings.keys():
-                print(submission_strings[key])
-
-
 def _create_image_submission_strings(
     run_config_file,
     images_to_process,
@@ -534,30 +541,3 @@ def _create_image_submission_strings(
         )
         logger.debug(submission_strings[key])
     return submission_strings
-
-
-def _populate_batch_manager(batch_manager, submission_strings, logger):
-    logger.info("Setting up batch manager with jobs to run.")
-
-    for key in submission_strings.keys():
-        batch_manager.addjob(Job(key, submission_strings[key]))
-
-    batch_manager.createsubmissionhead()
-    batch_manager.compilejobstrings()
-
-
-def _setup_batch_manager(
-    run_config: PostProcessingRunConfig, log_dir: str, non_processing=False
-):
-    batch_manager = BatchManager(run_config.batch_config_file, log_dir)
-    batch_manager.update_mem_usage(run_config.options.batch_options.memory_usage)
-    batch_manager.update_time(run_config.options.batch_options.time_usage)
-    batch_manager.update_nthreads(run_config.options.batch_options.n_threads)
-    batch_manager.update_email(run_config.email_address)
-
-    if non_processing:
-        batch_manager.update_mem_usage(2000)
-        batch_manager.update_nthreads(1)
-        batch_manager.update_time("0:30:0")
-
-    return batch_manager

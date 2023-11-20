@@ -7,7 +7,7 @@ import os
 import click
 import sys
 import logging
-from .batch_manager import BatchManager, Job
+from .job_manager import BatchManager, Job
 from .config_json_parser import ClpipeConfigParser
 from .error_handler import exception_handler
 import glob

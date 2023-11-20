@@ -134,3 +134,47 @@ def test_update_config_file_legacy_backup(legacy_config_dir):
     config_file = legacy_config_dir / "clpipe_config.json"
 
     update_config_file(config_file, backup=True)
+
+
+def test_dump_parallel_manager_config_json(helpers, artifact_dir, request):
+    test_dir = helpers.create_test_dir(artifact_dir / "config_tests", request.node.name)
+
+    output_file_path = os.path.join(test_dir, "default_config.json")
+    parallel_config = BatchManagerConfig()
+    parallel_config.dump(output_file_path)
+
+    assert os.path.exists(output_file_path)
+
+    # Load the dumped config from the output file
+    with open(output_file_path, "r") as file:
+        loaded_config = json.load(file)
+
+    assert loaded_config == parallel_config.to_dict()
+
+
+def test_dump_variant_parallel_manager_config_json(helpers, artifact_dir, request):
+    test_dir = helpers.create_test_dir(artifact_dir / "config_tests", request.node.name)
+
+    output_file_path = os.path.join(test_dir, "default_config.json")
+    parallel_config = BatchManagerConfig.from_default("pitt")
+    parallel_config.dump(output_file_path)
+
+    assert os.path.exists(output_file_path)
+
+    # Load the dumped config from the output file
+    with open(output_file_path, "r") as file:
+        loaded_config = json.load(file)
+
+    assert loaded_config == parallel_config.to_dict()
+
+
+def test_load_parallel_manager_config_json(helpers, artifact_dir, request):
+    test_dir = helpers.create_test_dir(artifact_dir / "config_tests", request.node.name)
+
+    output_file_path = os.path.join(test_dir, "default_config.json")
+    config = BatchManagerConfig()
+    config.submission_head = "TEST_SUBMISSION_HEAD"
+    config.dump(output_file_path)
+
+    loaded_config = BatchManagerConfig.load(output_file_path)
+    assert loaded_config == config
