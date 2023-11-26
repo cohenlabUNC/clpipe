@@ -34,7 +34,8 @@ def project_setup(
     symlink_source_data=False,
     profile="unc",
     debug=False,
-, portable=False):
+    portable=False
+    ):
     """Initialize a clpipe project.
 
     No values can come in as None except source_data.

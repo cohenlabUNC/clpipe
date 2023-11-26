@@ -19,7 +19,7 @@ SETUP_COMMAND_NAME = "project_setup"
 PROJECT_TITLE_HELP = "Choose a title for your project."
 PROJECT_DIR_HELP = "Where the project will be located."
 SOURCE_DATA_HELP = "Where the raw data (usually DICOMs) are located."
-MOVE_SOURCE_DATA_HELP = (
+MOVE_SOURCE_DATA_HELP = \
     "Move source data into project/data_DICOMs folder. USE WITH CAUTION."
 SYM_LINK_HELP = \
     "Symlink the source data into project/data_dicoms. Usually safe to do."
