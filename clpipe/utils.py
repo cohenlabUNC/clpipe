@@ -1,5 +1,6 @@
 import click
 import os
+import sys
 import logging
 from pathlib import Path
 
@@ -83,12 +84,21 @@ def resolve_fmriprep_dir(fmriprep_dir):
 
     return fmriprep_root
 
+def exception_handler(exception_type, exception, traceback):
+    print("%s: %s" % (exception_type.__name__, exception))
+
 
 def get_logger(name, debug=False, log_dir=None, f_name="clpipe.log"):
     logger = logging.getLogger("clpipe").getChild(name)
 
-    if debug:
-        logger.setLevel(logging.DEBUG)
+    if not debug:
+        sys.excepthook = exception_handler
+        logging.basicConfig(level=logging.INFO)
+    else:
+        logging.basicConfig(level=logging.DEBUG)
+
+    # if debug:
+    #     logger.setLevel(logging.DEBUG)
 
     if log_dir:
         add_file_handler(log_dir, f_name, logger=logger)
