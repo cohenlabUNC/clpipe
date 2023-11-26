@@ -41,7 +41,7 @@ def flywheel_sync(
         log_dir.mkdir()
 
     batch_manager = JobManagerFactory.get(
-        batch_config=options.batch_config,
+        batch_config=options.batch_config_path,
         output_directory=log_dir, 
         debug=debug,
         mem_use=options.source.mem_usage,
