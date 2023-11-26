@@ -93,9 +93,9 @@ def get_logger(name, debug=False, log_dir=None, f_name="clpipe.log"):
 
     if not debug:
         sys.excepthook = exception_handler
-        logging.basicConfig(level=logging.INFO)
+        logger.setLevel(level=logging.INFO)
     else:
-        logging.basicConfig(level=logging.DEBUG)
+        logger.setLevel(level=logging.DEBUG)
 
     # if debug:
     #     logger.setLevel(logging.DEBUG)

@@ -12,6 +12,13 @@ def test_dcm2bids(clpipe_dicom_dir: Path, config_file: Path):
         dicom_dir_format="{subject}",
     )
 
+def test_error_catch(clpipe_dicom_dir: Path):
+    convert2bids(
+        dcm2bids=True,
+        dicom_dir=clpipe_dicom_dir / "sub",
+        dicom_dir_format="{subject}",
+    )
+
 
 def test_dcm2bids_sub_session(clpipe_dicom_dir: Path, config_file: Path):
     convert2bids(
