@@ -61,7 +61,7 @@ def convert2bids(
 
     batch_manager = JobManagerFactory.get(
         batch_config=config.batch_config_path,
-        output_directory=log_dir,
+        output_directory=config.convert2bids.log_directory,
         debug=debug,
         mem_use=config.convert2bids.mem_usage,
         time=config.convert2bids.time_usage,
