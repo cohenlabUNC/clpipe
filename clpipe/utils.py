@@ -84,21 +84,21 @@ def resolve_fmriprep_dir(fmriprep_dir):
 
     return fmriprep_root
 
-def exception_handler(exception_type, exception, traceback):
-    print("%s: %s" % (exception_type.__name__, exception))
 
+def exception_handler(debug, logger, exception_type, exception, traceback):
+    if debug:
+        sys.__excepthook__(exception_type, exception, traceback)
+    else:
+        logger.error(f"An exception occurred: {exception}")
 
 def get_logger(name, debug=False, log_dir=None, f_name="clpipe.log"):
+    
     logger = logging.getLogger("clpipe").getChild(name)
 
-    if not debug:
-        sys.excepthook = exception_handler
-        logger.setLevel(level=logging.INFO)
+    if debug:
+        logger.setLevel(logging.DEBUG)
     else:
-        logger.setLevel(level=logging.DEBUG)
-
-    # if debug:
-    #     logger.setLevel(logging.DEBUG)
+        logger.setLevel(logging.INFO)
 
     if log_dir:
         add_file_handler(log_dir, f_name, logger=logger)
@@ -118,6 +118,9 @@ def get_logger(name, debug=False, log_dir=None, f_name="clpipe.log"):
     log_args = {"username": user_name}
 
     logger = logging.LoggerAdapter(logger, log_args)
+
+    sys.excepthook = lambda *exc_info: exception_handler(debug, logger, *exc_info)
+    
     return logger
 
 

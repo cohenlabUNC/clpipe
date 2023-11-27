@@ -7,6 +7,7 @@ import glob
 import click
 import logging
 
+from .error_handler import exception_handler
 from .utils import get_logger
 from .status import needs_processing, write_record
 
