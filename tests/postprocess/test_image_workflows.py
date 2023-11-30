@@ -435,7 +435,7 @@ def test_scrubbing_header_preservation(artifact_dir, sample_raw_image, request, 
 
     import nibabel as nib
 
-    with open(test_path / "sample_raw_image_header.txt", "r+") as raw:
+    with open(test_path / "sample_raw_image_header.txt", "w+") as raw:
         raw.write(str(nib.load(sample_raw_image).header))
 
         wf = build_scrubbing_workflow(
@@ -452,7 +452,7 @@ def test_scrubbing_header_preservation(artifact_dir, sample_raw_image, request, 
 
         helpers.plot_timeseries(scrubbed_path, sample_raw_image)
 
-        with open(test_path / "sample_scrubbed_image_header.txt", "r+") as scrubbed:
+        with open(test_path / "sample_scrubbed_image_header.txt", "w+") as scrubbed:
             scrubbed.write(str(nib.load(scrubbed_path).header))
 
             # check that the header data is the same in both files
