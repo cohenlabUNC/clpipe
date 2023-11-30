@@ -43,7 +43,6 @@ def convert2bids(
     status_cache=None,
     submit=False,
     debug=False,
-    dcm2bids=True,
     batch=False,
 ):
     config: ProjectOptions = ProjectOptions.load(config_file)
@@ -81,6 +80,11 @@ def convert2bids(
             "You can now pass an arbitrary number of subjects "
             "as command line arguments."
         )
+
+    # If the extension of conv_config_file is .py, assume it is a heuristic file
+    dcm2bids = True
+    if config.convert2bids.conversion_config.endswith(".py"):
+        dcm2bids = False
 
     if dcm2bids:
         logger.info("Using converter: dcm2bids")

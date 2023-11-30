@@ -260,7 +260,6 @@ def project_setup_cli(
     "-batch/-no-batch", is_flag=True, default=True, help=BATCH_HELP, hidden=True
 )
 @click.option("-debug", "-d", is_flag=True, help=DEBUG_HELP)
-@click.option("-dcm2bids/-heudiconv", default=True, help=MODE_HELP)
 @click.option(
     "-status_cache",
     default=None,
@@ -273,7 +272,6 @@ def convert2bids_cli(
     dicom_dir_format,
     bids_dir,
     conv_config_file,
-    dcm2bids,
     config_file,
     overwrite,
     clear_cache,
@@ -317,7 +315,6 @@ def convert2bids_cli(
         submit=submit,
         status_cache=status_cache,
         debug=debug,
-        dcm2bids=dcm2bids,
     )
 
 
