@@ -1,5 +1,23 @@
 # Change Log
 
+## 1.9.1 (Dec 1, 2023)
+
+### Enhancements
+- `convert2bids` - this command will now detect whether dcm2bids or heudiconv is being used based on the extension type of the conversion config file. dcm2bids is used when a `.json` file is given, and heudiconv is used when `.py`. The `-heudiconv`
+- `clpipe` - when creating a new project, a `.clpipe` folder is now created which houses
+  a `batch_config.json` file. This allows users to easily update batch config defaults
+  without having to create their own `batch_config.json` file. This file is referenced
+  from the users standard `clpipe_config.json` file. The `.clpipe` folder will
+  be used in the future to store any additional files that apply to an entire project.
+- `clpipe` - stack trace is now hidden again when `-debug` is not being used, like in
+  older versions of clpipe (< v1.6)
+
+### Bug Fixes
+- `postprocess` - image scrubbing node now properly persists header information
+
+### Development
+- `job_manager` -
+
 ## 1.9.0 (Sep 15, 2023)
 
 ### Enhancements
