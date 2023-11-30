@@ -6,7 +6,6 @@ from pathlib import Path
 
 from nipype.utils.filemanip import split_filename
 
-
 @click.command()
 @click.argument("subjects", nargs=-1, required=False, default=None)
 @click.option(
@@ -84,15 +83,10 @@ def resolve_fmriprep_dir(fmriprep_dir):
 
     return fmriprep_root
 
-
-def exception_handler(debug, logger, exception_type, exception, traceback):
-    if debug:
-        sys.__excepthook__(exception_type, exception, traceback)
-    else:
-        logger.error(f"An exception occurred: {exception}")
+def exception_handler(logger, exception_type, exception, traceback):
+    logger.error("%s: %s" % (exception_type.__name__, exception))
 
 def get_logger(name, debug=False, log_dir=None, f_name="clpipe.log"):
-    
     logger = logging.getLogger("clpipe").getChild(name)
 
     if debug:
@@ -119,7 +113,8 @@ def get_logger(name, debug=False, log_dir=None, f_name="clpipe.log"):
 
     logger = logging.LoggerAdapter(logger, log_args)
 
-    sys.excepthook = lambda *exc_info: exception_handler(debug, logger, *exc_info)
+    if not debug:
+        sys.excepthook = lambda *exc_info: exception_handler(logger, *exc_info)
     
     return logger
 
