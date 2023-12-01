@@ -1,4 +1,3 @@
-import collections.abc
 from dataclasses import dataclass, field
 from typing import List
 import marshmallow_dataclass
@@ -7,7 +6,7 @@ import json, yaml, os
 from pathlib import Path
 from typing import Union
 from .package import VERSION
-from utils import get_logger
+from ..utils import get_logger
 
 DEFAULT_CONFIG_FILE_NAME = "clpipe_config.json"
 DEFAULT_PROCESSING_STREAM = "default"
