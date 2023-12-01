@@ -85,12 +85,21 @@ class ClpipeData:
         config_schema = marshmallow_dataclass.class_schema(cls)
 
         # Load in the options from file
-        config_dict = cls.load_file_to_dict(options)
+        try:
+            config_dict = cls.load_file_to_dict(options)
+        except json.JSONDecodeError as err:
+            raise ValidationError(f"Please check your config file and correct the following formatting issue: {err}")
 
         # Transform dictionary if needed. Passes unless method overriden
         config_dict = cls.transform_dict(config_dict)
 
-        return config_schema().load(config_dict)
+        try:
+            return config_schema().load(config_dict)
+        except ValidationError as err:
+            # Best code ever
+            errors = json.loads(str(err).replace("'", '"'))
+
+            raise ValidationError(f"Please correct the following issue{'s' if len(errors) > 1 else ''} in your configuration file: {err}")
 
     class Meta:
         ordered = True
