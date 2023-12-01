@@ -1,10 +1,10 @@
 import click
 import os
+import sys
 import logging
 from pathlib import Path
 
 from nipype.utils.filemanip import split_filename
-
 
 @click.command()
 @click.argument("subjects", nargs=-1, required=False, default=None)
@@ -83,12 +83,16 @@ def resolve_fmriprep_dir(fmriprep_dir):
 
     return fmriprep_root
 
+def exception_handler(logger, exception_type, exception, traceback):
+    logger.error("%s: %s" % (exception_type.__name__, exception))
 
 def get_logger(name, debug=False, log_dir=None, f_name="clpipe.log"):
     logger = logging.getLogger("clpipe").getChild(name)
 
     if debug:
         logger.setLevel(logging.DEBUG)
+    else:
+        logger.setLevel(logging.INFO)
 
     if log_dir:
         add_file_handler(log_dir, f_name, logger=logger)
@@ -108,6 +112,10 @@ def get_logger(name, debug=False, log_dir=None, f_name="clpipe.log"):
     log_args = {"username": user_name}
 
     logger = logging.LoggerAdapter(logger, log_args)
+
+    if not debug:
+        sys.excepthook = lambda *exc_info: exception_handler(logger, *exc_info)
+    
     return logger
 
 
