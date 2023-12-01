@@ -15,9 +15,6 @@ LOGGER_NAME = "batch-manager"
 OUTPUT_FORMAT_STR = "Output-{jobid}-jobid-%j.out"
 JOB_ID_FORMAT_STR = "{jobid}"
 MAX_JOB_DISPLAY = 5
-DEFAULT_BATCH_CONFIG_PATH = "slurmUNCConfig.json"
-
-SLURMUNCCONFIG: str = "clpipe/batchConfigs/slurmUNCConfig.json"
 
 
 class JobManager:
@@ -176,14 +173,23 @@ class JobManagerFactory:
             method (str): "batch / Local"
             The method to be used for running the job.
         """
-        if batch_config:
+        if batch_config:    # Instantiate Batch Manager
             if not isinstance(batch_config, BatchManagerConfig):
-                batch_config = BatchManagerConfig.load(os.path.abspath(batch_config))
-                
+                config_map = {
+                    "slurmUNCConfig.json" : "unc",
+                    "sgeDukeBIAC.json" : "duke",
+                    "slurmUVAConfig.json" : "uva",
+                    "pittWorkstation.json" : "pitt"
+                }
+                if batch_config in config_map:
+                    batch_config = BatchManagerConfig.from_default(config_map[batch_config])
+                else:
+                    batch_config = BatchManagerConfig.load(batch_config)
+
             return BatchJobManager(
                 batch_config, output_directory, debug, mem_use, time, threads, email
             )
-        else:
+        else:   # Instantiate Local Manager
             return LocalJobManager()
 
 
