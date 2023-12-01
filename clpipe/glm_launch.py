@@ -3,7 +3,7 @@ import sys
 from pathlib import Path
 
 from .config.glm import *
-from .job_manager import BatchManager, Job, DEFAULT_BATCH_CONFIG_PATH
+from .job_manager import JobManagerFactory, DEFAULT_BATCH_CONFIG_PATH
 from .utils import get_logger
 
 DEFAULT_L1_MEMORY_USAGE = "10G"
@@ -60,7 +60,7 @@ def glm_launch(
         memory_usage = batch_options["MemoryUsage"]
         time_usage = batch_options["TimeUsage"]
         n_threads = int(batch_options["NThreads"])
-        batch_config_path = batch_options["BatchConfig"]
+        batch_config_path = glm_config.parent_options.batch_config_path
         email = batch_options["Email"]
     except KeyError:
         if level == L1:
@@ -88,48 +88,28 @@ def glm_launch(
         log_dir = out_dir
     logger.info(f"Using log dir: {log_dir}")
 
-    batch_manager = _setup_batch_manager(
-        batch_config_path,
-        log_dir,
-        memory_usage=memory_usage,
-        time_usage=time_usage,
-        n_threads=n_threads,
-        email=email,
+    batch_manager = JobManagerFactory.get(
+        batch_config=batch_config_path,
+        output_directory=log_dir,
+        mem_use=memory_usage,
+        time=time_usage,
+        threads=n_threads,
+        email=email
     )
 
     submission_strings = _create_submission_strings(fsf_dir, test_one=test_one)
 
     num_jobs = len(submission_strings)
 
-    _populate_batch_manager(batch_manager, submission_strings)
+    for key in submission_strings.keys():
+        batch_manager.addjob(key, submission_strings[key])
+
     if submit:
         logger.info(f"Running {num_jobs} job(s) in batch mode")
         batch_manager.submit_jobs()
     else:
         batch_manager.print_jobs()
     sys.exit(0)
-
-
-def _setup_batch_manager(
-    batch_config_path: str,
-    log_dir: str,
-    memory_usage: str = None,
-    time_usage: str = None,
-    n_threads: int = None,
-    email: str = None,
-):
-    batch_manager = BatchManager(batch_config_path, log_dir)
-    if memory_usage:
-        batch_manager.update_mem_usage(memory_usage)
-    if time_usage:
-        batch_manager.update_time(time_usage)
-    if n_threads:
-        batch_manager.update_nthreads(n_threads)
-    if email:
-        batch_manager.update_email(email)
-
-    return batch_manager
-
 
 def _create_submission_strings(fsf_files: os.PathLike, test_one: bool = False):
     submission_strings = {}
@@ -147,11 +127,3 @@ def _create_submission_strings(fsf_files: os.PathLike, test_one: bool = False):
         if test_one:
             break
     return submission_strings
-
-
-def _populate_batch_manager(batch_manager: BatchManager, submission_strings: dict):
-    for key in submission_strings.keys():
-        batch_manager.addjob(Job(key, submission_strings[key]))
-
-    batch_manager.createsubmissionhead()
-    batch_manager.compilejobstrings()
