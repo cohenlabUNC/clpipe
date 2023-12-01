@@ -37,8 +37,7 @@
 				"MemoryUsage": "10G",
 				"TimeUsage": "10:0:0",
 				"NThreads": "4",
-				"Email": "",
-				"BatchConfig": "slurmUNCConfig.json"
+				"Email": ""
 			}
     }
   ],
@@ -54,8 +53,7 @@
         "MemoryUsage": "5G",
         "TimeUsage": "5:0:0",
         "NThreads": "4",
-        "Email": "",
-        "BatchConfig": "slurmUNCConfig.json"
+        "Email": ""
       }
     }
   ]
