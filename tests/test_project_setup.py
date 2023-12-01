@@ -176,7 +176,6 @@ def project_paths() -> List[Path]:
         Path("data_fmriprep"),
         Path("data_onsets"),
         data_ROI_ts,
-        data_ROI_ts / "postproc_default",
         Path("l1_feat_folders"),
         Path("l1_fsfs"),
         Path("l2_fsfs"),
