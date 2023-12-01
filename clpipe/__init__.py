@@ -1,6 +1,10 @@
 import logging
+import sys
+from error_handler import exception_handler
 
 from .config.cli import APPLICATION_NAME
+
+sys.excepthook = exception_handler
 
 # Initialize logging config - this must be present for logging messages to work
 logging.basicConfig(level=logging.WARNING, format="%(message)s")

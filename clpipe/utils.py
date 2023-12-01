@@ -113,8 +113,8 @@ def get_logger(name, debug=False, log_dir=None, f_name="clpipe.log"):
 
     logger = logging.LoggerAdapter(logger, log_args)
 
-    if not debug:
-        sys.excepthook = lambda *exc_info: exception_handler(logger, *exc_info)
+    if debug:
+        sys.excepthook = sys.__excepthook__
     
     return logger
 

@@ -16,9 +16,6 @@ LOGGER_NAME = "config"
 class ClpipeData:
     """Parent class for any structured clpipe data."""
 
-    def __init__(self):
-        self.logger = get_logger(LOGGER_NAME, debug=False)
-
     def dump(self, outpath):
         # Generate schema from given dataclasses
         config_schema = marshmallow_dataclass.class_schema(self.__class__)
