@@ -14,7 +14,7 @@ import json
 import glob
 import shutil
 from .config.options import ProjectOptions
-from .job_manager import BatchManager, Job
+from .job_manager import JobManagerFactory
 from pkg_resources import resource_stream, resource_filename
 from .errors import MaskFileNotFoundError
 from .utils import get_logger, resolve_fmriprep_dir
@@ -90,12 +90,15 @@ def fmri_roi_extraction(
         "-custom_type={custom_type} -single"
     )
 
-    batch_manager = BatchManager(config.batch_config_path, config.roi_extraction.log_directory)
-    batch_manager.update_mem_usage(config.roi_extraction.memory_usage)
-    batch_manager.update_time(config.roi_extraction.time_usage)
-    batch_manager.update_nthreads(config.roi_extraction.n_threads)
-    batch_manager.update_email(config.email_address)
-    batch_manager.createsubmissionhead()
+    batch_manager = JobManagerFactory.get(
+        batch_config=config.batch_config_path,
+        output_directory=config.roi_extraction.log_directory,
+        mem_use=config.roi_extraction.time_usage,
+        time=config.roi_extraction.time_usage,
+        threads=config.roi_extraction.n_threads,
+        email=config.email_address
+    )
+    
     for subject in sublist:
         logger.debug(f"Setting up ROI extraction for subject {subject}")
         for cur_atlas in atlas_list:
@@ -172,8 +175,9 @@ def fmri_roi_extraction(
                 logger.debug("Overlap ok flag set")
 
             sub_string_temp = sub_string_temp + " " + subject
-            batch_manager.addjob(
-                Job("ROI_extract_" + subject + "_" + atlas_name, sub_string_temp)
+            batch_manager.add_job(
+                "ROI_extract_" + subject + "_" + atlas_name, 
+                sub_string_temp
             )
             if single:
                 _fmri_roi_extract_subject(
@@ -192,10 +196,8 @@ def fmri_roi_extraction(
                 )
     if not single:
         if submit:
-            batch_manager.compilejobstrings()
             batch_manager.submit_jobs()
         else:
-            batch_manager.compilejobstrings()
             click.echo(batch_manager.print_jobs())
 
 

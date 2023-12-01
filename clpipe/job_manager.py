@@ -248,7 +248,7 @@ class BatchManager:
     def compilejobstrings(self):
         header = self.createsubmissionhead()
         for job in self.jobs:
-            temp = header.format(jobid=job.jobID, cmdwrap=job.jobString)
+            temp = header.format(jobid=job.job_name, cmdwrap=job.job_string)
             self.submission_list.append(temp)
 
     def compile_job_strings(self):
