@@ -7,14 +7,27 @@ import json, yaml, os
 from pathlib import Path
 from typing import Union
 from .package import VERSION
+from utils import get_logger
 
 DEFAULT_CONFIG_FILE_NAME = "clpipe_config.json"
 DEFAULT_PROCESSING_STREAM = "default"
 DEFAULT_WORKING_DIRECTORY = "SET WORKING DIRECTORY"
-
+LOGGER_NAME = "config"
 
 class ClpipeData:
     """Parent class for any structured clpipe data."""
+
+    def __init__(self, output_directory=None, debug=False):
+        self.logger = get_logger(LOGGER_NAME, debug)
+
+        # Do I even need an output dir for this?
+        if output_directory is None:
+            self.logger.warning(
+                ("No output directory provided " "- defaulting to current directory")
+            )
+            output_directory = "."
+        self.logger.info(f"Config output path: {output_directory}") 
+        self.output_dir = os.path.abspath(output_directory)
 
     def dump(self, outpath):
         # Generate schema from given dataclasses
