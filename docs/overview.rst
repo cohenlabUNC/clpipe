@@ -159,3 +159,10 @@ These commands contain their own help dialogue as well:
         -debug, -d                 Flag to enable detailed error messages and
                                     traceback.
         -help                      Show this message and exit.
+
+
+*****************
+Job Submission
+*****************
+
+.. autoclass:: clpipe.config.options.ParallelManagerConfig

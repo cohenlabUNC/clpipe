@@ -2,6 +2,7 @@ import pytest
 from pathlib import Path
 import os
 from typing import List
+from clpipe.config.options import BatchManagerConfig
 
 from clpipe.project_setup import project_setup, SourceDataError
 from clpipe.config.options import ProjectOptions
@@ -110,6 +111,19 @@ def test_project_setup_move_no_source(tmp_path: Path):
         )
 
 
+def test_project_setup_pitt_profile(tmp_path: Path):
+    """Check that clpipe creates an empty data_DICOMs folder in the project
+    directory when no source is provided.
+    """
+    # Testing if the pitt profile gets correctly made.
+    project_setup(project_title=PROJECT_TITLE, project_dir=tmp_path, profile="pitt")
+    pitt_profile = Path(tmp_path / ".clpipe/batch_config.json")
+
+    assert pitt_profile.exists()
+    
+    pitt_config: BatchManagerConfig = BatchManagerConfig.load(pitt_profile)
+    assert pitt_config.submission_head == "bq"
+
 def test_project_setup_missing_paths(clpipe_dir: Path, project_paths: List[Path]):
     """Check if any expected clpipe setup fails to create any expect folders or files."""
     missing = project_paths
@@ -150,19 +164,18 @@ def project_paths() -> List[Path]:
         Path("analyses"),
         Path("data_DICOMs"),
         data_BIDS,
-        data_BIDS / "code",
-        data_BIDS / "derivatives",
-        data_BIDS / "sourcedata",
+        data_BIDS / ".bidsignore",
         data_BIDS / "dataset_description.json",
-        data_BIDS / "participants.json",
         data_BIDS / "participants.tsv",
         data_BIDS / "README",
+        data_BIDS / "sourcedata",
+        data_BIDS / "participants.json",
         data_BIDS / "CHANGES",
-        data_BIDS / ".bidsignore",
+        data_BIDS / "code",
+        data_BIDS / "derivatives",
         Path("data_fmriprep"),
         Path("data_onsets"),
         data_ROI_ts,
-        data_ROI_ts / "postproc_default",
         Path("l1_feat_folders"),
         Path("l1_fsfs"),
         Path("l2_fsfs"),
@@ -181,4 +194,6 @@ def project_paths() -> List[Path]:
         Path("conversion_config.json"),
         Path("glm_config.json"),
         Path("l2_sublist.csv"),
+        Path(".clpipe"),
+        Path(".clpipe/batch_config.json")
     ]

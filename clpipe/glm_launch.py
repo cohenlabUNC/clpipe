@@ -3,7 +3,7 @@ import sys
 from pathlib import Path
 
 from .config.glm import *
-from .batch_manager import BatchManager, Job, DEFAULT_BATCH_CONFIG_PATH
+from .job_manager import JobManagerFactory, DEFAULT_BATCH_CONFIG_PATH
 from .utils import get_logger
 
 DEFAULT_L1_MEMORY_USAGE = "10G"
@@ -18,31 +18,37 @@ STEP_NAME = "glm-launch"
 
 # Unset PYTHONPATH to ensure FSL uses its own internal python
 #   libraries
-SUBMISSION_STRING_TEMPLATE = ("unset PYTHONPATH; feat {fsf_file}")
+SUBMISSION_STRING_TEMPLATE = "unset PYTHONPATH; feat {fsf_file}"
 DEPRECATION_MSG = "Using deprecated GLM setup file."
 
 
-def glm_launch(glm_config_file: str=None, level: int=L1,
-                          model: str=None, test_one: bool=False, 
-                          submit: bool=False, debug: bool=False):
+def glm_launch(
+    glm_config_file: str = None,
+    level: int = L1,
+    model: str = None,
+    test_one: bool = False,
+    submit: bool = False,
+    debug: bool = False,
+):
     glm_config = GLMOptions(glm_config_file)
-    
-    logger = get_logger(STEP_NAME, debug=debug, log_dir=glm_config.parent_options.get_logs_dir())    
+
+    logger = get_logger(
+        STEP_NAME, debug=debug, log_dir=glm_config.parent_options.get_logs_dir()
+    )
 
     if level in VALID_L1:
         level = "L1"
-        setup = 'Level1Setups'
+        setup = "Level1Setups"
     elif level in VALID_L2:
         level = "L2"
-        setup = 'Level2Setups'
+        setup = "Level2Setups"
     else:
         logger.error(f"Level must be {L1} or {L2}")
         sys.exit(1)
 
     logger.info(f"Setting up {level} .fsf launch using model: {model}")
 
-    block = [x for x in glm_config.config[setup] \
-            if x['ModelName'] == str(model)]
+    block = [x for x in glm_config.config[setup] if x["ModelName"] == str(model)]
     if len(block) is not 1:
         logger.error("Model not found, or multiple entries found.")
         sys.exit(1)
@@ -54,7 +60,7 @@ def glm_launch(glm_config_file: str=None, level: int=L1,
         memory_usage = batch_options["MemoryUsage"]
         time_usage = batch_options["TimeUsage"]
         n_threads = int(batch_options["NThreads"])
-        batch_config_path = batch_options["BatchConfig"]
+        batch_config_path = glm_config.parent_options.batch_config_path
         email = batch_options["Email"]
     except KeyError:
         if level == L1:
@@ -82,17 +88,22 @@ def glm_launch(glm_config_file: str=None, level: int=L1,
         log_dir = out_dir
     logger.info(f"Using log dir: {log_dir}")
 
-    batch_manager = _setup_batch_manager(
-        batch_config_path, log_dir,
-        memory_usage=memory_usage, time_usage=time_usage, n_threads=n_threads,
-        email=email)
+    batch_manager = JobManagerFactory.get(
+        batch_config=batch_config_path,
+        output_directory=log_dir,
+        mem_use=memory_usage,
+        time=time_usage,
+        threads=n_threads,
+        email=email
+    )
 
-    submission_strings = _create_submission_strings(
-        fsf_dir, test_one=test_one)
-   
+    submission_strings = _create_submission_strings(fsf_dir, test_one=test_one)
+
     num_jobs = len(submission_strings)
 
-    _populate_batch_manager(batch_manager, submission_strings)
+    for key in submission_strings.keys():
+        batch_manager.addjob(key, submission_strings[key])
+
     if submit:
         logger.info(f"Running {num_jobs} job(s) in batch mode")
         batch_manager.submit_jobs()
@@ -100,49 +111,19 @@ def glm_launch(glm_config_file: str=None, level: int=L1,
         batch_manager.print_jobs()
     sys.exit(0)
 
+def _create_submission_strings(fsf_files: os.PathLike, test_one: bool = False):
+    submission_strings = {}
 
-def _setup_batch_manager(batch_config_path: str, log_dir: str, 
-                         memory_usage: str = None, time_usage: str = None, 
-                         n_threads: int = None, email: str = None, ):
-    batch_manager = BatchManager(batch_config_path, log_dir)
-    if memory_usage:
-        batch_manager.update_mem_usage(memory_usage)
-    if time_usage:
-        batch_manager.update_time(time_usage)
-    if n_threads:
-        batch_manager.update_nthreads(n_threads)
-    if email:
-        batch_manager.update_email(email)
+    for fsf in Path(fsf_files).iterdir():
+        key = f"{str(fsf.stem)}"
 
-    return batch_manager
+        submission_string = SUBMISSION_STRING_TEMPLATE.format(fsf_file=fsf)
 
- 
-def _create_submission_strings(fsf_files: os.PathLike, 
-                               test_one:bool=False):
+        # if python_path:
+        #     submission_string += f"{python_path};"
 
-        submission_strings = {}
-        
-        for fsf in Path(fsf_files).iterdir():
-            key = f"{str(fsf.stem)}"
-            
-            submission_string = SUBMISSION_STRING_TEMPLATE.format(
-                fsf_file=fsf
-            )
+        submission_strings[key] = submission_string
 
-            # if python_path:
-            #     submission_string += f"{python_path};"
-
-            submission_strings[key] = submission_string
-
-            if test_one:
-                break
-        return submission_strings
-
-
-def _populate_batch_manager(batch_manager: BatchManager, 
-                            submission_strings: dict):
-    for key in submission_strings.keys():
-        batch_manager.addjob(Job(key, submission_strings[key]))
-
-    batch_manager.createsubmissionhead()
-    batch_manager.compilejobstrings()
+        if test_one:
+            break
+    return submission_strings

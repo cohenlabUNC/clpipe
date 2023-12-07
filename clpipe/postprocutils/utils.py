@@ -118,6 +118,7 @@ def scrub_image(nii_file, scrub_vector, insert_na=True, export_path=None):
     data = image.get_fdata()
     affine = image.affine
     orig_shape = data.shape
+    header = image.header
 
     # Reorganize the data to be 2D with time on X
     data = data.reshape((np.prod(np.shape(data)[:-1]), data.shape[-1]))
@@ -155,7 +156,7 @@ def scrub_image(nii_file, scrub_vector, insert_na=True, export_path=None):
     else:
         out_path = export_path
 
-    out_image = nib.Nifti1Image(data, affine)
+    out_image = nib.Nifti1Image(data, affine, header)
     nib.save(out_image, out_path)
 
     return out_path
@@ -377,14 +378,15 @@ def vector_to_txt(vector):
 
     return str(fname.resolve())
 
+
 def construct_motion_outliers(scrub_targets):
     import pandas
     import numpy as np
 
     size = sum(scrub_targets)
-    mot_outliers = pandas.DataFrame(np.zeros((len(scrub_targets),size)))
+    mot_outliers = pandas.DataFrame(np.zeros((len(scrub_targets), size)))
     counter = 0
-    for ind, i  in enumerate(scrub_targets):
+    for ind, i in enumerate(scrub_targets):
         if i == 1:
             mot_outliers.iloc[ind, counter] = 1
             counter += 1

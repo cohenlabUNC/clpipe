@@ -26,8 +26,10 @@ class ConfoundsNotFoundError(FileNotFoundError):
 class EVFileNotFoundError(FileNotFoundError):
     pass
 
+
 class MaskFileNotFoundError(FileNotFoundError):
     pass
+
 
 class MixingFileNotFoundError(FileNotFoundError):
     pass
@@ -40,8 +42,10 @@ class NoiseFileNotFoundError(FileNotFoundError):
 class ImplementationNotFoundError(ValueError):
     pass
 
+
 class FSFFileNotFoundError(FileNotFoundError):
     pass
+
 
 class ModelNotFoundError(ValueError):
     pass

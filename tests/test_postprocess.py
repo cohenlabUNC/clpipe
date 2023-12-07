@@ -14,10 +14,8 @@ def test_postprocess_subjects(clpipe_fmriprep_dir):
     options = ProjectOptions.load(config_file)
     options.postprocessing.working_directory = clpipe_fmriprep_dir / "data_working"
 
-    postprocess_subjects(
-        config_file=options,
-        batch=True
-    )
+    postprocess_subjects(config_file=options, batch=True)
+
 
 def test_postprocess_subjects_invalid_subject(clpipe_fmriprep_dir):
     """Run the subjects setup of postprocessing. Builds output directories, including
@@ -27,11 +25,8 @@ def test_postprocess_subjects_invalid_subject(clpipe_fmriprep_dir):
     options = ProjectOptions.load(config_file)
     options.postprocessing.working_directory = clpipe_fmriprep_dir / "data_working"
 
-    postprocess_subjects(
-        subjects=['99'],
-        config_file=options,
-        batch=True
-    )
+    postprocess_subjects(subjects=["99"], config_file=options, batch=True)
+
 
 def test_postprocess_subjects_stream(clpipe_fmriprep_dir):
     """Run postprocess subjects using a stream."""
@@ -43,8 +38,9 @@ def test_postprocess_subjects_stream(clpipe_fmriprep_dir):
     postprocess_subjects(
         config_file=options,
         batch=True,
-        processing_stream="functional_connectivity_default"
+        processing_stream="functional_connectivity_default",
     )
+
 
 def test_apply_stream(artifact_dir, helpers, request):
     """Test that stream updates postprocessing config as expected."""
@@ -57,26 +53,20 @@ def test_apply_stream(artifact_dir, helpers, request):
 
     options.dump(test_dir / "clpipe_config_stream_applied.json")
 
+
 def test_apply_nested_items(artifact_dir, helpers, request):
     """Test that stream updates postprocessing config as expected."""
 
     options: ProjectOptions = ProjectOptions()
     options.processing_streams.append(
         ProcessingStream(
-            stream_name = "nested_items",
-            postprocessing_options = {
-                "processing_step_options": {
-                    "spatial_smoothing": {
-                        "fwhm": 8
-                    }
-                },
+            stream_name="nested_items",
+            postprocessing_options={
+                "processing_step_options": {"spatial_smoothing": {"fwhm": 8}},
                 "confound_options": {
-                    "columns": [
-                        "csf*",
-                        "white_matter*"
-                    ],
-                }
-            }
+                    "columns": ["csf*", "white_matter*"],
+                },
+            },
         )
     )
 
@@ -87,20 +77,23 @@ def test_apply_nested_items(artifact_dir, helpers, request):
     options.dump(test_dir / "clpipe_config_stream_applied.json")
 
 
-def test_postprocess_image(
-    clpipe_postprocess_subjects
-):
-    run_config_file = clpipe_postprocess_subjects / "data_working" / "default" / "run_config.json"
+def test_postprocess_image(clpipe_postprocess_subjects):
+    run_config_file = (
+        clpipe_postprocess_subjects / "data_working" / "default" / "run_config.json"
+    )
     run_config: PostProcessingRunConfig = PostProcessingRunConfig.load(run_config_file)
-
 
     with pytest.raises(SystemExit) as e:
         postprocess_image(
             run_config_file=run_config,
-            image_path=clpipe_postprocess_subjects / "data_fmriprep/sub-0/func/sub-0_task-gonogo_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz",
-            subject_out_dir=clpipe_postprocess_subjects / "data_postprocess/default/sub-0",
-            subject_working_dir=clpipe_postprocess_subjects / "data_working/default/sub-0",
-            subject_log_dir=clpipe_postprocess_subjects / "logs/postprocess_logs/default/sub-0",
+            image_path=clpipe_postprocess_subjects
+            / "data_fmriprep/sub-0/func/sub-0_task-gonogo_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz",
+            subject_out_dir=clpipe_postprocess_subjects
+            / "data_postprocess/default/sub-0",
+            subject_working_dir=clpipe_postprocess_subjects
+            / "data_working/default/sub-0",
+            subject_log_dir=clpipe_postprocess_subjects
+            / "logs/postprocess_logs/default/sub-0",
             confounds_only=False,
             debug=False,
         )

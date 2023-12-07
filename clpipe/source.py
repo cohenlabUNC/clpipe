@@ -3,12 +3,20 @@ from .utils import get_logger
 import os
 from pathlib import Path
 
-from .batch_manager import BatchManager, Job
+from .job_manager import JobManagerFactory
 
 STEP_NAME = "flywheel_sync"
 FLYWHEEL_TEMP_DIR_NAME = "'<TemporaryDirectory '\\'''/"
 
-def flywheel_sync(config_file, source_url=None, dropoff_dir=None, temp_dir=None, submit=False, debug=False):
+
+def flywheel_sync(
+    config_file,
+    source_url=None,
+    dropoff_dir=None,
+    temp_dir=None,
+    submit=False,
+    debug=False,
+):
     """Sync your project's DICOMs with Flywheel."""
     
     options: ProjectOptions = ProjectOptions.load(config_file)
@@ -32,11 +40,14 @@ def flywheel_sync(config_file, source_url=None, dropoff_dir=None, temp_dir=None,
         logger.debug(f"Creating log dir: {log_dir}")
         log_dir.mkdir()
 
-    batch_manager = BatchManager(options.batch_config_path, log_dir, debug=debug)
-    batch_manager.create_submission_head()
-    batch_manager.update_mem_usage(options.source.mem_usage)
-    batch_manager.update_time(options.source.time_usage)
-    batch_manager.update_nthreads(options.source.core_usage)
+    batch_manager = JobManagerFactory.get(
+        batch_config=options.batch_config_path,
+        output_directory=log_dir, 
+        debug=debug,
+        mem_use=options.source.mem_usage,
+        time=options.source.time_usage,
+        threads=options.source.core_usage
+        )
 
     logger.debug(f"Using dropoff directory: {options.source.dropoff_directory}")
     logger.debug(f"Using source URL: {options.source.source_url}")
@@ -48,12 +59,14 @@ def flywheel_sync(config_file, source_url=None, dropoff_dir=None, temp_dir=None,
     logger.debug(f"Temporary Directory: {flywheel_generated_temp_dir}")
     
     submission_string = f"fw sync --include dicom --tmp-path {options.source.temp_directory} {options.source.commandline_opts} {options.source.source_url} {options.source.dropoff_directory}; rm -r {flywheel_generated_temp_dir}"
-    job_id = f"flywheel_sync_DICOM"
+    job_name = f"flywheel_sync_DICOM"
 
-    job = Job(job_id, submission_string)
+    batch_manager.add_job(job_name, submission_string)
 
-    batch_manager.addjob(job)
-    batch_manager.compile_job_strings()
+    # job = Job(job_id, submission_string)
+    # batch_manager.addjob(job)
+
+    # batch_manager.compile_job_strings()
 
     if submit:
         batch_manager.submit_jobs()

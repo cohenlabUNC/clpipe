@@ -7,26 +7,27 @@ SUBMIT_HELP = "Flag to submit commands to the HPC."
 DEBUG_HELP = "Flag to enable detailed error messages and traceback."
 STATUS_CACHE_HELP = "Path to a status cache file for pipeline automation."
 INTERACTIVE_HELP = (
-    "Run in interactive mode. Only use in an interactive "
-    "compute session."
+    "Run in interactive mode. Only use in an interactive " "compute session."
 )
 VERSION_HELP = "Display clpipe's version."
-BATCH_HELP = 'Flag to create batch jobs without prompting.'
-WORKING_DIR_HELP = (
-    "Where to generate the working directory."
-)
-GLM_CONFIG_HELP = 'The path to your GLM configuration file.'
+BATCH_HELP = "Flag to create batch jobs without prompting."
+WORKING_DIR_HELP = "Where to generate the working directory."
+GLM_CONFIG_HELP = "The path to your GLM configuration file."
 
 # Project setup help
 SETUP_COMMAND_NAME = "project_setup"
 PROJECT_TITLE_HELP = "Choose a title for your project."
 PROJECT_DIR_HELP = "Where the project will be located."
-SOURCE_DATA_HELP = \
-    "Where the raw data (usually DICOMs) are located."
+SOURCE_DATA_HELP = "Where the raw data (usually DICOMs) are located."
 MOVE_SOURCE_DATA_HELP = \
     "Move source data into project/data_DICOMs folder. USE WITH CAUTION."
 SYM_LINK_HELP = \
     "Symlink the source data into project/data_dicoms. Usually safe to do."
+PROFILE_HELP = \
+    """
+    The batch profile you would like to use. Default is unc. The options
+    include: "unc", "duke", "uva", "pitt"
+    """
 
 # BIDS conversion help
 CONVERSION_COMMAND_NAME = "convert2bids"
@@ -54,9 +55,7 @@ LONGITUDINAL_HELP = (
     "Convert all subjects/sessions into individual pseudo-subjects. "
     "Use if you do not want T1w averaged across sessions during FMRIprep"
 )
-MODE_HELP = (
-    "Specify which converter to use."
-)
+MODE_HELP = "Specify which converter to use."
 
 # BIDS Validation Help
 VALIDATOR_COMMAND_NAME = "bids_validate"
@@ -80,7 +79,7 @@ FMRIPREP_OUTPUT_DIR_HELP = (
 POSTPROCESS_COMMAND_NAME = "postprocess"
 FMRIPREP_DIR_HELP = (
     "Which fmriprep directory to process. "
-    "If a configuration file is provided with a BIDS directory, " 
+    "If a configuration file is provided with a BIDS directory, "
     "this argument is not necessary. Note, must point to the ``fmriprep`` "
     "directory, not its parent directory."
 )
@@ -88,11 +87,13 @@ OUTPUT_DIR_HELP = (
     "Where to put the postprocessed data. If a configuration file is "
     "provided with a output directory, this argument is not necessary."
 )
-PROCESSING_STREAM_HELP = \
+PROCESSING_STREAM_HELP = (
     "Specify a processing stream to use defined in your configuration file."
-INDEX_HELP = 'Give the path to an existing pybids index database.'
-REFRESH_INDEX_HELP = \
-    'Refresh the pybids index database to reflect new fmriprep artifacts.'
+)
+INDEX_HELP = "Give the path to an existing pybids index database."
+REFRESH_INDEX_HELP = (
+    "Refresh the pybids index database to reflect new fmriprep artifacts."
+)
 
 
 # GLM Help
@@ -107,11 +108,11 @@ GLM_PREPARE_COMMAND_NAME = "prepare"
 
 # GLM Launch Help
 GLM_LAUNCH_COMMAND_NAME = "launch"
-L1_MODEL_HELP = 'Name of your L1 model'
-L2_MODEL_HELP = 'Name of your L2 model'
+L1_MODEL_HELP = "Name of your L1 model"
+L2_MODEL_HELP = "Name of your L2 model"
 LEVEL_HELP = "Level of your model, L1 or L2"
-MODEL_HELP = 'Name of your model'
-TEST_ONE_HELP = 'Only submit one job for testing purposes.'
+MODEL_HELP = "Name of your model"
+TEST_ONE_HELP = "Only submit one job for testing purposes."
 
 # Other Help
 STATUS_COMMAND_NAME = "status"

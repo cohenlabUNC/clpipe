@@ -1,19 +1,20 @@
-PACKAGE_NAME = 'clpipe'
-VERSION = '1.9.0.8'
+PACKAGE_NAME = "clpipe"
+VERSION = "1.9.1"
 
-DESCRIPTION = 'clpipe: MRI processing pipeline for high performance clusters'
-REPO_URL = 'https://github.com/cohenlabUNC/clpipe'
+
+DESCRIPTION = "clpipe: MRI processing pipeline for high performance clusters"
+REPO_URL = "https://github.com/cohenlabUNC/clpipe"
 AUTHORS = (
-      'Author/Maintainer: Teague Henry, Maintainer: Will Asciutto, '
-      'Contributor: Bhvaith Manapoty, Contributor: Yuvraj Jain, Contributor: Deepak Melwani'
+    "Author/Maintainer: Teague Henry, Maintainer: Will Asciutto, "
+    "Contributor: Bhvaith Manapoty, Contributor: Yuvraj Jain, Contributor: Deepak Melwani"
 )
-AUTHOR_EMAIL = 'ycp6wm@virginia.edu'
-LICENSE = 'MIT'
+AUTHOR_EMAIL = "ycp6wm@virginia.edu"
+LICENSE = "MIT"
 
 # Python version tested against
-PYTHON_VERSION = '3.7'
+PYTHON_VERSION = "3.7"
 # Allows versions greater than the test baseline
-PYTHON_REQUIRES = f'>={PYTHON_VERSION}'
+PYTHON_REQUIRES = f">={PYTHON_VERSION}"
 
 # List of all dependency packages, to be automatically installed alongside clpipe
 INSTALL_REQUIRES = [
@@ -39,12 +40,12 @@ INSTALL_REQUIRES = [
       "PyYAML==6.0"
 ],
 
-PACKAGE_DATA = {'clpipe': ['R_scripts/*.R']}
+PACKAGE_DATA = {"clpipe": ["R_scripts/*.R"]}
 
 # These entries register bash aliases to click commands. The aliases are available for
 #   use upon package installation, and are implemented by auto-generated scripts in
 #   <python env>/bin
-ENTRY_POINTS = '''
+ENTRY_POINTS = """
       [console_scripts]
       clpipe=clpipe.cli:cli
       project_setup=clpipe.cli:project_setup_cli
@@ -72,4 +73,4 @@ ENTRY_POINTS = '''
       fmap_cleanup=clpipe.fmap_cleanup:fmap_cleanup
       reho_extract=clpipe.reho_extract:reho_extract
       t2star_extract=clpipe.t2star_extract:t2star_extract
-'''
+"""
