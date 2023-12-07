@@ -457,7 +457,7 @@ class TemporalFiltering(Option):
     Also applied to confounds."""
 
     implementation: str = field(default="fslmaths", metadata={"required": True})
-    """Available implementations: fslmaths, 3dTProject"""
+    """Available implementations: fslmaths, afni_3dTproject"""
 
     filtering_high_pass: float = field(default=0.008, metadata={"required": True})
     """Values below this threshold are filtered. Defaults to .08 Hz. Set to -1 to disable."""
