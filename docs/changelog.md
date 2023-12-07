@@ -1,6 +1,6 @@
 # Change Log
 
-## 1.9.1 (Dec 1, 2023)
+## 1.9.1 (Dec 7, 2023)
 
 ### Enhancements
 - `convert2bids` - This command will now detect whether dcm2bids or heudiconv is being used based on the extension type of the conversion config file. dcm2bids is used when a `.json` file is given, and heudiconv is used when `.py`. The `-heudiconv`
@@ -11,9 +11,13 @@
   be used in the future to store any additional files that apply to an entire project.
 - `clpipe` - Stack trace is now hidden again when `-debug` is not being used, like in
   older versions of clpipe (< v1.6)
+- `postprocess` - Indexing / query time slightly improved through use of pattern-based indexing exceptions
 
 ### Bug Fixes
 - `postprocess` - Image scrubbing node now properly persists header information
+- `bids_validate` - Fixed issue where SLURM logs did not save to log folder after 1.9
+- `preprocess` - Fixed issue  where SLURM logs did not save to log folder
+after 1.9
 
 ### Development
 - `job_manager` - Introduced `JobManagerFactory` for streamlined job manager selection and instantiation to replace the old `BatchManager` with `BatchJobManager`` and `LocalJobManager``, enhancing job submission flexibility and configuration options.
