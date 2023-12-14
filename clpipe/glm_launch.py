@@ -3,8 +3,10 @@ import sys
 from pathlib import Path
 
 from .config.glm import *
-from .job_manager import JobManagerFactory, DEFAULT_BATCH_CONFIG_PATH
+from .job_manager import JobManagerFactory
 from .utils import get_logger
+
+DEFAULT_BATCH_CONFIG_PATH = "slurmUNCConfig.json"
 
 DEFAULT_L1_MEMORY_USAGE = "10G"
 DEFAULT_L1_TIME_USAGE = "10:00:00"
