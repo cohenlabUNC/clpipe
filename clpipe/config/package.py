@@ -1,5 +1,5 @@
 PACKAGE_NAME = "clpipe"
-VERSION = "1.9.1.2"
+VERSION = "1.9.1.3"
 
 
 DESCRIPTION = "clpipe: MRI processing pipeline for high performance clusters"
