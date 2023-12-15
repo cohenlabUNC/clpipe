@@ -1238,7 +1238,7 @@ def build_sphere_extract_workflow(
 
     
     undump_node = pe.Node(
-        Undump(out_file="sphere_mask.nii.gz"), name="undump"
+        Undump(out_file="sphere_mask.nii.gz", coordinates_specification="xyz"), name="undump"
     )
 
     index_node = pe.Node(
@@ -1251,7 +1251,7 @@ def build_sphere_extract_workflow(
     )
 
     roi_stats_node = pe.Node(
-        ROIStats(), name="roi_stats"
+        ROIStats(nobriklab=True), name="roi_stats"
     )
 
     # Index the coordinates file
@@ -1298,7 +1298,7 @@ def _index_coordinates(coordinates_file):
     with open(coordinates_file, "r") as f:
         data = f.readlines()
         for i, line in enumerate(data):
-            data[i] = line.strip() + f" {i+1}\n"
+            data[i] = line.strip() + f"\t{i+1}\n"
 
         with open(new_fname, "w") as f:
             f.writelines(data)
