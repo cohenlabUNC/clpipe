@@ -301,6 +301,15 @@ def build_sphere_extract_workflow(
         ROIStats(nobriklab=True), name="roi_stats"
     )
 
+    transform_node = pe.Node(
+        Function(
+            input_names=["in_file"],
+            output_names=["out_file"],
+            function=_transform_extraction,
+        ),
+        name="transform_extraction",
+    )
+
     # Index the coordinates file
     workflow.connect(input_node, "coordinates_file", index_node, "coordinates_file")
 
@@ -314,9 +323,10 @@ def build_sphere_extract_workflow(
     workflow.connect(input_node, "in_file", roi_stats_node, "in_file")
     workflow.connect(undump_node, "out_file", roi_stats_node, "mask_file")
     
-    #workflow.connect(input_node, "out_file", roi_stats_node, "out_file")
-
-    workflow.connect(roi_stats_node, "out_file", output_node, "out_file")
+    # Clean-up the ROIStats output
+    workflow.connect(roi_stats_node, "out_file", transform_node, "in_file")
+    
+    workflow.connect(transform_node, "out_file", output_node, "out_file")
 
     if export_path:
         export_node = pe.Node(
@@ -344,6 +354,27 @@ def _index_coordinates(coordinates_file):
 
         with open(new_fname, "w") as f:
             f.writelines(data)
+
+    return str(Path(new_fname).absolute())
+
+
+def _transform_extraction(in_file):
+    """Takes in the roi extraction file, reads it in as a tsv with pandas.
+    Drops the filename and brik columns (first two), and also outputs the file
+    as a csv."""
+
+    import pandas as pd
+    from pathlib import Path
+
+    new_fname = "roi_extraction.csv"
+
+    df = pd.read_csv(in_file, sep="\t")
+    df = df.drop(columns=["File", "Sub-brick"])
+
+    # Remove extra white space from the first row
+    df.columns = df.columns.str.strip()
+
+    df.to_csv(new_fname, index=False, sep=",")
 
     return str(Path(new_fname).absolute())
 

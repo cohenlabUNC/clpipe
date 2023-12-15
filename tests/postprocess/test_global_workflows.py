@@ -501,7 +501,7 @@ def test_build_postprocessing_wf_roi_extract(
     test_path = helpers.create_test_dir(artifact_dir, request.node.name)
     out_path = test_path / "postprocessed_image.nii.gz"
     confounds_out_path = test_path / "postprocessed_confounds.tsv"
-    roi_export_out_path = test_path / "roi_extract.tsv"
+    roi_export_out_path = test_path / "roi_extract.csv"
 
     postprocessing_config = ProjectOptions().postprocessing
     postprocessing_config.processing_steps = [
