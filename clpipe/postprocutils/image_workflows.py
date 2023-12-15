@@ -19,7 +19,7 @@ from nipype.interfaces.fsl.maths import (
     TemporalFilter,
 )
 from nipype.interfaces.fsl.utils import ImageStats, FilterRegressor
-from nipype.interfaces.afni import TProject, Undump
+from nipype.interfaces.afni import TProject, Undump, ROIStats
 from nipype.interfaces.fsl.model import GLM
 from nipype.interfaces.fsl import SUSAN, FLIRT
 from nipype.interfaces.utility import Function, IdentityInterface
@@ -33,6 +33,7 @@ from .nodes import (
     ButterworthFilter,
     RegressAromaR,
     ImageSlice,
+    UndumpFixed as Undump
 )
 from .utils import (
     scrub_image,
@@ -1204,7 +1205,7 @@ def build_resample_workflow(
 def build_sphere_extract_workflow(
     in_file: os.PathLike = None,
     out_file: os.PathLike = None,
-    master_file: os.PathLike = None,
+    coordinates_file: os.PathLike = None,
     sphere_radius: int = None,
     mask_file: os.PathLike = None,
     base_dir: os.PathLike = None,
@@ -1228,37 +1229,49 @@ def build_sphere_extract_workflow(
         input_node.inputs.in_file = in_file
     if out_file:
         input_node.inputs.out_file = out_file
-    if master_file:
-        input_node.inputs.master_file = master_file
+    if coordinates_file:
+        input_node.inputs.coordinates_file = coordinates_file
     if sphere_radius:
         input_node.inputs.sphere_radius = sphere_radius
     if mask_file:
         input_node.inputs.mask_file = mask_file
 
-    from .nodes import UndumpFixed as Undump
+    
     undump_node = pe.Node(
-        Undump(), name="undump"
+        Undump(out_file="sphere_mask.nii.gz"), name="undump"
     )
 
-    # extract_node = pe.Node(
-    #     None, name="extract"
-    # )
-    # Mean - not a sum score
-    # AFNI behavior with missing values - treats missing values as 0
+    index_node = pe.Node(
+        Function(
+            input_names=["coordinates_file"],
+            output_names=["out_file"],
+            function=_index_coordinates,
+        ),
+        name="index_coordinates",
+    )
 
+    roi_stats_node = pe.Node(
+        ROIStats(), name="roi_stats"
+    )
 
-    workflow.connect(input_node, "in_file", undump_node, "in_file")
-    workflow.connect(input_node, "master_file", undump_node, "master_file")
-    workflow.connect(input_node, "out_file", undump_node, "out_file")
+    # Index the coordinates file
+    workflow.connect(input_node, "coordinates_file", index_node, "coordinates_file")
+
+    # Setup coordinates-based mask creation nodes
+    workflow.connect(index_node, "out_file", undump_node, "in_file")
+    workflow.connect(input_node, "in_file", undump_node, "master_file")
     workflow.connect(input_node, "sphere_radius", undump_node, "srad")
     workflow.connect(input_node, "mask_file", undump_node, "mask_file")
-    workflow.connect(undump_node, "out_file", output_node, "out_file")
+    
+    # Setup ROIStats node
+    workflow.connect(input_node, "in_file", roi_stats_node, "in_file")
+    workflow.connect(undump_node, "out_file", roi_stats_node, "mask_file")
+    
+    #workflow.connect(input_node, "out_file", roi_stats_node, "out_file")
+
+    workflow.connect(roi_stats_node, "out_file", output_node, "out_file")
 
     return workflow
-
-
-
-    
 
 
 # TODO: Move this to utils
@@ -1272,3 +1285,22 @@ def _csv_to_list(csv_file):
     data_list = list(data)
 
     return data_list
+
+def _index_coordinates(coordinates_file):
+    # Imports must be in function for running as node
+    from pathlib import Path
+
+    # Load in the coordinates file. For each row in the file, add an index 1 to
+    #  n at the end of each row. Save the new file.
+
+    new_fname = f"{Path(coordinates_file).stem}_indexed.txt"
+
+    with open(coordinates_file, "r") as f:
+        data = f.readlines()
+        for i, line in enumerate(data):
+            data[i] = line.strip() + f" {i+1}\n"
+
+        with open(new_fname, "w") as f:
+            f.writelines(data)
+
+    return str(Path(new_fname).absolute())
