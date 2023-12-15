@@ -27,13 +27,26 @@ def test_postprocess_subjects_invalid_subject(clpipe_fmriprep_dir):
 
     postprocess_subjects(subjects=["99"], config_file=options, batch=True)
 
-
 def test_postprocess_subjects_stream(clpipe_fmriprep_dir):
     """Run postprocess subjects using a stream."""
     config_file = clpipe_fmriprep_dir / "clpipe_config.json"
 
     options = ProjectOptions.load(config_file)
     options.postprocessing.working_directory = clpipe_fmriprep_dir / "data_working"
+
+    postprocess_subjects(
+        config_file=options,
+        batch=True,
+        processing_stream="functional_connectivity_default",
+    )
+
+def test_postprocess_subjects_stream_roi_extract(clpipe_fmriprep_dir):
+    """Run postprocess subjects using a stream."""
+    config_file = clpipe_fmriprep_dir / "clpipe_config.json"
+
+    options = ProjectOptions.load(config_file)
+    options.postprocessing.working_directory = clpipe_fmriprep_dir / "data_working"
+    options.postprocessing.stats_options.roi_extract.include = True
 
     postprocess_subjects(
         config_file=options,
