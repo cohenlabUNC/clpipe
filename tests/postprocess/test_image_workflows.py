@@ -529,7 +529,6 @@ def test_scrubbing_wf_aroma(artifact_dir, sample_melodic_mixing, request, helper
     )
     wf.run()
 
-#3dUndump -master /proj/mnhallqlab/studies/momentum/clpipe/data_BIDS/sub-p2/anat/sub-p2_T1w.nii.gz -srad 5 -prefix spheres.nii specs.txt
 def test_build_sphere_extract_wf(
     artifact_dir,
     sample_raw_image,
