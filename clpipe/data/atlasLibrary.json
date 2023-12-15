@@ -104,6 +104,13 @@
       "atlas_labels": "data/atlases/bigbrain/BigBrain300_ROIinfo.xlsx",
       "atlas_type": "sphere",
       "atlas_citation": ""
+    },
+    {
+      "atlas_name": "seitzman",
+      "atlas_file": "data/atlases/seitzman/coordinates.txt",
+      "atlas_labels": "data/atlases/seitzman/ROI_Information_Seitzman.csv",
+      "atlas_type": "sphere",
+      "atlas_citation": "https://doi.org/10.1016/j.neuroimage.2019.116290"
     }
   ]
 }
