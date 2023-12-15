@@ -488,3 +488,39 @@ def test_build_multiple_scrubbing_workflow(
         test_path, "work_dir"
     )  # specify the working directory for the workflow
     test_wf.run()
+
+
+def test_build_postprocessing_wf_roi_extract(
+    artifact_dir,
+    request,
+    sample_raw_image,
+    sample_raw_image_mask,
+    sample_confounds_timeseries,
+    helpers,
+):
+    test_path = helpers.create_test_dir(artifact_dir, request.node.name)
+    out_path = test_path / "postprocessed_image.nii.gz"
+    confounds_out_path = test_path / "postprocessed_confounds.tsv"
+
+    postprocessing_config = ProjectOptions().postprocessing
+    postprocessing_config.processing_steps = [
+        "IntensityNormalization",
+        "TemporalFiltering",
+        "SpatialSmoothing",
+        "ROIExtract",
+    ]
+
+    wf = build_postprocessing_wf(
+        postprocessing_config,
+        image_file=sample_raw_image,
+        image_export_path=out_path,
+        tr=2,
+        mask_file=sample_raw_image_mask,
+        confounds_file=sample_confounds_timeseries,
+        confounds_export_path=confounds_out_path,
+        base_dir=test_path,
+        crashdump_dir=test_path,
+    )
+
+    wf.write_graph(dotfilename=test_path / "workflow_graph", graph2use="colored")
+    wf.run()

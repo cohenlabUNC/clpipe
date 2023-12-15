@@ -19,7 +19,7 @@ from nipype.interfaces.fsl.maths import (
     TemporalFilter,
 )
 from nipype.interfaces.fsl.utils import ImageStats, FilterRegressor
-from nipype.interfaces.afni import TProject, Undump, ROIStats
+from nipype.interfaces.afni import TProject
 from nipype.interfaces.fsl.model import GLM
 from nipype.interfaces.fsl import SUSAN, FLIRT
 from nipype.interfaces.utility import Function, IdentityInterface
@@ -70,8 +70,6 @@ STEP_TRIM_TIMEPOINTS = "TrimTimepoints"
 STEP_RESAMPLE = "Resample"
 
 STEP_SCRUB_TIMEPOINTS = "ScrubTimepoints"
-
-STEP_SPHERE_EXTRACT = "SphereExtract"
 
 
 def build_image_postprocessing_workflow(
@@ -1202,77 +1200,6 @@ def build_resample_workflow(
 
     return workflow
 
-def build_sphere_extract_workflow(
-    in_file: os.PathLike = None,
-    out_file: os.PathLike = None,
-    coordinates_file: os.PathLike = None,
-    sphere_radius: int = None,
-    mask_file: os.PathLike = None,
-    base_dir: os.PathLike = None,
-    crashdump_dir: os.PathLike = None
-):
-    workflow = pe.Workflow(name=STEP_SPHERE_EXTRACT, base_dir=base_dir)
-    if crashdump_dir is not None:
-        workflow.config["execution"]["crashdump_dir"] = crashdump_dir
-
-    # Setup identity (pass through) input/output nodes
-    input_node = pe.Node(
-        IdentityInterface(
-            fields=["in_file", "out_file", "master_file", "sphere_radius", "mask_file"],
-            mandatory_inputs=False,
-        ),
-        name="inputnode",
-    )
-    output_node = build_output_node()
-
-    if in_file:
-        input_node.inputs.in_file = in_file
-    if out_file:
-        input_node.inputs.out_file = out_file
-    if coordinates_file:
-        input_node.inputs.coordinates_file = coordinates_file
-    if sphere_radius:
-        input_node.inputs.sphere_radius = sphere_radius
-    if mask_file:
-        input_node.inputs.mask_file = mask_file
-
-    
-    undump_node = pe.Node(
-        Undump(out_file="sphere_mask.nii.gz", coordinates_specification="xyz"), name="undump"
-    )
-
-    index_node = pe.Node(
-        Function(
-            input_names=["coordinates_file"],
-            output_names=["out_file"],
-            function=_index_coordinates,
-        ),
-        name="index_coordinates",
-    )
-
-    roi_stats_node = pe.Node(
-        ROIStats(nobriklab=True), name="roi_stats"
-    )
-
-    # Index the coordinates file
-    workflow.connect(input_node, "coordinates_file", index_node, "coordinates_file")
-
-    # Setup coordinates-based mask creation nodes
-    workflow.connect(index_node, "out_file", undump_node, "in_file")
-    workflow.connect(input_node, "in_file", undump_node, "master_file")
-    workflow.connect(input_node, "sphere_radius", undump_node, "srad")
-    workflow.connect(input_node, "mask_file", undump_node, "mask_file")
-    
-    # Setup ROIStats node
-    workflow.connect(input_node, "in_file", roi_stats_node, "in_file")
-    workflow.connect(undump_node, "out_file", roi_stats_node, "mask_file")
-    
-    #workflow.connect(input_node, "out_file", roi_stats_node, "out_file")
-
-    workflow.connect(roi_stats_node, "out_file", output_node, "out_file")
-
-    return workflow
-
 
 # TODO: Move this to utils
 def _csv_to_list(csv_file):
@@ -1285,22 +1212,3 @@ def _csv_to_list(csv_file):
     data_list = list(data)
 
     return data_list
-
-def _index_coordinates(coordinates_file):
-    # Imports must be in function for running as node
-    from pathlib import Path
-
-    # Load in the coordinates file. For each row in the file, add an index 1 to
-    #  n at the end of each row. Save the new file.
-
-    new_fname = f"{Path(coordinates_file).stem}_indexed.txt"
-
-    with open(coordinates_file, "r") as f:
-        data = f.readlines()
-        for i, line in enumerate(data):
-            data[i] = line.strip() + f"\t{i+1}\n"
-
-        with open(new_fname, "w") as f:
-            f.writelines(data)
-
-    return str(Path(new_fname).absolute())
