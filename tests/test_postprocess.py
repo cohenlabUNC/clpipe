@@ -27,13 +27,26 @@ def test_postprocess_subjects_invalid_subject(clpipe_fmriprep_dir):
 
     postprocess_subjects(subjects=["99"], config_file=options, batch=True)
 
-
 def test_postprocess_subjects_stream(clpipe_fmriprep_dir):
     """Run postprocess subjects using a stream."""
     config_file = clpipe_fmriprep_dir / "clpipe_config.json"
 
     options = ProjectOptions.load(config_file)
     options.postprocessing.working_directory = clpipe_fmriprep_dir / "data_working"
+
+    postprocess_subjects(
+        config_file=options,
+        batch=True,
+        processing_stream="functional_connectivity_default",
+    )
+
+def test_postprocess_subjects_stream_roi_extract(clpipe_fmriprep_dir):
+    """Run postprocess subjects using a stream."""
+    config_file = clpipe_fmriprep_dir / "clpipe_config.json"
+
+    options = ProjectOptions.load(config_file)
+    options.postprocessing.working_directory = clpipe_fmriprep_dir / "data_working"
+    options.postprocessing.stats_options.roi_extract.include = True
 
     postprocess_subjects(
         config_file=options,
@@ -82,6 +95,31 @@ def test_postprocess_image(clpipe_postprocess_subjects):
         clpipe_postprocess_subjects / "data_working" / "default" / "run_config.json"
     )
     run_config: PostProcessingRunConfig = PostProcessingRunConfig.load(run_config_file)
+
+    with pytest.raises(SystemExit) as e:
+        postprocess_image(
+            run_config_file=run_config,
+            image_path=clpipe_postprocess_subjects
+            / "data_fmriprep/sub-0/func/sub-0_task-gonogo_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz",
+            subject_out_dir=clpipe_postprocess_subjects
+            / "data_postprocess/default/sub-0",
+            subject_working_dir=clpipe_postprocess_subjects
+            / "data_working/default/sub-0",
+            subject_log_dir=clpipe_postprocess_subjects
+            / "logs/postprocess_logs/default/sub-0",
+            confounds_only=False,
+            debug=False,
+        )
+
+    assert e.value.code == 0
+
+
+def test_postprocess_image_roi_extract(clpipe_postprocess_subjects):
+    run_config_file = (
+        clpipe_postprocess_subjects / "data_working" / "default" / "run_config.json"
+    )
+    run_config: PostProcessingRunConfig = PostProcessingRunConfig.load(run_config_file)
+    run_config.options.stats_options.roi_extract.include = True
 
     with pytest.raises(SystemExit) as e:
         postprocess_image(

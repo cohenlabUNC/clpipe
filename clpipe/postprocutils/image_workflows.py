@@ -33,6 +33,7 @@ from .nodes import (
     ButterworthFilter,
     RegressAromaR,
     ImageSlice,
+    UndumpFixed as Undump
 )
 from .utils import (
     scrub_image,
@@ -1200,6 +1201,7 @@ def build_resample_workflow(
     return workflow
 
 
+# TODO: Move this to utils
 def _csv_to_list(csv_file):
     # Imports must be in function for running as node
     import numpy as np

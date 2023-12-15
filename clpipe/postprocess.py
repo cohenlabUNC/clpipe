@@ -39,7 +39,7 @@ from .config.options import DEFAULT_PROCESSING_STREAM
 from .job_manager import JobManagerFactory
 from .postprocutils.global_workflows import build_postprocessing_wf
 from .postprocutils.utils import draw_graph
-from .utils import get_logger, resolve_fmriprep_dir
+from .utils import get_logger, resolve_fmriprep_dir, get_atlas_info
 from .errors import *
 
 STEP_NAME = "postprocess"
@@ -125,6 +125,17 @@ def postprocess_subjects(
         Path(run_config.stream_working_directory) / RUN_CONFIG_FILE_NAME
     )
     run_config.dump(stream_run_config_path)
+
+    # Save the atlas info if roi_extract is included
+    if run_config.options.stats_options.roi_extract.include:
+        _,atlas_file,_= get_atlas_info(run_config.options.stats_options.roi_extract.atlas)
+        # Copy the atlas file to the stream output directory
+        atlas_file_name = Path(atlas_file).name
+        atlas_file_out_path = Path(run_config.stream_output_directory) / atlas_file_name
+        # Copy using shutil
+        import shutil
+        shutil.copyfile(atlas_file, atlas_file_out_path)
+
 
     # Setup Logging
     logger = get_logger(STEP_NAME, debug=debug, log_dir=options.get_logs_dir())
@@ -343,6 +354,8 @@ def postprocess_image(
 
     run_config: PostProcessingRunConfig = PostProcessingRunConfig.load(run_config_file)
 
+    roi_extract_flag = run_config.options.stats_options.roi_extract.include
+
     logger = get_logger(
         "postprocess_image",
         log_dir=subject_log_dir,
@@ -416,6 +429,7 @@ def postprocess_image(
 
     # Build the image export path
     image_export_path = None
+    roi_extract_export_path = None
     if not confounds_only:
         image_export_path = build_export_path(
             image_path,
@@ -423,6 +437,11 @@ def postprocess_image(
             run_config.target_directory,
             subject_out_dir,
         )
+
+        if roi_extract_flag:
+            # Use same path as image export path, but with, remove .nii.gz and use
+            #     the suffix '_roi_extract.csv' instead
+            roi_extract_export_path = Path(str(image_export_path).rstrip(".nii.gz") + "_roi_extract.csv")
 
     # Build the global postprocessing workflow
     postproc_wf: pe.Workflow = build_postprocessing_wf(
@@ -433,6 +452,7 @@ def postprocess_image(
         image_export_path=image_export_path,
         confounds_file=confounds_path,
         confounds_export_path=confounds_export_path,
+        roi_export_path=roi_extract_export_path,
         working_dir=subject_working_dir,
         mask_file=mask_image,
         mixing_file=mixing_file,

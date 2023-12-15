@@ -602,6 +602,21 @@ class ConfoundRegression(Option):
     implementation: str = field(default="afni_3dTproject", metadata={"required": True})
     """Currently limited to "afni_3dTproject"""
 
+@dataclass
+class ROIExtract(Option):
+    """Extract ROI time series from your image. Currently only supports sphere-based ROIs"""
+
+    include: bool = field(default=False, metadata={"required": True})
+    """Whether or not to include this statistic."""
+
+    atlas: str = field(default="seitzman", metadata={"required": True})
+    """Atlas to use. Use 'clpipe roi atlases' to show available atlases."""
+
+    sphere_radius: int = field(default=5, metadata={"required": True})
+    """Sphere radius size in mm"""
+
+    
+
 
 @dataclass
 class ProcessingStepOptions(Option):
@@ -687,6 +702,16 @@ class ConfoundOptions(Option):
 
 
 @dataclass
+class StatsOptions(Option):
+    """Options for computing statistics from postprocessing results."""
+
+    roi_extract: ROIExtract = field(
+        default_factory=ROIExtract, metadata={"required": True}
+    )
+    """Extract ROI time series from your image."""
+
+
+@dataclass
 class BatchOptions(Option):
     """The batch settings for postprocessing."""
 
@@ -757,6 +782,11 @@ class PostProcessingOptions(Option):
         default_factory=ConfoundOptions, metadata={"required": True}
     )
     """Options related to the outputted confounds file."""
+
+    stats_options: StatsOptions = field(
+        default_factory=StatsOptions, metadata={"required": False}
+    )
+    """Options for computing statistics from postprocessing results."""
 
     batch_options: BatchOptions = field(
         default_factory=BatchOptions, metadata={"required": True}

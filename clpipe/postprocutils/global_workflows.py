@@ -2,6 +2,7 @@ import os
 
 from nipype.interfaces.utility import Function, IdentityInterface
 import nipype.pipeline.engine as pe
+from nipype.interfaces.afni import Undump, ROIStats
 
 from .utils import get_scrub_vector_node, logical_or_across_lists, expand_scrub_dict
 from .image_workflows import (
@@ -10,8 +11,13 @@ from .image_workflows import (
     STEP_SCRUB_TIMEPOINTS,
 )
 from .confounds_workflows import build_confounds_processing_workflow
-from ..utils import get_logger
+from ..utils import get_logger, get_atlas_info
 from ..config.options import PostProcessingOptions
+from .nodes import build_output_node
+from nipype.interfaces.io import ExportFile
+
+STEP_ROI_EXTRACT = "ROIExtract"
+STEP_SPHERE_EXTRACT = "sphere_extract"
 
 
 def build_postprocessing_wf(
@@ -22,6 +28,7 @@ def build_postprocessing_wf(
     image_export_path: os.PathLike = None,
     confounds_file: os.PathLike = None,
     confounds_export_path: os.PathLike = None,
+    roi_export_path: os.PathLike = None,
     mask_file: os.PathLike = None,
     mixing_file: os.PathLike = None,
     noise_file: os.PathLike = None,
@@ -104,6 +111,23 @@ def build_postprocessing_wf(
                 image_wf,
                 "inputnode.confounds_file",
             )
+        
+        if processing_options.stats_options.roi_extract.include:
+            coordinates_file,_,_= get_atlas_info(processing_options.stats_options.roi_extract.atlas)
+
+            roi_extract_wf = build_sphere_extract_workflow(
+                processing_options,
+                coordinates_file=coordinates_file,
+                export_path=roi_export_path,
+                sphere_radius=processing_options.stats_options.roi_extract.sphere_radius,
+                mask_file=mask_file,
+                base_dir=base_dir,
+                crashdump_dir=crashdump_dir,
+            )
+            postproc_wf.connect(
+                image_wf, "outputnode.out_file", roi_extract_wf, "inputnode.in_file"
+            )
+            # Somehow input where the ROI output file is supposed to go
 
     # Setup outputs
     postproc_wf.connect(image_wf, "outputnode.out_file", output_node, "out_file")
@@ -130,6 +154,7 @@ def build_postprocessing_wf(
                 confounds_wf,
                 "inputnode.scrub_vector",
             )
+        
 
     return postproc_wf
 
@@ -221,3 +246,137 @@ def build_multiple_scrubbing_workflow(
     mult_scrub_wf.connect(reduce_node, "or_result", output_node, "out_file")
 
     return mult_scrub_wf
+
+
+def build_sphere_extract_workflow(
+    in_file: os.PathLike = None,
+    out_file: os.PathLike = None,
+    export_path: os.PathLike = None,
+    coordinates_file: os.PathLike = None,
+    sphere_radius: int = None,
+    mask_file: os.PathLike = None,
+    base_dir: os.PathLike = None,
+    crashdump_dir: os.PathLike = None
+):
+    workflow = pe.Workflow(name=STEP_SPHERE_EXTRACT, base_dir=base_dir)
+    if crashdump_dir is not None:
+        workflow.config["execution"]["crashdump_dir"] = crashdump_dir
+
+    # Setup identity (pass through) input/output nodes
+    input_node = pe.Node(
+        IdentityInterface(
+            fields=["in_file", "out_file", "coordinates_file", "sphere_radius", "mask_file"],
+            mandatory_inputs=False,
+        ),
+        name="inputnode",
+    )
+    output_node = build_output_node()
+
+    if in_file:
+        input_node.inputs.in_file = in_file
+    if out_file:
+        input_node.inputs.out_file = out_file
+    if coordinates_file:
+        input_node.inputs.coordinates_file = coordinates_file
+    if sphere_radius:
+        input_node.inputs.sphere_radius = sphere_radius
+    if mask_file:
+        input_node.inputs.mask_file = mask_file
+
+    from .nodes import UndumpFixed
+    undump_node = pe.Node(
+        UndumpFixed(out_file="sphere_mask.nii.gz", coordinates_specification="xyz"), name="undump"
+    )
+
+    index_node = pe.Node(
+        Function(
+            input_names=["coordinates_file"],
+            output_names=["out_file"],
+            function=_index_coordinates,
+        ),
+        name="index_coordinates",
+    )
+
+    roi_stats_node = pe.Node(
+        ROIStats(nobriklab=True), name="roi_stats"
+    )
+
+    transform_node = pe.Node(
+        Function(
+            input_names=["in_file"],
+            output_names=["out_file"],
+            function=_transform_extraction,
+        ),
+        name="transform_extraction",
+    )
+
+    # Index the coordinates file
+    workflow.connect(input_node, "coordinates_file", index_node, "coordinates_file")
+
+    # Setup coordinates-based mask creation nodes
+    workflow.connect(index_node, "out_file", undump_node, "in_file")
+    workflow.connect(input_node, "in_file", undump_node, "master_file")
+    workflow.connect(input_node, "sphere_radius", undump_node, "srad")
+    workflow.connect(input_node, "mask_file", undump_node, "mask_file")
+    
+    # Setup ROIStats node
+    workflow.connect(input_node, "in_file", roi_stats_node, "in_file")
+    workflow.connect(undump_node, "out_file", roi_stats_node, "mask_file")
+    
+    # Clean-up the ROIStats output
+    workflow.connect(roi_stats_node, "out_file", transform_node, "in_file")
+    
+    workflow.connect(transform_node, "out_file", output_node, "out_file")
+
+    if export_path:
+        export_node = pe.Node(
+            ExportFile(out_file=export_path, clobber=True, check_extension=False),
+            name="export_file",
+        )
+        workflow.connect(output_node, "out_file", export_node, "in_file")
+
+    return workflow
+
+
+def _index_coordinates(coordinates_file):
+    # Imports must be in function for running as node
+    from pathlib import Path
+
+    # Load in the coordinates file. For each row in the file, add an index 1 to
+    #  n at the end of each row. Save the new file.
+
+    new_fname = f"{Path(coordinates_file).stem}_indexed.txt"
+
+    with open(coordinates_file, "r") as f:
+        data = f.readlines()
+        for i, line in enumerate(data):
+            data[i] = line.strip() + f"\t{i+1}\n"
+
+        with open(new_fname, "w") as f:
+            f.writelines(data)
+
+    return str(Path(new_fname).absolute())
+
+
+def _transform_extraction(in_file):
+    """Takes in the roi extraction file, reads it in as a tsv with pandas.
+    Drops the filename and brik columns (first two), and also outputs the file
+    as a csv."""
+
+    import pandas as pd
+    from pathlib import Path
+
+    new_fname = "roi_extraction.csv"
+
+    df = pd.read_csv(in_file, sep="\t")
+    df = df.drop(columns=["File", "Sub-brick"])
+
+    # Remove extra white space from the first row
+    df.columns = df.columns.str.strip()
+
+    df.to_csv(new_fname, index=False, sep=",")
+
+    return str(Path(new_fname).absolute())
+
+
+
