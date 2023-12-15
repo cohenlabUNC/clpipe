@@ -506,9 +506,9 @@ def test_build_postprocessing_wf_roi_extract(
     postprocessing_config.processing_steps = [
         "IntensityNormalization",
         "TemporalFiltering",
-        "SpatialSmoothing",
-        "ROIExtract",
+        "SpatialSmoothing"
     ]
+    postprocessing_config.stats_options.roi_extract.include = True
 
     wf = build_postprocessing_wf(
         postprocessing_config,

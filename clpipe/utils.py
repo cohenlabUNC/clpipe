@@ -6,6 +6,8 @@ from pathlib import Path
 
 from nipype.utils.filemanip import split_filename
 
+ATLAS_LIBRARY_PATH = "data/atlasLibrary.json"
+
 @click.command()
 @click.argument("subjects", nargs=-1, required=False, default=None)
 @click.option(
@@ -156,3 +158,37 @@ def add_file_handler(
             f"User does not have write permissions for the Log File at: {log_file}"
         )
         exit(1)
+
+
+def get_atlas_library():
+    from pkg_resources import resource_stream
+    import json
+
+    with resource_stream(__name__, ATLAS_LIBRARY_PATH) as at_lib:
+        atlas_library = json.load(at_lib)
+
+    return atlas_library
+
+
+def get_atlas_info(atlas_name):
+    atlas_library = get_atlas_library()
+
+    atlas_names = [atlas["atlas_name"] for atlas in atlas_library["Atlases"]]
+
+    if atlas_name not in atlas_names:
+        raise ValueError(
+            f"Atlas name {atlas_name} not found in atlas library. Available atlases are {atlas_names}"
+        )
+
+    index = atlas_names.index(atlas_name)
+
+    atlas_filename = atlas_library["Atlases"][index]["atlas_file"]
+    atlas_labels = atlas_library["Atlases"][index]["atlas_labels"]
+    atlas_type = atlas_library["Atlases"][index]["atlas_type"]
+
+    # Find the atlas filename path relative to the package
+    atlas_filename = os.path.join(
+        os.path.dirname(__file__), atlas_filename
+    )
+
+    return atlas_filename, atlas_labels, atlas_type
