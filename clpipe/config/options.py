@@ -602,6 +602,18 @@ class ConfoundRegression(Option):
     implementation: str = field(default="afni_3dTproject", metadata={"required": True})
     """Currently limited to "afni_3dTproject"""
 
+@dataclass
+class ROIExtract(Option):
+    """Extract ROI time series from your image. Currently only supports sphere-based ROIs"""
+
+    atlases: list = field(
+        default_factory=lambda: ["bigbrain"], metadata={"required": True}
+    )
+    """List of atlases to use. Use 'clpipe roi atlases' to show available atlases."""
+
+    sphere_radius: int = field(default=5, metadata={"required": True})
+    """Sphere radius size in mm"""
+
 
 @dataclass
 class ProcessingStepOptions(Option):
@@ -630,6 +642,9 @@ class ProcessingStepOptions(Option):
     )
     trim_timepoints: TrimTimepoints = field(
         default_factory=TrimTimepoints, metadata={"required": True}
+    )
+    roi_extraction: ROIExtract = field(
+        default_factory=ROIExtract, metadata={"required": False}
     )
 
 
