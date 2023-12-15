@@ -606,6 +606,9 @@ class ConfoundRegression(Option):
 class ROIExtract(Option):
     """Extract ROI time series from your image. Currently only supports sphere-based ROIs"""
 
+    include: bool = field(default=False, metadata={"required": True})
+    """Whether or not to include this statistic."""
+
     atlases: list = field(
         default_factory=lambda: ["bigbrain"], metadata={"required": True}
     )
@@ -613,6 +616,8 @@ class ROIExtract(Option):
 
     sphere_radius: int = field(default=5, metadata={"required": True})
     """Sphere radius size in mm"""
+
+    
 
 
 @dataclass
@@ -642,9 +647,6 @@ class ProcessingStepOptions(Option):
     )
     trim_timepoints: TrimTimepoints = field(
         default_factory=TrimTimepoints, metadata={"required": True}
-    )
-    roi_extraction: ROIExtract = field(
-        default_factory=ROIExtract, metadata={"required": False}
     )
 
 
@@ -699,6 +701,16 @@ class ConfoundOptions(Option):
         default_factory=MotionOutliers, metadata={"required": True}
     )
     """Options specific to motion outliers."""
+
+
+@dataclass
+class StatsOptions(Option):
+    """Options for computing statistics from postprocessing results."""
+
+    roi_extract: ROIExtract = field(
+        default_factory=ROIExtract, metadata={"required": True}
+    )
+    """Extract ROI time series from your image."""
 
 
 @dataclass
@@ -772,6 +784,11 @@ class PostProcessingOptions(Option):
         default_factory=ConfoundOptions, metadata={"required": True}
     )
     """Options related to the outputted confounds file."""
+
+    stats_options: StatsOptions = field(
+        default_factory=StatsOptions, metadata={"required": False}
+    )
+    """Options for computing statistics from postprocessing results."""
 
     batch_options: BatchOptions = field(
         default_factory=BatchOptions, metadata={"required": True}
