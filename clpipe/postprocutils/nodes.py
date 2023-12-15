@@ -196,3 +196,28 @@ class ImageSlice(BaseInterface):
         outputs["out_file"] = os.path.abspath(self.new_file)
 
         return outputs
+
+
+from nipype.interfaces.afni import Undump
+from nipype.interfaces.afni.utils import UndumpInputSpec
+
+class UndumpInputSpecFixed(UndumpInputSpec):
+    in_file = File(
+        desc="The input file(s) are ASCII files, with one voxel specification per line.",
+        argstr="%s",
+        position=-1,
+        mandatory=True,
+        exists=True,
+        copyfile=False,
+    )
+    master_file = File(
+        desc="The master dataset, whose geometry will determine the geometry of the output",
+        argstr="-master %s",
+        mandatory=True,
+        exists=True,
+        copyfile=False,
+    )
+
+
+class UndumpFixed(Undump):
+    input_spec = UndumpInputSpecFixed

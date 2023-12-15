@@ -528,3 +528,29 @@ def test_scrubbing_wf_aroma(artifact_dir, sample_melodic_mixing, request, helper
         crashdump_dir=test_path,
     )
     wf.run()
+
+#3dUndump -master /proj/mnhallqlab/studies/momentum/clpipe/data_BIDS/sub-p2/anat/sub-p2_T1w.nii.gz -srad 5 -prefix spheres.nii specs.txt
+def test_build_sphere_extract_wf(
+    artifact_dir,
+    sample_raw_image,
+    sample_raw_image_mask,
+    sample_roi_coordinates,
+    request,
+    helpers,
+):
+    test_path = helpers.create_test_dir(artifact_dir, request.node.name)
+
+    sphere_extract_path = test_path / "sphere_extract.nii.gz"
+
+    wf = build_sphere_extract_workflow(
+        in_file=sample_roi_coordinates,
+        out_file=sphere_extract_path,
+        mask_file=sample_raw_image_mask,
+        sphere_radius=5,
+        master_file=sample_raw_image,
+        base_dir=test_path,
+        crashdump_dir=test_path,
+    )
+    wf.run()
+
+    helpers.plot_3D_img(sphere_extract_path, "sphere_extract.png")

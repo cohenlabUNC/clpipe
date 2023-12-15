@@ -73,6 +73,13 @@ class Helpers:
         plotting.plot_img(image_slice, output_file=plot_path)
 
     @staticmethod
+    def plot_3D_img(image_path: Path, png_name: str):
+        image = load_img(str(image_path))
+
+        plot_path = image_path.parent / png_name
+        plotting.plot_img(image, output_file=plot_path)
+
+    @staticmethod
     def plot_timeseries(
         image_path: Path,
         base_image_path: Path,
@@ -245,6 +252,11 @@ def sample_melodic_mixing() -> Path:
 @pytest.fixture(scope="session")
 def sample_aroma_noise_ics() -> Path:
     return Path("tests/data/AROMAnoiseICs.csv").resolve()
+
+
+@pytest.fixture(scope="session")
+def sample_roi_coordinates() -> Path:
+    return Path("tests/data/roi_coordinates.txt").resolve()
 
 
 @pytest.fixture(scope="session")
