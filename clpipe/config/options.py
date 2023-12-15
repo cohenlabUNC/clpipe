@@ -609,7 +609,7 @@ class ROIExtract(Option):
     include: bool = field(default=False, metadata={"required": True})
     """Whether or not to include this statistic."""
 
-    atlas: str = field(default="bigbrain", metadata={"required": True})
+    atlas: str = field(default="seitzman", metadata={"required": True})
     """Atlas to use. Use 'clpipe roi atlases' to show available atlases."""
 
     sphere_radius: int = field(default=5, metadata={"required": True})
