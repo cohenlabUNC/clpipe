@@ -1204,6 +1204,7 @@ KEY_MAP = {
     "processing_stream_options": "ProcessingStreamOptions",
     "postprocessing_options": "PostProcessingOptions",
     "processing_stream": "processing_stream",
+    "stats_options": "StatsOptions",
 }
 
 BATCH_KEY_MAP = {
