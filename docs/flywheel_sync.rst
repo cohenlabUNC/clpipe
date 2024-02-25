@@ -7,7 +7,9 @@ Overview
 *****************
 
 clpipe now provides an avenue for syncing DICOM data with a remote source through
-the ``clpipe flywheel_sync`` command.
+the ``clpipe flywheel_sync`` command. Flywheel is used by many research institutions
+and scan centers to upload the DICOMs collected in each scan session. Researchers can 
+then download them, including through the ``clpipe flywheel_sync`` command.
 
 *****************
 Setup
@@ -62,6 +64,8 @@ as opposed to just appending to them.
 The options above add the ``-d 9`` option, setting dcm2niix's search depth to the maximum
 value.
 
+For more information on the options dcm2niix offers, please visit `their documentation page <https://www.nitrc.org/plugins/mwiki/index.php/dcm2nii:MainPage>`_.
+
 heudiconv
 *****************
 
@@ -78,6 +82,9 @@ This command creates its own log folder at ``<project>/logs/sync_logs``
 One quirk of Flywheel's sync command is that it creates a strangely named temporary directory at
 the currently working directory, which is empty after the sync is finished. clpipe
 removes this folder automatically.
+
+Note that if you are not using flywheel_sync and are downloading DICOMs directly from 
+Flywheel or another platform, you will need to unzip the DICOMs before proceeding to BIDS conversion.
 
 *****************
 Configuration
@@ -108,3 +115,47 @@ Command
 .. click:: clpipe.cli:flywheel_sync_cli
 	:prog: clpipe flywheel_sync
 	:nested: full
+
+
+*****************
+Using clpipe flywheel_sync
+*****************
+
+When using the flywheel_sync command, be aware that it will sync all the DICOMs in the 
+specified Flywheel project rather than a specific participant. It will be able to pick 
+up on whether you already have a subject and all their DICOMs in the specified dropoff 
+directory you give it; if that's the case, it will skip downloading that subject's 
+DICOMs again.
+
+If you would like to run flywheel sync routinely, you can submit a slurm job using 
+sbatch that queues it to be run regularly. For example, the script below regularly 
+runs flywheel sync every week.
+
+.. code-block :: RST
+
+    #!/bin/bash
+    #SBATCH --mem=8G
+    #SBATCH --output=/proj/hng/study/clpipe/scripts/pipeline/logs/flywheel_weekly_ingestion_unc/%j_%a.out
+    #SBATCH --mail-type=BEGIN,END,FAIL
+    #SBATCH --mail-user=example_user@unc.edu
+    #SBATCH --time=5:00:00
+
+    module add clpipe
+
+    clpipe flywheel_sync -c /proj/hng/study/clpipe/clpipe_config.json -debug -submit
+
+    sleep 5
+
+    # Queue this script to run again next week
+    sbatch --begin=now+1week /proj/hng/study/clpipe/scripts/pipeline/flywheel_weekly_ingestion_unc
+
+To submit the script above as a slurm job, run sbatch flywheel_weekly_ingestion_unc in 
+the terminal. Note that flywheel_weekly_ingestion is the name of the script.
+
+Be aware that in the script above, the job will be run each week on the day and time 
+that you first submit it. For example, if you submit the job at 2:00pm on Wednesday, 
+next week's job will also run at 2:00pm on Wednesday of the following week.
+
+Submitting slurm jobs may be different depending on your research institution, so it 
+is recommended that you make sure there are no differences in the script above's slurm 
+specifications and the standards for your own institution.

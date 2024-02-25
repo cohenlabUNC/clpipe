@@ -21,11 +21,11 @@ Let's examine this data:
 ```
 dcm_qa_nih/In/
 ├── 20180918GE
-│   ├── mr_0004
-│   ├── mr_0005
-│   ├── mr_0006
-│   ├── mr_0007
-│   └── README-Study.txt
+│   ├── mr_0004
+│   ├── mr_0005
+│   ├── mr_0006
+│   ├── mr_0007
+│   └── README-Study.txt
 └── 20180918Si
  ├── mr_0003
  ├── mr_0004
@@ -93,19 +93,8 @@ The conversion file contains a list of descriptions, each of which attempts to m
 
 The "critera" item gives a list of critera by which to match DICOM images. The other tags specify the format of the output NIfTI image that match this critera. "dataType" and "modalityLabel" configure the name of your output
 
-More information on setting up clpipe for BIDS conversion can be found in the [clpipe documentation](https://clpipe.readthedocs.io/en/latest/dicom2bids.html#).
+More information on setting up clpipe for BIDS conversion can be found in the [clpipe documentation](https://clpipe.readthedocs.io/en/latest/bids_convert.html).
 
-!!!!!!!!!!!!!!!!!!!!!!!!
-!!!!!!!!!!!!!!!!!!
-!!!!!!!!!!!!
-!!!!!!
-
-#TODO THIS LINK DOESN'T WORK RIGHT NOW
-
-!!!!!!
-!!!!!!!!!!!!
-!!!!!!!!!!!!!!!!!!
-!!!!!!!!!!!!!!!!!!!!!!!!
 
 ## Setting up the Conversion File
 From here, follow the [Dcm2Bids tutorial](https://unfmontreal.github.io/Dcm2Bids/3.0.2/tutorial/first-steps/#setting-up-the-configuration-file) and stop before the "Running dcm2bids" section - clpipe will handling running dcm2bids for you. The helper command `dcm2bids_helper` will be available to you via the clpipe installation, and should be used as indicated in the tutorial to help you get started. You should also skip the "Building the configuration file" step because, as shown above, clpipe has already created this file.
