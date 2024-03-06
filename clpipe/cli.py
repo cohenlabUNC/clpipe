@@ -863,7 +863,7 @@ def fsl_onset_extract_cli(config_file, glm_config_file, debug):
 )
 @click.option(
     "-custom_type",
-    help="What type of atlas? (label, maps, or spheres). Not needed if specified in config.",
+    help="What type of atlas? (label, maps, or sphere). Not needed if specified in config.",
 )
 @click.option(
     "-sphere_radius",

@@ -93,7 +93,7 @@ def fmri_roi_extraction(
     batch_manager = JobManagerFactory.get(
         batch_config=config.batch_config_path,
         output_directory=config.roi_extraction.log_directory,
-        mem_use=config.roi_extraction.time_usage,
+        mem_use=config.roi_extraction.memory_usage,
         time=config.roi_extraction.time_usage,
         threads=config.roi_extraction.n_threads,
         email=config.email_address

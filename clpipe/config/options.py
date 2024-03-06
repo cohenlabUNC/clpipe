@@ -306,7 +306,17 @@ class BatchManagerConfig(Option):
         if config_type not in defaults:
             raise ValueError(f"Config Type {config_type} does not exist.")
         return cls(**defaults.get(config_type, {}))
+    
+    @classmethod
+    def transform_dict(cls, config_dict: dict) -> dict:
+        """If any value in config_dict is a key in BATCH_KEY_MAP, replace it with the
+        key value"""
 
+        for key, value in BATCH_KEY_MAP.items():
+            if key in config_dict:
+                config_dict[value] = config_dict.pop(key)
+
+        return config_dict
 
 @dataclass
 class Convert2BIDSOptions(Option):
@@ -1194,4 +1204,29 @@ KEY_MAP = {
     "processing_stream_options": "ProcessingStreamOptions",
     "postprocessing_options": "PostProcessingOptions",
     "processing_stream": "processing_stream",
+    "stats_options": "StatsOptions",
+}
+
+BATCH_KEY_MAP = {
+    "SubmissionHead": "submission_head",
+    "SubmissionOptions": "submission_options",
+    "SubOptionsEqual": "sub_options_equal",
+    "NThreadsCommand": "n_threads_command",
+    "NThreads": "n_threads_default",
+    "MemoryCommand": "memory_command",
+    "MemoryDefault": "memory_default",
+    "TimeCommand": "time_command",
+    "TimeDefault": "time_default",
+    "JobIDCommand": "job_id_command",
+    "OutputCommand": "output_command",
+    "CommandWrapper": "command_wrapper",
+    "EmailAddress": "email_address_default",
+    "EmailCommand": "email_command",
+    "FMRIPrepBatchCommands": "fmri_prep_batch_commands",
+    "NoQuotes": "no_quotes",
+    "TimeCommandActive": "time_command_active",
+    "ThreadCommandActive": "thread_command_active",
+    "JobIDCommandActive": "job_id_command_active",
+    "OutputCommandActive": "output_command_active",
+    "SingularityBindPaths": "singularity_bind_paths"
 }

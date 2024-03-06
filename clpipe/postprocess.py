@@ -238,9 +238,9 @@ def postprocess_subject(
         batch_manager = JobManagerFactory.get(
             batch_config=run_config.batch_config_file,
             output_directory=subject_slurm_log_dir,
-            mem_use=2000,
-            threads=1,
-            time="0:30:0",
+            mem_use=run_config.options.batch_options.memory_usage,
+            threads=run_config.options.batch_options.n_threads,
+            time=run_config.options.batch_options.time_usage,
             email=run_config.email_address
         )
 

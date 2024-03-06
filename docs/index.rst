@@ -3,7 +3,7 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to clpipe: A MRI Processing Pipeline for high performance clusters!
+Welcome to clpipe: An MRI Processing Pipeline for high performance clusters!
 ===========================================================================
 
 .. image:: https://zenodo.org/badge/165096390.svg

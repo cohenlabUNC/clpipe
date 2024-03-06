@@ -112,7 +112,7 @@ class BatchJobManager(JobManager):
             )
         if self.config.email:
             head.append(
-                self.config.email.format(
+                self.config.email_command.format(
                     email=self.config.email
                 )
             )
