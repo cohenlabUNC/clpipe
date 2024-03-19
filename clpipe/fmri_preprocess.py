@@ -163,7 +163,7 @@ def fmriprep_process(
     threads_arg = ""
     if thread_command_active:
         logger.debug("Threads command: ACTIVE")
-        threads_arg = f"{N_THREADS_FLAG} " + batch_manager.config.n_threads_default
+        threads_arg = f"{N_THREADS_FLAG} " + config.fmriprep.n_threads
 
     fmriprep_args = {
         "bids_dir": config.fmriprep.bids_directory,

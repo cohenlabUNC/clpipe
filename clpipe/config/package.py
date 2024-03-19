@@ -1,5 +1,5 @@
 PACKAGE_NAME = "clpipe"
-VERSION = "1.9.2"
+VERSION = "1.9.1.5"
 
 DESCRIPTION = "clpipe: MRI processing pipeline for high performance clusters"
 REPO_URL = "https://github.com/cohenlabUNC/clpipe"
