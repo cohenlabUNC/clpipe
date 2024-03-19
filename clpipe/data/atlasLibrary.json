@@ -111,6 +111,13 @@
       "atlas_labels": "data/atlases/seitzman/ROI_Information_Seitzman.csv",
       "atlas_type": "sphere",
       "atlas_citation": "https://doi.org/10.1016/j.neuroimage.2019.116290"
+    },
+    {
+      "atlas_name": "mni_mask_nlin_asym",
+      "atlas_file": "clpipe/data/atlases/mni/mni_icbm152_t1_tal_nlin_asym_09c.nii",
+      "atlas_labels": "???",
+      "atlas_type": "???",
+      "atlas_citation": "???"
     }
   ]
 }
