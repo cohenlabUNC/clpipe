@@ -545,7 +545,7 @@ def postprocess_cli(
 @click.argument("subject_working_dir", type=CLICK_DIR_TYPE)
 @click.argument("subject_log_dir", type=CLICK_DIR_TYPE)
 @click.option("-debug", is_flag=True, default=False, help=DEBUG_HELP)
-@click.option("--fmriprep_mask", is_flag=True, default=False, help="Add description here.")
+@click.option("--subject_mask", is_flag=True, default=False, help="Add description here.")
 @click.option("--no_mask", is_flag=True, default=False, help="Add description here.")
 def postprocess_image_cli(
     run_config_file,
@@ -554,7 +554,7 @@ def postprocess_image_cli(
     subject_working_dir,
     subject_log_dir,
     debug,
-    use_fmriprep_mask,
+    subject_mask,
     no_mask,
 ):
     """Used to distribute postprocessing jobs for individual images.
@@ -569,7 +569,7 @@ def postprocess_image_cli(
         subject_working_dir,
         subject_log_dir,
         debug=debug,
-        use_fmriprep_mask=use_fmriprep_mask,
+        subject_mask=subject_mask,
         no_mask=no_mask,
     )
 
