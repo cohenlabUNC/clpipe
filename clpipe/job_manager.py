@@ -97,7 +97,7 @@ class BatchJobManager(JobManager):
         if self.config.thread_command_active:
             head.append(
                 self.config.n_threads_command.format(
-                    nthreads=self.config.n_threads_default
+                    nthreads=self.config.threads
                 )
             )
         if self.config.job_id_command_active:
