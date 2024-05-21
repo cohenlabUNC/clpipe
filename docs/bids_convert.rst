@@ -161,7 +161,7 @@ to update the conversion configuration file.
 heudiconv configuration
 #################
 
-`heudiconv <https://heudiconv.readthedocs.io/en/latest/usage.html>`_ is another tool for converting
+`heudiconv <https://heudiconv.readthedocs.io/en/latest/index.html>`_ is another tool for converting
 DICOM files to BIDS format. This tool is a bit trickier to use than dcm2bids, because
 its configuration is driven by a python file instead of json. However, it allows for
 more control over conversion than what dcm2bids can provide, allowing you to handle
