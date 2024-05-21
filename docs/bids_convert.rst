@@ -199,7 +199,7 @@ To use heudiconv, provide a heuristic file as your conversion config file:
 		"ConversionConfig": "...<clpipe_project>/heuristic.py",
 		"DICOMFormatString": "{subject}",
 
-And when running convert2bids, include the `-heudiconv` flag:
+If running convert2bids on a clpipe version that is older than 1.9.1, include the `-heudiconv` flag:
 
 .. code-block:: console
 
@@ -213,15 +213,14 @@ Command
 .. click:: clpipe.cli:convert2bids_cli
 	:prog: clpipe convert2bids
 
-
 *****************
 clpipe convert2bids example
 *****************
 
-If you want to convert all the subjects in your DICOM directory, you would use the command
- ``clpipe -config_file clpipe_config.json -submit``. Note that your clpipe conifguration file 
- will contain your study’s input DICOM directory, output BIDS directory, conversion 
- configuration file path, and dicom format string. 
+If you want to convert all the subjects in your DICOM directory, you would use the command 
+``clpipe -config_file clpipe_config.json -submit``. Note that your clpipe configuration file
+will contain your study's input DICOM directory, output BIDS directory, conversion
+configuration file path, and dicom format string. 
 
 If you want to convert subject 005 specifically, you would use the command ``clpipe 
 -config_file clpipe_config.json 005 -submit``.
