@@ -23,8 +23,15 @@ format. This simplifies and organizes your neuroimaging data by scan and scan ty
 data is in BIDS format, the data will be sorted by subject, then session (if applicable), 
 then data type (e.g., anatomical, functional, fieldmap).
 
+
+***************************************
 BIDS File Format and Naming Conventions
-#################
+***************************************
+
+**BIDS**
+
+`BIDS <https://bids.neuroimaging.io/>`_ is a Brain Imaging Data Structure that has imbedded 
+in its data information about neuroimaging and behavior. 
 
 Each file name contains a chain of `key-value pairs <https://bids-specification.readthedocs.io/en/stable/appendices/entity-table.html>`_ in a specified order, and each key-value 
 pair is separated by underscores. For example, the NifTI file for the second run of subject 
@@ -39,6 +46,8 @@ The files you may have after BIDS conversion include:
     * May be accompanied by a .json data dictionary
 * Key/value files (dictionaries): JavaScript Object Notation (.json) files
     * DICOM metadata is extracted into sidecar .json files
+    * The File Meta Information that is stored in a .json file includes the repetition time, temporal resolution, and task name.
+
 
 Note that BIDS does not like empty, extra, and unformatted files! If you have any scans that
 are not included in your conversion configuration file, BIDS conversion may fail.
@@ -111,6 +120,10 @@ for further help.
 
 .. image:: resources/bids_convert_config.png
 
+
+`Note:` the scan types you want to pull information from are specific to your study protocol 
+(e.g., you may have runs of a task that are collected in opposite directions and want to process them separately)
+
 If using the flywheel_sync command to download your DICOMs, be aware that Flywheel 
 creates a DICOM folder structure that is too deep for the default depth setting of 
 dcm2niix, which both dcm2bids and heudiconv use to discover DICOM files in your source 
@@ -157,6 +170,22 @@ This command will create convert an entire folder's data,
 create a temporary directory containing all the converted files, 
 and, more importantly, the sidecar JSONs. These JSONs contain the information needed 
 to update the conversion configuration file.
+
+Open each sidecar JSON inside ./temp/tmp_dcm2bids/helper/ and pull out all the necessary 
+information to fill in the conversion_config.json
+
+`Note:` sidecar .json files are .json files for each NIfTI image file - they contain the
+
+header information from the dicoms (and anything else you add during the conversion to BIDS).
+
+.. image:: resources/conv_config_json_details.png
+
+`Note:` the scan types you want to pull information from are specific to your study protocol (e.g., you may have runs of a task that are collected in opposite directions and want to process them separately)
+
+`Note:` if your scan protocol is setup to generate normalized structural scans (aka a bias field correction for coil sensitivity inhomogeneity)
+
+You likely want to include “NORM” for structural scans to pull the normalized structural scan
+
 
 heudiconv configuration
 #################
@@ -216,6 +245,17 @@ Command
 *****************
 clpipe convert2bids example
 *****************
+
+Notes
+---------------------
+
+1. clpipe_config.json points to the conversion_config.json file so we don't have to specify that file as well.
+
+2. If in your study you want to treat one scan as both a bold and a fmap for another scan (e.g., if you collect a task in two acquisition directions),
+you need to create two conversion_config.json files. Then you will need to edit clpipe_config.json before each convert2bids 
+so that both conversion files are run on your DICOMs. The two conversion files' outputs will not overwrite each other, simply add additional files.
+
+3. This function will NOT override any data; use the flag -overwrite if you want to overwrite existing files (be careful with overwriting data!).
 
 If you want to convert all the subjects in your DICOM directory, you would use the command 
 ``clpipe -config_file clpipe_config.json -submit``. Note that your clpipe configuration file
