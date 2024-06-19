@@ -57,8 +57,6 @@ SUBJECT_LOG_DIR = "distributor"
 """Where to save batch files, within the postprocessing log folder, for subject-level batch logs"""
 RUN_CONFIG_FILE_NAME = "run_config.json"
 
-ATLAS_LIBRARY_PATH = "data/atlasLibrary.json"
-
 
 def postprocess_subjects(
     subjects=None,
@@ -347,7 +345,7 @@ def postprocess_image(
     subject_log_dir: os.PathLike,
     confounds_only=False,
     debug=False,
-    use_fmriprep_mask=False,
+    subject_mask=False,
     no_mask=False
 ):
     """
@@ -413,11 +411,13 @@ def postprocess_image(
 
     if no_mask:
         mask_image = None
-    elif use_fmriprep_mask:
+    elif subject_mask:
         # Get the fmriprep-generated mask if user opts out of mni-mask
         mask_image = get_mask(bids, query_params, logger)
     else:
-        mask_image = _get_mni_mask_path(ATLAS_LIBRARY_PATH)
+        from templateflow import api as tf
+        mask_image = tf.get('MNI152NLin2009cAsym', suffix='T1w')[3]
+
 
     # Search for this subject's files necessary for processing
     tr = get_tr(bids, query_params, logger)
