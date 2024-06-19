@@ -609,10 +609,8 @@ class ROIExtract(Option):
     include: bool = field(default=False, metadata={"required": True})
     """Whether or not to include this statistic."""
 
-    atlases: list = field(
-        default_factory=lambda: ["bigbrain"], metadata={"required": True}
-    )
-    """List of atlases to use. Use 'clpipe roi atlases' to show available atlases."""
+    atlas: str = field(default="bigbrain", metadata={"required": True})
+    """Atlas to use. Use 'clpipe roi atlases' to show available atlases."""
 
     sphere_radius: int = field(default=5, metadata={"required": True})
     """Sphere radius size in mm"""

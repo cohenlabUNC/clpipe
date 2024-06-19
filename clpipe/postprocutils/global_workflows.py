@@ -11,12 +11,12 @@ from .image_workflows import (
     STEP_SCRUB_TIMEPOINTS,
 )
 from .confounds_workflows import build_confounds_processing_workflow
-from ..utils import get_logger
+from ..utils import get_logger, get_atlas_info
 from ..config.options import PostProcessingOptions
 from .nodes import build_output_node
 
 STEP_ROI_EXTRACT = "ROIExtract"
-STEP_SPHERE_EXTRACT = "SphereExtract"
+STEP_SPHERE_EXTRACT = "sphere_extract"
 
 
 def build_postprocessing_wf(
@@ -109,6 +109,22 @@ def build_postprocessing_wf(
                 image_wf,
                 "inputnode.confounds_file",
             )
+        
+        if processing_options.stats_options.roi_extract.include:
+            coordinates_file,_,_= get_atlas_info(processing_options.stats_options.roi_extract.atlas)
+
+            roi_extract_wf = build_sphere_extract_workflow(
+                processing_options,
+                coordinates_file=coordinates_file,
+                sphere_radius=processing_options.stats_options.roi_extract.sphere_radius,
+                mask_file=mask_file,
+                base_dir=base_dir,
+                crashdump_dir=crashdump_dir,
+            )
+            postproc_wf.connect(
+                image_wf, "outputnode.out_file", roi_extract_wf, "inputnode.in_file"
+            )
+            # Somehow input where the ROI output file is supposed to go
 
     # Setup outputs
     postproc_wf.connect(image_wf, "outputnode.out_file", output_node, "out_file")
@@ -135,6 +151,7 @@ def build_postprocessing_wf(
                 confounds_wf,
                 "inputnode.scrub_vector",
             )
+        
 
     return postproc_wf
 
@@ -244,7 +261,7 @@ def build_sphere_extract_workflow(
     # Setup identity (pass through) input/output nodes
     input_node = pe.Node(
         IdentityInterface(
-            fields=["in_file", "out_file", "master_file", "sphere_radius", "mask_file"],
+            fields=["in_file", "out_file", "coordinates_file", "sphere_radius", "mask_file"],
             mandatory_inputs=False,
         ),
         name="inputnode",
@@ -262,9 +279,9 @@ def build_sphere_extract_workflow(
     if mask_file:
         input_node.inputs.mask_file = mask_file
 
-    
+    from .nodes import UndumpFixed
     undump_node = pe.Node(
-        Undump(out_file="sphere_mask.nii.gz", coordinates_specification="xyz"), name="undump"
+        UndumpFixed(out_file="sphere_mask.nii.gz", coordinates_specification="xyz"), name="undump"
     )
 
     index_node = pe.Node(
@@ -318,3 +335,6 @@ def _index_coordinates(coordinates_file):
             f.writelines(data)
 
     return str(Path(new_fname).absolute())
+
+
+
