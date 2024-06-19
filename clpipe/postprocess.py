@@ -57,6 +57,8 @@ SUBJECT_LOG_DIR = "distributor"
 """Where to save batch files, within the postprocessing log folder, for subject-level batch logs"""
 RUN_CONFIG_FILE_NAME = "run_config.json"
 
+ATLAS_LIBRARY_PATH = "data/atlasLibrary.json"
+
 
 def postprocess_subjects(
     subjects=None,
@@ -345,6 +347,8 @@ def postprocess_image(
     subject_log_dir: os.PathLike,
     confounds_only=False,
     debug=False,
+    use_fmriprep_mask=False,
+    no_mask=False
 ):
     """
     Setup the workflows specified in the postprocessing configuration.
@@ -407,8 +411,15 @@ def postprocess_image(
             logger.error(nfnfe)
             sys.exit(1)
 
+    if no_mask:
+        mask_image = None
+    elif use_fmriprep_mask:
+        # Get the fmriprep-generated mask if user opts out of mni-mask
+        mask_image = get_mask(bids, query_params, logger)
+    else:
+        mask_image = _get_mni_mask_path(ATLAS_LIBRARY_PATH)
+
     # Search for this subject's files necessary for processing
-    mask_image = get_mask(bids, query_params, logger)
     tr = get_tr(bids, query_params, logger)
     confounds_path = get_confounds(bids, non_image_query_params, logger)
 
@@ -471,6 +482,19 @@ def postprocess_image(
 
     postproc_wf.run()
     sys.exit(0)
+
+
+def _get_mni_mask_path(atlas_library: os.PathLike):
+    """Get the MNI mask path from the atlas library."""
+    # Lazy loading package
+    from pkg_resources import resource_stream
+    with resource_stream(__name__, "data/atlasLibrary.json") as at_lib:
+        atlas_library = json.load(at_lib)
+
+    for atlas in atlas_library['Atlases']:
+        if atlas['atlas_name'] == 'mni_mask_nlin_asym':  # Use the correct name for your MNI mask
+            return os.path.abspath(Path(atlas['atlas_file']))
+    return None  # Return None or raise an error if the MNI mask is not found
 
 
 def build_export_path(

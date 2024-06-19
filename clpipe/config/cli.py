@@ -28,6 +28,7 @@ PROFILE_HELP = \
     The batch profile you would like to use. Default is unc. The options
     include: "unc", "duke", "uva", "pitt"
     """
+UNC = "unc"
 
 # BIDS conversion help
 CONVERSION_COMMAND_NAME = "convert2bids"

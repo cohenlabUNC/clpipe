@@ -195,7 +195,7 @@ def _add_commands():
     "-move_source_data", is_flag=True, default=False, help=MOVE_SOURCE_DATA_HELP
 )
 @click.option("-symlink_source_data", is_flag=True, default=False, help=SYM_LINK_HELP)
-@click.option('-profile', required=False, default="unc", help=PROFILE_HELP)
+@click.option('-profile', required=False, default=UNC, help=PROFILE_HELP)
 @click.option("-debug", is_flag=True, help=DEBUG_HELP)
 def project_setup_cli(
     project_title=None,
@@ -545,6 +545,8 @@ def postprocess_cli(
 @click.argument("subject_working_dir", type=CLICK_DIR_TYPE)
 @click.argument("subject_log_dir", type=CLICK_DIR_TYPE)
 @click.option("-debug", is_flag=True, default=False, help=DEBUG_HELP)
+@click.option("--fmriprep_mask", is_flag=True, default=False, help="Add description here.")
+@click.option("--no_mask", is_flag=True, default=False, help="Add description here.")
 def postprocess_image_cli(
     run_config_file,
     image_file,
@@ -552,6 +554,8 @@ def postprocess_image_cli(
     subject_working_dir,
     subject_log_dir,
     debug,
+    use_fmriprep_mask,
+    no_mask,
 ):
     """Used to distribute postprocessing jobs for individual images.
     Not intended for direct use by user - this is called by the main postprocess
@@ -565,6 +569,8 @@ def postprocess_image_cli(
         subject_working_dir,
         subject_log_dir,
         debug=debug,
+        use_fmriprep_mask=use_fmriprep_mask,
+        no_mask=no_mask,
     )
 
 
