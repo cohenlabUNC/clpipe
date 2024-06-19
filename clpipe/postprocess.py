@@ -39,7 +39,7 @@ from .config.options import DEFAULT_PROCESSING_STREAM
 from .job_manager import JobManagerFactory
 from .postprocutils.global_workflows import build_postprocessing_wf
 from .postprocutils.utils import draw_graph
-from .utils import get_logger, resolve_fmriprep_dir
+from .utils import get_logger, resolve_fmriprep_dir, get_atlas_info
 from .errors import *
 
 STEP_NAME = "postprocess"
@@ -125,6 +125,17 @@ def postprocess_subjects(
         Path(run_config.stream_working_directory) / RUN_CONFIG_FILE_NAME
     )
     run_config.dump(stream_run_config_path)
+
+    # Save the atlas info if roi_extract is included
+    if run_config.options.stats_options.roi_extract.include:
+        _,atlas_file,_= get_atlas_info(run_config.options.stats_options.roi_extract.atlas)
+        # Copy the atlas file to the stream output directory
+        atlas_file_name = Path(atlas_file).name
+        atlas_file_out_path = Path(run_config.stream_output_directory) / atlas_file_name
+        # Copy using shutil
+        import shutil
+        shutil.copyfile(atlas_file, atlas_file_out_path)
+
 
     # Setup Logging
     logger = get_logger(STEP_NAME, debug=debug, log_dir=options.get_logs_dir())

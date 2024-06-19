@@ -191,4 +191,8 @@ def get_atlas_info(atlas_name):
         os.path.dirname(__file__), atlas_filename
     )
 
+    atlas_labels = os.path.join(
+        os.path.dirname(__file__), atlas_labels
+    )
+
     return atlas_filename, atlas_labels, atlas_type
