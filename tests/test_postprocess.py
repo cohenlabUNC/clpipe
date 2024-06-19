@@ -109,7 +109,7 @@ def test_postprocess_image(clpipe_postprocess_subjects):
             / "logs/postprocess_logs/default/sub-0",
             confounds_only=False,
             debug=False,
-            subject_mask=False,
+            subject_mask=True,
             no_mask=False,
         )
 

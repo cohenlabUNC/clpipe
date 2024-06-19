@@ -416,7 +416,7 @@ def postprocess_image(
         mask_image = get_mask(bids, query_params, logger)
     else:
         from templateflow import api as tf
-        mask_image = tf.get('MNI152NLin2009cAsym', suffix='T1w')[3]
+        mask_image = tf.get('MNI152NLin2009cAsym', suffix='brain_mask')[0]
 
 
     # Search for this subject's files necessary for processing
