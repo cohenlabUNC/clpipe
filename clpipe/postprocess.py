@@ -343,6 +343,8 @@ def postprocess_image(
 
     run_config: PostProcessingRunConfig = PostProcessingRunConfig.load(run_config_file)
 
+    roi_extract_flag = run_config.options.stats_options.roi_extract.include
+
     logger = get_logger(
         "postprocess_image",
         log_dir=subject_log_dir,
@@ -416,6 +418,7 @@ def postprocess_image(
 
     # Build the image export path
     image_export_path = None
+    roi_extract_export_path = None
     if not confounds_only:
         image_export_path = build_export_path(
             image_path,
@@ -423,6 +426,11 @@ def postprocess_image(
             run_config.target_directory,
             subject_out_dir,
         )
+
+        if roi_extract_flag:
+            # Use same path as image export path, but with, remove .nii.gz and use
+            #     the suffix '_roi_extract.csv' instead
+            roi_extract_export_path = Path(str(image_export_path).rstrip(".nii.gz") + "_roi_extract.csv")
 
     # Build the global postprocessing workflow
     postproc_wf: pe.Workflow = build_postprocessing_wf(
@@ -433,6 +441,7 @@ def postprocess_image(
         image_export_path=image_export_path,
         confounds_file=confounds_path,
         confounds_export_path=confounds_export_path,
+        roi_export_path=roi_extract_export_path,
         working_dir=subject_working_dir,
         mask_file=mask_image,
         mixing_file=mixing_file,
