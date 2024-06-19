@@ -551,6 +551,8 @@ def test_build_sphere_extract_wf(
         base_dir=test_path,
         crashdump_dir=test_path,
     )
+    wf.write_graph(dotfilename=test_path / "workflow_graph", graph2use="colored")
+
     wf.run()
 
     helpers.plot_3D_img(sphere_extract_path, "sphere_extract.png")

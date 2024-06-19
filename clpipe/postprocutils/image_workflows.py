@@ -1217,7 +1217,7 @@ def build_sphere_extract_workflow(
     # Setup identity (pass through) input/output nodes
     input_node = pe.Node(
         IdentityInterface(
-            fields=["in_file", "out_file", "coordinates_file"],
+            fields=["in_file", "out_file", "master_file", "sphere_radius", "mask_file"],
             mandatory_inputs=False,
         ),
         name="inputnode",
@@ -1240,14 +1240,16 @@ def build_sphere_extract_workflow(
         Undump(), name="undump"
     )
 
-    # stats_node = pe.Node(
-    #     None, name="stats"
+    # extract_node = pe.Node(
+    #     None, name="extract"
     # )
+    # Mean - not a sum score
+    # AFNI behavior with missing values - treats missing values as 0
+
 
     workflow.connect(input_node, "in_file", undump_node, "in_file")
     workflow.connect(input_node, "master_file", undump_node, "master_file")
     workflow.connect(input_node, "out_file", undump_node, "out_file")
-    workflow.connect(input_node, "coordinates_file", undump_node, "args")
     workflow.connect(input_node, "sphere_radius", undump_node, "srad")
     workflow.connect(input_node, "mask_file", undump_node, "mask_file")
     workflow.connect(undump_node, "out_file", output_node, "out_file")
