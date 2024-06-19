@@ -36,7 +36,8 @@ INSTALL_REQUIRES = [
       "heudiconv==0.12.2",
       "tqdm==4.65.0",
       "marshmallow-dataclass==8.5.14",
-      "PyYAML==6.0"
+      "PyYAML==6.0",
+      "niworkflows==1.10.0"
 ],
 
 PACKAGE_DATA = {"clpipe": ["R_scripts/*.R"]}

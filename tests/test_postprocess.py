@@ -89,7 +89,6 @@ def test_apply_nested_items(artifact_dir, helpers, request):
 
     options.dump(test_dir / "clpipe_config_stream_applied.json")
 
-
 def test_postprocess_image(clpipe_postprocess_subjects):
     run_config_file = (
         clpipe_postprocess_subjects / "data_working" / "default" / "run_config.json"
@@ -109,7 +108,7 @@ def test_postprocess_image(clpipe_postprocess_subjects):
             / "logs/postprocess_logs/default/sub-0",
             confounds_only=False,
             debug=False,
-            subject_mask=True,
+            subject_mask=False,
             no_mask=False,
         )
 

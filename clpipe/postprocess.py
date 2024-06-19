@@ -23,6 +23,7 @@ from .bids import (
     validate_subject_exists,
 )
 import nipype.pipeline.engine as pe
+from niworkflows.interfaces.fixes import FixHeaderApplyTransforms as ApplyTransforms
 
 # This hides a pybids future warning
 with warnings.catch_warnings():
@@ -416,7 +417,51 @@ def postprocess_image(
         mask_image = get_mask(bids, query_params, logger)
     else:
         from templateflow import api as tf
-        mask_image = tf.get('MNI152NLin2009cAsym', suffix='brain_mask')[0]
+        mni_mask_path = tf.get('MNI152NLin2009cAsym', suffix='T1w')[0]
+
+        # ApplyTransforms node to resample the mask
+        resample_mask = pe.Node(ApplyTransforms(interpolation='MultiLabel'), name='resample_mask')
+        resample_mask.inputs.input_image = str(mni_mask_path)
+        resample_mask.inputs.reference_image = str(image_path)
+        resample_mask.inputs.transforms = 'identity'
+        
+        # Set the base directory for Nipype to store the workflow's temporary files
+        resample_mask.base_dir = subject_working_dir
+
+        # Run the node
+        result = resample_mask.run()
+
+        # After running, you can access the output path
+        mask_image = result.outputs.output_image
+
+        # # Initialize a mini workflow for resampling the mask
+        # resample_wf = pe.Workflow(name="resample_mask_wf", base_dir=subject_working_dir)
+
+        # # Define the interface to grab the input image
+        # inputspec = pe.Node(pe.IdentityInterface(fields=['in_file', 'in_mask']), name='inputspec')
+        # inputspec.inputs.in_file = str(image_path)  # Your functional image
+        # inputspec.inputs.in_mask = str(mni_mask_path)  # Path to the MNI mask
+
+        # # Set up the ApplyTransforms node to resample the mask
+        # resample_mask = pe.Node(ApplyTransforms(interpolation='MultiLabel'), name='resample_mask')
+        # resample_mask.inputs.reference_image = str(image_path)
+
+        # # DataSink to save the output
+        # datasink = pe.Node(pe.DataSink(base_directory=subject_out_dir), name="datasink")
+        # datasink.inputs.container = 'resampled_mask'
+        # datasink.inputs.regexp_substitutions = [(r'_resample_mask\d*/', '')]  # Remove unnecessary folder structure
+
+        # # Connect the nodes
+        # resample_wf.connect([(inputspec, resample_mask, [('in_mask', 'input_image'),
+        #                                                  ('in_file', 'reference_image')]),
+        #                      (resample_mask, datasink, [('output_image', 'resampled_mask')])
+        #                      ])
+
+        # # Execute the workflow
+        # resample_wf.run()
+
+        # # Update mask_image with the path to the resampled mask
+        # mask_image = Path(subject_out_dir) / 'resampled_mask' / Path(mni_mask_path).name
 
 
     # Search for this subject's files necessary for processing
