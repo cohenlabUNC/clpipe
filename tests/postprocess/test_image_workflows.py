@@ -542,11 +542,11 @@ def test_build_sphere_extract_wf(
     sphere_extract_path = test_path / "sphere_extract.nii.gz"
 
     wf = build_sphere_extract_workflow(
-        in_file=sample_roi_coordinates,
+        in_file=sample_raw_image,
         out_file=sphere_extract_path,
         mask_file=sample_raw_image_mask,
         sphere_radius=5,
-        master_file=sample_raw_image,
+        coordinates_file=sample_roi_coordinates,
         base_dir=test_path,
         crashdump_dir=test_path,
     )
@@ -554,4 +554,4 @@ def test_build_sphere_extract_wf(
 
     wf.run()
 
-    helpers.plot_3D_img(sphere_extract_path, "sphere_extract.png")
+    #helpers.plot_3D_img(sphere_extract_path, "sphere_extract.png")
