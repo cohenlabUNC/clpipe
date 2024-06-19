@@ -14,6 +14,7 @@ from .confounds_workflows import build_confounds_processing_workflow
 from ..utils import get_logger, get_atlas_info
 from ..config.options import PostProcessingOptions
 from .nodes import build_output_node
+from nipype.interfaces.io import ExportFile
 
 STEP_ROI_EXTRACT = "ROIExtract"
 STEP_SPHERE_EXTRACT = "sphere_extract"
@@ -27,6 +28,7 @@ def build_postprocessing_wf(
     image_export_path: os.PathLike = None,
     confounds_file: os.PathLike = None,
     confounds_export_path: os.PathLike = None,
+    roi_export_path: os.PathLike = None,
     mask_file: os.PathLike = None,
     mixing_file: os.PathLike = None,
     noise_file: os.PathLike = None,
@@ -116,6 +118,7 @@ def build_postprocessing_wf(
             roi_extract_wf = build_sphere_extract_workflow(
                 processing_options,
                 coordinates_file=coordinates_file,
+                export_path=roi_export_path,
                 sphere_radius=processing_options.stats_options.roi_extract.sphere_radius,
                 mask_file=mask_file,
                 base_dir=base_dir,
@@ -248,6 +251,7 @@ def build_multiple_scrubbing_workflow(
 def build_sphere_extract_workflow(
     in_file: os.PathLike = None,
     out_file: os.PathLike = None,
+    export_path: os.PathLike = None,
     coordinates_file: os.PathLike = None,
     sphere_radius: int = None,
     mask_file: os.PathLike = None,
@@ -313,6 +317,13 @@ def build_sphere_extract_workflow(
     #workflow.connect(input_node, "out_file", roi_stats_node, "out_file")
 
     workflow.connect(roi_stats_node, "out_file", output_node, "out_file")
+
+    if export_path:
+        export_node = pe.Node(
+            ExportFile(out_file=export_path, clobber=True, check_extension=False),
+            name="export_file",
+        )
+        workflow.connect(output_node, "out_file", export_node, "in_file")
 
     return workflow
 
