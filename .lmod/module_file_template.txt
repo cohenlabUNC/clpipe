@@ -20,6 +20,7 @@ load("afni/20.3.00")
 load("r/4.2.1")
 load("dcm2niix/1.0.20211006")
 load("flywheel/16.19.0")
+load("ants/2.3.1")
 
 -- setup the various Python environment variables
 local root = "/proj/hng/software/venvs/clpipe/clpipe-{{ clpipe_version }}"
