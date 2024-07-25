@@ -10,6 +10,7 @@ import warnings
 import json
 import time
 from pathlib import Path
+import shutil
 
 from .bids import (
     get_bids,
@@ -44,6 +45,7 @@ from .postprocutils.global_workflows import build_postprocessing_wf
 from .postprocutils.utils import draw_graph
 from .utils import get_logger, resolve_fmriprep_dir, get_atlas_info
 from .errors import *
+
 
 STEP_NAME = "postprocess"
 PROCESSING_DESCRIPTION_FILE_NAME = "processing_description.json"
@@ -419,13 +421,25 @@ def postprocess_image(
         mni_mask_path = tf.get('MNI152NLin2009cAsym', suffix='T1w')[0]
 
         # ApplyTransforms node to resample the mask
-        resample_mask = pe.Node(ApplyTransforms(interpolation='Multilabel'), name='resample_mask')
+        resample_mask = pe.Node(ApplyTransforms(interpolation='MultiLabel'), name='resample_mask')
         resample_mask.inputs.input_image = str(mni_mask_path)
         resample_mask.inputs.reference_image = str(image_path)
         resample_mask.inputs.transforms = ['identity']  # Set the transform to identity
         
         # Set the base directory for Nipype to store the workflow's temporary files
         resample_mask.base_dir = subject_working_dir
+
+        # Generate a unique name for the mask image
+        subject_id = query_params.get("subject", "unknown_subject")
+        session_id = query_params.get("session", "unknown_session")
+        task_id = query_params.get("task", "unknown_task")
+        run_id = query_params.get("run", "unknown_run")
+
+        mask_image_name = f"mask_{subject_id}_{session_id}_{task_id}_{run_id}.nii.gz"
+        mask_image_path = Path(subject_working_dir) / mask_image_name
+
+        # Move the resampled mask to the desired path
+        shutil.move(str(result.outputs.output_image), str(mask_image_path))
 
         # Run the node
         result = resample_mask.run()
