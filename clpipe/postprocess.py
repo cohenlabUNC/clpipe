@@ -10,7 +10,7 @@ import warnings
 import json
 import time
 from pathlib import Path
-import shutil
+
 
 from .bids import (
     get_bids,
@@ -429,6 +429,9 @@ def postprocess_image(
         # Set the base directory for Nipype to store the workflow's temporary files
         resample_mask.base_dir = subject_working_dir
 
+        # Run the node
+        result = resample_mask.run()
+
         # Generate a unique name for the mask image
         subject_id = query_params.get("subject", "unknown_subject")
         session_id = query_params.get("session", "unknown_session")
@@ -438,17 +441,14 @@ def postprocess_image(
         mask_image_name = f"mask_{subject_id}_{session_id}_{task_id}_{run_id}.nii.gz"
         mask_image_path = Path(subject_working_dir) / mask_image_name
 
+        # Lazy load shutil
+        import shutil
+
         # Move the resampled mask to the desired path
         shutil.move(str(result.outputs.output_image), str(mask_image_path))
 
-        # Run the node
-        result = resample_mask.run()
-
         # After running, you can access the output path
         mask_image = Path(result.outputs.output_image)
-        
-        if not mask_image.exists():
-            raise FileNotFoundError(f"The resampled mask file does not exist: {mask_image}")
 
     # Ensure the mask_image exists
     if not mask_image.exists():
