@@ -432,23 +432,30 @@ def postprocess_image(
         # Run the node
         result = resample_mask.run()
 
-        # Generate a unique name for the mask image
+        # After running, you can access the output path
+        mask_image = Path(result.outputs.output_image)
+
+        # Generate a unique name for the mask image using subject and other identifiers
         subject_id = query_params.get("subject", "unknown_subject")
         session_id = query_params.get("session", "unknown_session")
         task_id = query_params.get("task", "unknown_task")
         run_id = query_params.get("run", "unknown_run")
 
-        mask_image_name = f"mask_{subject_id}_{session_id}_{task_id}_{run_id}.nii.gz"
-        mask_image_path = Path(subject_working_dir) / mask_image_name
+        # Construct a unique mask image filename
+        new_mask_image_name = f"mask_{subject_id}_{session_id}_{task_id}_{run_id}.nii.gz"
+        new_mask_image_path = Path(subject_working_dir) / new_mask_image_name
 
-        # Lazy load shutil
         import shutil
 
-        # Move the resampled mask to the desired path
-        shutil.move(str(result.outputs.output_image), str(mask_image_path))
+        # Move the resampled mask to the new path with a specific name
+        shutil.move(str(mask_image), str(new_mask_image_path))
 
-        # After running, you can access the output path
-        mask_image = Path(result.outputs.output_image)
+        # Update mask_image to point to the new path
+        mask_image = new_mask_image_path
+
+        
+        if not mask_image.exists():
+            raise FileNotFoundError(f"The resampled mask file does not exist: {mask_image}")
 
     # Ensure the mask_image exists
     if not mask_image.exists():
