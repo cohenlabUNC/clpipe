@@ -528,11 +528,6 @@ def build_SUSAN_workflow(
     if crashdump_dir is not None:
         workflow.config["execution"]["crashdump_dir"] = crashdump_dir
 
-    # Calculate fwhm
-    fwhm_to_sigma = sqrt(8 * log(2))
-    sigma = fwhm_mm / fwhm_to_sigma
-    print(f"fwhm_to_sigma: {fwhm_to_sigma}")
-
     # Setup identity (pass through) input/output nodes
     input_node = build_input_node()
     output_node = build_output_node()
@@ -563,7 +558,9 @@ def build_SUSAN_workflow(
         ),
         name="setup_usans",
     )
-    susan_node = pe.Node(SUSAN(fwhm=sigma, use_median=1, dimension=3), name="SUSAN")
+
+    # N.B. the SUSAN node in nipype does the FWHM -> sigma conversion, so we should not!
+    susan_node = pe.Node(SUSAN(fwhm=fwhm_mm, use_median=1, dimension=3), name="SUSAN")
 
     # Set WF inputs and outputs
     if in_file:
