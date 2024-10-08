@@ -1,5 +1,9 @@
 # Change Log
 
+## 1.9.1.8 (Oct 4, 2024)
+
+- Fix `fwhm_mm` usage in `SUSAN`, which was converting to sigma (SD of Gaussian), but then nipype applied that conversion, too.
+
 ## 1.9.1 (Dec 7, 2023)
 
 ### Enhancements
