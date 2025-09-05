@@ -214,7 +214,7 @@ def reho_extract(
                 sub_average=subaverage_string,
                 subject=sub,
             )
-            batch_manager.addjob(Job("rehoextract-" + sub, job_str))
+            batch_manager.add_job(Job("rehoextract-" + sub, job_str))
         if submit:
             batch_manager.createsubmissionhead()
             batch_manager.compilejobstrings()
