@@ -40,7 +40,7 @@ def test_batch_setup(config_file=None, batch_config=None, log_dir=None, submit=N
     test_IDs = ["Test-" + str(i) for i in range(10)]
 
     for ID in test_IDs:
-        batch_manager.addjob(Job(ID, submission_string))
+        batch_manager.add_job(Job(ID, submission_string))
 
     batch_manager.compilejobstrings()
 

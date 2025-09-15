@@ -121,7 +121,7 @@ def qsiprep_process(
         threads = ""
 
     for sub in sublist:
-        batch_manager.addjob(
+        batch_manager.add_job(
             Job(
                 "sub-" + sub + "fmriprep",
                 singularity_string.format(

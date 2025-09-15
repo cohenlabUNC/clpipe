@@ -168,7 +168,7 @@ def fmri_postprocess(
             if debug:
                 sub_string_temp = sub_string_temp + " -debug"
 
-            batch_manager.addjob(Job("PostProcessing" + sub, sub_string_temp))
+            batch_manager.add_job(Job("PostProcessing" + sub, sub_string_temp))
         if submit:
             batch_manager.createsubmissionhead()
             batch_manager.compilejobstrings()

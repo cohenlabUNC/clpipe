@@ -210,7 +210,7 @@ def t2star_extract(
                 debug=debug_string,
                 subject=sub,
             )
-            batch_manager.addjob(Job("t2starextract-" + sub, job_str))
+            batch_manager.add_job(Job("t2starextract-" + sub, job_str))
         if submit:
             batch_manager.createsubmissionhead()
             batch_manager.compilejobstrings()

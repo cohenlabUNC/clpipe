@@ -104,7 +104,7 @@ def glm_launch(
     num_jobs = len(submission_strings)
 
     for key in submission_strings.keys():
-        batch_manager.addjob(key, submission_strings[key])
+        batch_manager.add_job(key, submission_strings[key])
 
     if submit:
         logger.info(f"Running {num_jobs} job(s) in batch mode")

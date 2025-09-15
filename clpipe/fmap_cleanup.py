@@ -77,7 +77,7 @@ def fmap_cleanup(
                     fmap_tp=str(fmap_tp),
                 ),
             )
-            batch_manager.addjob(job1)
+            batch_manager.add_job(job1)
 
             batch_manager.compilejobstrings()
             if submit:
